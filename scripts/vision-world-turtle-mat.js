@@ -21,7 +21,7 @@
 // 6 fish count, 7 eel count, 8 eel skin order, 9 illusion variant, 10 which eel dark, 11 wave spacing,
 // 12 hatchling count, 13 fore drift sense, 14 paddle phase, 15 op-art swell width.
 import { MeshBasicNodeMaterial, AdditiveBlending, DoubleSide } from "builtin/three";
-import { positionGeometry, float, vec2, vec3, smoothstep, step, mix, atan2, fwidth, select } from "builtin/tsl";
+import { positionGeometry, float, vec2, vec3, smoothstep, step, mix, atan2 as atan2raw, fwidth, select } from "builtin/tsl";
 import { tripClock, visionShown, visionU, climb, maskDraw, maskBeads, maskIris, maskClock, nib, stripes } from "./lib/trip.js";
 
 const TAU = 6.28318, PI = 3.14159;
@@ -29,6 +29,8 @@ const DEPTH = { world: 104, ring: 86, being: 74, veil: 64, fore: 52 };
 const RI = 3.9;                                                     // scute inradius (being metres)
 const SCUTE = [[0, 0], [7.8, 0], [-7.8, 0], [3.9, 6.755], [-3.9, 6.755], [3.9, -6.755], [-3.9, -6.755]];
 const SY = -1;                                                      // shell centre y
+// atan2 is undefined at (0, 0) on some GPUs (NaN through every mask that reads it): never ask it there
+const atan2 = (y, x) => atan2raw(y, x.add(1e-5));
 const is = (v, i) => step(v.sub(i).abs(), 0.5);
 const inv = (x) => float(1).sub(x);
 const hexd = (q) => q.x.abs().max(q.x.abs().mul(0.5).add(q.y.abs().mul(0.866)));   // pointy-top hexagon, inradius metric
@@ -44,14 +46,17 @@ export function material(ctx) {
   const blue = vec3(0.05, 0.12, 1.0), violet = vec3(0.45, 0.05, 1.0), ice = vec3(0.45, 0.6, 1.0), W = vec3(1, 1, 1);
   const A = blue.mul(is(fam, 0)).add(violet.mul(is(fam, 1))).add(blue.mul(is(fam, 2)));
   const B = violet.mul(is(fam, 0)).add(blue.mul(is(fam, 1))).add(ice.mul(is(fam, 2)));
-  const H = vec3(1.0, 0.05, 0.6).mul(is(hot, 0)).add(vec3(1.0, 0.85, 0.05).mul(is(hot, 1))).add(vec3(0.1, 1.0, 0.15).mul(is(hot, 2)));
+  // the full palette (aesthetic.yml): blue/violet body, TWO hot accents dealt from pink / orange / yellow / green, never the same
+  const HOT = [vec3(1.0, 0.06, 0.6), vec3(1.0, 0.42, 0.02), vec3(1.0, 0.85, 0.05), vec3(0.1, 1.0, 0.15)];
+  const hotC = (k) => HOT.reduce((acc, v, i) => acc.add(v.mul(is(k, i))), vec3(0));
+  const H = hotC(hot), H2 = hotC(hot.add(pk(16, 3)).add(1).mod(4));
   const P = positionGeometry.xy;
   const live = visionShown(ctx, c, 0);
   const kickOn = step(0.001, c.kick);
   const cul = io(0.84, 0.9, 0.93, 0.96).mul(climb(c).mul(0.4).add(0.6));
   const m = new MeshBasicNodeMaterial();
   m.side = DoubleSide;
-  const cutout = (col, cover) => { m.colorNode = col; m.opacityNode = cover.mul(live); m.alphaTest = 0.5; return m; };
+  const cutout = (col, cover) => { m.colorNode = col; m.opacityNode = cover.mul(live).clamp(0, 1); m.alphaTest = 0.5; return m; };
 
   // ------------------------------------------------------------------ WORLD: the sea (scrolls)
   if (layer === "world") {
@@ -77,7 +82,8 @@ export function material(ctx) {
     const pOp = io(0.35, 0.5, 0.95, 0.97);
     const zone = smoothstep(rn(15).mul(30).add(55), Rc + 4, r).mul(pOp);
     const band = step(psw.div(sp).fract(), zone.mul(0.5)).mul(out);
-    let col = mix(A, B, psw.div(sp).floor().mod(2)).mul(lines).mul(float(0.45).add(kl.mul(0.8)));
+    const lk = psw.div(sp).floor().mod(3);
+    let col = A.mul(is(lk, 0)).add(B.mul(is(lk, 1))).add(H2.mul(0.8).mul(is(lk, 2))).mul(lines).mul(float(0.45).add(kl.mul(0.8)));
     col = col.add(mix(A, W, 0.35).mul(band).mul(0.55).mul(inv(lines)));
     // bubbles on the wake lines behind the shell, drifting down them
     const pB = io(0.5, 0.64, 0.945, 0.96);
@@ -88,7 +94,7 @@ export function material(ctx) {
     const bq = vec2(ph2.div(9).fract().sub(0.5).mul(9), psw.sub(li.mul(sp)));
     const bub = stroke(bq.length().sub(brad).abs(), 0.18).max(stroke(bq.sub(brad.mul(0.4)).length(), 0.2))
       .mul(step(0.62, h)).mul(smoothstep(-12, -24, P.y)).mul(maskBeads(pB, h.sub(0.62).div(0.38))).mul(out);
-    col = mix(col, mix(B, W, 0.6).mul(float(0.9).add(kl)), bub);
+    col = mix(col, mix(mix(H, H2, step(0.81, h)), W, 0.2).mul(float(0.9).add(kl)), bub);
     // fish: two mirrored schools of two-stroke glyphs circling in arcs
     const pF = io(0.55, 0.68, 0.94, 0.955);
     const ax = P.x.abs(), th = atan2(P.y, ax);
@@ -106,7 +112,7 @@ export function material(ctx) {
       const order = kIdx.mul(0.37).add(j * 0.5).fract();
       fish = fish.max(g.mul(arc).mul(maskBeads(pF, order)));
     });
-    col = mix(col, mix(W, H, 0.3), fish);
+    col = mix(col, mix(W, H2, 0.75), fish);
     return cutout(col, cover);
   }
 
@@ -137,8 +143,8 @@ export function material(ctx) {
     const hx = stroke(hexd(qm).sub(1.25).abs(), 0.08).add(stroke(qm.length(), 0.3));
     const moon = hx.mul(maskBeads(pM, km.div(13).fract()));
     const dash = stroke(r.sub(37).abs(), 0.06).mul(step(a.mul(40 / TAU).fract(), 0.5)).mul(pM);
-    m.colorNode = A.mul(l).mul(lit).add(mix(B, H, step(kd.mod(7), 0.5)).mul(bead).mul(lit.add(kl.mul(0.8)))).add(mix(B, W, 0.5).mul(moon).mul(lit)).add(B.mul(dash).mul(0.3));
-    m.opacityNode = live;
+    m.colorNode = A.mul(l).mul(lit).add(mix(B, H, step(kd.mod(7), 0.5)).mul(bead).mul(lit.add(kl.mul(0.8)))).add(mix(H2, W, 0.2).mul(moon).mul(lit)).add(H2.mul(dash).mul(0.35));
+    m.opacityNode = live.clamp(0, 1);
     m.transparent = true;
     m.blending = AdditiveBlending;
     m.depthWrite = false;
@@ -168,7 +174,7 @@ export function material(ctx) {
       const inside = inv(smoothstep(float(0), aL, body)).mul(there);
       const rim = inv(smoothstep(float(0.06), aL.add(0.06), sh.abs())).add(inv(smoothstep(float(0.06), aL.add(0.06), hd.abs())));
       const dots = inv(smoothstep(float(0.14), aL.add(0.14), vec2(q.x, q.y.sub(0.5).mod(0.5).sub(0.25)).length())).mul(step(q.y.abs(), 0.8));
-      const lit = mix(B, W, 0.35).mul(rim.min(1)).add(H.mul(dots)).mul(float(0.85).add(cul.mul(0.3)));
+      const lit = mix(B, W, 0.35).mul(rim.min(1)).add((j % 2 ? H2 : H).mul(dots)).mul(float(0.85).add(cul.mul(0.3)));
       col = mix(col, vec3(0.005, 0.005, 0.02).add(lit), inside); cover = cover.max(inside);
     }
     return cutout(col, cover);
@@ -189,7 +195,7 @@ export function material(ctx) {
       const disc = inv(smoothstep(inv(aL), 1, q.length())).mul(maskIris(pj, q.length()));
       const ring = smoothstep(0.82, 0.9, q.length());
       const glint = inv(smoothstep(0.18, 0.18 + 0.05, q.sub(vec2(-0.35, 0.4)).length()));
-      col = mix(col, mix(B, W, 0.5).mul(ring).add(W.mul(glint)).mul(float(0.8).add(cul.mul(0.3))), disc); cover = cover.max(disc);
+      col = mix(col, mix([H, H2, B][j % 3], W, 0.25).mul(ring).add(W.mul(glint)).mul(float(0.8).add(cul.mul(0.3))), disc); cover = cover.max(disc);
     }
     return cutout(col, cover);
   }
@@ -221,7 +227,7 @@ export function material(ctx) {
     const bead = stroke(vec2(sc, tc).length(), 0.4).mul(step(t.abs(), w.sub(0.35))).mul(maskBeads(pr, s.div(L).add(0.05)));
     const rim = stroke(t.abs().sub(w).abs(), 0.1);
     const kb = smoothstep(2.5, 0, vec2(ax, p.y).sub(vec2(0, SY)).length().sub(front).abs()).mul(kickOn);
-    lay(body, mix(A, H, is(row.mod(3), 0)).mul(bead).mul(float(0.9).add(kb.mul(0.8))).add(mix(A, W, 0.3).mul(rim).mul(0.8)));
+    lay(body, A.mul(is(row.mod(3), 2)).add(H.mul(is(row.mod(3), 0))).add(H2.mul(is(row.mod(3), 1))).mul(bead).mul(float(0.9).add(kb.mul(0.8))).add(mix(A, W, 0.3).mul(rim).mul(0.8)));
   });
   // tail
   const tailB = step(ax, p.y.add(17.5).mul(0.4)).mul(step(-17.5, p.y)).mul(step(p.y, -13)).mul(step(0.01, pFl));
@@ -298,11 +304,12 @@ export function material(ctx) {
   const fe = fsel.fract(), edgeY = sk(fe.min(inv(fe)).mul(TAU / 3).mul(ru), 0.035).mul(step(hexd(qu), 0.9));
   const shade = io(0.7, 0.86, 0.93, 0.945).mul(cul.mul(0.75).add(0.25)).mul(step(hexd(qu), 0.9));
   const faceCol = mix(A, mix(B, W, 0.55), lum.mul(lum)).mul(lum).mul(shade).mul(1.1);
-  const ink = mix(mix(W, H, is(kind, 0).mul(0.6)).mul(0.95), vec3(0), cul);
+  const km3 = kind.mod(3), inkC = H.mul(is(km3, 0)).add(H2.mul(is(km3, 1))).add(mix(W, B, 0.25).mul(is(km3, 2)));
+  const ink = mix(inkC.mul(0.95), vec3(0), cul);
   let sc = faceCol.add(mix(A, W, 0.4).mul(edgeY).mul(shade));
   sc = mix(sc, ink, mShow);
   sc = sc.add(mix(B, W, 0.3).mul(outline).mul(float(0.8).add(kl.mul(1.2))));
-  sc = mix(sc, mix(B, W, 0.5), rimL).add(W.mul(rimN)).add(mix(H, W, 0.25).mul(mg));
+  sc = mix(sc, mix(B, W, 0.5), rimL).add(W.mul(rimN)).add(mix(H2, W, 0.2).mul(mg));
   lay(shell, sc);
   return cutout(col, cover);
 }
