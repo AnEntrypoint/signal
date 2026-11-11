@@ -1,0 +1,8 @@
+# spawn-scene v2 yaml x0y3z0
+vision-moon-mother:
+  feetPosition: {x: 0, y: 400, z: 0}
+  id: vision-moon-mother
+  material: {kind: scripted, script: engine/blueprint}
+  physics: none
+  primitive: {depth: 10, height: 40, kind: box, width: 70}
+  tags: [blueprint]
