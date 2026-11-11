@@ -23,7 +23,7 @@ import { MeshBasicNodeMaterial, AdditiveBlending, DoubleSide } from "builtin/thr
 import { positionGeometry, float, vec2, vec3, smoothstep, step, mix, atan2, fwidth } from "builtin/tsl";
 import { tripClock, visionShown, visionU, climb, maskDraw, maskBeads, maskIris, nib } from "./lib/trip.js";
 
-const TAU = 6.28318, S = 1.5, KH = Math.PI / 8;
+const TAU = 6.28318, S = 1.22, KH = Math.PI / 8;
 const is = (v, i) => step(v.sub(i).abs(), 0.5);
 const inv = (x) => float(1).sub(x);
 const band = (v, w) => smoothstep(float(0.25).sub(w), float(0.25).add(w), v.fract().sub(0.5).abs());   // 50% op-art stripe
@@ -205,7 +205,7 @@ export function material(ctx) {
   }
 
   // ------------------------------------------------------------------ THE BEING (breathes)
-  const p = P.div(c.real.mul(TAU / 8).sin().mul(0.018).add(1).mul(S));
+  const p = P.div(c.real.mul(TAU / 8).sin().mul(0.018).add(1).mul(S)).add(vec2(0, 3));
   const aa = fwidth(p.x).mul(1.2).max(0.008);
   const stroke = (d, w) => inv(smoothstep(float(w), aa.add(w), d));
   const ax = p.x.abs();
