@@ -2,7 +2,6 @@
 import { MeshBasicNodeMaterial, AdditiveBlending, DoubleSide } from "builtin/three";
 import { positionGeometry, float, vec2, vec3, smoothstep, step, mix, atan2, fwidth } from "builtin/tsl";
 import { tripClock, visionShown, visionU, climb, maskDraw, maskBeads, maskClock, nib, inv, is } from "./lib/trip.js";
-
 const TAU = 6.28318, PI = 3.14159;
 const DEPTH = { world: 104, ring: 86, being: 74, veil: 64, fore: 52 };
 const CY = -2, HW = 4.2, YL = CY - 7, YS = CY + 1, RA = 6.5, AXC = HW - RA, APEX = YS + Math.sqrt(RA * RA - AXC * AXC);
@@ -13,7 +12,6 @@ function seg(p, a, b) {
   const pa = p.sub(vec2(a[0], a[1])), h = pa.dot(vec2(bx, by)).div(bb).clamp(0, 1);
   return pa.sub(vec2(bx, by).mul(h)).length();
 }
-// the pointed arch, signed distance (metres, < 0 inside) and a draw parameter rising from its foot to its apex
 function arch(q) {
   const x = q.x.abs(), y = q.y;
   const sdb = x.sub(HW).max(float(YL).sub(y));
@@ -21,8 +19,6 @@ function arch(q) {
   const below = step(y, YS);
   return { sd: mix(sdt, sdb, below), ua: y.sub(YL).div(APEX - YL).clamp(0, 1) };
 }
-// metric position along the arch at offset `off` outside its line, as a cell coordinate: n round beads laid
-// evenly from the foot over the apex (straight side, then the arc measured by its own angle)
 const TH = Math.atan2(APEX - YS, -AXC);
 function archCell(q, off, n) {
   const x = q.x.abs(), y = q.y, Ltot = (YS - YL) + (RA + off) * TH;
@@ -31,7 +27,6 @@ function archCell(q, off, n) {
   const cell = s.div(Ltot).mul(n);
   return { cell, along: cell.fract().sub(0.5).mul(Ltot / n), ua: s.div(Ltot).clamp(0, 1) };
 }
-// one ring of N petals: ap across (-.5..5 of a petal's slot), t along (0 base .. 1 tip), ex metres inside the edge
 function petals(rr, an, N, r0, Lo, rot) {
   const f = an.div(TAU).mul(N).add(rot);
   const ap = f.fract().sub(0.5), t = rr.sub(r0).div(Lo.max(0.01));
@@ -40,13 +35,11 @@ function petals(rr, an, N, r0, Lo, rot) {
   const ex = sh.sub(ap.abs()).mul(arc);
   return { ap, t, ex, arc, id: f.floor(), inside: step(0, ex).mul(step(0, t)).mul(step(t, 1)).mul(step(0.02, Lo)) };
 }
-// one free petal, local across / along metres
 function leaf(x, y, len, wid) {
   const t = y.div(len), sh = t.clamp(0, 1).mul(PI).sin().pow(0.6).mul(inv(t.clamp(0, 1).mul(0.3))).mul(wid);
   const ex = sh.sub(x.abs());
   return { t, ex, inside: step(0, ex).mul(step(0, t)).mul(step(t, 1)) };
 }
-
 function build(ctx) {
   const layer = ctx.params.layer ?? "being";
   const c = tripClock(ctx);
@@ -72,10 +65,7 @@ function build(ctx) {
   const low = ctx.quality === "low", slot = ctx.param("vw1", -1).sub(ctx.param("vw0", -1)).max(1);
   const m = new MeshBasicNodeMaterial();
   m.side = DoubleSide;
-
-  // ------------------------------------------------------------------ WORLD: water and sky (scrolls)
   if (layer === "world") {
-    // coverage: one giant blossom outline growing from the lotus, its front a scalloped row of beads
     const cv = pk(23, 3), close = smoothstep(inv(float(6).div(slot)), 1, u);
     const grow = smoothstep(0, 0.32, u), Rg = grow.mul(grow).mul(190).mul(inv(close.mul(close).mul(0.86)));
     const lobes = float(4).add(is(cv, 1).mul(2)), tw = an.add(close.mul(close).mul(is(cv, 2)).mul(2.4));
@@ -86,7 +76,6 @@ function build(ctx) {
     const cover = step(lead, 0).max(front).mul(step(0.004, grow));
     const Wy = -24;
     const v = float(Wy).sub(q.y).max(0);
-    // lily pads: rows widening toward the viewer, pads drifting sideways, each a disc of concentric bead rings
     const ri = v.sqrt().mul(1.25).floor(), vc = ri.add(0.5).div(1.25), yc = float(Wy).sub(vc.mul(vc));
     const sp = ri.mul(4).add(9);
     const xs = q.x.sub(c.real.mul(ri.mul(0.35).add(0.6)).mul(sense(6))).div(sp);
@@ -102,10 +91,8 @@ function build(ctx) {
     const padOn = pad.mul(maskBeads(padP, hash(cid.add(ri.mul(5))).mul(0.6).add(rr.div(200))));
     let col = mix(A, B, rj.mod(2)).mul(dot).mul(0.55).add(A.mul(stroke(rho.sub(pr).abs(), 0.08)).mul(0.5)).mul(padOn);
     col = col.add(B.mul(kl).mul(padOn).mul(0.4));
-    // the water line: a dashed bead row
     const wl = stroke(vec2(q.x.div(2.4).fract().sub(0.5).mul(2.4), q.y.sub(Wy)).length(), 0.28);
     col = col.add(mix(A, W, 0.3).mul(wl).mul(0.7).mul(step(rr.div(170), io(0.3, 0.42, 2, 3))));
-    // the sky: petals drifting up (placed in lanes, mirrored), dragonflies hovering
     const above = step(Wy + 1, q.y);
     let sky = vec3(0, 0, 0);
     for (let j = 0; j < (low ? 3 : 5); j++) {
@@ -135,8 +122,6 @@ function build(ctx) {
     m.alphaTest = 0.5;
     return m;
   }
-
-  // ------------------------------------------------------------------ RING: the halo (turns, additive)
   if (layer === "ring") {
     const ringL = (r, w) => inv(smoothstep(w, aa.add(w), rr.sub(r).abs()));
     const pL = io(0.4, 0.46, 0.89, 0.92);
@@ -147,7 +132,6 @@ function build(ctx) {
     const b2 = inv(smoothstep(0.42, 0.42 + 0.1, vec2(f2.fract().sub(0.5).mul(rr).mul(TAU / 96), rr.sub(51.4)).length()));
     const p1 = io(0.44, 0.52, 0.86, 0.89), p2 = io(0.48, 0.56, 0.85, 0.88);
     const k1 = maskBeads(p1, f1.floor().div(72).fract()), k2 = maskBeads(p2, f2.floor().div(96).fract());
-    // aura: twelve great petal outlines turning slowly the other way, drawn from base to tip
     const pa = io(0.52, 0.6, 0.83, 0.87);
     const au = petals(rr, an, 12, float(36), float(24).mul(pa), rot.mul(-0.6).add(0.5));
     const aur = stroke(au.ex.abs(), 0.12).mul(step(0, au.t)).mul(step(au.t, 1));
@@ -162,8 +146,6 @@ function build(ctx) {
     m.depthWrite = false;
     return m;
   }
-
-  // ------------------------------------------------------------------ VEIL: great petals adrift (drifts)
   if (layer === "veil") {
     let col = vec3(0, 0, 0), cover = float(0);
     for (let j = 0; j < 3; j++) {
@@ -188,8 +170,6 @@ function build(ctx) {
     m.alphaTest = 0.5;
     return m;
   }
-
-  // ------------------------------------------------------------------ FORE: the near water and its buds (undulates)
   if (layer === "fore") {
     const pW = io(0.66, 0.72, 0.84, 0.88);
     const swell = (x) => float(x).mul(0.07).sub(c.real.mul(1.1)).sin().mul(2.2).add(float(x).mul(0.15).add(c.real.mul(0.7)).sin().mul(1.1));
@@ -205,13 +185,11 @@ function build(ctx) {
       const pc = mix(A, W, 0.2).mul(stroke(lf.ex, 0.16)).add(B.mul(bands).mul(0.55)).add(H.mul(stroke(vec2(bx, lf.t.sub(0.86).mul(8 + j)).length(), 0.45)));
       col = mix(col, pc, on);
       cover = cover.max(on);
-      // a pollen spark rising from each bud
       const sy = c.real.mul(0.18).add(j * 0.29).fract();
       const sp = stroke(vec2(bx.sub(sy.mul(9).add(j).sin().mul(2)), by.sub(sy.mul(26).add(9))).length(), 0.4).mul(step(0.5, pb)).mul(inv(sy));
       col = mix(col, mix(H, W, 0.5), sp);
       cover = cover.max(sp);
     }
-    // the near water: black under a neon crest, a bead row riding just below it
     const below = step(q.y, yw).mul(step(0.01, pW));
     const crest = stroke(q.y.sub(yw).abs(), 0.16);
     const wb = stroke(vec2(q.x.add(c.real.mul(1.5)).div(2.6).fract().sub(0.5).mul(2.6), q.y.sub(yw).add(1.3)).length(), 0.32);
@@ -222,8 +200,6 @@ function build(ctx) {
     m.alphaTest = 0.5;
     return m;
   }
-
-  // ------------------------------------------------------------------ BEING: the lotus and its gate (breathes)
   const N0 = pk(1, 3).mul(2).add(8);                 // 8, 10 or 12 petals in the first ring
   const lock = inv(cul.mul(inv(flipV)));             // variant A: every ring's turn eases to zero (one star)
   const flip = cul.mul(flipV);                       // variant B: bodies lit, lines black
@@ -232,12 +208,10 @@ function build(ctx) {
   for (let k = NR - 1; k >= 0; k--) {
     const N = N0.mul(1 + 0.5 * k), r0 = 4 + 5.4 * k, L = 10 + 1.6 * k;
     const sgn = sense(2).mul(k % 2 ? -1 : 1);
-    // a ring opens over .06 of u, k by k across .09..35; leaves outer ring first from .80, the heart's last by .985
     const op = io(0.09 + 0.05 * k, 0.15 + 0.05 * k, 0.80 + 0.035 * (NR - 1 - k), 0.845 + 0.035 * (NR - 1 - k)).mul(k === NR - 1 ? step(0.35, rn(10)) : float(1));
     const breathe = c.real.mul(0.55 + 0.08 * k).add(k * 1.3).sin().mul(0.035).mul(k % 2 ? -1 : 1).add(1);
     const rk = rr.div(breathe);
     const rot = c.real.mul(0.008 + 0.003 * k).add(inv(op).mul(0.5)).mul(sgn).mul(lock).add((k % 2) * 0.5);
-    // each petal its own turn round the ring: arrives in order, leaves last-in first-out, lit up out of dark
     const idf = an.div(TAU).mul(N).add(rot).floor().div(N.max(1)).fract();
     const opi = op.mul(1.8).sub(idf.mul(0.8)).clamp(0, 1);
     const dim = smoothstep(0, 0.7, opi);
@@ -251,8 +225,6 @@ function build(ctx) {
       const vein = stroke(pt.ap.mul(pt.arc).abs(), 0.07).mul(step(0.08, pt.t)).mul(step(pt.t, 0.8));
       det = lc.mul(cont.mul(0.55).add(vein.mul(0.7)));
     } else {
-      // round beads in concentric rows: a circular SDF per cell, rows on circles round the bindu, every other row
-      // shifted half a cell, each row's cells measured on its own centre radius so dots stay round, not squares
       const S = 1.5, row = rk.sub(r0).div(S).floor(), rc = row.add(0.5).mul(S).add(r0);
       const cx = pt.ap.mul(rc.mul(TAU).div(N.max(1))).div(S).add(0.5).add(row.mod(2).mul(0.5)).fract().sub(0.5);
       const cy = rk.sub(r0).div(S).fract().sub(0.5);
@@ -266,23 +238,20 @@ function build(ctx) {
     const pc = mix(body.add(lit.mul(inv(flip))), vec3(0, 0, 0), edge.mul(flip));
     col = mix(col, pc, pt.inside);
     cover = cover.max(pt.inside);
-    // dew at each petal's tip, laid in order round the ring
     const dd = vec2(pt.ap.mul(pt.arc), rk.sub(Lo.add(r0 + 0.9))).length();
     const dew = inv(smoothstep(0.55, 0.65, dd)).mul(maskBeads(pDew, pt.id.div(N).fract().mul(0.7).add(k * 0.06))).mul(step(0.9, op));
     col = mix(col, mix(H, W, float(1).sub(smoothstep(0, 0.35, dd))), dew);
     cover = cover.max(dew);
   }
-  // THE GATE: bindu, then the arch drawing itself up both sides with a nib, its lining beads, the seed-pod crown
   const ar = arch(q);
   const pB = io(0.0, 0.025, 0.99, 1.0), pA = io(0.02, 0.08, 0.97, 0.995), pLn = io(0.08, 0.12, 0.95, 0.975);
   const pPod = io(0.58, 0.64, 0.82, 0.86), pDoor = io(0.55, 0.62, 0.85, 0.89), pStar = io(0.65, 0.69, 0.81, 0.84);
   const doorIn = step(ar.sd, 0).mul(step(ar.ua, pA.mul(1.02)));
   const door = vec2(0, CY - 1.5);
   const qd = q.sub(door), rd = qd.length();
-  // the doorway: a few placed stars (golden-angle spiral) and the second lotus, smaller, turning the other way
   let dc = vec3(0, 0, 0);
   const dVar = step(0.5, rn(3));
-  for (let i = 0; i < 12; i++) {
+  for (let i = 0; i < (low ? 7 : 12); i++) {
     const r = Math.sqrt(i + 0.5) * 1.35, a = i * 2.39996;
     const sd4 = qd.sub(vec2(Math.cos(a) * r * 0.75, Math.sin(a) * r + 1.5)).abs();
     const s = inv(smoothstep(0.8, 0.95, sd4.x.div(0.35).sqrt().add(sd4.y.div(0.35).sqrt())));
@@ -323,7 +292,6 @@ function build(ctx) {
   m.alphaTest = 0.5;
   return m;
 }
-
 const GL = { world: [6, 85, 0, 0.3], ring: [3.5, 42, 0.42, 0.55, 0.9, 0.98], being: [2.4, 22, -1, 0, 0.92, 0.99], veil: [4.5, 50, 0.58, 0.72, 0.86, 0.93], fore: [4.5, 60, 0.68, 0.8, 0.8, 0.88] };
 export function material(ctx) {
   const m = build(ctx), layer = ctx.params.layer ?? "being", L = GL[layer] ?? GL.being;

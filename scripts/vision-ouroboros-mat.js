@@ -297,7 +297,6 @@ m.opacityNode = cover.mul(visionShown(ctx, c, rr.div(30)));
 m.alphaTest = 0.5;
 return m;
 }
-
 const GL = { world: [6, 85, 0, 0.3], ring: [3.5, 42, 0.3, 0.45, 0.9, 0.98], being: [2.2, 22, -1, 0, 0.92, 0.99], veil: [4, 50, 0.55, 0.7, 0.86, 0.93], fore: [4, 60, 0.68, 0.8, 0.8, 0.88] };
 export function material(ctx) {
 const m = build(ctx), layer = ctx.params.layer ?? "being", L = GL[layer] ?? GL.being;
