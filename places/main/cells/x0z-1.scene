@@ -1,1 +1,8 @@
 # spawn-scene v2 yaml x0z-1
+tunnel:
+  feetPosition: {x: 0, y: 9, z: -186}
+  id: tunnel
+  material: {kind: scripted, script: engine/blueprint}
+  physics: none
+  primitive: {depth: 300, height: 12, kind: box, width: 12}
+  tags: [blueprint]
