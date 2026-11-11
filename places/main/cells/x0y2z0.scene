@@ -1,8 +1,28 @@
 # spawn-scene v2 yaml x0y2z0
 vision-sun-father:
+  castShadow: false
   feetPosition: {x: 0, y: 300, z: 0}
   id: vision-sun-father
-  material: {kind: scripted, script: engine/blueprint}
+  material: {kind: scripted, params: {k0: -1, k1: -1, layer: sun, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-sun-father-mat.js}
   physics: none
-  primitive: {depth: 10, height: 40, kind: box, width: 70}
-  tags: [blueprint]
+  primitive: {kind: scripted, params: {h: 40, w: 40, z: 0}, script: scripts/vision-sun-father-geo.js}
+  receiveShadow: false
+  tags: [trip, vision-sun-father]
+vision-sun-father-ring:
+  castShadow: false
+  feetPosition: {x: 0, y: 300, z: 0}
+  id: vision-sun-father-ring
+  material: {kind: scripted, params: {k0: -1, k1: -1, layer: ring, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-sun-father-mat.js}
+  physics: none
+  primitive: {kind: scripted, params: {h: 40, w: 40, z: -14}, script: scripts/vision-sun-father-geo.js}
+  receiveShadow: false
+  tags: [trip, vision-sun-father]
+vision-sun-father-veil:
+  castShadow: false
+  feetPosition: {x: 0, y: 300, z: 0}
+  id: vision-sun-father-veil
+  material: {kind: scripted, params: {k0: -1, k1: -1, layer: veil, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-sun-father-mat.js}
+  physics: none
+  primitive: {kind: scripted, params: {h: 38, w: 40, z: 12}, script: scripts/vision-sun-father-geo.js}
+  receiveShadow: false
+  tags: [trip, vision-sun-father]
