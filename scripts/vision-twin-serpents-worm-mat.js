@@ -22,7 +22,7 @@ export function material(ctx) {
   const r0 = pair ? 2.5 : 3.8;
   const grow = io(0.55 + pair * 0.05, 0.8, 0.93, 0.965 - pair * 0.01);
   const exists = pair ? step(0.45, rn(7)) : float(1);
-  const tip = smoothstep(grow, grow.sub(0.07), uu);
+  const tip = inv(smoothstep(grow.sub(0.07), grow, uu)); // edges low→high: reversed edges are undefined on GPUs
   const rad = inv(uu).max(0).pow(0.5).mul(0.85).add(0.15).mul(r0).mul(tip.sqrt()).mul(live).mul(exists).mul(step(0.002, grow));
   const R0 = pair ? [95 * sg, 78, -40] : [105 * sg, -72, -42];
   const C0 = pair ? [46 * sg, 40, -16] : [52 * sg, -32, -14];
@@ -58,7 +58,7 @@ export function material(ctx) {
   const second = (low ? alt : mix(cBe, alt, step(0.5, rn(8)).mul(pair)));
   const t1 = 0.8 + pair * 0.03;
   const skin = mix(first, second, step(uu, smoothstep(t1, t1 + 0.08, u).mul(1.02)));
-  const run = low ? float(0) : smoothstep(0.05, 0, uu.sub(c.beat.fract()).abs()).mul(step(0.001, c.kick));
+  const run = low ? float(0) : inv(smoothstep(0, 0.05, uu.sub(c.beat.fract()).abs())).mul(step(0.001, c.kick));
   const edge = ca.abs();
   const lit = skin.mul(sa.abs().mul(0.45).add(0.55)).add(mix(A, W, 0.4).mul(smoothstep(0.86, 1, edge)).mul(run.add(0.5)));
   const dark = is(float(n), step(0.5, rn(13)).add(1)).mul(step(uu, smoothstep(0.85, 0.91, u).mul(1.02)));
