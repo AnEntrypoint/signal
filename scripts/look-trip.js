@@ -130,10 +130,27 @@ export function look(ctx) {
   const tile = vec2(mix(tf.x, float(1).sub(tf.x), tc.x.mod(2)), mix(tf.y, float(1).sub(tf.y), tc.y.mod(2)));
   const isTile = on1(st.sub(2).abs().lessThan(0.5)).mul(float(1).sub(first)).mul(wPeak);
   const uk = mix(uk0, tile, isTile);
-  // layer-keyhole: the kaleido shows only through a breathing dot grid over the clean view
-  const kg = screenUV.mul(asp).mul(9).fract().sub(0.5).length();
-  const holes = smoothstep(0.3, 0.27, kg.sub(breath.mul(0.06)));
-  const pk = mix(float(0.6), select(st.lessThan(0.5), float(1), select(st.lessThan(1.5), float(0), select(st.lessThan(2.5), float(1), holes))), float(1).sub(first));
+  // layer-keyhole: the kaleido shows only through a dealt mask over the clean view; each peak phrase deals a new one
+  // (seeded), swapped while the phrase iris is closed. Tile mode shows its tiles through the NEGATIVE of another mask.
+  const kq = screenUV.sub(0.5).mul(asp), kr2 = kq.length(), ka2 = atan(kq.x, kq.y);
+  const band = (x, w) => smoothstep(w.add(0.025), w, x.fract().sub(0.5).abs());   // 1 inside a stripe of half-width w per period
+  const cellD = (n) => kq.mul(n).fract().sub(0.5);
+  const hexD = (n) => { const q = kq.mul(n), R = vec2(1, 1.732), h = R.mul(0.5);
+    return q.mod(R).sub(h).length().min(q.sub(h).mod(R).sub(h).length()); };
+  const KMASKS = [
+    smoothstep(0.3, 0.27, cellD(9).length().sub(breath.mul(0.06))),                                    // dots, breathing
+    band(kr2.mul(6).sub(sec.mul(0.3)), breath.mul(0.05).add(0.2)),                                      // iris rings flowing out
+    band(ka2.div(TAU).mul(sym).add(kr2.mul(4)).sub(sec.mul(0.12)), float(0.22)),                        // spiral arms, sym-fold
+    band(kq.x.add(kq.y).mul(7).add(kq.y.mul(5).add(sec).sin().mul(0.35)).sub(sec.mul(0.2)), float(0.21)), // op-art stripes, wavering
+    smoothstep(0.3, 0.27, hexD(8).add(kr2.mul(0.18)).sub(breath.mul(0.05))),                           // hex beads, smaller to the rim
+    smoothstep(0.02, 0, cellD(13).length().sub(kr2.mul(4).sub(sec.mul(0.8)).sin().mul(0.5).add(0.5).mul(0.46))), // halftone wave
+    band(kr2.mul(3.2).sub(ka2.mul(sym).add(kRot).cos().mul(0.28)).sub(sec.mul(0.18)), float(0.23)),      // nested petals
+    smoothstep(1.03, 0.97, cellD(6).x.abs().div(breath.mul(0.05).add(0.11)).add(cellD(6).y.mul(cellD(6).y).mul(4.4))), // pupil slits
+  ];
+  const kPick = (salt) => pi.add(c.seed.mul(0.37)).add(salt).mul(91.7).sin().mul(43758.5453).fract().mul(KMASKS.length).floor();
+  const kMask = (salt) => { const i = kPick(salt); return KMASKS.reduce((acc, m, j) => acc.add(m.mul(on1(i.sub(j).abs().lessThan(0.5)))), float(0)); };
+  const holes = kMask(0), tileHoles = float(1).sub(kMask(5.3));
+  const pk = mix(float(0.6), select(st.lessThan(0.5), float(1), select(st.lessThan(1.5), float(0), select(st.lessThan(2.5), tileHoles, holes))), float(1).sub(first));
   // ascent: the mirror world opens as a petal window from the centre, one step every 6 s (its petal count is the
   // fold count it shows), each step easing in over a bar while the clean world keeps moving outside it.
   // Layered, not a full-frame swap: inside is reflection, outside is the world, the edge is the flower.
