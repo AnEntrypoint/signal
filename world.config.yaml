@@ -17,9 +17,11 @@ inputs:
     cine:
       keys:
         - p
+      gamepad: y
     jump:
       keys:
         - space
+      gamepad: a
   axes:
     moveX:
       keys: a/d
