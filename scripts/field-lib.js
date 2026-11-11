@@ -97,3 +97,16 @@ export function choose(c, n, opts) {
   const k = c.pick(n, 3);
   return select(k.lessThan(0.5), float(opts[0]), select(k.lessThan(1.5), float(opts[1]), float(opts[2])));
 }
+// SEAM HOLD: a scene's far layer stays lit to ~0.4 s of a dealt seam, then thins bead by bead (3D cells), back ~0.4 s after.
+import { positionWorld, fract, length, max } from "builtin/tsl";
+import { inv } from "./lib/trip.js";
+export function seamHold(c, name, size = 1.6, p = positionWorld) {
+  let w = float(0);
+  for (const [a, b] of SCORE.layers[name]) w = w.add(smoothstep(a - 0.6, a, c.sec).mul(inv(smoothstep(b, b + 0.6, c.sec))));
+  const k = smoothstep(0.15, 0.4, c.seamD).mul(inv(smoothstep(3.5, 5.5, c.seamD))).mul(w.clamp(0, 1));
+  const q = p.div(size), id = q.floor(), f = fract(q).sub(0.5);
+  const h = id.dot(vec3(12.9898, 78.233, 37.719)).sin().mul(43758.5453).fract();
+  const r = smoothstep(h.mul(0.6), h.mul(0.6).add(0.4), k).mul(0.92);
+  return inv(smoothstep(r.sub(0.06), r.add(0.001), length(f)));
+}
+export const held = (c, name, v, size, p) => max(v, seamHold(c, name, size, p));

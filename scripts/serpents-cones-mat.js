@@ -27,7 +27,7 @@ export function material(ctx) {
   const sweep = smoothstep(0.75, 1.0, am.sub(c.sec.mul(TAU / 24).mul(c.dir)).cos());
   const L = sweep.max(vk.mul(0.8)).max(win(c.sec, SEC.peak, 2));
   m.colorNode = finish(c, col, L, vy.mul(4));
-  m.opacityNode = shown(c, "serpents", vr.div(90));
+  m.opacityNode = held(c, "serpents", shown(c, "serpents", vr.div(90)), 1.2);
   m.alphaTest = 0.5;
   m.fog = false;
   return m;

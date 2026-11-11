@@ -6,6 +6,7 @@
 import { MeshBasicNodeMaterial, DoubleSide } from "builtin/three";
 import { positionGeometry, float, vec2, vec3, smoothstep, step, mix, length, atan2, hash } from "builtin/tsl";
 import { tripClock, shown, win, SEC, stripes } from "./lib/trip.js";
+import { held } from "./field-lib.js";
 import { TAU, PI, sel, breath, ripple, barStep, order, sweep, fam, relight, allLit } from "./sun-lib.js";
 
 export function material(ctx) {
@@ -109,7 +110,7 @@ export function material(ctx) {
   const mt = new MeshBasicNodeMaterial();
   mt.side = DoubleSide;
   mt.colorNode = col;
-  mt.opacityNode = shown(c, "sky", rMask.div(13)).mul(solid).mul(float(1).sub(cut));
+  mt.opacityNode = held(c, "sky", shown(c, "sky", rMask.div(13)), 0.8).mul(solid).mul(float(1).sub(cut));
   mt.alphaTest = 0.5; mt.toneMapped = false;
   return mt;
 }

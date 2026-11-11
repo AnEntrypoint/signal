@@ -5,6 +5,7 @@
 import { MeshBasicNodeMaterial, DoubleSide } from "builtin/three";
 import { positionWorld, positionLocal, vec2, vec3, float, length, floor, fwidth, abs, smoothstep, saturate, max, atan2, log2, pow, select, mix, sin, step } from "builtin/tsl";
 import { tripClock, shown } from "./lib/trip.js";
+import { held } from "./field-lib.js";
 import { near, alive, ripple, breath, family, pace, order } from "./chamber-fx.js";
 
 export function material(ctx) {
@@ -56,7 +57,7 @@ export function material(ctx) {
   const gap1 = step(floor(am.add(0.25).mul(ord.mul(2))).add(bar).mod(4), 0.5).mul(step(14, d)); // mirrored wedges, one in four
   const gap2 = disc(c1.dist, float(0.27)).mul(par).mul(step(6, d)); // layer-keyhole: every target's heart is a window onto the void
   const gap = mix(mix(gap0, gap1, step(0.5, cv)), gap2, step(1.5, cv));
-  m.opacityNode = shown(c, "chamber", length(positionWorld.sub(vec3(0, 15, -362))).div(34)).mul(float(1).sub(gap));
+  m.opacityNode = held(c, "chamber", shown(c, "chamber", length(positionWorld.sub(vec3(0, 15, -362))).div(34)), 1.5).mul(float(1).sub(gap));
   m.alphaTest = 0.5;
   m.side = DoubleSide;
   return m;

@@ -3,7 +3,7 @@
 import { atan2, positionWorld, float, vec2, vec3, length, fwidth, smoothstep, select, mix, min, max } from "builtin/tsl";
 import { MeshBasicNodeMaterial } from "builtin/three";
 import { tripClock, SEC, stripes, HUE, shown, win } from "./lib/trip.js";
-import { BW, growR, resetR, endFade, colours, breath, mirrorTurn, kickAt, lit, shade, roll, choose } from "./field-lib.js";
+import { BW, growR, resetR, endFade, colours, breath, mirrorTurn, kickAt, lit, shade, roll, choose, held } from "./field-lib.js";
 
 const TAU = 6.2831853;
 const GA = 0.38196601125, PC = 1.25, FIB = [3, 5, 8, 13, 21, 34, 55, 89, 144, 233];
@@ -263,7 +263,7 @@ export function material(ctx) {
   const dith = p.x.mul(91.7).add(p.y.mul(57.3)).sin().mul(43758.5).fract();
   const soft = smoothstep(6, 2, r.sub(Rm).abs()).greaterThan(dith.mul(0.9).add(0.05)).select(1, 0).mul(softOn);
   const seedOn = c.sec.lessThan(SEC.pulse[0] + 0.5).select(1, 0);
-  m.opacityNode = max(shown(c, "field", r.div(90)), seedOn).mul(grown).mul(float(1).sub(hole)).mul(float(1).sub(soft));
+  m.opacityNode = max(held(c, "field", shown(c, "field", r.div(90)), 2.4), seedOn).mul(grown).mul(float(1).sub(hole)).mul(float(1).sub(soft));
   m.alphaTest = 0.5;
   m.fog = false;
   return m;

@@ -6,6 +6,7 @@
 import { MeshBasicNodeMaterial } from "builtin/three";
 import { positionGeometry, float, vec2, vec3, smoothstep, mix, step, atan2, length, fwidth } from "builtin/tsl";
 import { tripClock, win, SEC, shown } from "./lib/trip.js";
+import { held } from "./field-lib.js";
 import { TAU, fam, sweep, relight, gate, breathScale, deal, symN } from "./eye-lib.js";
 
 export function material(ctx) {
@@ -131,7 +132,7 @@ export function material(ctx) {
   const cutCheck = step(hk.add(sect).add(bf).mod(2), 0.5).mul(step(hk.mod(3), 0.5));       // 2: checker on every 3rd ring
   const cut = cutRing.mul(is(vCut, 0)).add(cutWedge.mul(is(vCut, 1))).add(cutCheck.mul(is(vCut, 2)));
   const hole = step(5.4, r).mul(step(r, 9.0)).mul(cut).mul(step(12.35, c.sec));
-  m.opacityNode = shown(c, "eye", r.div(15)).mul(float(1).sub(hole));
+  m.opacityNode = held(c, "eye", shown(c, "eye", r.div(15)), 0.9).mul(float(1).sub(hole));
   m.alphaTest = 0.5;
   return m;
 }

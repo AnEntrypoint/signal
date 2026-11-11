@@ -7,6 +7,7 @@
 import { log, float, vec2, vec3, floor, fract, abs, max, min, mod, step, smoothstep, select, mix, length, dot, sqrt, atan2, varying, positionWorld, positionLocal, cameraPosition } from "builtin/tsl";
 import { MeshBasicNodeMaterial, BackSide } from "builtin/three";
 import { tripClock, pal, stripes } from "./lib/trip.js";
+import { held } from "./field-lib.js";
 import { camDepth, tun, inside, GRAPH, mirAng, fam, light, cut, panels, deal, pinch, LY, LZ } from "./tunnel-lib.js";
 
 // orb-dome cells on the side band (|mirrored angle| < 0.19 turn): rows x columns of domes, h = dome height 0..1
@@ -108,7 +109,7 @@ export function material(ctx) {
   col = mix(col, mix(BLUE.mul(0.08), W.mul(max(Lt.L, 0.55)), tooth), onTeeth);
   const far = mix(1, 0.3, smoothstep(50, 200, length(positionWorld.sub(cameraPosition))));
   m.colorNode = col.mul(far).mul(smoothstep(192, 186, c.sec));
-  m.opacityNode = inside().mul(cut(c)).mul(max(panels(c), max(onD, onTeeth)));
+  m.opacityNode = inside().mul(held(c, "tunnel", cut(c), 1.8)).mul(max(panels(c), max(onD, onTeeth)));
   m.alphaTest = 0.5;
   m.side = BackSide;
   m.fog = false;
