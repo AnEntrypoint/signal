@@ -289,7 +289,7 @@ export function material(ctx) {
   const g = n1.sub(a1.sub(HINGE).max(0).mul(0.12));
   const inA = step(NECK, a).mul(step(a1, SNOUT)).mul(step(a, SNOUT + 6));
   const solid = smoothstep(0, aa, g).mul(inv(smoothstep(hw.sub(aa), hw, n1))).mul(inA);
-  const rim = solid.mul(smoothstep(hw.sub(0.2), hw.sub(0.2).sub(aa), n1).oneMinus());
+  const rim = solid.mul(smoothstep(hw.sub(0.2).sub(aa), hw.sub(0.2), n1));
   const tri = a1.mul(0.95).add(step(0, n).mul(0.5)).fract().sub(0.5).abs().mul(2);
   const teeth = step(g, 0).mul(smoothstep(0, aa, g.add(tri.mul(0.62)))).mul(step(HINGE + 0.9, a1)).mul(step(a1, SNOUT - 0.3)).mul(jaw).mul(inA);
   const headK = a.sub(NECK).div(SNOUT - NECK).clamp(0, 1);
