@@ -24,31 +24,34 @@ export function material(ctx) {
   const exists = pair ? step(0.5, rn(7)) : float(1);
   const tip = inv(smoothstep(grow.sub(0.06), grow, uu));
   const rf = inv(uu.mul(0.85)).max(0.0001).pow(0.6).mul(r0);
+  const ph = pair * 2.3 + (sg > 0 ? 0 : 1.1);
   const rad = rf.mul(tip.max(0).sqrt()).mul(live).mul(exists).mul(step(0.002, grow));
-  const ph = pair * 2.3 + (sg > 0 ? 0 : 1.1), env = uu.mul(0.85).add(0.15);
-  const w1 = uu.mul(8).sub(c.real.mul(1.1)).add(ph).sin().mul(env).mul(6);
-  const w2 = uu.mul(6).sub(c.real.mul(0.75)).add(ph * 1.6).cos().mul(env).mul(4.5);
-  const bow = uu.mul(3.1416).sin();
-  const spine = pair
-    ? vec3(uu.mul(-34).add(92).mul(sg).add(w1).add(bow.mul(-6 * sg)), uu.mul(112).sub(72).add(w2.mul(0.6)), uu.mul(70).sub(45).add(w2.mul(0.7)))
-    : vec3(uu.mul(-66).add(84).mul(sg).add(w1).add(bow.mul(10 * sg)), uu.mul(-112).add(76).add(w2.mul(0.6)), uu.mul(78).sub(48).add(w2.mul(0.8)));
-  // THE DEPTH WEAVE: the mid-body swings through the canvas planes, behind the being and out in front of it
   const dz = step(0.5, c.rnd(391 + n)).mul(2).sub(1).mul(c.rnd(395 + n).mul(5).add(11));
-  const turns = c.rnd(399 + n).mul(1.6).add(1.4).mul(3.14159);
-  const weave = uu.mul(turns).add(c.rnd(403 + n).mul(TAU)).add(c.real.mul(0.21 + 0.04 * n)).sin().mul(uu.mul(inv(uu)).mul(4)).mul(dz);
+  const turns = c.rnd(399 + n).mul(1.6).add(1.4).mul(3.14159), wph = c.rnd(403 + n).mul(TAU).add(c.real.mul(0.21 + 0.04 * n));
+  // the spine at v, with THE DEPTH WEAVE: the mid-body swings through the canvas planes, behind the being and out in front
+  const spineAt = (v) => {
+    const env = v.mul(0.85).add(0.15), bow = v.mul(3.1416).sin();
+    const w1 = v.mul(8).sub(c.real.mul(1.1)).add(ph).sin().mul(env).mul(6), w2 = v.mul(6).sub(c.real.mul(0.75)).add(ph * 1.6).cos().mul(env).mul(4.5);
+    const weave = v.mul(turns).add(wph).sin().mul(v.mul(inv(v)).mul(4)).mul(dz);
+    return pair
+      ? vec3(v.mul(-34).add(92).mul(sg).add(w1).add(bow.mul(-6 * sg)), v.mul(112).sub(72).add(w2.mul(0.6)), v.mul(70).sub(45).add(w2.mul(0.7)).add(weave))
+      : vec3(v.mul(-66).add(84).mul(sg).add(w1).add(bow.mul(10 * sg)), v.mul(-112).add(76).add(w2.mul(0.6)), v.mul(78).sub(48).add(w2.mul(0.8)).add(weave));
+  };
   const nrm = vec3(ca, sa.mul(0.8), sa.mul(-0.6));
-  const pos = spine.add(nrm.mul(rad)).add(vec3(0, 0, weave));
+  const pos = spineAt(uu).add(nrm.mul(rad));
   const m = new MeshBasicNodeMaterial();
   m.side = DoubleSide;
   m.positionNode = pos;
 
-  // THE RIM: the ring's own angle against the eye, measured inside the ring's plane; 1 on the centre line, 0 at the silhouette
+  // THE RIM: the round body's true normal (the ring's, squared up to the spine's tangent) against the eye: 1 on the centre line, 0 at both silhouettes
   const M3 = (v) => modelWorldMatrix.mul(vec4(v, 0)).xyz;
-  const nW = varying(M3(nrm)), vW = varying(cameraPosition.sub(modelWorldMatrix.mul(vec4(pos, 1)).xyz));
-  const facing = nW.dot(vW).abs().div(vec2(M3(vec3(1, 0, 0)).dot(vW), M3(vec3(0, 0.8, -0.6)).dot(vW)).length().max(0.0001)).clamp(0, 1);
-  const rim = inv(smoothstep(0.34, 0.6, facing));
+  const tg = spineAt(uu.add(0.012)).sub(spineAt(uu.sub(0.012))), t2 = tg.dot(tg).max(0.0001);
+  const nW = varying(M3(nrm.sub(tg.mul(nrm.dot(tg).div(t2))))), tW = varying(M3(tg)), vW = varying(cameraPosition.sub(modelWorldMatrix.mul(vec4(pos, 1)).xyz));
+  const vP = vW.sub(tW.mul(vW.dot(tW).div(tW.dot(tW).max(0.0001))));
+  const facing = nW.dot(vP).abs().div(nW.length().mul(vP.length()).max(0.0001)).clamp(0, 1);
+  const rim = inv(smoothstep(0.3, 0.46, facing));
 
-  const ang = atan2(sa, ca.add(0.0001)).div(TAU), s = uu.mul(LEN), face = smoothstep(0.55, 0.75, facing);
+  const ang = atan2(sa, ca.add(0.0001)).div(TAU), s = uu.mul(LEN), face = smoothstep(0.5, 0.7, facing);
   const run = inv(smoothstep(0, 0.05, uu.sub(c.beat.fract()).abs())).mul(step(0.001, c.kick));
   // skins on the black: 0 rim only, 1 bead rows, 2 hairline hoops sliding down
   const row = s.div(3.2).floor(), nA = low ? 4 : 6;
@@ -62,7 +65,7 @@ export function material(ctx) {
   const dark = is(float(n), step(0.5, rn(13)).add(1)).mul(step(uu, smoothstep(0.85, 0.91, u).mul(1.02)));
   const skin = mix(skinOf(m0), skinOf(m1), step(inv(uu), smoothstep(t1, t1 + 0.08, u).mul(1.02))).mul(face).mul(inv(dark));
   const drop = smoothstep(grow.sub(0.07), grow.sub(0.015), uu);
-  const rimCol = mix(A, W, 0.35).mul(run.mul(0.7).add(0.9));
-  m.colorNode = mix(mix(skin, rimCol, rim), mix(H, W, 0.55).mul(1.3), drop);
+  const rimCol = mix(A, W, run.mul(0.5)).mul(run.mul(0.6).add(1));
+  m.colorNode = mix(mix(skin, rimCol, rim), mix(H, W, 0.3).mul(1.2), drop.mul(inv(face.mul(0.6))));
   return m;
 }
