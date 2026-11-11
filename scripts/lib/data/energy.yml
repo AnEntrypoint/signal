@@ -5,7 +5,7 @@ firstBeat: 0.35
 bar: 1.5
 drops: [48.35, 84.35, 96.35, 180.35, 192.35]
 # VISION SCENES: a being's own scene holds the 16 bars that climb into a drop (Savi's pick: four a roll, 24 s each)
-visions: [[24.35, 48.35], [60.35, 84.35], [120.35, 144.35], [156.35, 180.35]]
+visions: [[36.35, 84.35], [132.35, 180.35]]   # 2026-11-11: two a roll, 48 s each (32 bars climbing into the drop), slower reveals
 bars:
   - [0.07, 0.00, 0.13]
   - [0.04, 0.00, 0.00]
