@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "basedOnSpecVersion": 443,
-  "updatedAt": "2026-11-11T12:38:19.475Z",
+  "basedOnSpecVersion": 446,
+  "updatedAt": "2026-11-11T12:39:34.548Z",
   "summary": "Signal Stage is a walkable 3D motion-graphics stage with a synchronized, seeded 198-second cinematic on the measured 160-bpm track. A shared director, score/deck clocks and shader helpers drive the stage assemblies, two long vision slots per roll, and camera-riding beings and worms.",
   "scriptPaths": [],
   "places": [
@@ -9,9 +9,9 @@
     "places/main/cells/x0z0.scene - field/eye/serpents composition and #director (scripts/stage.js); field origin and portal at (0,15,-34).",
     "places/main/cells/x0z-1.scene and x0z-3.scene - sun-eye, tunnel along -Z, chamber and far tunnel-knot stage pieces.",
     "places/main/cells/x0y2z0.scene through x0y9z0.scene - housed celestial visions above the stage; x0y8 has giving-hands, x0y9 star-jelly and star-child.",
-    "places/main/cells/x0y10z0.scene through x0y14z0.scene - added circuit-oracle, lotus-gate, twin-serpents plus weaver, owl-mask and world-turtle vision assemblies, housed at increasing +Y.",
+    "places/main/cells/x0y10z0.scene through x0y14z0.scene - circuit-oracle, lotus-gate, twin-serpents, weaver, owl-mask and world-turtle vision assemblies housed at increasing +Y.",
     "places/main/cells/objects.scene - three companion-worm meshes attached to the camera for the shared cinematic view.",
-    "places/main/cells/ - 23 scene cells and 180 placed objects; added x±3/y±2 and x±5 cells extend the cell layout around the stage."
+    "places/main/cells/ - 23 scene cells and 180 placed objects; x±3/y±2 and x±5 cells extend the cell layout around the stage."
   ],
   "roots": [
     "world.config.yaml - multiplayer services, player/camera templates, movement and cine actions, arrival, lighting, HUD and nametag.",
@@ -25,21 +25,20 @@
     "scripts/lib/deck.js - cached deterministic per-seed scene-deck deal and track-to-scene-time mapping; used by cine.js and stage.js.",
     "scripts/lib/visions.js - 16-being registry, cached seeded slot deal, vision timing/shots and measured-energy lookup; used by cine.js and stage.js.",
     "scripts/lib/data/score.yml and shots.yml - sections, layers, lens, maths, deck and authored camera keys; energy.yml holds measured track data, drops and two 48-second vision slots.",
-    "scripts/lib/trip.js - shader clocks, kick runs, seeded palette/random choices, scene/layer visibility, lens bending and vision clocks.",
+    "scripts/lib/trip.js - shared shader clocks, kick runs, seeded palette/random choices, scene/layer visibility, lens bending and vision clocks.",
     "scripts/field-lib.js, eye-lib.js, tunnel-lib.js, chamber-lib.js and chamber-fx.js - shared family-specific spatial, timing and shader helpers.",
     "scripts/sun-lib.js; scripts/serpents-data.js and serpents-curve.js - sun-eye helpers and shared serpent records/spine/frame math."
   ],
   "notableExports": [
     "scripts/player.js exports onInput, update; scripts/camera.js exports finiteNumber, update; scripts/stage.js exports update; scripts/look-trip.js exports look; scripts/ui.js exports default.",
     "scripts/lib/cine.js exports CINE, cineTime, sectionAt, rollRnd, cameraAt, beatEnv; scripts/lib/deck.js exports dealDeck, sceneTime.",
-    "scripts/lib/visions.js exports BEINGS, dealVisions, visionAt, visionShot, energyAt; scripts/lib/trip.js exports KICK_RUNS, SEC, BPS, tripClock, win, pal, stripes, HUE, shown, lens, bendUv, visionShown.",
-    "Vision *-geo modules export geometry/collider and *-mat modules export material; vision worm pairs and companion-worm-geo.js / companion-worm-mat.js provide the animated depth-winding meshes/materials.",
+    "scripts/lib/visions.js exports BEINGS, dealVisions, visionAt, visionShot, energyAt; scripts/lib/trip.js exports KICK_RUNS, SEC, BPS, SCORE, tripClock, win, pal, stripes, HUE, shown, lens, bendUv, visionShown.",
+    "Vision *-geo modules export geometry/collider and *-mat modules export material; vision worm pairs and companion-worm-geo.js / companion-worm-mat.js provide animated depth-winding meshes/materials.",
     "scripts/tunnel-lib.js exports Z0, FEET, BOUNDS, tun, inside, camDepth, v3, BLUE, base, hot, GRAPH, mirAng; tunnel-core.js, tunnel-gates.js and tunnel-ribs.js export material."
   ],
   "ownership": [
     "scripts/player.js - local movement intent/velocity and shared world.state.cine={start,by,seed} or null from cine input.",
-    "scripts/stage.js on #director - shared audio session, roll parameter propagation to trip-tagged materials/look, and vision visibility/camera attachment.",
-    "scripts/stage.js - holds bench-selected visionTest objects at home and sets their test shader clock; clears the test after its hold.",
+    "scripts/stage.js on #director - shared audio session, roll parameter propagation to trip-tagged materials/look, vision visibility/camera attachment and bench visionTest hold.",
     "scripts/camera.js / templates/camera.js - viewer-local camera pose/FOV and seeded authored shot path/move.",
     "scripts/humanoid-locomotion.js owns avatar gait/sit state; scripts/ui.js and ui/nametag.js own viewer-local presentation; place/world configs own environment and services."
   ],
@@ -49,12 +48,12 @@
     "world.state.cine + score track → #director scripts/stage.js → shared audio at c.start; director stops audio and clears/renews ended cine.",
     "energy.yml → trip.js KICK_RUNS and visions.js slot timing → stage.js seeded choice from the built BEINGS registry; vision materials receive vw0/vw1 or -1/-1.",
     "stage.js → trip-tagged material/look params t0/on/seed, kick bounds k0/k1 and dealt scene mappings ds0..ds3/dr0..dr3; look also receives current vision slot v0/v1.",
-    "stage.js + vision-<id> tags → selected vision layers and worms attach to camera at depth 74 with layer offsets; other beings return home unless held by visionTest.",
+    "stage.js + vision-<id> tags → selected being layers and worms attach to camera starting 3 s before their slot, at depth 74 with layer offsets; others return home unless held by visionTest.",
     "score.yml + deck.js → seeded scene per drop stretch → cine.js cameraAt and trip.js shader scene clock share the assigned source section/rate.",
     "cine.js cameraAt → scripts/camera.js viewer camera; dealt beings and companion worms join the camera view rather than replacing it with separate vision shots.",
-    "stage.js computes camera-shot-dependent fit scale for camera-attached vision layers so the whole being stays in front of the viewed subject; it applies the same factor to depth and scale.",
+    "stage.js computes camera-shot-dependent fit scale for camera-attached vision layers so the whole being stays in front of the viewed subject; applies the same factor to depth and scale.",
     "score.yml + trip.js tripClock/shown/lens/mask helpers → field, eye, serpents, tunnel, chamber, vision assemblies and look-trip shader timing/cutouts.",
-    "look-trip.js reads scene depth and vision v0/v1 → subject-aware depth of field and seeded kick jobs for centre pulse or near/far occlusion; no subject means no blur.",
+    "look-trip.js reads scene depth and vision v0/v1 → subject-aware depth of field and seeded kick jobs for centre pulse or near/far occlusion; no subject means no blur. Low quality skips RGB-split aberration and uses 3 rather than 9 centre depth samples.",
     "bench writer sets world.state.visionTest={being,at,seed} → stage.js holds that being at home and writes its test shader clock without changing the cine roll."
   ],
   "behaviorFamilies": [
@@ -71,9 +70,9 @@
   "migrationNotes": [
     "world.state.cine is the synchronized start/cut source; starts are scheduled 300 ms ahead. cine.js uses milliseconds for start/ctx.now() and seconds for score/shot keys.",
     "stage.js converts c.start to shader t0 seconds modulo 3600 and repeats parameter pushes over several ticks so late-built materials receive the roll; trip-tagged materials need t0/on/seed and kick bounds k0/k1.",
-    "energy.yml defines two 48-second vision slots; only built entries in BEINGS can be dealt. Vision houses are above the field in +Y and selected layers attach to the camera at depth 74.",
+    "energy.yml defines two 48-second vision slots; only built entries in BEINGS can be dealt. Vision layers attach only from 3 s before their slot; vision houses are above the field in +Y and selected layers ride the camera at depth 74.",
     "Canonical vision layer offsets are world -30, ring -12, being 0, veil +10, fore +22; stage.js derives home z from tag suffix. Worm meshes use material param n for distinct paths; they are not serpents-curve.js meshes.",
     "Camera attachment fit scales both depth and object scale together based on cameraAt(t,seed); preserve that coupling so vision layers stay in front of the shot subject without changing apparent size.",
-    "Score is 198 seconds at 160 bpm, first beat 0.35 s; idle shaders free-run the duration loop. Units are metres, +Y up, vision canvases face +Z; main composition runs from field/eye through tunnel to chamber on -Z."
+    "Vision cutout's closing edge must be expressed as 1 - smoothstep(b,b+fade,t), not reversed smoothstep edges (which produced GPU NaN). Low-quality look deliberately reduces sampling and disables aberration split."
   ]
 }
