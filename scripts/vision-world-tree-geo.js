@@ -1,5 +1,5 @@
 // THE WORLD TREE's canvas: one flat quad facing +Z, centred on the origin; all the drawing is in
-// vision-world-tree-mat.js (params.layer). params: { w, h }
+// vision-world-tree-mat.js (material params.layer). params: { w, h }
 export function geometry(ctx) {
   const w = ctx.params.w ?? 64, h = ctx.params.h ?? 40;
   ctx.quad(-w / 2, -h / 2, 0, w / 2, -h / 2, 0, w / 2, h / 2, 0, -w / 2, h / 2, 0);
