@@ -258,5 +258,11 @@ export function look(ctx) {
   const focusR = mix(mix(6, 18, pullT), float(14), vis);
   const graded = col.max(vec3(0));
   const focused = dof(graded, ctx.viewZ, focusD, focusR, low ? 3 : 6);
-  return vignette(mix(graded, focused, on), ctx.param("vignette", 0.35), { color: [0, 0, 0] });
+  // only when it means something: a being on stage, or a phrase the roll deals a focus pull (about 1 in 3),
+  // eased in and out over a bar so the pull never pops. Everything else plays sharp.
+  const ph = c.phrase.floor(), phu = c.phrase.fract();
+  const pullOn = step(0.66, ph.add(c.seed).mul(12.9898).sin().mul(43758.5453).fract())
+    .mul(smoothstep(0, 0.125, phu)).mul(smoothstep(1, 0.875, phu));
+  const dofW = on.mul(pullOn.max(vis));
+  return vignette(mix(graded, focused, dofW), ctx.param("vignette", 0.35), { color: [0, 0, 0] });
 }
