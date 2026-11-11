@@ -1,0 +1,44 @@
+# The camera's flight through the trip, seconds on the track. eye/aim in metres, fov degrees, roll degrees.
+# cut: true = a hard cut to this key (always on a phrase boundary). Layout: scripts/lib/data/score.yml.
+keys:
+  # seed: far back in the dark, drifting toward the closed Eye
+  - { t: 0,      eye: [0, 9, 70],     aim: [0, 15, -34],  fov: 28 }
+  - { t: 12.35,  eye: [0, 12, 34],    aim: [0, 15, -34],  fov: 34 }
+  # pulse: slow push, low, the rings firing at us
+  - { t: 24.35,  eye: [10, 5, 14],    aim: [0, 14, -34],  fov: 46 }
+  # bloom: rise and orbit the field as it grows
+  - { t: 30.35,  eye: [34, 14, 10],   aim: [0, 6, -10],   fov: 50 }
+  - { t: 36.35,  eye: [30, 34, -40],  aim: [0, 4, -8],    fov: 52, roll: 8 }
+  - { t: 42.35,  eye: [-32, 46, -20], aim: [0, 2, -4],    fov: 50, roll: -6 }
+  - { t: 48.35,  eye: [-10, 22, 20],  aim: [0, 15, -34],  fov: 44 }
+  # deep: line up on the pupil and sink in
+  - { t: 54.35,  eye: [0, 15.5, -14], aim: [0, 15, -60],  fov: 58 }
+  - { t: 60.35,  eye: [0, 15, -40],   aim: [0, 15, -90],  fov: 70 }
+  # flight: down the tunnel, rolling
+  - { t: 66.35,  eye: [1.5, 15.8, -104],  aim: [0, 15, -160], fov: 82, roll: 40, ease: linear }
+  - { t: 72.35,  eye: [-1.8, 14.2, -176], aim: [0, 15, -230], fov: 88, roll: -30, ease: linear }
+  - { t: 78.35,  eye: [1.2, 15.6, -250],  aim: [0, 15, -300], fov: 92, roll: 60, ease: linear }
+  - { t: 84.35,  eye: [0, 15, -332],  aim: [0, 15, -362], fov: 74, roll: 0 }
+  # hex: inside the chamber, slow turn, the hands
+  - { t: 90.35,  eye: [9, 12, -352],  aim: [0, 15, -366], fov: 60, roll: -10 }
+  - { t: 96.35,  eye: [-7, 17, -350], aim: [0, 15, -368], fov: 52, roll: 6 }
+  # reset: cut to straight overhead of the field
+  - { t: 96.36,  eye: [0, 120, 2],    aim: [0, 0, 0],     fov: 40, cut: true }
+  - { t: 108.35, eye: [0, 70, 2],     aim: [0, 0, 0],     fov: 46, roll: 45 }
+  # ascent: spiral down and in
+  - { t: 114.35, eye: [44, 40, 30],   aim: [0, 8, -10],   fov: 50, roll: 10 }
+  - { t: 120.35, eye: [38, 18, -44],  aim: [0, 12, -20],  fov: 54, roll: -12 }
+  - { t: 126.35, eye: [-36, 10, -30], aim: [0, 14, -30],  fov: 58, roll: 12 }
+  - { t: 132.35, eye: [-14, 4, 30],   aim: [0, 16, -34],  fov: 62 }
+  # peak: big sweeping orbit, low then high, then the long pull along the axis
+  - { t: 138.35, eye: [26, 3, 26],    aim: [0, 18, -34],  fov: 66, roll: -14 }
+  - { t: 144.35, eye: [48, 22, -16],  aim: [0, 14, -30],  fov: 60, roll: 10 }
+  - { t: 150.35, eye: [20, 52, -70],  aim: [0, 10, -20],  fov: 56, roll: 20 }
+  - { t: 156.35, eye: [-30, 30, -60], aim: [0, 14, -26],  fov: 60, roll: -20 }
+  - { t: 162.35, eye: [-46, 8, 4],    aim: [0, 16, -34],  fov: 64, roll: 14 }
+  - { t: 168.35, eye: [-12, 3, 40],   aim: [0, 20, -34],  fov: 70, roll: -8 }
+  - { t: 174.35, eye: [0, 15, 6],     aim: [0, 15, -34],  fov: 78, roll: 30 }
+  - { t: 180.35, eye: [0, 15, -20],   aim: [0, 15, -60],  fov: 84, roll: 0 }
+  # return: backwards out of the pupil, far away, lid closes
+  - { t: 189.35, eye: [0, 14, 40],    aim: [0, 15, -34],  fov: 40 }
+  - { t: 198,    eye: [0, 10, 90],    aim: [0, 15, -34],  fov: 26 }

@@ -23,7 +23,8 @@ export function update(ctx, dt) {
     if (!ctx.self.session.rolling) { ctx.self.session.rolling = true; ctx.self.orientation = { source: 'look', authoredAxes: ['yaw', 'pitch'] } }
     const c = cameraAt(t)
     ctx.self.feetPosition = c.eye
-    ctx.self.rotation = { lookAt: c.aim, include: ['yaw', 'pitch'] }
+    const dx = c.aim.x - c.eye.x, dy = c.aim.y - c.eye.y, dz = c.aim.z - c.eye.z
+    ctx.self.rotation = { yaw: Math.atan2(-dx, -dz) * RAD_TO_DEG, pitch: Math.atan2(dy, Math.hypot(dx, dz)) * RAD_TO_DEG, roll: c.roll }
     ctx.self.fov = c.fov
     return
   }

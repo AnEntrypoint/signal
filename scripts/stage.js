@@ -1,45 +1,34 @@
-// The director: one object moves every shape on the stage, plays the track and sets the title.
-// Shapes carry state.motion: { spin: [x, y, z] deg/s, pulse: amount, phase: beats, orbit: { r, speed, y, phase } }.
-import { CINE, cineTime, titleAt, beatEnv } from './lib/cine.js'
+// The director: starts the track on the shared clock and hands every trip shader the roll's start.
+// Nothing here moves per tick: the motion lives in the shaders (scripts/lib/trip.js).
+import { SCORE, cineTime } from './lib/cine.js'
+
+function push(ctx, t0, on) {
+  for (const o of ctx.query({ tags: ['trip'] })) {
+    const h = ctx.getObject(o.id)
+    if (h?.material?.params) { h.material.params.t0 = t0; h.material.params.on = on }
+  }
+  const a = ctx.place.atmosphere
+  if (a.look) { a.look.params ??= {}; a.look.params.t0 = t0; a.look.params.on = on }
+  a.sky ??= {}; a.sky.params ??= {}; a.sky.params.t0 = t0; a.sky.params.on = on
+}
 
 export function update(ctx, dt) {
   const t = cineTime(ctx)
-  const rolling = t != null
-  const ses = ctx.self.session
-  // the stage runs faster while the camera rolls
-  ses.rate = (ses.rate ?? 1) + ((rolling ? 2.4 : 1) - (ses.rate ?? 1)) * (1 - Math.exp(-3 * dt))
-  ses.clock = (ses.clock ?? 0) + dt * ses.rate
-  const beatClock = rolling ? t : ctx.now() / 1000
-  const amp = rolling ? 1 : 0.35
-
-  // the track: one row everyone hears from the same playhead
   const c = ctx.world.state.cine
-  if (rolling && ctx.self.state.track !== c.start) {
+  const key = t != null ? c.start : 0
+  if (ctx.self.session.key !== key || (ctx.self.session.n ?? 0) < 3) {
+    // written a few ticks running so late-built materials get it too
+    ctx.self.session.n = ctx.self.session.key === key ? (ctx.self.session.n ?? 0) + 1 : 0
+    ctx.self.session.key = key
+    push(ctx, t != null ? (c.start / 1000) % 3600 : 0, t != null ? 1 : 0)
+  }
+  if (t != null && ctx.self.state.track !== c.start) {
     ctx.self.state.track = c.start
-    ctx.self.audio = { clip: CINE.music, spatial: false, gain: 0.7, bus: 'Music', time: 0, timeAt: c.start }
-  } else if (!rolling && ctx.self.state.track) {
+    ctx.self.audio = { clip: SCORE.music, spatial: false, gain: 0.8, bus: 'Music', time: 0, timeAt: c.start }
+  } else if (t == null && ctx.self.state.track) {
     ctx.self.state.track = null
     ctx.self.audio = null
+    if (c) ctx.world.state.cine = null
   }
-
-  const title = ctx.getObject('title')
-  const line = titleAt(t)
-  if (title && title.state.line !== line) title.state.line = line
-
-  for (const o of ctx.query({ tags: ['mg'] })) {
-    const m = o.state.motion
-    if (!m) continue
-    if (m.spin) {
-      const s = ses.clock
-      o.rotation = { pitch: (m.base?.[0] ?? 0) + m.spin[0] * s, yaw: (m.base?.[1] ?? 0) + m.spin[1] * s, roll: (m.base?.[2] ?? 0) + m.spin[2] * s }
-    }
-    if (m.pulse) {
-      const k = 1 + m.pulse * amp * beatEnv(beatClock, m.phase ?? 0)
-      o.scale = (m.size ?? 1) * k
-    }
-    if (m.orbit) {
-      const a = m.orbit.phase + ses.clock * m.orbit.speed
-      o.feetPosition = { x: Math.cos(a) * m.orbit.r, y: m.orbit.y + Math.sin(a * 2) * 0.6, z: Math.sin(a) * m.orbit.r }
-    }
-  }
+  ctx.sleep(0.25)
 }

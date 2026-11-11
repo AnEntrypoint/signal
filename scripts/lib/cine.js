@@ -1,48 +1,44 @@
-// Shared reading of the shot list: the camera, the stage, the HUD all ask the same clock.
-import CINE from './data/cinematic.yml'
-export { CINE }
+// The CPU side of the same clock: camera, director and HUD ask here.
+import SCORE from './data/score.yml'
+import SHOTS from './data/shots.yml'
+export { SCORE, SHOTS }
+export const CINE = { duration: SCORE.duration, bpm: SCORE.bpm, music: SCORE.music, keys: SHOTS.keys }
 
 // Seconds into the roll, or null when nothing is rolling.
 export function cineTime(ctx) {
   const c = ctx.world.state.cine
   if (!c) return null
   const t = (ctx.now() - c.start) / 1000
-  return t >= 0 && t < CINE.duration ? t : null
+  return t >= 0 && t < SCORE.duration ? t : null
 }
-
+export function sectionAt(t) {
+  for (const name in SCORE.sections) { const [a, b] = SCORE.sections[name]; if (t >= a && t < b) return name }
+  return ''
+}
 function cr(p0, p1, p2, p3, u) {
   const u2 = u * u, u3 = u2 * u
   return 0.5 * (2 * p1 + (-p0 + p2) * u + (2 * p0 - 5 * p1 + 4 * p2 - p3) * u2 + (-p0 + 3 * p1 - 3 * p2 + p3) * u3)
 }
 function segment(t) {
-  const k = CINE.keys
+  const k = SHOTS.keys
   let i = 0
   while (i < k.length - 2 && t >= k[i + 1].t) i++
   const u = Math.min(1, Math.max(0, (t - k[i].t) / (k[i + 1].t - k[i].t)))
   return { i, u }
 }
-export function shotAt(t) { return CINE.keys[segment(t).i] }
-
-// The camera at t: a smooth spline through every key.
+// The camera at t: a spline through the keys; a key with cut: true starts a new shot (no glide into it).
 export function cameraAt(t) {
-  const k = CINE.keys
+  const k = SHOTS.keys
   const { i, u } = segment(t)
-  const a = k[Math.max(0, i - 1)], b = k[i], c = k[i + 1], d = k[Math.min(k.length - 1, i + 2)]
-  const pt = (f) => ({ x: cr(a[f][0], b[f][0], c[f][0], d[f][0], u), y: cr(a[f][1], b[f][1], c[f][1], d[f][1], u), z: cr(a[f][2], b[f][2], c[f][2], d[f][2], u) })
-  const eye = pt('eye'); eye.y = Math.max(0.4, eye.y)
-  const s = u * u * (3 - 2 * u)
-  return { eye, aim: pt('aim'), fov: b.fov + (c.fov - b.fov) * s }
+  const b = k[i], c = k[i + 1]
+  const a = i > 0 && !b.cut ? k[i - 1] : b
+  const d = i + 2 < k.length && !k[i + 2].cut ? k[i + 2] : c
+  if (c.cut) return { eye: { x: b.eye[0], y: b.eye[1], z: b.eye[2] }, aim: { x: b.aim[0], y: b.aim[1], z: b.aim[2] }, fov: b.fov, roll: b.roll ?? 0 }
+  const e = b.ease === 'linear' ? u : u * u * (3 - 2 * u)
+  const pt = (f) => ({ x: cr(a[f][0], b[f][0], c[f][0], d[f][0], e), y: cr(a[f][1], b[f][1], c[f][1], d[f][1], e), z: cr(a[f][2], b[f][2], c[f][2], d[f][2], e) })
+  return { eye: pt('eye'), aim: pt('aim'), fov: b.fov + (c.fov - b.fov) * e, roll: (b.roll ?? 0) + ((c.roll ?? 0) - (b.roll ?? 0)) * e }
 }
-
-export function titleAt(t) {
-  if (t == null) return CINE.idleTitle
-  let line = ''
-  for (const r of CINE.titles) if (t >= r.t) line = r.text
-  return line
-}
-
-// 0..1, a kick on every beat that fades before the next.
-export function beatEnv(seconds, phase = 0) {
-  const b = seconds * CINE.bpm / 60 - phase
-  return Math.exp(-(b - Math.floor(b)) * 5)
+export function beatEnv(seconds) {
+  const b = (seconds - SCORE.firstBeat) * SCORE.bpm / 60
+  return seconds < SCORE.kickFrom || seconds > SCORE.kickTo ? 0 : Math.exp(-(b - Math.floor(b)) * 4.5)
 }

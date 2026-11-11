@@ -1,0 +1,26 @@
+# The score of the trip: the creator's track, measured (160 bpm exactly, first beat 0.35 s, 4/4, bar = 1.5 s,
+# phrase = 8 bars = 12 s). Every shader, the sky, the look and the camera read these same numbers.
+music: /cdn/music-fromage-retro-synthwave-beat-0c2764y0.mp3
+bpm: 160
+firstBeat: 0.35
+duration: 198
+kickFrom: 10.85     # the kick's pickup bar
+kickTo: 190.85
+# name: [start, end] seconds. What the music does there -> what the world does.
+sections:
+  seed:    [0, 12.35]        # near silence -> black void, one point, the Eye's lid opens
+  pulse:   [12.35, 24.35]    # kick + bass, no highs -> iris rings fire outward on each beat
+  bloom:   [24.35, 48.35]    # hats, then fuller -> the dot-mandala field grows from the centre out
+  deep:    [48.35, 60.35]    # sub-bass breakdown -> dive through the pupil, slow and heavy
+  flight:  [60.35, 84.35]    # full groove -> tunnel flight, stripes racing, serpents
+  hex:     [84.35, 96.35]    # sub-bass, then a 2-bar fill dropping out at 93.35 -> hex chamber, neon line-art, hands reach
+  reset:   [96.35, 108.35]   # stripped beat -> line-art mandala from above, colour drains back in
+  ascent:  [108.35, 132.35]  # build -> every layer stacks, mirrors fold in
+  peak:    [132.35, 180.35]  # full; brightest from 156.35 -> kaleidoscope, the sun-eye drips, everything turns
+  return:  [180.35, 198]     # sub-bass, wash at 189.35, silence 192 -> pull back out, the lid closes
+# Where things stand (metres, +Y up, the viewer starts at z=+16 looking toward -Z):
+layout:
+  field:   { centre: [0, 0, 0], radius: 90 }          # the mandala field on the ground, y = 0
+  eye:     { centre: [0, 15, -34], radius: 15 }        # upright, faces +Z; pupil hole radius 5 is the tunnel mouth
+  tunnel:  { from: [0, 15, -36], to: [0, 15, -336], radius: 6 }   # straight along -Z, 300 m
+  chamber: { centre: [0, 15, -362], radius: 24 }       # hexagonal room at the tunnel's end, floor y = 3
