@@ -1,28 +1,15 @@
-// THE NIGHT OWL: one neon owl mask, bilateral, on five canvases at five depths (params.layer: world z-30 plumage scrolls,
-// ring z-12 turns, being breathes, veil z+10 sways, fore z+22 undulates). Every piece enters and leaves through one of
-// three OWL masks dealt by seed (feather strokes / iris dots / plumage scale rows), exit never the entrance's. Seed 480..501.
-// REVEAL SCHEDULE (u = visionU; one new group per bar = .031 u; in -> whole / out start -> gone):
-//  face outline line   .000 -> .14  (ALONE to .155)   out .900 -> .930
-//  beak                .155 -> .21                    out .930 -> .960
-//  face shield (black) .185 -> .26                    out .945 -> .968
-//  eyes (+tears)       .215 -> .29                    out .915 -> .945
-//  brows               .245 -> .31                    out .880 -> .910
-//  ear tufts           .275 -> .34                    out .890 -> .920
-//  feather fans        .305 -> .40                    out .865 -> .900
-//  face bead row       .335 -> .40  (owl whole ~.41)  out .895 -> .925
-//  RING bead ring+halo .365 -> .44                    out .875 -> .905
-//  WORLD plumage grow  .395 -> .55                    out .982 -> .999 (last lit)
-//  forehead diamonds   .430 -> .48                    out .845 -> .880
-//  RING sparkles       .460 -> .53                    out .855 -> .885
-//  whiskers            .490 -> .56                    out .825 -> .860
-//  beard (beads|chev.) .520 -> .59                    out .815 -> .850
-//  RING ocelli         .550 -> .61                    out .840 -> .875
-//  WORLD glyphs        .580 -> .66 stars, cartouches, crosses, feathers one by one; out .850 -> .915 piece by piece
-//  glints: fan + iris beads, fan squiggle, fan ocelli .610 -> .70   out .805 -> .870
-//  worm 1 / 2 / 3      .640 / .700 / .760 -> +.08 (worm-mat)    out .860 .. .935
-//  VEIL feather charms .670 -> .76                    out .820 -> .860
-//  FORE petals, sparks .730 -> .79                    out .800 -> .840
-//  culmination (eye spiral or figure/ground flip, ring brightens) .80 -> .86
+// THE NIGHT OWL: one bilateral neon owl mask on five canvases (params.layer: world z-30 plumage scrolls, ring z-12 turns,
+// being breathes, veil z+10 sways, fore z+22 undulates). Pieces enter/leave through one of three OWL masks dealt by seed
+// (feather strokes / iris dots / plumage scale rows), exit never the entrance's. Seeds 480..501.
+// SCHEDULE (u = visionU, one new group per bar ~.031):  element  in -> whole | out -> gone
+//  face outline .000->.14 ALONE to .155 | .90->.93     beak .155->.21 | .93->.96     shield(black) .185->.26 | .945->.968
+//  eyes .215->.29 | .915->.945   brows .245->.31 | .88->.91   tufts .275->.34 | .89->.92   fans .305->.40 | .865->.90
+//  face beads .335->.40 | .895->.925 (owl whole ~.41)   RING beads+halo .365->.44 | .875->.905
+//  WORLD plumage .395->.55 | .982->.999 LAST LIT   diamonds .43->.48 | .845->.88   RING sparkles .46->.53 | .855->.885
+//  whiskers .49->.56 | .825->.86   beard .52->.59 | .815->.85   RING ocelli .55->.61 | .84->.875
+//  WORLD glyphs .58->.66 one by one | .85->.915   glints (fan/iris beads, squiggle, ocelli) .61->.70 | .805->.87
+//  worms (worm-mat) .64/.70/.76 ->+.08 | .86..   VEIL charms .67->.76 | .82->.86   FORE petals .73->.79 | .80->.84
+//  culmination .80->.86: eye spirals or figure/ground flip, ring brightens
 import { MeshBasicNodeMaterial, AdditiveBlending, DoubleSide } from "builtin/three";
 import { positionGeometry, float, vec2, vec3, smoothstep, step, mix, atan2, fwidth, select } from "builtin/tsl";
 import { tripClock, visionShown, visionU, climb, maskDraw, maskBeads, maskIris, inv, is, sgn, strokeAA } from "./lib/trip.js";
@@ -43,6 +30,7 @@ function tear(q, r, L) {
   const t = qx.mul(s).add(qy.mul(co)), line = qx.mul(co).sub(qy.mul(s));
   return select(t.lessThan(L * co), select(t.lessThan(0), vec2(qx, qy).length(), line), q.length().sub(r));
 }
+const cd = (k, w, y) => cd(k, w, y);
 const four = (d, sz) => d.x.abs().div(sz).sqrt().add(d.y.abs().div(sz).sqrt());
 
 export function material(ctx) {
@@ -92,7 +80,7 @@ export function material(ctx) {
     const lead = de.sub(Rg), ri = lead.div(5).floor(), rc = Rg.add(ri.add(0.5).mul(5));
     const nc = rc.mul(TAU / 7).max(6).floor();
     const kc = ang.div(TAU).mul(nc).add(ri.mul(0.5));
-    const cd = vec2(kc.fract().sub(0.5).mul(rc.mul(TAU).div(nc)), lead.sub(ri.add(0.5).mul(5))).length();
+    const cdd = vec2(kc.fract().sub(0.5).mul(rc.mul(TAU).div(nc)), lead.sub(ri.add(0.5).mul(5))).length();
     const sr = float(3.3).sub(ri.mul(0.8)), band = step(0, lead).mul(step(lead, 15));
     const scale = step(cd, sr).mul(band);
     const cover = step(de, Rg).max(scale).mul(step(0.0005, grow)).mul(wg);
@@ -106,7 +94,7 @@ export function material(ctx) {
     const front = c.beat.fract().mul(130), kl = smoothstep(6, 0, de.sub(front).abs()).mul(kickOn).mul(smoothstep(130, 60, front));
     [44, 64].forEach((R, j) => {
       const n = Math.round(R * TAU / 5), k = ang.div(TAU).mul(n).add(c.real.mul(0.02 * (j ? -1 : 1)));
-      const bd = vec2(k.fract().sub(0.5).mul(R * TAU / n), de.sub(R)).length();
+      const bd = cd(k, R * TAU / n, de.sub(R));
       col = col.add(mix(B, H, kl).mul(stroke(bd, 0.45)).mul(float(0.35).add(kl)).mul(maskBeads(grow.mul(1.6).sub(0.6 + j * 0.15).clamp(0, 1), k.fract())));
     });
     const sw = sense(12), pst = io(0.58, 0.63, 0.85, 0.88), pca = io(0.6, 0.65, 0.87, 0.9), pcr = io(0.62, 0.66, 0.885, 0.915), pfe = io(0.63, 0.66, 0.86, 0.89);
@@ -266,7 +254,7 @@ export function material(ctx) {
   const face = step(sdH, 0).mul(maskIris(pBody, q.length().div(26)));
   put(A.mul(1.1), stroke(sdH.abs(), 0.3).mul(maskDraw(pLine, ah)));
   const hk = ah.mul(PI * 21 / 2.4);
-  put(mix(H2, W, 0.2), stroke(vec2(hk.fract().sub(0.5).mul(2.4), sdH.add(2.2)).length(), 0.55).mul(maskBeads(pLb, ah)).mul(step(0.08, ah)));
+  put(mix(H2, W, 0.2), stroke(cd(hk, 2.4, sdH.add(2.2)), 0.55).mul(maskBeads(pLb, ah)).mul(step(0.08, ah)));
   // ear tufts: nested teardrops leaning outward, drawn from the head up
   const tq0 = vec2(ax.sub(13), q.y.sub(17)), Dx = 0.47, Dy = 0.88;
   const tl = vec2(tq0.x.mul(-Dy).add(tq0.y.mul(Dx)), tq0.x.mul(Dx).add(tq0.y.mul(Dy)).negate());
@@ -293,7 +281,7 @@ export function material(ctx) {
   const kd = ea.add(c.real.mul(0.35).mul(s4)).div(TAU).mul(14).fract();
   put(H, stroke(er.sub(7.0).abs(), 0.32).mul(step(kd, 0.55)).mul(eon));
   const kb = ea.sub(c.real.mul(0.22).mul(s4)).div(TAU).add(0.5).mul(18);
-  put(H2, stroke(vec2(kb.fract().sub(0.5).mul(er.mul(TAU / 18)), er.sub(5.7)).length(), 0.5).mul(maskBeads(pIb, kb.floor().div(18))).mul(eon));
+  put(H2, stroke(cd(kb, er.mul(TAU / 18), er.sub(5.7)), 0.5).mul(maskBeads(pIb, kb.floor().div(18))).mul(eon));
   const pa = atan2(pc.y, pc.x.mul(sx));
   const spokes = step(pa.div(TAU).mul(16).fract(), 0.4).mul(step(2.7, pr)).mul(step(pr, 4.3));
   put(A.mul(1.1), spokes.mul(eon));
@@ -353,10 +341,10 @@ export function material(ctx) {
   put(A.mul(1.1), stroke(fr.sub(Re).abs(), 0.24).mul(inA).mul(fanG));
   put(mix(H, H2, fk.floor().mod(2)).mul(0.8), stroke(off, 0.12).mul(fan).mul(step(9, fr)).mul(step(fr, Re.sub(7))));
   const fbk = fr.div(3);
-  put(mix(H, H2, fk.floor().mod(2)), stroke(vec2(fbk.fract().sub(0.5).mul(3), off).length(), 0.6).mul(fan).mul(step(11, fr)).mul(step(fr, Re.sub(7))).mul(maskBeads(pFb, fr.div(Re))));
+  put(mix(H, H2, fk.floor().mod(2)), stroke(cd(fbk, 3, off), 0.6).mul(fan).mul(step(11, fr)).mul(step(fr, Re.sub(7))).mul(maskBeads(pFb, fr.div(Re))));
   const arcSq = step(0.5, rn(17));
   const ak = fa.mul(26).div(2.2);
-  put(mix(B, W, 0.3), stroke(vec2(ak.fract().sub(0.5).mul(2.2), fr.sub(26)).length(), 0.55).mul(fan).mul(maskBeads(pFb, fa.div(A0).mul(0.5).add(0.5))));
+  put(mix(B, W, 0.3), stroke(cd(ak, 2.2, fr.sub(26)), 0.55).mul(fan).mul(maskBeads(pFb, fa.div(A0).mul(0.5).add(0.5))));
   const sqR = float(34).add(fa.div(cell).mul(TAU * 2).sin().mul(1.1));
   put(mix(H2, B, arcSq), stroke(fr.sub(sqR).abs(), 0.18).mul(fan).mul(maskDraw(pSq, fa.div(A0).mul(0.5).add(0.5))));
   const oc = vec2(fr.sub(Re.sub(4.5)), off).length();
