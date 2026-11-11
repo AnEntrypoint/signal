@@ -13,10 +13,12 @@ export function material(ctx) {
   const pl = positionLocal, d = float(LZ).sub(pl.z);
   // mirror pair: angle a and 0.5 - a
   const nh = c.pick(39, 3).add(2), pitch = mix(40, 90, c.rnd(39));
-  const a0 = d.div(pitch).add(c.phrase.mul(c.dir).div(8)).add(k.div(nh));
+  // own clock: free and slow, 48..96 s a turn, against the roll's sense (the gates step on the bar the other way)
+  const a0 = d.div(pitch).sub(c.sec.mul(c.dir).div(mix(48, 96, c.rnd(35)))).add(k.div(nh));
   const ang = mix(a0, float(0.5).sub(a0), step(3.5, i)).mul(6.2831853);
   const cs = ang.cos(), sn = ang.sin(), px = pl.x, py = pl.y.sub(LY);
-  const ps = pinch(c, d).s;
+  // interleave: the helix swells and narrows on the gate pitch, so it runs outside one gate's ring and inside the next
+  const ps = pinch(c, d).s.mul(float(1).add(d.sub(3).mul(3.14159265 / 6).cos().mul(0.085)));
   m.positionNode = vec3(px.mul(cs).sub(py.mul(sn)).mul(ps), px.mul(sn).add(py.mul(cs)).mul(ps).add(LY), pl.z);
   const keep = varying(step(k, nh.sub(0.5)));
   const vi = varying(i), vk = varying(k);

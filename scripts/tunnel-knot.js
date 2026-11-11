@@ -1,5 +1,5 @@
 // ribbon-knot: one fat striped ribbon tied as a (p,q) torus knot (p,q dealt by c.pick 31), hanging in the tunnel's
-// far mouth, turning about the axis once in 72 s (sense c.dir). Graphite at rest; a lit window travels along the
+// far mouth, threading through the core's ring plane (half its loops before the rings, half behind), turning once in 48..96 s against c.dir. Graphite at rest; a lit window travels along the
 // ribbon, the kick's ripple leaves its centre; stripe count and two-tone (colour/black or colour/white) by c.pick 32.
 import { float, vec3, floor, fract, abs, max, min, mod, step, smoothstep, select, mix, length, cross, normalize, varying, positionGeometry } from "builtin/tsl";
 import { MeshBasicNodeMaterial, DoubleSide } from "builtin/three";
@@ -19,7 +19,7 @@ export function material(ctx) {
   const n0 = vec3(cq.mul(cp), cq.mul(sp), sq);
   const b = normalize(cross(T, n0)), n = normalize(cross(b, T));
   const P = K.add(b.mul(ct).mul(0.95)).add(n.mul(st).mul(0.24));
-  const th = c.sec.mul(c.dir).mul(6.2831853 / 72), ca = th.cos(), sa = th.sin();
+  const th = c.sec.mul(c.dir).negate().mul(6.2831853).div(mix(48, 96, c.rnd(31))), ca = th.cos(), sa = th.sin();
   m.positionNode = vec3(P.x.mul(ca).sub(P.y.mul(sa)), P.x.mul(sa).add(P.y.mul(ca)).add(6), P.z);
   const vr = varying(length(P.xy));
   // stripes across the ribbon, colour running along it inside the family
