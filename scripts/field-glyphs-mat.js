@@ -4,7 +4,7 @@
 import { positionLocal, attribute, uv, float, vec2, vec3, length, fwidth, smoothstep, select, mix, varying, max, min, atan2 } from "builtin/tsl";
 import { MeshBasicNodeMaterial } from "builtin/three";
 import { tripClock, shown } from "./lib/trip.js";
-import { endFade, colours, breath, mirrorTurn, kickAt, lit, shade, roll, choose } from "./field-lib.js";
+import { endFade, colours, mirrorTurn, kickAt, lit, shade, roll, choose } from "./field-lib.js";
 
 const TAU = 6.2831853, CP = Math.cos(0.96), SP = Math.sin(0.96);
 
@@ -25,11 +25,12 @@ export function material(ctx) {
   const hw = select(isPill, float(1.9), float(1)), hh = select(isPill, float(0.78), float(1));
   const ang = card.y.add(side.mul(c.dir).mul(c.sec).mul(rate.mul(TAU)));
   const rad = card.x.mul(spread);
-  const y = card.z.mul(lift).min(13).add(c.sec.mul(TAU / 12).add(idx.mul(0.7)).sin().mul(0.6));
+  const bobT = choose(c, 28, [9, 16.8, 21]); // the cartouches' own clock, apart from the field's 12 s breath
+  const y = card.z.mul(lift).min(13).add(c.sec.mul(TAU).div(bobT).add(idx.mul(0.7)).sin().mul(0.6));
   const sz = card.w.mul(kickAt(c, rad).mul(0.08).add(1));
   const lx = positionLocal.x.mul(hw).mul(sz).mul(side), ly = positionLocal.y.mul(hh).mul(sz);
   const m = new MeshBasicNodeMaterial();
-  m.positionNode = vec3(lx, ly.mul(CP), ly.mul(-SP)).add(vec3(ang.cos().mul(rad), y, ang.sin().mul(rad))).mul(breath(c.sec));
+  m.positionNode = vec3(lx, ly.mul(CP), ly.mul(-SP)).add(vec3(ang.cos().mul(rad), y, ang.sin().mul(rad)));
 
   // ---- the face ----
   const vHw = varying(hw), vHh = varying(hh), vG = varying(g), vPill = varying(pillK), vI = varying(idx);
