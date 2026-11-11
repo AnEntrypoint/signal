@@ -1,12 +1,10 @@
 import { float, positionWorld, length, vec3, select } from "builtin/tsl";
-import { material as mm } from "./field-mandala.js";
+import { MeshBasicNodeMaterial } from "builtin/three";
 import { tripClock, shown } from "./lib/trip.js";
-import { growR } from "./field-lib.js";
 export function material(ctx) {
-  const m = mm(ctx);
+  const m = new MeshBasicNodeMaterial();
   const c = tripClock(ctx), r = length(positionWorld.xz);
-  const a = shown(c, "field", r.div(90)), g = growR(c.sec).div(91);
-  m.colorNode = vec3(a, g, c.sec.div(198));
-  m.opacityNode = float(1); m.alphaTest = 0;
+  const a = shown(c, "field", r.div(90));
+  m.colorNode = vec3(a, c.sec.div(10).floor().div(20), c.on);
   return m;
 }
