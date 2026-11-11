@@ -4,7 +4,7 @@
 import { float, vec2, vec3, floor, fract, abs, max, atan2, mod, step, smoothstep, mix, length, varying, positionLocal, positionGeometry, instanceIndex } from "builtin/tsl";
 import { MeshBasicNodeMaterial } from "builtin/three";
 import { tripClock, stripes } from "./lib/trip.js";
-import { inside, LY, LZ, GRAPH, fam, light , cut, panels } from "./tunnel-lib.js";
+import { inside, LY, LZ, GRAPH, fam, light, cut, pinch } from "./tunnel-lib.js";
 
 export function material(ctx) {
   const m = new MeshBasicNodeMaterial();
@@ -12,10 +12,13 @@ export function material(ctx) {
   const i = float(instanceIndex), dir = step(3.5, i).mul(2).sub(1), k = mod(i, 4);
   const pl = positionLocal, d = float(LZ).sub(pl.z);
   // mirror pair: angle a and 0.5 - a
-  const a0 = d.div(60).add(c.phrase.div(8)).add(k.mul(0.25));
+  const nh = c.pick(39, 3).add(2), pitch = mix(40, 90, c.rnd(39));
+  const a0 = d.div(pitch).add(c.phrase.mul(c.dir).div(8)).add(k.div(nh));
   const ang = mix(a0, float(0.5).sub(a0), step(3.5, i)).mul(6.2831853);
   const cs = ang.cos(), sn = ang.sin(), px = pl.x, py = pl.y.sub(LY);
-  m.positionNode = vec3(px.mul(cs).sub(py.mul(sn)), px.mul(sn).add(py.mul(cs)).add(LY), pl.z);
+  const ps = pinch(c, d).s;
+  m.positionNode = vec3(px.mul(cs).sub(py.mul(sn)).mul(ps), px.mul(sn).add(py.mul(cs)).mul(ps).add(LY), pl.z);
+  const keep = varying(step(k, nh.sub(0.5)));
   const vi = varying(i), vk = varying(k);
   const g = positionGeometry, dg = float(LZ).sub(g.z);
   const isBead = step(0.3, length(g.xy.sub(vec2(5.5, LY))));
@@ -34,7 +37,7 @@ export function material(ctx) {
   const beadLit = mix(F.hot(bj.add(vk)), F.a, step(0.27, bz));
   const beadCol = mix(GRAPH.mul(1.6), beadLit, max(chase, L.mul(0.5))).mul(float(1).sub(step(0.19, bz).mul(step(bz, 0.27))));
   m.colorNode = mix(tube, beadCol, isBead).mul(smoothstep(192, 186, c.sec));
-  m.opacityNode = inside().mul(cut(c));
+  m.opacityNode = inside().mul(cut(c)).mul(keep); // 2, 3 or 4 mirrored pairs, dealt by c.pick 39
   m.alphaTest = 0.5;
   m.fog = false;
   return m;

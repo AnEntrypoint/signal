@@ -13,7 +13,7 @@ function annulus(ctx, r0, r1, z, n) {
 export function geometry(ctx) {
   const kind = ctx.params.kind || "wall";
   if (kind === "wall") {
-    const N = 96, M = 200, R = 6; // fine enough for the throat's pinch and the orb domes' bulge
+    const lod = ctx.lod || 1, N = lod >= 4 ? 48 : 96, M = lod >= 4 ? 40 : 200, R = 6; // fine enough for the throat's pinch and the orb domes' bulge
     for (let j = 0; j < M; j++) {
       const zn = 150 - (j / M) * 300, zf = 150 - ((j + 1) / M) * 300;
       for (let i = 0; i < N; i++) {
@@ -65,7 +65,7 @@ export function geometry(ctx) {
   }
   if (kind === "knot") {
     // the ribbon knot: a (s, cos t, sin t) grid the material ties into a (p,q) torus knot (p,q dealt by the seed)
-    const U = 720, V = 12;
+    const lod = ctx.lod || 1, U = lod >= 3 ? 240 : 720, V = lod >= 3 ? 6 : 12;
     for (let j = 0; j < U; j++) {
       const s0 = j / U, s1 = (j + 1) / U;
       for (let i = 0; i < V; i++) {
