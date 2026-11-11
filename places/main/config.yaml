@@ -11,18 +11,21 @@ atmosphere:
   moon:
     enabled: false
   sky:
-    kind: realistic
-    model: hosek
+    kind: color
+    color: "#000000"
   stars:
-    density: 0.25
-    enabled: true
-    milkyWay: 0
+    enabled: false
   timeOfDay: 0
   wind:
     direction: 230
     speed: 2
   ambient:
-    light: {color: "#201838", intensity: 0.25}
+    light: {color: "#000000", intensity: 0}
+  environmentIntensity: 0
+  hemisphere:
+    groundColor: "#000000"
+    intensity: 0
+    skyColor: "#000000"
 defaultSpawnPoint:
   x: 0
   y: 0.1
