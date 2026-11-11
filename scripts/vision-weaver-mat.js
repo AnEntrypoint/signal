@@ -165,8 +165,8 @@ export function material(ctx) {
     });
     // cover: filled web cells, plus loose dew glimmering frame-wide from u 0; no quad edge: it thins into crossing dots
     const seedB = step(bd, br).mul(maskBeads(u.div(0.3).add(0.06).clamp(0, 1), hx)).mul(step(hx, pOut.mul(1.02))).mul(step(0.002, pOut));
-    const eE = vec2(P.x.div(152), P.y.div(84)).length();
-    const edge = step(bd, mix(float(0.85), float(0), smoothstep(0.66, 0.98, eE)).mul(pit));
+    const e2 = vec2(P.x.div(154), P.y.div(86)), e4 = e2.mul(e2).mul(e2).mul(e2), eE = e4.x.add(e4.y).max(0.000001).sqrt().sqrt();
+    const edge = step(bd, mix(float(0.85), float(0), smoothstep(0.78, 0.99, eE)).mul(pit));
     m.colorNode = col;
     m.opacityNode = gate.max(seedB).mul(edge).mul(live);
     m.alphaTest = 0.5;
