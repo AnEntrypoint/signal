@@ -1,42 +1,21 @@
-// THE MOON MOTHER (vision being BEINGS[1]): a crescent bowl cradling two sleeping profiles face to face, whose
-// black between is a chalice (Rubin's vase), under an arc of 13 moons from new through full to new.
-// ONE SCENE, FIVE LAYERS at five depths, one script (params.layer, baked), each on its OWN motion:
-//   "world" z -30  SCROLLS   the tide: bead-row waves that rise and fall with the 13 moon phases, a moon glade,
-//                            and a sky of constellations joined by nib-drawn lines. Opaque black; it grows from her
-//                            centre outward as water ripples and so replaces the running scene ring by ring.
-//   "ring"  z -12  TURNS     the lunar month: two line rings + 28 day-beads one way, 13 little crescents the other (soft, additive)
-//   "being" z   0  BREATHES  a black new moon first, then profiles, 13 phase-moons, the crescent bowl, eyes, stars;
-//                            the Rubin flip: faces lit / chalice lit, the light poured from one into the other
-//   "veil"  z +10  DRIFTS    moths (two mirrored bead wings, solid black) rising from the water
-//   "fore"  z +22  UNDULATES small spray crescents bobbing on a travelling swell along the bottom corners
-//   the tide EELS are real 3D tubes winding in depth: scripts/vision-moon-mother-worm-geo.js / -worm-mat.js
-// being / veil / fore / world are CUTOUT (alphaTest, depth-writing): a near shape hides what is behind it.
-// THE SCORE (u = 0..1 of the slot): 0 new moon + dotted rim / .08 profiles / .12 moons / .2 crescent / .25 world ripples out /
-// .4 ring, .48 counter ring / .5 eyes, constellations, sparkle stars, profile beads / .6 eels, .62 moths / .7 the flip /
-// .84 eyes open, chalice fills, one eel goes dark / .93.. everything leaves last-in first-out through its own mask.
-// Seed channels 220..239: 0 hue family, 1 profile gap, 2 moon order, 3 chalice content, 4 moth count, 5 ring speed,
-// 6 ring sense, 7 eel count, 8 eel look order, 9 flip variant, 10 sky tilt, 11 sky drift sense, 12 tide scroll sense,
-// 13 which eel goes dark, 14-16 sparkle stars, 17 hot accent, 18 comet speed.
+// THE MOON MOTHER: crescent bowl cradling two sleeping profiles (Rubin chalice) under 13 phase moons; layers world/ring/being/veil/fore by params.layer; seed ch 220-252.
+// Entrances and exits are phase-crescent cells waxing/waning (ch 250-252); the world stays lit to the seam.
 import { MeshBasicNodeMaterial, AdditiveBlending, DoubleSide } from "builtin/three";
 import { positionGeometry, float, vec2, vec3, smoothstep, step, mix, atan2, fwidth, select } from "builtin/tsl";
-import { tripClock, visionShown, visionU, climb, maskDraw, maskBeads, maskIris, nib, stripes } from "./lib/trip.js";
+import { tripClock, visionShown, visionU, climb, maskDraw, maskBeads, maskIris, nib, stripes, inv, is } from "./lib/trip.js";
 
 const TAU = 6.28318, S = 1.5;
 const DEPTH = { world: 104, ring: 86, being: 74, veil: 64, fore: 52 };
 const CY = -3, R = 11, ARC = 15, RM = 1.35, STEP = (210 / 12) * Math.PI / 180;
-// her profile, right half (mirrored at x = 0): hair, forehead, brow, nose, lips, chin, neck
 const FACE = [[10.4, 6.0], [9.2, 8.0], [7.2, 8.7], [5.4, 7.6], [4.2, 6.2], [3.5, 4.4], [3.4, 3.6], [3.8, 2.8], [2.1, 0.6], [2.3, 0.1],
   [3.2, -0.2], [2.9, -1.0], [3.3, -1.5], [2.9, -2.3], [3.5, -3.1], [3.0, -4.3], [3.6, -5.0], [4.8, -5.6], [5.6, -7.4]].map(([x, y]) => [x * 0.9, y * 0.9 + CY]);
 const EYE = [4.9 * 0.9, 2.5 * 0.9 + CY];
-// the sky (world metres, right half, mirrored): three constellations, stars joined in order
 const SKY = [
   [[50, 44], [60, 52], [72, 47], [81, 56], [94, 51], [101, 40]],
   [[66, 20], [76, 29], [88, 25], [98, 32], [110, 23], [105, 10]],
   [[26, 62], [35, 53], [45, 59], [42, 47], [53, 40]],
 ];
 
-const is = (v, i) => step(v.sub(i).abs(), 0.5);
-const inv = (x) => float(1).sub(x);
 function polyline(q, pts) {
   const L = [0];
   for (let i = 1; i < pts.length; i++) L.push(L[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
@@ -70,26 +49,42 @@ export function material(ctx) {
   const cyL = CY * S * DEPTH[layer] / 74;                       // her centre, in this layer's metres
   const live = visionShown(ctx, c, 0);
   const kickOn = step(0.001, c.kick);
-  // the month's pointer: one moon every two beats, round the 13; the tide is that moon's fullness
   const mp = c.real.div(9.75).fract().mul(13);
   const tide = inv(mp.sub(6.5).abs().div(6.5));
   const cul = io(0.84, 0.9, 0.93, 0.96).mul(climb(c).mul(0.4).add(0.6));
   const m = new MeshBasicNodeMaterial();
   m.side = DoubleSide;
+const sv = pk(32, 3), cdir = (h) => { const a = h.mul(TAU).mul(is(sv, 2)).add(is(sv, 1).mul(1.5708)); return vec2(a.cos(), a.sin()); };
+const SHAPE = (l, lp, h) => { const r = mix(0.42, 0.75, lp); return step(l.length(), r).mul(step(r, l.sub(cdir(h).mul(lp.mul(2.2).mul(r))).length())); };
+const GQ = P.sub(vec2(0, cyL)).mul(74 / (DEPTH[layer] ?? 74));
+const low = ctx.quality === "low";
+const GL = { world: [6, 85, 0, 0.3], ring: [3.5, 42, 0.3, 0.45, 0.88, 0.97], being: [2.2, 22, 0, 0.32, 0.86, 0.96], veil: [4, 50, 0.55, 0.7, 0.83, 0.91], fore: [4, 60, 0.6, 0.75, 0.8, 0.88] }[layer] ?? [2.2, 22, 0, 0.32, 0.86, 0.96];
+const cellsOf = (Q, cs, p, v, salt) => {
+const rr = Q.length(), rf = rr.div(cs), ri = rf.floor(), n = ri.add(0.5).mul(TAU).floor().max(1);
+const af = atan2(Q.y, Q.x).div(TAU).add(0.5).add(ri.mul(0.618)).fract().mul(n), ai = af.floor();
+const l = vec2(af.fract().sub(0.5), rf.fract().sub(0.5));
+const h = ri.mul(12.9898).add(ai.mul(78.233)).add(salt).sin().mul(43758.5453).fract();
+const kr = rr.div(GL[1]).clamp(0, 1);
+const k = kr.mul(0.85).add(h.mul(0.15)).mul(is(v, 0)).add(h.mul(is(v, 1))).add(ai.div(n).mul(0.7).add(kr.mul(0.3)).mul(is(v, 2)));
+const lp = float(p).sub(k.mul(0.75)).div(0.25).clamp(0, 1);
+return SHAPE(l, lp, h).max(step(0.999, lp)).mul(step(0.001, lp));
+};
+const SLOT = ctx.param("vw1", -1).sub(ctx.param("vw0", -1)).max(1);
+const gCs = rn(33).mul(0.45).add(0.8).mul(GL[0]);
+const gIn = cellsOf(GQ, gCs, smoothstep(GL[2], GL[3], u), pk(30, 3), 1.7);
+const gOut = cellsOf(GQ, gCs.mul(1.2), inv(layer === "world" ? smoothstep(inv(float(0.4).div(SLOT)), 1, u) : smoothstep(GL[4], GL[5], u)), pk(31, 3), 5.3);
+const G = gIn.mul(gOut);
 
-  // ------------------------------------------------------------------ WORLD: the tide and the sky (scrolls)
   if (layer === "world") {
     const aa = fwidth(P.x).mul(1.2).max(0.02);
     const stroke = (d, w) => inv(smoothstep(float(w), aa.add(w), d));
     const q0 = P.sub(vec2(0, cyL)), ax = P.x.abs();
     const de = vec2(q0.x.div(1.5), q0.y).length();
-    // coverage: black water spreading from her as ripples, the front broken into thinning rings
-    const grow = io(0.25, 0.45, 0.955, 0.995), Rg = grow.mul(118), lead = de.sub(Rg);
+    const grow = io(0.0, 0.3, 2, 3), Rg = grow.mul(118), lead = de.sub(Rg);
     const rings = step(lead.div(5).fract(), float(0.55).sub(lead.div(15).mul(0.5))).mul(step(lead, 15)).mul(step(0, lead));
     const cover = step(de, Rg).max(rings).mul(step(0.004, grow));
     const front = c.beat.fract().mul(110);
     const kl = smoothstep(5, 0, de.sub(front).abs()).mul(kickOn).mul(smoothstep(110, 50, front));
-    // the tide: rows of beads, nearer rows wider apart, bigger and faster; the whole sea lifts with the moon
     const yH = float(-18).add(tide.mul(5));
     const v = yH.sub(P.y).max(0);
     const ri = v.sqrt().mul(1.6).floor();
@@ -103,11 +98,10 @@ export function material(ctx) {
     const horizon = stroke(P.y.sub(yH).abs(), 0.07).mul(step(ax.div(3).fract(), 0.6));
     let col = mix(mix(A, B, ri.mod(2)), W, glade.mul(0.8)).mul(bead).mul(float(0.3).add(tide.mul(0.3)).add(kl.mul(0.7)).add(glade.mul(0.5)));
     col = col.add(A.mul(horizon).mul(0.5));
-    // the sky: constellations, slowly wheeling about a pole; stars are placed first, then a nib joins them
     const th = rn(10).sub(0.5).mul(0.8).add(c.real.mul(0.004).mul(sense(11)));
     const sq = vec2(ax, P.y.sub(10)), cs = th.cos(), sn = th.sin();
     const sk = vec2(sq.x.mul(cs).sub(sq.y.mul(sn)), sq.x.mul(sn).add(sq.y.mul(cs)).add(10));
-    const pst = io(0.5, 0.62, 0.94, 0.96), pln = io(0.56, 0.7, 0.93, 0.95);
+    const pst = io(0.5, 0.62, 2, 3), pln = io(0.56, 0.7, 2, 3);
     const above = step(yH.add(1), P.y);
     let lines = float(0), nibs = float(0), stars = float(0), n = 0;
     SKY.forEach((pts, j) => {
@@ -123,12 +117,11 @@ export function material(ctx) {
     });
     col = col.add(A.mul(lines).mul(0.45).add(W.mul(nibs).mul(1.2)).mul(inv(stars)).add(mix(B, W, 0.7).mul(stars).mul(float(0.8).add(kl))).mul(above));
     m.colorNode = col;
-    m.opacityNode = cover.mul(live);
+    m.opacityNode = cover.mul(live).mul(G);
     m.alphaTest = 0.5;
     return m;
   }
 
-  // ------------------------------------------------------------------ RING: the lunar month (turns, soft)
   if (layer === "ring") {
     const aa = fwidth(P.x).mul(1.2).max(0.02);
     const q0 = P.sub(vec2(0, cyL)), rr = q0.length();
@@ -147,7 +140,6 @@ export function material(ctx) {
     const db = vec2(loc, rr.sub(38.5)).length();
     const rad = mix(float(0.42), float(0.75), quarter);
     const bead = inv(smoothstep(rad.sub(blur), rad, db)).mul(maskBeads(pb, k));
-    // the counter ring: 13 small crescents turning the other way, each at its own phase
     const an2 = atan2(q0.y, q0.x).div(TAU).sub(rot.mul(1.7)).fract().mul(13);
     const i2 = an2.floor(), lx = an2.fract().sub(0.5).mul(TAU * 32.5 / 13), ly = rr.sub(32.5);
     const off = i2.div(12).mul(2).sub(1).mul(1.5);
@@ -155,21 +147,20 @@ export function material(ctx) {
     const dash = stroke(rr.sub(32.5).abs(), 0.04).mul(step(vec2(lx, ly).length(), 4.5)).mul(step(1.8, lx.abs())).mul(maskDraw(pc, k));
     const lit = float(0.4).add(cul.mul(0.45)).add(kl.mul(0.8));
     m.colorNode = A.mul(l1.add(l2).mul(lit)).add(mix(B, W, quarter).mul(bead).mul(lit.add(0.2))).add(mix(B, W, 0.5).mul(cr).mul(lit.add(0.1))).add(B.mul(dash).mul(0.35));
-    m.opacityNode = live;
+    m.opacityNode = live.mul(G);
     m.transparent = true;
     m.blending = AdditiveBlending;
     m.depthWrite = false;
     return m;
   }
 
-  // ------------------------------------------------------------------ VEIL: moths rising from the water (drifts)
   if (layer === "veil") {
     const aa = fwidth(P.x).mul(1.2).max(0.02);
     const ax = P.x.abs(), nM = pk(4, 3).add(3);
     const fold = inv(smoothstep(0.935, 0.96, u));                          // they leave by folding their wings
     let col = vec3(0), cover = float(0);
     const LANE = [2, 0, 3, 1, 4];
-    for (let j = 0; j < 5; j++) {
+    for (let j = 0; j < (low ? 3 : 5); j++) {
       const age = u.sub(0.62 + j * 0.04).mul(24);
       const yj = float(-50).add(age.mul(7 + j * 0.8));
       const xj = float(27 + LANE[j] * 8.5).add(age.mul(0.7).add(j * 2.1).sin().mul(3));
@@ -192,19 +183,16 @@ export function material(ctx) {
       col = mix(col, cj, cv); cover = cover.max(cv);
     }
     m.colorNode = col;
-    m.opacityNode = cover.mul(live);
+    m.opacityNode = cover.mul(live).mul(G);
     m.alphaTest = 0.5;
     return m;
   }
 
-  // ------------------------------------------------------------------ FORE: spray crescents bobbing on the swell (undulates)
-  // small near details only (the eels are real 3D bodies: vision-moon-mother-worm-*): little black moons riding a
-  // travelling swell along the bottom corners, each waxing from new to a lit crescent as it arrives, waning to leave
   if (layer === "fore") {
     const aa = fwidth(P.x).mul(1.2).max(0.01);
     const ax = P.x.abs(), pin = io(0.6, 0.8, 0.93, 0.955);
     let col = vec3(0), cover = float(0);
-    for (let j = 0; j < 5; j++) {
+    for (let j = 0; j < (low ? 3 : 5); j++) {
       const xj = c.real.mul(0.02 * (1 + j * 0.3)).mul(sense(12)).add(j * 0.21).fract().mul(34).add(22);
       const yj = xj.mul(0.16).sub(c.real.mul(0.7)).add(j * 1.9).sin().mul(3.2).add(-25 + (j % 2) * 5);
       const rad = 0.9 + (j % 3) * 0.35;
@@ -215,12 +203,11 @@ export function material(ctx) {
       col = mix(col, mix(B, W, 0.6).mul(lit).mul(float(0.8).add(cul.mul(0.3))), disc); cover = cover.max(disc);
     }
     m.colorNode = col;
-    m.opacityNode = cover.mul(live);
+    m.opacityNode = cover.mul(live).mul(G);
     m.alphaTest = 0.5;
     return m;
   }
 
-  // ------------------------------------------------------------------ THE BEING (breathes)
   const p = P.div(c.real.mul(TAU / 7).sin().mul(0.02).add(1).mul(S));
   const aa = fwidth(p.x).mul(1.2).max(0.008);
   const q0 = p.sub(vec2(0, CY)), rr = q0.length();
@@ -231,7 +218,6 @@ export function material(ctx) {
   const add = (colour, mask) => { col = col.add(colour.mul(mask)); cover = cover.max(mask); };
   const solid = (mask) => { col = col.mul(inv(mask)); cover = cover.max(mask); };
 
-  // first: the NEW MOON, a black disc opening from her centre (it hides the scene), its rim dotted round by a nib
   const pd = io(0.0, 0.07, 0.975, 1.0), pg = io(0.01, 0.1, 0.97, 0.995);
   solid(step(rr, pd.mul(R)));
   const kTop = atan2(q0.x, q0.y).div(TAU).abs().mul(2);
@@ -239,7 +225,6 @@ export function material(ctx) {
   add(W.mul(0.3), ghost);
   add(W.mul(1.3), nib(pg, kTop, 0.03).mul(stroke(rr.sub(R).abs(), 0.25)).mul(step(pg, 0.99)).mul(step(0.01, pg)));
 
-  // 13 phase-moons on an arc: each a black disc that fills by its own phase; the month's pointer haloes one
   const th = atan2(q0.x, q0.y);
   const idx = th.div(STEP).round().add(6).clamp(0, 12);
   const thi = idx.sub(6).mul(STEP);
@@ -264,7 +249,6 @@ export function material(ctx) {
   add(B.mul(0.6).add(kl.mul(0.5)), mrim.mul(inv(mfill)));
   add(H, halo);
 
-  // the great crescent: an occluding disc slides up off the full disc, the bowl waxes
   const pc = io(0.2, 0.32, 0.96, 0.99);
   const occ = q0.sub(vec2(0, pc.mul(4.2))).length();
   const cres = inv(smoothstep(float(R).sub(aa), R, rr)).mul(smoothstep(float(R).sub(aa), R, occ));
@@ -281,7 +265,6 @@ export function material(ctx) {
   add(mix(A, W, 0.6).mul(clit), edgeOut.max(edgeIn));
   add(mix(B, W, comet.add(kl).min(1)).mul(clit.add(0.2)), cbead);
 
-  // the two sleeping profiles, face to face: the black between them is the chalice
   const sh = pk(1, 3).sub(1).mul(0.3);
   const fq = vec2(p.x.abs().sub(sh), p.y);
   const pl = polyline(fq, FACE);
@@ -290,8 +273,6 @@ export function material(ctx) {
   const fnib = nib(pf, pl.u, 0.025).mul(stroke(pl.d, 0.22)).mul(step(pf, 0.995)).mul(step(0.005, pf));
   const fbeads = stroke(pl.d.sub(0.55).abs(), 0.09).mul(step(pl.u.mul(70).fract(), 0.3)).mul(maskBeads(io(0.6, 0.72, 0.94, 0.96), pl.u));
 
-  // THE RUBIN FLIP: which side is lit decides what you see. The light is poured: it drains from the faces
-  // (horizontal op-art bands) as it rises in the chalice (contour bands off the profiles), and back.
   let fx = float(FACE[2][0]);
   for (let i = 2; i < FACE.length - 1; i++) {
     const [x0, y0] = FACE[i], [x1, y1] = FACE[i + 1];
@@ -313,7 +294,6 @@ export function material(ctx) {
   add(W.mul(1.4), fnib);
   add(B.mul(0.9).add(kl.mul(0.4)), fbeads);
 
-  // her eye: a closed lid drawn from its middle, bead lashes; at the culmination the lid lifts
   const ex = fq.x.sub(EYE[0]), ey = p.y.sub(EYE[1]), dx = ex.div(0.8), base = inv(dx.mul(dx)), pe = io(0.5, 0.56, 0.95, 0.97);
   const inX = step(dx.abs(), pe);
   const open = smoothstep(0.3, 0.8, cul);
@@ -327,7 +307,6 @@ export function material(ctx) {
   add(W.mul(0.9), lids);
   add(H.mul(1.2), pupil);
   add(B.mul(0.8), lash.mul(inv(open)));
-  // the chalice's gift, in the black between the faces: a full moon, a four-point star or three beads
   const cv = pk(3, 3), cp = smoothstep(0.1, 0.6, cul), vq = p.sub(vec2(0, 1.4 + CY));
   const vdisc = inv(smoothstep(float(1.05).sub(aa), 1.05, vq.length())).mul(maskIris(cp, vq.length().div(1.05)));
   const sa = vq.x.abs().div(1.5).sqrt().add(vq.y.abs().div(1.5).sqrt());
@@ -338,9 +317,8 @@ export function material(ctx) {
   solid(gift);
   add(mix(H, W, 0.35), gift);
 
-  // four-point sparkle stars, mirrored pairs at seeded places, lighting one by one; they swell on the kick
   const sp = io(0.55, 0.68, 0.94, 0.96);
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < (low ? 2 : 3); i++) {
     const r0 = rn(14 + i);
     const sx = r0.mul(12).add(17.5), sy = r0.mul(7.31).fract().mul(26).sub(13);
     const sz = r0.mul(3.7).fract().mul(0.7).add(0.6).mul(c.kick.mul(0.35).add(1));
@@ -349,8 +327,10 @@ export function material(ctx) {
     add(mix(B, W, 0.85), inv(smoothstep(inv(aa.div(sz)), 1, s4)).mul(maskBeads(sp, i / 3)));
   }
 
+  const thS = atan2(q0.x, q0.y).abs(), inArc = step(thS, 6.5 * STEP);
+  solid(step(rr, R + 0.6).max(step(rr, ARC + RM + 0.5).mul(inArc)).mul(step(0.004, pd)));
   m.colorNode = col;
-  m.opacityNode = cover.mul(live);
+  m.opacityNode = cover.mul(live).mul(G);
   m.alphaTest = 0.5;
   return m;
 }
