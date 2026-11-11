@@ -6,6 +6,13 @@ director:
   id: director
   state: {}
   tags: [stage]
+field:
+  feetPosition: {x: 0, y: 0, z: 0}
+  id: field
+  material: {kind: scripted, script: engine/blueprint}
+  physics: none
+  primitive: {depth: 180, height: 6, kind: box, width: 180}
+  tags: [blueprint]
 stage-floor:
   feetPosition: {x: 0, y: -0.3, z: 0}
   id: stage-floor
