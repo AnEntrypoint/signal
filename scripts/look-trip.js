@@ -149,7 +149,9 @@ export function look(ctx) {
   const drawn = smoothstep(0, 0.04, sec.sub(SEC.hex[0]).div(3).sub(ang0.abs().div(Math.PI)).add(wReset));
   const lineHue = fam.add(ang0.abs().div(Math.PI).mul(0.22)).add(c.bar.floor().mul(0.031));
   const lineLit = mix(float(1), sweep.mul(0.75).add(0.25), wReset.mul(sliceOn));     // light-sweep on reset lines
-  const lines = pal(lineHue).mul(edge).mul(2.4).mul(drawn).mul(lineLit);
+  // each layer keeps its own colour in line-art (its own hue, normalised), so layers stay apart instead of one tint
+  const own = S(ub), ownN = own.div(own.x.max(own.y).max(own.z).max(0.05));
+  const lines = mix(pal(lineHue), ownN, wHex.mul(0.85)).mul(edge).mul(2.4).mul(drawn).mul(lineLit);
   const revR = sec.sub(SEC.reset[0]).div(12).mul(1.3);
   const back = smoothstep(revR.add(0.06), revR.sub(0.06), r0).mul(wReset);               // colour returns from the centre out
   col = mix(col, lines.max(col.mul(back)), wLine);
