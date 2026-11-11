@@ -4,15 +4,22 @@ import SHOTS from './data/shots.yml'
 import { visionAt, visionShot } from './visions.js'
 import { KICK_RUNS } from './trip.js'
 import { dealDeck, sceneTime } from './deck.js'
+import { trackFor, toCanon } from './tracks.js'
 export { SCORE, SHOTS }
 export const CINE = { duration: SCORE.duration, bpm: SCORE.bpm, music: SCORE.music, keys: SHOTS.keys }
 
-// Seconds into the roll, or null when nothing is rolling.
+// Seconds into the roll on the canonical show clock (score.yml), or null when nothing is rolling.
+// The roll's track (lib/tracks.js, dealt by seed) is laid onto that clock by its own anchors.
 export function cineTime(ctx) {
+  const tt = trackTime(ctx)
+  return tt == null ? null : toCanon(trackFor(ctx.world.state.cine.seed ?? 0), tt)
+}
+// Seconds into the roll's own track, or null.
+export function trackTime(ctx) {
   const c = ctx.world.state.cine
   if (!c) return null
   const t = (ctx.now() - c.start) / 1000
-  return t >= 0 && t < SCORE.duration ? t : null
+  return t >= 0 && t < trackFor(c.seed ?? 0).duration ? t : null
 }
 export function sectionAt(t) {
   for (const name in SCORE.sections) { const [a, b] = SCORE.sections[name]; if (t >= a && t < b) return name }

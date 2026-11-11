@@ -11,7 +11,7 @@ export function material(ctx) {
   const layer = (ctx.params && ctx.params.layer) || "being", low = ctx.quality === "low";
   const c0 = tripClock(ctx), fixP = ctx.param("fix", -1), frozen = fixP.greaterThan(-0.5);
   const sec = select(frozen, fixP, c0.sec);
-  const beat = sec.sub(SCORE.firstBeat).mul(BPS);
+  const beat = select(frozen, sec.sub(SCORE.firstBeat).mul(BPS), c0.beat);   // the track's own beat while rolling
   const c = { ...c0, sec, beat, bar: beat.div(4), on: select(frozen, float(1), c0.on) };
   const u = visionU(ctx, c);
   const vw0 = ctx.param("vw0", -1), vw1 = ctx.param("vw1", -1);

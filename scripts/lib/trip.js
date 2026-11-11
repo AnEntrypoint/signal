@@ -22,8 +22,16 @@ export const SEC = SCORE.sections;
 export const BPS = SCORE.bpm / 60;
 export function tripClock(ctx) {
   const t0 = ctx.param("t0", 0), on = ctx.param("on", 0);
-  const rolled = time.sub(t0).add(3600).mod(3600).min(SCORE.duration);
-  const real = select(on.greaterThan(0.5), rolled, time.mod(SCORE.duration));
+  // THE TRACK (lib/tracks.js): tt is this roll's track seconds; real is the canonical show clock it lands on,
+  // piecewise through the track's anchors ta1..ta4 (its two vision windows) and tdur. Unset = the canonical track.
+  const tdur = ctx.param("tdur", SCORE.duration);
+  const rolled = time.sub(t0).add(3600).mod(3600).min(tdur);
+  const tt = select(on.greaterThan(0.5), rolled, time.mod(SCORE.duration));
+  const C = [0, ENERGY.visions[0][0], ENERGY.visions[0][1], ENERGY.visions[1][0], ENERGY.visions[1][1], SCORE.duration];
+  const TA = [float(0), ctx.param("ta1", C[1]), ctx.param("ta2", C[2]), ctx.param("ta3", C[3]), ctx.param("ta4", C[4]), tdur];
+  let warped = float(0);
+  for (let i = 0; i < 5; i++) warped = warped.add(tt.sub(TA[i]).clamp(0, TA[i + 1].sub(TA[i]).max(0.001)).mul(float(C[i + 1] - C[i]).div(TA[i + 1].sub(TA[i]).max(0.001))));
+  const real = select(on.greaterThan(0.5), warped, tt);
   // THE DECK (lib/deck.js): sec is SCENE time, what every layer, lens and window reads; real is the track's time
   // (beat, kick, vision slots). Each drop stretch maps to its dealt scene: ds<i> its start, dr<i> its rate.
   let sec = real, seamD = float(99);
@@ -36,7 +44,7 @@ export function tripClock(ctx) {
   seamD = select(on.greaterThan(0.5), seamD, float(99));
   // a vision being lives on the track's own clock: its slot (vw0/vw1) is real seconds, never a dealt scene's
   if (ctx.params && ctx.params.vw0 !== undefined) { sec = real; seamD = float(99); }
-  const beat = real.sub(SCORE.firstBeat).mul(BPS);
+  const beat = tt.sub(ctx.param("fb", SCORE.firstBeat)).mul(ctx.param("bps", BPS));   // the track's own beat
   // the kick only where the measured track has one: the director (stage.js) hands the current/next kick run
   // as params k0 / k1 (seconds, from KICK_RUNS); idle or none: no kick at all
   const k0 = ctx.param("k0", -1), k1 = ctx.param("k1", -1);
@@ -51,7 +59,7 @@ export function tripClock(ctx) {
   const pick = (n, k) => rnd(n).mul(k).floor().min(k - 1);
   return {
     seed, rnd, pick, hue: rnd(1), dir: rnd(2).step(0.5).mul(2).sub(1),
-    sec, real, seamD, beat, on, live, bar: beat.div(4), phrase: beat.div(32),
+    sec, real, tt, seamD, beat, on, live, bar: beat.div(4), phrase: beat.div(32),
     kick: env(beat, 4.5), half: env(beat.div(2).add(0.5), 6), barHit: env(beat.div(4), 6),
     bass: audioSpectrum(0.08), high: audioSpectrum(0.75),
   };
