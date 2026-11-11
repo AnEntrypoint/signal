@@ -85,8 +85,8 @@ export function material(ctx) {
   m.colorNode = col;
   // layer score cutout (wipes out from the pupil) + self-cutout: every 4th 0.4 m ring of the blue zone is a real
   // hole showing the tunnel/rays behind; the holes step one ring inward per bar.
-  const k = r.sub(5.4).div(0.4).floor();
-  const hole = step(5.4, r).mul(step(r, 9.0)).mul(step(k.add(c.bar.floor()).mod(4), 0.5)).mul(step(12.35, c.sec));
+  const hk = r.sub(5.4).div(0.4).floor();
+  const hole = step(5.4, r).mul(step(r, 9.0)).mul(step(hk.add(c.bar.floor()).mod(4), 0.5)).mul(step(12.35, c.sec));
   m.opacityNode = shown(c, "eye", r.div(15)).mul(float(1).sub(hole));
   m.alphaTest = 0.5;
   return m;
