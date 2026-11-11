@@ -65,7 +65,9 @@ export function material(ctx) {
   // skin motion, dealt per worm (lanmower: lock some to world space, reverse others): 0 rides the body;
   // 1 pinned to the path: each stripe stays where the head laid it, the body slides through its own skin;
   // 2 reversed: the skin runs back up the body as it swims forward
-  const mode = c.pick(K + 15, 3);
+  // 2026-11-11 (lanmower: some worms must have static uvs, moving as normal worms do): worm 1 always rides its
+  // body, and every roll a second worm may too; the rest are pinned or reversed
+  const mode = n === 1 ? float(0) : c.pick(K + 15, 3);
   const sl = mix(mix(s.mul(LAG * 9), t.sub(s.mul(LAG)).mul(9), is(mode, 1)), s.mul(LAG * 9).add(t.mul(14)), is(mode, 2));
   const ang = atan2(sa, ca);
   const skinPick = c.pick(K + 14, 3);
