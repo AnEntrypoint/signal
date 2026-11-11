@@ -82,7 +82,10 @@ export function material(ctx) {
   if (layer === "world") {
     const aa = fwidth(P.x).mul(1.2).max(0.03), stroke = strokeAA(aa);
     const ax = P.x.abs(), ay = P.y.abs(), r = P.length();
-    const g = io(0.2, 0.45, 0.983, 0.999), Rg = g.mul(195);
+    // the far world holds whole to the slot's last ~0.4 s, whatever the slot's length, then the pen takes it back
+    const uEnd = inv(float(0.4).div(ctx.param("vw1", -1).sub(ctx.param("vw0", -1)).max(1))).min(0.999);
+    const uOut = (k) => smoothstep(uEnd.add(inv(uEnd).mul(k)), float(1.0005), u);
+    const g = smoothstep(0.2, 0.45, u).mul(inv(uOut(0))), Rg = g.mul(195);
     const spread = mix(0.85, 1.15, rn(17));
     const wq = vec2(ax.div(spread), ay);
     const wpen = g.mul(3.9).clamp(0, 3);
@@ -103,7 +106,7 @@ export function material(ctx) {
     const run = near(L.s.sub(c.beat.fract().mul(1.2)), 0.06).mul(kon);
     let col = A.mul(limb).mul(float(0.38).add(run.mul(1.2)).add(cul.mul(0.15)));
     col = col.add(W.mul(nib(wpen.div(3), L.s, 0.02).mul(stroke(L.d, 1.2)).mul(step(wpen, 2.99)).mul(step(0.01, wpen))).mul(0.9));
-    const fon = maskBeads(io(0.42, 0.52, 0.99, 0.999), fk.mul(0.9).add(0.05));
+    const fon = maskBeads(smoothstep(0.42, 0.52, u).mul(inv(uOut(0.5))), fk.mul(0.9).add(0.05));
     const fr = inv(smoothstep(float(2.4).sub(aa), 2.4, fd)).mul(fon);
     const fring = stroke(fd.sub(3.6).abs(), 0.18).mul(fon);
     const twk = c.real.mul(2.3).add(fk.mul(31)).sin().mul(0.4).add(0.6);
@@ -118,7 +121,7 @@ export function material(ctx) {
       const bd = vec2(xs, band.fract().sub(0.5).mul(11)).length();
       const br = ri.mul(0.1).add(0.45);
       const kl = near(r.sub(c.beat.fract().mul(150)), 9).mul(kon);
-      const sb = inv(smoothstep(br.sub(aa), br, bd)).mul(step(0, band)).mul(step(band, 4)).mul(maskBeads(io(0.36, 0.48, 0.983, 0.995), r.div(200)));
+      const sb = inv(smoothstep(br.sub(aa), br, bd)).mul(step(0, band)).mul(step(band, 4)).mul(maskBeads(smoothstep(0.36, 0.48, u).mul(inv(uOut(0.2))), r.div(200)));
       col = col.add(mix(A, B, ri.mod(2)).mul(sb).mul(float(0.26).add(kl.mul(0.8))));
       // birds: two-stroke glyphs settling into the canopy one by one
       const pb = io(0.6, 0.72, 0.9, 0.93), nb = pk(12, 4).add(3);
