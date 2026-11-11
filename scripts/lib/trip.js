@@ -98,7 +98,9 @@ function pieceLag(name) {
     const oct = ax.max(az).add(ax.min(az).mul(0.4142));
     const lane = atan(q.x, q.z.sub(q.y.mul(0.3))).div(6.2831853).add(0.5).mul(16 + (h % 3) * 8).floor();
     const run = lane.mul(1.618).fract().mul(0.6).add(0.7);
-    id = oct.div(size * 2).mul(run).floor().add(lane.mul(0.37)); }
+    // ordered, not hashed: each lane's current reaches a segment in turn, lanes staggered a little
+    const seg = oct.div(size * 2).mul(run).floor();
+    return seg.div(14).add(lane.mul(0.37).fract().mul(0.25)).fract().mul(SCORE.piece ?? 2.25); }
   else if (kind === 1) id = P.sub(vec3(0, 15, 0)).length().div(size).floor();                 // rings
   else id = atan(P.x, P.z.sub(P.y.mul(0.3))).div(6.2831853).add(0.5).mul(12 + (h % 4) * 4).floor(); // sectors
   const r = id.add(h * 0.731).sin().mul(43758.5453).fract();
