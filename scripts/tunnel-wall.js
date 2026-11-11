@@ -93,9 +93,12 @@ export function material(ctx) {
   const ol = length(select(dot(oa, oa).lessThan(dot(ob, ob)), oa, ob));
   const orr = D.h.mul(0.32).add(0.12), ro = ol.div(orr);
   const warm = c.hue.mul(0.07);
-  const orb = mix(pal(warm.negate().sub(0.01)).mul(0.55), mix(pal(warm.negate().sub(0.1)), W, smoothstep(0.35, 0.0, ro)), smoothstep(1, 0.15, ro))
-    .mul(smoothstep(1.0, 0.86, ro)).mul(smoothstep(0.02, 0.12, D.h));
-  const dlit = max(Lt.L, D.h.mul(0.45).add(0.15)).add(Lt.ring.mul(0.6));
+  // each orb a hard target: hot outer disc, black ring, contrasting core (no gradient), dark seams between
+  const outerC = pal(warm.negate().sub(0.02)), coreC = pal(warm.negate().sub(0.14)).add(W.mul(0.25));
+  const orb = mix(outerC, coreC, step(ro, 0.34)).mul(step(ro, 0.86)).mul(float(1).sub(step(0.4, ro).mul(step(ro, 0.55))))
+    .mul(step(0.06, D.h));
+  // graphite at rest like the wall: the travelling light and the kick ring light the domes
+  const dlit = max(Lt.L, 0.07).add(Lt.ring.mul(0.6));
   col = mix(col, orb.mul(dlit), onD);
   // serpent-teeth: two mirrored rows of white triangles along the floor, apex to the centre line, a jaw
   const tw = ma.add(0.25), tl = c.pick(38, 3).mul(0.5).add(0.8);
