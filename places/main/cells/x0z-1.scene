@@ -1,8 +1,51 @@
 # spawn-scene v2 yaml x0z-1
 tunnel:
+  audience: all
+  castShadow: false
   feetPosition: {x: 0, y: 9, z: -186}
   id: tunnel
-  material: {kind: scripted, script: engine/blueprint}
+  material: {kind: scripted, params: {"on": 1, t0: 1594.5316666666668}, script: scripts/tunnel-wall.js}
   physics: none
-  primitive: {depth: 300, height: 12, kind: box, width: 12}
-  tags: [blueprint]
+  primitive: {kind: scripted, params: {kind: wall}, script: scripts/tunnel-geo.js}
+  receiveShadow: false
+  tags: [trip, tunnel]
+tunnel-core:
+  audience: all
+  castShadow: false
+  feetPosition: {x: 0, y: 9, z: -186}
+  id: tunnel-core
+  material: {kind: scripted, params: {"on": 1, t0: 1594.5316666666668}, script: scripts/tunnel-core.js}
+  physics: none
+  primitive: {kind: scripted, params: {kind: core}, script: scripts/tunnel-geo.js}
+  receiveShadow: false
+  tags: [trip, tunnel]
+tunnel-dust:
+  audience: all
+  castShadow: false
+  feetPosition: {x: 0, y: 9, z: -186}
+  id: tunnel-dust
+  material: {kind: scripted, params: {"on": 1, t0: 1594.5316666666668}, script: scripts/tunnel-dust.js}
+  physics: none
+  primitive: {kind: scripted, params: {kind: dust}, script: scripts/tunnel-geo.js}
+  receiveShadow: false
+  tags: [trip, tunnel]
+tunnel-gates:
+  audience: all
+  castShadow: false
+  feetPosition: {x: 0, y: 9, z: -186}
+  id: tunnel-gates
+  material: {kind: scripted, params: {"on": 1, t0: 1594.5316666666668}, script: scripts/tunnel-gates.js}
+  physics: none
+  primitive: {kind: scripted, params: {kind: gate}, script: scripts/tunnel-geo.js}
+  receiveShadow: false
+  tags: [trip, tunnel]
+tunnel-ribs:
+  audience: all
+  castShadow: false
+  feetPosition: {x: 0, y: 9, z: -186}
+  id: tunnel-ribs
+  material: {kind: scripted, params: {"on": 1, t0: 1594.5316666666668}, script: scripts/tunnel-ribs.js}
+  physics: none
+  primitive: {kind: scripted, params: {kind: ribs}, script: scripts/tunnel-geo.js}
+  receiveShadow: false
+  tags: [trip, tunnel]
