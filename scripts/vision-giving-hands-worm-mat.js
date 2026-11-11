@@ -20,7 +20,7 @@ export function material(ctx) {
 
   const uu = positionGeometry.y.clamp(0, 1), ca = positionGeometry.x, sa = positionGeometry.z;
   const r0 = pair ? 2.3 : 3.4;
-  const grow = io(0.55 + pair * 0.05, 0.8, 0.94, 0.965 - pair * 0.01);
+  const grow = io(0.5 + pair * 0.06, 0.78, 0.94, 0.965 - pair * 0.01);
   const exists = pair ? step(0.5, rn(7)) : float(1);
   const tip = inv(smoothstep(grow.sub(0.06), grow, uu));
   const rf = inv(uu.mul(0.85)).max(0.0001).pow(0.6).mul(r0);
