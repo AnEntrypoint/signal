@@ -125,7 +125,21 @@ export function shown(c, name, d = 0) {
     const a = SCENE_STARTS.has(a0) ? a0 - SCORE.wipe - (SCORE.piece ?? 2.25) - 0.2 : a0;
     v = v.add(smoothstep(a, a + 0.2, c.sec.sub(lag)).mul(smoothstep(b + 0.2, b, c.sec.sub(lag))));
   }
-  return v.clamp(0, 1).mul(seamGate);
+  return v.clamp(0, 1).mul(seamGate).mul(drift(c, name, d));
+}
+// DRIFT (2026-11-11, creator: longer scenes, elements removed and introduced unpredictably, never suddenly):
+// inside its window every layer breathes in and out of the dark on its own slow, seeded tide. When its tide
+// ebbs, its pieces sink into black one at a time (the outer and the odd ones first, its heart last); when it
+// flows they come back the same way. Never more than 80% of a layer goes; never two layers on one tide.
+function drift(c, name, d) {
+  const h = salt(name);
+  const p1 = 17 + (h % 7) * 4.5, p2 = 29 + (h % 5) * 6.5;             // seconds per tide, per layer: 17..44 s
+  const ph = c.rnd(20 + (h % 40)).mul(6.2831853);
+  const tide = c.sec.mul(6.2831853 / p1).add(ph).sin().mul(0.6)
+    .add(c.sec.mul(6.2831853 / p2).sub(ph.mul(1.7)).sin().mul(0.4)).mul(0.5).add(0.5);   // 0..1, unpredictable
+  const ebb = smoothstep(0.55, 0.12, tide).mul(0.8);                   // how much of the layer is gone
+  const rank = pieceLag(name).div(SCORE.piece ?? 2.25).mul(0.65).add(float(1).sub(float(d).clamp(0, 1)).mul(0.35));
+  return smoothstep(ebb, ebb.add(0.04), rank);
 }
 // A lens number ("bulge" | "swirl" | "fold" | "hyper" | "droste") at this moment. The lens is the scene's own:
 // it changes ON the section line with the cut, never morphing from one scene's bend into the next.
