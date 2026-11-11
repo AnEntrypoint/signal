@@ -20,3 +20,14 @@ export function inside() {
 }
 export const camDepth = () => float(Z0).sub(cameraPosition.z).max(0);
 export const v3 = (a) => vec3(a[0], a[1], a[2]);
+// The colour law of the trip: blue/violet is the body, the hot hues are the accents. idx is any whole number.
+import { mod, floor } from "builtin/tsl";
+const HOT = [[1.0, 0.8, 0.02], [1.0, 0.3, 0.0], [1.0, 0.02, 0.03], [1.0, 0.0, 0.55], [0.05, 1.0, 0.1]];
+export const BLUE = vec3(0.02, 0.07, 1.0), VIOLET = vec3(0.38, 0.0, 1.0);
+export const base = (idx) => BLUE.add(VIOLET.sub(BLUE).mul(mod(floor(float(idx)), 2)));
+export function hot(idx) {
+  const k = mod(floor(float(idx)), 5);
+  let c = vec3(0, 0, 0);
+  HOT.forEach((h, i) => { c = c.add(vec3(h[0], h[1], h[2]).mul(step(abs(k.sub(i)), 0.5))); });
+  return c;
+}

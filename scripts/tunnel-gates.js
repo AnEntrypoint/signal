@@ -3,7 +3,7 @@
 import { float, vec2, vec3, floor, fract, abs, mod, step, smoothstep, select, mix, length, atan2, round, min, positionLocal, positionGeometry, instanceIndex } from "builtin/tsl";
 import { MeshBasicNodeMaterial, DoubleSide } from "builtin/three";
 import { tripClock, pal, stripes, HUE } from "./lib/trip.js";
-import { tun, inside, v3, LY, LZ } from "./tunnel-lib.js";
+import { tun, inside, v3, LY, LZ, base, hot } from "./tunnel-lib.js";
 
 export function material(ctx) {
   const m = new MeshBasicNodeMaterial();
@@ -21,14 +21,18 @@ export function material(ctx) {
   const n = select(k.lessThan(0.5), float(6), select(k.lessThan(1.5), float(8), float(12)));
   const seg = fract(th.mul(n)), gap = step(0.07, seg).mul(step(seg, 0.93));
   const band = (a, bb) => step(a, r).mul(step(r, bb));
-  const hue = gi.div(8);
   const bead = step(length(vec2(fract(th.mul(48)).sub(0.5).mul(0.524), r.sub(4.0))), 0.16);
-  const aLine = band(4.22, 4.36).mul(gap), aMain = band(4.48, 5.08).mul(gap);
-  const aOp = band(5.18, 5.6).mul(gap).mul(stripes(seg, 5, 0.05)), aRim = band(5.68, 5.8);
+  const aLine = band(4.22, 4.34).mul(gap), aMain = band(4.46, 5.1).mul(gap);
+  // the main band wears a row of targets: hot dot, black ring, on the blue / violet body
+  const dl = length(vec2(fract(th.mul(48).add(0.5)).sub(0.5).mul(0.626), r.sub(4.78)));
+  const tgt = step(dl, 0.12), tring = step(dl, 0.2).sub(tgt);
+  // white triangle teeth pointing inward, and a hot rim
+  const tooth = step(float(5.62).sub(r).div(0.42), abs(fract(th.mul(n).mul(6)).sub(0.5)).mul(2));
+  const aOp = band(5.2, 5.62).mul(tooth), aRim = band(5.68, 5.8);
   const W = vec3(1, 1, 1);
-  const col = pal(hue.add(0.5)).mul(2.4).mul(bead).add(W.mul(1.2).mul(aLine)).add(pal(hue).mul(1.9).mul(aMain))
-    .add(W.mul(aOp)).add(pal(hue.add(0.33)).mul(1.9).mul(aRim));
-  const alpha = bead.add(aLine).add(aMain).add(aOp).add(aRim).min(1);
+  const col = hot(gi.add(2)).mul(bead).add(W.mul(aLine)).add(mix(base(gi), hot(gi), tgt).mul(aMain))
+    .add(W.mul(aOp)).add(hot(gi).mul(aRim));
+  const alpha = bead.add(aLine).add(aMain.mul(float(1).sub(tring))).add(aOp).add(aRim).min(1);
   const flight = step(60.35, c.sec);
   const lum = col.x.add(col.y).add(col.z).mul(0.25).min(1);
   const deep = mix(v3(HUE.blue), v3(HUE.violet), mod(gi, 2)).mul(lum).mul(float(0.12).add(c.bass.mul(0.8)));

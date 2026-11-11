@@ -31,7 +31,7 @@ export function geometry(ctx) {
   }
   if (kind === "ribs") {
     ctx.instances({ count: 8, bounds: BOUNDS });
-    const cx = 5.5, cy = LY, r = 0.25, S = 6, STEP = 1.5;
+    const cx = 5.5, cy = LY, r = 0.25, S = 8, STEP = 1.5;
     for (let j = 0; j < 200; j++) {
       const z0 = 150 - j * STEP, z1 = z0 - STEP;
       for (let i = 0; i < S; i++) {
@@ -40,7 +40,7 @@ export function geometry(ctx) {
         ctx.quad(x0, y0, z0, x1, y1, z0, x1, y1, z1, x0, y0, z1);
       }
       // the bead strung on the tube at this segment's middle
-      const bz = z0 - STEP / 2, br = 0.42, U = 8, V = 5;
+      const bz = z0 - STEP / 2, br = 0.4, U = 10, V = 5;
       for (let v = 0; v < V; v++) {
         const p0 = (v / V) * Math.PI, p1 = ((v + 1) / V) * Math.PI;
         for (let u = 0; u < U; u++) {
