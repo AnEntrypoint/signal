@@ -8,8 +8,8 @@
 //   "being" z   0  BREATHES  a black new moon first, then profiles, 13 phase-moons, the crescent bowl, eyes, stars;
 //                            the Rubin flip: faces lit / chalice lit, the light poured from one into the other
 //   "veil"  z +10  DRIFTS    moths (two mirrored bead wings, solid black) rising from the water
-//   "fore"  z +22  UNDULATES tide eels riding the camera from the corners: black bodies, blue/violet stripes ->
-//                            scales -> beads, a dithered shadow beside them; one goes pure silhouette at the culmination
+//   "fore"  z +22  UNDULATES small spray crescents bobbing on a travelling swell along the bottom corners
+//   the tide EELS are real 3D tubes winding in depth: scripts/vision-moon-mother-worm-geo.js / -worm-mat.js
 // being / veil / fore / world are CUTOUT (alphaTest, depth-writing): a near shape hides what is behind it.
 // THE SCORE (u = 0..1 of the slot): 0 new moon + dotted rim / .08 profiles / .12 moons / .2 crescent / .25 world ripples out /
 // .4 ring, .48 counter ring / .5 eyes, constellations, sparkle stars, profile beads / .6 eels, .62 moths / .7 the flip /
@@ -33,11 +33,6 @@ const SKY = [
   [[50, 44], [60, 52], [72, 47], [81, 56], [94, 51], [101, 40]],
   [[66, 20], [76, 29], [88, 25], [98, 32], [110, 23], [105, 10]],
   [[26, 62], [35, 53], [45, 59], [42, 47], [53, 40]],
-];
-// the tide eels (fore metres, right half): base off-frame, heading, length, girth, wave
-const EELS = [
-  { bx: 64, by: -44, dx: -38, dy: 48, L: 62, w0: 4.2, amp: 3.2, k: 0.2, om: 1.6, ph: 0, t1: 0.74, t2: 0.81 },
-  { bx: 66, by: 44, dx: -0.45, dy: -0.89, L: 40, w0: 2.8, amp: 2.4, k: 0.26, om: -1.2, ph: 2.1, t1: 0.78, t2: 0.85 },
 ];
 
 const is = (v, i) => step(v.sub(i).abs(), 0.5);
@@ -202,48 +197,25 @@ export function material(ctx) {
     return m;
   }
 
-  // ------------------------------------------------------------------ FORE: the tide eels (undulate)
+  // ------------------------------------------------------------------ FORE: spray crescents bobbing on the swell (undulates)
+  // small near details only (the eels are real 3D bodies: vision-moon-mother-worm-*): little black moons riding a
+  // travelling swell along the bottom corners, each waxing from new to a lit crescent as it arrives, waning to leave
   if (layer === "fore") {
-    const ax = P.x.abs(), sgn = step(0, P.x).mul(2).sub(1);
-    const swap = step(0.5, rn(8)), four = step(0.45, rn(7)), darkSide = step(0, sgn.mul(sense(13)));
-    const eel = (o, prog, dark) => {
-      const dl = Math.hypot(o.dx, o.dy), Dx = o.dx / dl, Dy = o.dy / dl;
-      const rx = ax.sub(o.bx), ry = P.y.sub(o.by);
-      const s = rx.mul(Dx).add(ry.mul(Dy)), nn = rx.mul(-Dy).add(ry.mul(Dx));
-      const sl = s.add(inv(prog).mul(o.L + 12));                           // it slides in along its own axis
-      const f = sl.div(o.L).clamp(0, 1);
-      const arg = sl.mul(o.k).sub(c.real.mul(o.om)).add(sgn.mul(0.8)).add(o.ph);
-      const sway = c.real.mul(0.23).add(o.ph * 2).add(sgn).sin().mul(o.amp * 1.2);
-      const n0 = f.mul(o.amp).mul(arg.sin()).add(f.mul(f).mul(sway));
-      const slope = f.mul(o.amp * o.k).mul(arg.cos()).add(f.mul(2 / o.L).mul(sway));
-      const dn = nn.sub(n0).div(slope.mul(slope).add(1).sqrt());
-      const w = inv(f).max(0).pow(0.5).mul(o.w0).mul(step(sl, o.L));
-      const vv = dn.div(w.max(0.01));
-      const body = step(dn.abs(), w).mul(step(0.02, w));
-      // three skins, each new one travelling up the body from the base: stripes, then scales and beads
-      const st = stripes(sl, 0.45, 0.04), par = sl.mul(0.45).floor().mod(2);
-      const cStr = mix(A, B, par).mul(st);
-      const cSc = mix(B, W, 0.25).mul(stripes(sl.mul(0.5).add(vv.mul(0.7)), 1, 0.06).mul(stripes(sl.mul(0.5).sub(vv.mul(0.7)), 1, 0.06)));
-      const bc = sl.div(1.7).fract().sub(0.5).mul(1.7), brad = w.mul(0.42).min(0.6);
-      const cBe = mix(A, W, 0.6).mul(inv(smoothstep(brad.sub(0.06), brad, vec2(bc, dn).length())));
-      const g1 = step(sl, smoothstep(o.t1, o.t1 + 0.06, u).mul(o.L)), g2 = step(sl, smoothstep(o.t2, o.t2 + 0.05, u).mul(o.L));
-      let col = mix(mix(cStr, mix(cSc, cBe, swap), g1), mix(cBe, cSc, swap), g2);
-      const run = smoothstep(3, 0, sl.sub(c.beat.fract().mul(o.L)).abs()).mul(kickOn);
-      col = mix(col, mix(A, W, 0.55).mul(run.add(0.85)), smoothstep(0.8, 0.86, vv.abs()));
-      col = mix(col, H, inv(smoothstep(0.45, 0.55, vec2(sl.sub(o.L - 3.2), dn).length())));   // its eye
-      const lit = inv(step(sl, smoothstep(0.86, 0.9, u).mul(o.L + 1)).mul(dark));                // the silhouette climbs it
-      return { body, col: col.mul(lit).mul(0.85), dn, w, sl };
-    };
-    const ea = eel(EELS[0], io(0.6, 0.74, 0.93, 0.955), darkSide);
-    const eb = eel(EELS[1], io(0.66, 0.8, 0.93, 0.95), float(0));
-    const bB = eb.body.mul(four);
-    // the big eel's shadow: a band beside it, black through a 2x2 ordered dither (dense by the body, gone 2.6 m out)
-    const cell = P.div(0.22).add(1000).floor(), bx = cell.x.mod(2), by = cell.y.mod(2);
-    const thr = by.mul(3).add(bx.mul(2)).sub(bx.mul(by).mul(4)).add(0.5).div(4);
-    const gap = ea.dn.sub(ea.w);
-    const shadow = step(thr, inv(gap.div(2.6)).mul(0.75)).mul(step(0, gap)).mul(step(gap, 2.6)).mul(step(ea.sl, EELS[0].L)).mul(step(0.3, ea.w));
-    m.colorNode = mix(eb.col.mul(bB), ea.col, ea.body);
-    m.opacityNode = ea.body.max(bB).max(shadow).mul(live);
+    const aa = fwidth(P.x).mul(1.2).max(0.01);
+    const ax = P.x.abs(), pin = io(0.6, 0.8, 0.93, 0.955);
+    let col = vec3(0), cover = float(0);
+    for (let j = 0; j < 5; j++) {
+      const xj = c.real.mul(0.02 * (1 + j * 0.3)).mul(sense(12)).add(j * 0.21).fract().mul(34).add(22);
+      const yj = xj.mul(0.16).sub(c.real.mul(0.7)).add(j * 1.9).sin().mul(3.2).add(-25 + (j % 2) * 5);
+      const rad = 0.9 + (j % 3) * 0.35;
+      const q = vec2(ax.sub(xj), P.y.sub(yj)).div(rad);
+      const pj = pin.mul(1.6).sub(j * 0.15).clamp(0, 1);
+      const disc = inv(smoothstep(inv(aa.div(rad)), 1, q.length())).mul(step(0.01, pj));
+      const lit = disc.mul(smoothstep(inv(aa.div(rad)), 1, q.sub(vec2(pj.mul(0.7).sub(1.1).mul(-1).sub(0.4), 0.15)).length()));
+      col = mix(col, mix(B, W, 0.6).mul(lit).mul(float(0.8).add(cul.mul(0.3))), disc); cover = cover.max(disc);
+    }
+    m.colorNode = col;
+    m.opacityNode = cover.mul(live);
     m.alphaTest = 0.5;
     return m;
   }
