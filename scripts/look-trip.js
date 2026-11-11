@@ -264,9 +264,12 @@ export function look(ctx) {
   // never blur without a subject: the focus plane is the depth of what actually stands at the frame's centre
   // (the nearest of five taps round it), so that thing is crisp and only the layers before and behind it soften.
   // Nothing there (open black) = no blur at all. Some phrases the roll deals an extreme, razor-thin plane.
-  let zC = float(0);
-  for (const [ox, oy] of [[0, 0], [0.03, 0], [-0.03, 0], [0, 0.04], [0, -0.04]]) zC = zC.max(ctx.viewZAt(vec2(0.5 + ox, 0.5 + oy)).negate().min(400));
-  const hasSubject = smoothstep(2, 4, zC).mul(smoothstep(300, 200, zC));
+  let zC = float(999);
+  for (const [ox, oy] of [[0, 0], [0.05, 0], [-0.05, 0], [0, 0.07], [0, -0.07], [0.12, 0.1], [-0.12, 0.1], [0.12, -0.1], [-0.12, -0.1]]) {
+    const z = ctx.viewZAt(vec2(0.5 + ox, 0.5 + oy)).negate();
+    zC = zC.min(select(z.greaterThan(1.5).and(z.lessThan(300)), z, float(999))); // the nearest thing round the middle is the subject
+  }
+  const hasSubject = step(zC, 400);
   const razor = step(0.7, c.phrase.floor().add(c.seed).mul(78.233).sin().mul(43758.5453).fract());
   const focusD = mix(zC.clamp(4, 200), float(74), vis);
   const focusR = mix(mix(zC.mul(0.35).add(3), zC.mul(0.08).add(1), razor), float(16), vis);
