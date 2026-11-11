@@ -1,0 +1,8 @@
+# spawn-scene v2 yaml x0z-3
+chamber:
+  feetPosition: {x: 0, y: -9, z: -362}
+  id: chamber
+  material: {kind: scripted, script: engine/blueprint}
+  physics: none
+  primitive: {depth: 50, height: 48, kind: box, width: 50}
+  tags: [blueprint]
