@@ -34,8 +34,9 @@ const inv = (x) => float(1).sub(x);
 export function material(ctx) {
   const layer = ctx.params.layer ?? "being";
   const c = tripClock(ctx);
-  const u = visionU(ctx, c);
-  const live = visionShown(ctx, c, 0);
+  const hold = ctx.param("hold", -1), held = step(0, hold);   // bench: hold >= 0 pins the slot's u
+  const u = mix(visionU(ctx, c), hold.max(0), held);
+  const live = mix(visionShown(ctx, c, 0), c.on, held);
   const rn = (k) => c.rnd(360 + k), pk = (k, m) => c.pick(360 + k, m);
   const io = (a, b, x, y) => smoothstep(a, b, u).mul(inv(smoothstep(x, y, u)));
   const fam = pk(0, 4);

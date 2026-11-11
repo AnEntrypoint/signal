@@ -17,7 +17,10 @@ const PATHS = { low: [[100, -70, -50], [32, 2, -10], [22, -18, 28]], high: [[92,
 
 export function material(ctx) {
   const n = Math.max(1, Math.round(ctx.params.n ?? 1)), sg = n % 2 ? 1 : -1, pair = n > 2 ? 1 : 0;
-  const c = tripClock(ctx), u = visionU(ctx, c), live = visionShown(ctx, c, 0);
+  const c = tripClock(ctx);
+  const hold = ctx.param("hold", -1), held = step(0, hold);   // bench: hold >= 0 pins the slot's u
+  const u = mix(visionU(ctx, c), hold.max(0), held);
+  const live = mix(visionShown(ctx, c, 0), c.on, held);
   const inv = (x) => float(1).sub(x), is = (v, i) => step(v.sub(i).abs(), 0.5);
   const io = (a, b, x, y) => smoothstep(a, b, u).mul(inv(smoothstep(x, y, u)));
   const rn = (k) => c.rnd(360 + k), pk = (k, m) => c.pick(360 + k, m);
