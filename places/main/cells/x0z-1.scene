@@ -4,7 +4,7 @@ tunnel:
   castShadow: false
   feetPosition: {x: 0, y: 9, z: -186}
   id: tunnel
-  material: {kind: scripted, params: {"on": 1, t0: 1594.5316666666668}, script: scripts/tunnel-wall.js}
+  material: {kind: scripted, params: {"on": 0, t0: 0}, script: scripts/tunnel-wall.js}
   physics: none
   primitive: {kind: scripted, params: {kind: wall}, script: scripts/tunnel-geo.js}
   receiveShadow: false
@@ -14,7 +14,7 @@ tunnel-core:
   castShadow: false
   feetPosition: {x: 0, y: 9, z: -186}
   id: tunnel-core
-  material: {kind: scripted, params: {"on": 1, t0: 1594.5316666666668}, script: scripts/tunnel-core.js}
+  material: {kind: scripted, params: {"on": 0, t0: 0}, script: scripts/tunnel-core.js}
   physics: none
   primitive: {kind: scripted, params: {kind: core}, script: scripts/tunnel-geo.js}
   receiveShadow: false
@@ -24,7 +24,7 @@ tunnel-dust:
   castShadow: false
   feetPosition: {x: 0, y: 9, z: -186}
   id: tunnel-dust
-  material: {kind: scripted, params: {"on": 1, t0: 1594.5316666666668}, script: scripts/tunnel-dust.js}
+  material: {kind: scripted, params: {"on": 0, t0: 0}, script: scripts/tunnel-dust.js}
   physics: none
   primitive: {kind: scripted, params: {kind: dust}, script: scripts/tunnel-geo.js}
   receiveShadow: false
@@ -34,7 +34,7 @@ tunnel-gates:
   castShadow: false
   feetPosition: {x: 0, y: 9, z: -186}
   id: tunnel-gates
-  material: {kind: scripted, params: {"on": 1, t0: 1594.5316666666668}, script: scripts/tunnel-gates.js}
+  material: {kind: scripted, params: {"on": 0, t0: 0}, script: scripts/tunnel-gates.js}
   physics: none
   primitive: {kind: scripted, params: {kind: gate}, script: scripts/tunnel-geo.js}
   receiveShadow: false
@@ -44,7 +44,7 @@ tunnel-ribs:
   castShadow: false
   feetPosition: {x: 0, y: 9, z: -186}
   id: tunnel-ribs
-  material: {kind: scripted, params: {"on": 1, t0: 1594.5316666666668}, script: scripts/tunnel-ribs.js}
+  material: {kind: scripted, params: {"on": 0, t0: 0}, script: scripts/tunnel-ribs.js}
   physics: none
   primitive: {kind: scripted, params: {kind: ribs}, script: scripts/tunnel-geo.js}
   receiveShadow: false
