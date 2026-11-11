@@ -1,7 +1,7 @@
 // THE TRIP'S LOOK: the full-screen layer. Every move is on the score (scripts/lib/data/score.yml), gated by on.
 // Idle (on = 0): only aberration, vignette, bloom. Deck of tropes dealt by the roll's seed on channels 70-79.
 import { float, vec2, vec3, vec4, mix, smoothstep, select, screenUV, screenSize, convertToTexture, mx_noise_float, atan, step } from "builtin/tsl";
-import { vignette } from "builtin/postfx";
+import { vignette, dof } from "builtin/postfx";
 import { tripClock, win, SEC, pal, bendUv } from "./lib/trip.js";
 
 const TAU = 6.283185;
@@ -250,5 +250,13 @@ export function look(ctx) {
   col = col.mul(mix(float(1), smoothstep(mix(float(0.012), float(0.1), wDeep), mix(float(0.06), float(0.22), wDeep), luma(col)), on)); // deep: a harder black floor, half the frame stays black
   // dome mask, return fade to black 190-193 and hold, vignette
   col = col.mul(domeMask).mul(mix(float(1), smoothstep(193, 190, sec), on));
-  return vignette(col.max(vec3(0)), ctx.param("vignette", 0.35), { color: [0, 0, 0] });
+  // FOCUS: depth of field gives the layers meaning. A being on stage (74 m out on the camera's line) stands sharp,
+  // the running scene around it goes soft. Otherwise the focus pulls slowly through the layers, near to far and
+  // back once every two phrases, so one layer reads at a time while the others breathe out of focus.
+  const pullT = c.phrase.mul(0.5).add(c.rnd(74)).mul(TAU).sin().mul(0.5).add(0.5);
+  const focusD = mix(mix(9, 42, pullT), float(74), vis);
+  const focusR = mix(mix(6, 18, pullT), float(14), vis);
+  const graded = col.max(vec3(0));
+  const focused = dof(graded, ctx.viewZ, focusD, focusR, low ? 3 : 6);
+  return vignette(mix(graded, focused, on), ctx.param("vignette", 0.35), { color: [0, 0, 0] });
 }
