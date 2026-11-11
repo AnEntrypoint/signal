@@ -66,7 +66,8 @@ function coast(g, t, deal, seed) {
   const end = g.b - 0.02, h = 0.1
   const p = poseAt(end, g, end, deal, seed), q = poseAt(end - h, g, end - h, deal, seed)
   const k = COAST * (1 - Math.exp(-(t - end) / COAST)) / h
-  const v = (A, B) => ({ x: A.x + (A.x - B.x) * k, y: A.y + (A.y - B.y) * k, z: A.z + (A.z - B.z) * k })
+  // 2026-11-11: seed 7 raced 7 m a frame at 1:39 when the old shot ended fast; the coast now drifts at most 3 m
+  const v = (A, B) => { const dx = A.x - B.x, dy = A.y - B.y, dz = A.z - B.z, m = Math.hypot(dx, dy, dz) * k, f = m > 3 ? 3 / m : 1; return { x: A.x + dx * k * f, y: A.y + dy * k * f, z: A.z + dz * k * f } }
   return { eye: v(p.eye, q.eye), aim: v(p.aim, q.aim), fov: p.fov, roll: p.roll }
 }
 function mixPose(p, q, e) {
