@@ -153,7 +153,7 @@ export function lens(c, key) {
   // the scene clock jumps at a dealt seam: the scene's own bend eases out before it and back in after it,
   // so the view never snaps from one bend to another
   v = v.mul(smoothstep(0.3, 4, c.seamD));
-  return v.add(key === "hyper" ? 0.22 : 0);   // the hyperbolic slide never fully lets go
+  return v.add(key === "hyper" ? 0.14 : 0);   // the hyperbolic slide never fully lets go
 }
 // THE BENT CAMERA. bendUv(c, uv, aspect): where on the undistorted frame this screen pixel reads from.
 // Bulge breathes with the phrase and kicks 4% on the beat; the swirl twists the centre, not the edge.
@@ -164,7 +164,8 @@ export function bendUv(c, uv, aspect = 1.78) {
   const r = p0.length();
   const a = lens(c, "swirl").mul(c.dir).mul(mix(0.6, 1.5, c.rnd(4))).mul(float(1).sub(r.mul(1.3)).clamp(0, 1)).mul(c.sec.mul(6.28318 / 24).sin());
   const p1 = vec2(p0.x.mul(a.cos()).sub(p0.y.mul(a.sin())), p0.x.mul(a.sin()).add(p0.y.mul(a.cos())));
-  const p2 = p1.div(float(1).add(k.mul(r.mul(r)).mul(1.6)));
+  // 2026-11-11 (lanmower: pixelated after stretching): the centre may be magnified at most 1.35x
+  const p2 = p1.div(float(1).add(k.min(0.45).mul(r.mul(r)).mul(1.6)).max(0.74));
   // hyperbolic: Mobius slide of the Poincare disc, w = (z + a) / (1 + conj(a) z), centre held
   const h = lens(c, "hyper").mul(mix(0.7, 1.3, c.rnd(5))), th = c.sec.mul(6.28318 / 24).mul(c.dir).add(c.rnd(6).mul(6.28318));
   const ax = h.mul(th.cos()), ay = h.mul(th.sin());
