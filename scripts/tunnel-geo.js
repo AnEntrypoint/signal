@@ -13,7 +13,7 @@ function annulus(ctx, r0, r1, z, n) {
 export function geometry(ctx) {
   const kind = ctx.params.kind || "wall";
   if (kind === "wall") {
-    const N = 64, M = 30, R = 6;
+    const N = 96, M = 200, R = 6; // fine enough for the throat's pinch and the orb domes' bulge
     for (let j = 0; j < M; j++) {
       const zn = 150 - (j / M) * 300, zf = 150 - ((j + 1) / M) * 300;
       for (let i = 0; i < N; i++) {
@@ -62,6 +62,18 @@ export function geometry(ctx) {
       ctx.tri(0, LY, -150, Math.cos(a0) * R, LY + Math.sin(a0) * R, -150, Math.cos(a1) * R, LY + Math.sin(a1) * R, -150);
     }
     return { bounds: BOUNDS };
+  }
+  if (kind === "knot") {
+    // the ribbon knot: a (s, cos t, sin t) grid the material ties into a (p,q) torus knot (p,q dealt by the seed)
+    const U = 720, V = 12;
+    for (let j = 0; j < U; j++) {
+      const s0 = j / U, s1 = (j + 1) / U;
+      for (let i = 0; i < V; i++) {
+        const t0 = (i / V) * TAU, t1 = ((i + 1) / V) * TAU;
+        ctx.quad(s0, Math.cos(t0), Math.sin(t0), s1, Math.cos(t0), Math.sin(t0), s1, Math.cos(t1), Math.sin(t1), s0, Math.cos(t1), Math.sin(t1));
+      }
+    }
+    return { bounds: { min: [-6, 0, -6], max: [6, 12, 6] } };
   }
   // dust: a unit quad in XY, 400 copies placed by the material
   ctx.instances({ count: 400, bounds: BOUNDS });
