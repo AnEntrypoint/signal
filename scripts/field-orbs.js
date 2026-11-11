@@ -1,6 +1,6 @@
 // One orb, drawn ~40 times: a unit sphere; the material puts each on its ring over the field.
 export function geometry(ctx) {
-  const LON = 20, LAT = 12, normals = [];
+  const far = ctx.lod >= 3, LON = far ? 10 : 20, LAT = far ? 6 : 12, normals = [];
   const P = (lo, la) => { const th = (lo / LON) * 6.2831853, ph = (la / LAT) * Math.PI, s = Math.sin(ph); return [Math.cos(th) * s, Math.cos(ph), Math.sin(th) * s]; };
   const tri = (a, b, c) => { ctx.tri(...a, ...b, ...c); normals.push(...a, ...b, ...c); };
   for (let lo = 0; lo < LON; lo++) for (let la = 0; la < LAT; la++) {

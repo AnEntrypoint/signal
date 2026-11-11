@@ -3,14 +3,14 @@
 export function geometry(ctx) {
   const uvs = [];
   const tri = (a, b, c) => { ctx.tri(a[0], a[1], a[2], b[0], b[1], b[2], c[0], c[1], c[2]); uvs.push(a[3], a[4], b[3], b[4], c[3], c[4]); };
-  const S = 5, r0 = 0.045, r1 = 0.022;
+  const far = ctx.lod >= 3, S = far ? 3 : 5, r0 = 0.045, r1 = 0.022;
   for (let s = 0; s < S; s++) {
     const a = (s / S) * 6.2831853, b = ((s + 1) / S) * 6.2831853;
     const A0 = [Math.cos(a) * r0, 0, Math.sin(a) * r0, 0, 0], B0 = [Math.cos(b) * r0, 0, Math.sin(b) * r0, 0, 0];
     const A1 = [Math.cos(a) * r1, 1, Math.sin(a) * r1, 0, 1], B1 = [Math.cos(b) * r1, 1, Math.sin(b) * r1, 0, 1];
     tri(A0, A1, B1); tri(A0, B1, B0);
   }
-  const R = 0.22, LON = 8, LAT = 4;
+  const R = 0.22, LON = far ? 5 : 8, LAT = far ? 3 : 4;
   const P = (lo, la) => {
     const th = (lo / LON) * 6.2831853, ph = (la / LAT) * Math.PI;
     const y = Math.cos(ph), s = Math.sin(ph);
