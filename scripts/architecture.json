@@ -1,38 +1,40 @@
 {
   "schemaVersion": 1,
-  "basedOnSpecVersion": 89,
-  "updatedAt": "2026-11-11T10:12:49.232Z",
-  "summary": "Signal Stage is a multiplayer, walkable motion-graphics stage that plays a shared 198-second, 160-bpm cinematic trip when someone presses P/ROLL. A shared cine state synchronizes track, camera, and shader clock; the field, eye, tunnel, and now-built chamber use scripted geometry and shader materials, with each roll's seed varying the camera and visual motifs.",
+  "basedOnSpecVersion": 105,
+  "updatedAt": "2026-11-11T10:18:05.962Z",
+  "summary": "Signal Stage is a multiplayer, walkable motion-graphics stage whose shared 198-second, 160-bpm cinematic is synchronized by world.state.cine. The field, eye, tunnel, chamber, and new sun-eye are scripted geometry/shader assemblies; a common trip clock drives their visuals, with seeded motifs and a trip-specific full-screen look.",
   "scriptPaths": [],
   "places": [
-    "places/main/config.yaml (main, 3D) - black void with linear fog, terrain off, spawn at (0, 0.1, 16), gravity -24Y.",
-    "places/main/cells/x0z0.scene - stage director, field and eye assemblies around the origin, floor, and hidden serpents placeholder box.",
-    "places/main/cells/x0z-1.scene - five trip-tagged tunnel layers at (0, 9, -186), extending the flight passage.",
-    "places/main/cells/x0z-3.scene - trip-tagged chamber room, circuit glyphs, hands, hex idol, Lissajous line, and solids at the tunnel end."
+    "places/main/config.yaml (main, 3D) - black void, terrain off, spawn at (0, 0.1, 16), gravity -24Y; scripts/look-trip.js is the place-wide look.",
+    "places/main/cells/x0z0.scene - stage director, field and eye assemblies around the origin, floor, and a serpents blueprint placeholder.",
+    "places/main/cells/x0z-1.scene - sun-eye, drips and halo at (0, 62, -90), plus five trip-tagged tunnel layers at (0, 9, -186).",
+    "places/main/cells/x0z-3.scene - trip-tagged chamber room, circuit, hands, hex, Lissajous and solids; chamber-mask is also placed at (0, 15, -366)."
   ],
   "roots": [
     "world.config.yaml - world entry: multiplayer, player/camera templates, P/jump/movement inputs, arrival, lighting, HUD and nametag.",
     "templates/player.js#player - character root composing locomotion with player movement and cine input.",
     "templates/camera.js#camera - custom first-person camera; follows seeded shot flight during a roll, ordinary look pose otherwise.",
     "places/main/cells/x0z0.scene#director - all-audience scripts/stage.js director for synchronized audio and trip parameters.",
-    "scripts/ui.js - viewer-local ROLL/CUT and cinematic progress/section HUD."
+    "scripts/ui.js - viewer-local ROLL/CUT and cinematic progress/section HUD.",
+    "places/main/config.yaml atmosphere.look - installs scripts/look-trip.js as the full-screen trip post-processing look."
   ],
   "shared": [
     "scripts/lib/cine.js - CPU score clock, section lookup and camera interpolation shared by player, camera, director and HUD.",
-    "scripts/lib/data/score.yml and scripts/lib/data/shots.yml - track timing, sections, layer windows, lens/math score, and camera keyframes.",
-    "scripts/lib/data/tropes.yml - catalogue of TAS-inspired and original visual motifs, grouped by owning piece; scripts implement their variants.",
-    "scripts/lib/trip.js - shader clock, seeded choices, beat/audio envelopes, palettes, layer visibility and UV lens bending.",
-    "scripts/field-lib.js, scripts/eye-lib.js, scripts/tunnel-lib.js, scripts/chamber-lib.js and scripts/chamber-fx.js - shared family-specific geometry/shader helpers."
+    "scripts/lib/data/score.yml and scripts/lib/data/shots.yml - track timing, sections, layer windows, lens/math score and camera keyframes.",
+    "scripts/lib/data/tropes.yml - TAS-inspired and original motif catalogue grouped by owning piece; piece shaders implement variants.",
+    "scripts/lib/trip.js - shared shader clock, seeded choices, beat/audio envelopes, palettes, layer visibility and UV lens bending.",
+    "scripts/field-lib.js, scripts/eye-lib.js, scripts/tunnel-lib.js, scripts/chamber-lib.js and scripts/chamber-fx.js - family-specific geometry/shader helpers.",
+    "scripts/sun-lib.js - sun-eye timing, hue, ripple, symmetry and relighting shared by sun-disc, sun-drips and sun-halo materials."
   ],
   "notableExports": [
-    "scripts/player.js exports onInput, update; scripts/camera.js exports finiteNumber, update.",
-    "scripts/stage.js exports update; scripts/lib/cine.js exports SCORE, SHOTS, CINE, cineTime, sectionAt, rollRnd, cameraAt, beatEnv.",
-    "scripts/lib/trip.js exports SCORE, SEC, BPS, tripClock, win, pal, stripes, HUE, shown, lens, bendUv.",
-    "scripts/field-disc.js exports geometry; field-mandala.js exports material; field-orbs.js and field-stalks.js export geometry with paired *-mat.js materials.",
+    "scripts/player.js exports onInput, update; scripts/camera.js exports finiteNumber, update; scripts/stage.js exports update; scripts/lib/cine.js exports SCORE, SHOTS, CINE, cineTime, sectionAt, rollRnd, cameraAt, beatEnv.",
+    "scripts/lib/trip.js exports SCORE, SEC, BPS, tripClock, win, pal, stripes, HUE, shown, lens, bendUv; scripts/look-trip.js exports look.",
+    "scripts/field-disc.js exports geometry; field-mandala.js exports material; field-orbs.js and field-stalks.js export geometry with paired materials.",
     "scripts/eye-*-geo.js export geometry; eye-iris.js, eye-beads.js, eye-lids.js, eye-pupil.js and eye-rays.js export materials.",
     "scripts/tunnel-geo.js exports geometry, collider; tunnel-wall.js, tunnel-core.js, tunnel-dust.js, tunnel-gates.js and tunnel-ribs.js export materials.",
-    "scripts/chamber-*-geo.js export geometry and chamber-*-mat.js export materials; chamber-lib.js exports beam, polyline, bead; chamber-fx.js supplies shader helpers.",
-    "scripts/ui.js and ui/nametag.js export default; scripts/arrival.js exports onArrive, onLeave; scripts/humanoid-locomotion.js exports sit, onInput, update."
+    "scripts/chamber-*-geo.js export geometry/collider where defined and chamber-*-mat.js export materials; chamber-lib.js exports beam, polyline, bead; chamber-fx.js supplies shader helpers.",
+    "scripts/sun-lib.js exports TAU, PI, live, sel, breath, ripple, barStep, order, sweep, fam, relight, allLit; sun-disc.js, sun-drips.js and sun-halo.js export material.",
+    "scripts/sun-quad-geo.js and chamber-mask-geo.js export geometry, collider; sun-drips-geo.js exports RIM, geometry, collider; scripts/serpents-data.js exports Q0, BODIES."
   ],
   "ownership": [
     "scripts/player.js - owns local movement intent/velocity and writes shared world.state.cine = {start, by, seed} or null on cine input.",
@@ -40,30 +42,34 @@
     "scripts/camera.js / templates/camera.js - owns viewer-local rolling flag and camera pose/FOV; seeded cameraAt path replaces look orientation only during the roll.",
     "scripts/humanoid-locomotion.js - owns avatar gait/sit animation and locomotion scratch; player.js owns input intent and movement velocity.",
     "scripts/ui.js and ui/nametag.js - own viewer-local presentation, not synchronized cinematic state.",
-    "places/main/config.yaml owns atmosphere, spawn, gravity and terrain mode; world.config.yaml owns world services, inputs and templates."
+    "places/main/config.yaml owns atmosphere, spawn, gravity, terrain mode and look params; world.config.yaml owns world services, inputs and templates."
   ],
   "flows": [
     "world.config.yaml cine action (P) or HUD sendAction('cine') → scripts/player.js onInput → world.state.cine = {start: now + 300 ms, by, seed} or null.",
     "world.state.cine → scripts/ui.js render → viewer-local ROLL/CUT and rolling progress/section label.",
     "world.state.cine + score music → placed #director running scripts/stage.js → shared non-spatial track at timeAt=c.start; director stops audio and clears ended cine.",
-    "scripts/stage.js → params.t0/on/seed for every trip-tagged material and place look params; trip materials consume the same synchronized roll.",
+    "scripts/stage.js → params.t0/on/seed for trip-tagged materials and place look params; trip materials consume the same synchronized roll.",
     "score.yml + shots.yml → scripts/lib/cine.js cineTime/cameraAt → scripts/camera.js sets each viewer's seeded camera flight; ends back at look orientation.",
     "score.yml → scripts/lib/trip.js tripClock/SEC, shown(), lens() → field, eye, tunnel and chamber shader materials for clock, scored cutouts and lens parameters.",
     "world.state.cine.seed → stage material params.seed → trip.js c.rnd/c.pick/c.hue/c.dir → seeded palette, directions and motif variations across pieces.",
-    "scripts/lib/data/score.yml layer windows → trip.js shown(c,name,d) → piece material opacity/cutout, exposing the layers behind instead of fading to black.",
-    "scripts/tunnel-geo.js geometry(kind) → five placed tunnel layers; scripts/chamber-*-geo.js and *-mat.js → the six placed chamber visual layers.",
-    "scripts/eye-iris-geo.js → eye iris and pupil discs with different radius/segment/z params; separate eye materials shade the two discs.",
+    "scripts/lib/data/score.yml layer windows → trip.js shown(c,name,d) → piece material opacity/cutout, exposing layers behind instead of fading to black.",
+    "scripts/tunnel-geo.js kind-selected geometry → five tunnel layers; chamber geometry/material scripts → placed chamber visual layers including chamber-mask-geo.js.",
+    "scripts/sun-lib.js → sun-disc.js, sun-drips.js, sun-halo.js; their trip/sun tags let stage.js synchronize the sun-eye with the roll.",
+    "places/main/config.yaml atmosphere.look params → scripts/look-trip.js → full-screen score-driven post-processing, sharing tripClock with the scene materials.",
     "world.config.yaml movement/jump actions → scripts/player.js → character velocity; templates/player.js also runs humanoid locomotion."
   ],
   "behaviorFamilies": [
-    "scripts/field-* - mandala disc, stalks and orbs; field-lib.js shares timing/placement math, while separate geometry and materials vary the motifs and seeded tropes.",
+    "scripts/field-* - mandala disc, stalks and orbs; field-lib.js shares timing/placement math, while separate geometry and materials vary motifs and seeded tropes.",
     "scripts/eye-* - iris, pupil, rays, lids and beads compose the portal; eye-iris-geo.js is reused for iris and pupil with different parameters, eye-lib.js shares eye math.",
     "scripts/tunnel-* - five visual layers share tunnel-geo.js kind-selected geometry and tunnel-lib.js spatial/color helpers, with distinct wall/core/dust/gate/rib materials.",
-    "scripts/chamber-* - placed room, circuit, hands, hex, Lissajous and solids layers share chamber geometry/shader helpers and scored cutouts; chamber is no longer just a blueprint.",
-    "scripts/lib/trip.js plus score.yml - common seeded shader clock and layer/lens score reused by all trip materials; each piece supplies its own pattern and motif variations.",
+    "scripts/chamber-* - placed room, circuit, hands, hex, Lissajous, solids and mask layers share chamber geometry/shader helpers and scored cutouts.",
+    "scripts/sun-disc.js, sun-drips.js, sun-halo.js - three co-located sun-eye layers share sun-lib.js; separate disc, hanging-drip and depth-halo shaders vary the imagery.",
+    "scripts/look-trip.js and scripts/lib/trip.js - place-wide post-processing and scene shaders consume the same score clock, seeded selection and palette utilities.",
+    "scripts/lib/trip.js plus score.yml - common seeded shader clock and layer/lens score reused by trip materials; each piece supplies its own pattern and motif variations.",
     "templates/player.js composes humanoid-locomotion.js and player.js on each character: gait/sit animation versus movement intent and velocity."
   ],
   "probableOrphans": [
+    "scripts/serpents-data.js - defines mirrored serpent body data, but the placed serpents object in x0z0.scene is still an engine/blueprint placeholder and no current serpent geometry/material consumer is present.",
     "scripts/flat-starter-terrain.js and scripts/lib/data/world.yml - terrain generator/data without a consumer while main terrain is off.",
     "scripts/flower.js, scripts/grass.js, scripts/grass-look.js and scripts/pebble.js - meadow decoration code with no current place consumer."
   ],
@@ -72,7 +78,7 @@
     "The roll seed lives in world.state.cine.seed and stage.js pushes it with t0/on; add trip materials to the trip tag to receive all three parameters.",
     "stage.js converts c.start to shader t0 seconds modulo 3600 and repeats parameter pushes for several ticks so late-built materials receive the roll.",
     "Score is 198 seconds at 160 bpm, first beat 0.35 s; shader tripClock follows the roll when on and otherwise free-runs the silent duration loop.",
-    "Coordinates are metres, +Y up: field (0,0,0), upright eye (0,15,-34), tunnel runs -Z from -36 to -336, chamber around (0,15,-362).",
-    "Layer hiding is shader opacity/cutout via shown(), not a black fade; preserve scored windows and radial wipe behavior so hidden layers reveal what lies behind."
+    "Coordinates are metres, +Y up: field (0,0,0), upright eye (0,15,-34), sun-eye (0,62,-90), tunnel runs -Z from -36 to -336, chamber around (0,15,-362).",
+    "Layer hiding is shader opacity/cutout via shown(), not a black fade; sun channels are 60-69 and look-trip's seeded trope-deck selections use channels 70-79."
   ]
 }
