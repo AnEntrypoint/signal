@@ -92,9 +92,13 @@ function pieceLag(name) {
   const h = salt(name), kind = h % 3, size = 2.5 + (h % 5) * 1.5; // metres
   const P = positionWorld;
   let id;
-  if (kind === 0) { // spiral arms: a galaxy unwinding, never square cells
-    const q = P.sub(vec3(0, 15, 0)), rr = q.length(), an = atan(q.x, q.z.sub(q.y.mul(0.3))).div(6.2831853);
-    id = an.add(rr.div(size * 6)).mul(6 + (h % 3) * 2).floor(); }
+  if (kind === 0) { // circuit traces: current routed out from the centre on 45-degree lanes (PCB octagonal
+    // distance), each lane its own pace, so pieces light along a trace, never as square blocks
+    const q = P.sub(vec3(0, 15, 0)), ax = q.x.abs(), az = q.z.sub(q.y.mul(0.3)).abs();
+    const oct = ax.max(az).add(ax.min(az).mul(0.4142));
+    const lane = atan(q.x, q.z.sub(q.y.mul(0.3))).div(6.2831853).add(0.5).mul(16 + (h % 3) * 8).floor();
+    const run = lane.mul(1.618).fract().mul(0.6).add(0.7);
+    id = oct.div(size * 2).mul(run).floor().add(lane.mul(0.37)); }
   else if (kind === 1) id = P.sub(vec3(0, 15, 0)).length().div(size).floor();                 // rings
   else id = atan(P.x, P.z.sub(P.y.mul(0.3))).div(6.2831853).add(0.5).mul(12 + (h % 4) * 4).floor(); // sectors
   const r = id.add(h * 0.731).sin().mul(43758.5453).fract();
