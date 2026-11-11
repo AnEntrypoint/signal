@@ -10,7 +10,7 @@ export function material(ctx) {
   const pol = attribute("polar", "vec4");
   const r = pol.x, ang = pol.y, row = pol.z, mul = pol.w;
   const hop = kickAt(c, r);
-  const wave = r.mul(0.35).sub(c.bar.mul(1.5707963)).add(ang.mul(choose(c, 18, [6, 8, 12])).cos().mul(1.5)).sin().mul(0.5).add(0.5);
+  const wave = r.mul(0.35).sub(c.bar.mul(1.5707963)).add(ang.mul(choose(c, 8, [6, 8, 12])).cos().mul(1.5)).sin().mul(0.5).add(0.5);
   const h = wave.mul(1.6).add(0.6).add(hop.mul(0.22)).mul(mul);
   const s = backOut(riseR(c.sec).sub(1.5).sub(r).div(4)).mul(backOut(resetR(c.sec).sub(r).div(4))).mul(endFade(c.sec));
   const part = uv().x, v = uv().y;

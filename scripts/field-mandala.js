@@ -21,14 +21,17 @@ export function material(ctx) {
   // outer colour, black ring, inner contrasting colour: a little target
   const target = (len, R, cA, cB) => mix(mix(cA.mul(fill(len.sub(R))), vec3(0), fill(len.sub(R * 0.68))), cB, fill(len.sub(R * 0.42)));
 
-  const q = r.div(BW), i = q.floor(), f = q.fract(), y = f.mul(BW), rm = i.add(0.5).mul(BW);
+  const q = r.div(BW), i = q.floor(), rm = i.add(0.5).mul(BW);
   const dir = i.mod(2).mul(2).sub(1);
+  // counter-breath: neighbour rings swell in antiphase, so the surface rolls like a wave
+  const f = q.fract().sub(0.5).mul(dir.mul(c.sec.mul(TAU / 12).sin()).mul(0.06).add(1)).add(0.5).clamp(0, 1), y = f.mul(BW);
+  const NS = choose(c, 8, [6, 8, 12]); // the roll's symmetry order, shared by every radial piece
   const u = a.add(dir.mul(c.dir).mul(mix(0.7, 1.3, c.rnd(13))).mul(c.phrase).div(i.mod(3).add(4)));
   const cell = (w, shift = 0) => {
     const n = rm.mul(TAU).div(w).floor().max(3);
     const tc = u.mul(n).add(shift).fract().sub(0.5);
     const cw = r.mul(TAU).div(n);
-    return { tc, cw, x: tc.mul(cw) };
+    return { tc, cw, x: tc.mul(cw), id: u.mul(n).add(shift).floor(), n };
   };
   const K = colours(c.sec, i), A = K.A, B = K.B, H = K.H, H2 = K.H2;
   const W = vec3(0.95, 0.95, 0.95);
@@ -84,6 +87,46 @@ export function material(ctx) {
   const col = pick(col0, col1, col2, col3, col4, col5);
   const d = pick(d0, d1, d2, d3, d4, d5);
 
+  // ---- THE DECK: three more bodies the bands can wear, dealt by zone and phrase ----
+  const sel4 = (v, a0, a1, a2, a3) => select(v.lessThan(0.5), a0, select(v.lessThan(1.5), a1, select(v.lessThan(2.5), a2, a3)));
+  const barN = c.bar.floor();
+  // bead-mandala: rows of raised beads, each row its own shape (sphere, cube, chevron, drop), a chase along each row
+  const jb = f.mul(2).floor(), fyb = f.mul(2).fract().sub(0.5).mul(BW / 2), ri = i.mul(2).add(jb), shp = ri.mod(4);
+  const cb = cell(1.55, jb.mul(0.5)), xb = cb.x;
+  const tB = fyb.add(0.12), ttB = select(tB.greaterThan(0), tB.mul(0.6), tB);
+  const sdB = sel4(shp, length(vec2(xb, fyb)).sub(0.5), max(xb.abs(), fyb.abs()).sub(0.42),
+    max(fyb.add(xb.abs().mul(0.8)).sub(0.2).abs().sub(0.16), xb.abs().sub(0.5)),
+    length(vec2(xb.mul(tB.max(0).mul(3).add(1)), ttB)).sub(0.38));
+  const capB = fill(length(vec2(xb.add(0.13), fyb.sub(0.13))).sub(0.11)).mul(fill(sdB.add(0.1)));
+  const rowC = sel4(shp, A, H, B, H2);
+  const colBd = mix(mix(rowC.mul(fill(sdB)), vec3(0), line(sdB.add(0.13), 0.035)), W, capB);
+  const chase = cb.id.sub(barN.mul(dir).mul(c.dir)).add(8000).mod(8).lessThan(0.5).select(1, 0);
+  // op-art-field: black/white stripes that bulge like cloth; inside each bulge they break into a bent checker
+  const bump = a.mul(TAU).mul(NS).cos().mul(r.mul(0.21).sub(c.sec.mul(TAU / 48).mul(c.dir)).sin());
+  const phO = r.mul(0.45).add(bump.mul(1.1)), fO = phO.fract();
+  const s1 = fill(fO.sub(0.5).abs().sub(0.25).mul(2.2));
+  const s2 = a.mul(NS).mul(4).add(bump.mul(0.35)).fract().lessThan(0.5).select(1, 0);
+  const opM = select(bump.greaterThan(0.3), s1.sub(s2).abs(), s1);
+  const colOp = mix(W.mul(opM), A.mul(opM), fill(fO.sub(0.5).abs().sub(0.045).mul(2.2)));
+  const dOp = fO.sub(0.5).abs().sub(0.25).mul(2.2);
+  // moire: two fine sets of circles whose centres slide apart along the mirror axis, so slow fringes crawl
+  const eM = c.sec.mul(TAU / 48).sin().mul(2.5).add(4);
+  const ring = (cz) => { const l = length(vec2(p.x, p.y.sub(cz))).div(0.9).fract().sub(0.5).abs().sub(0.3).mul(0.9); return fill(l.negate()); };
+  const m1 = ring(eM), m2 = ring(eM.negate());
+  const colMo = A.mul(m1).add(B.mul(m2)).add(H.mul(m1).mul(m2).mul(0.7));
+  const dMo = float(0.5).sub(max(m1, m2));
+  const phI = c.sec.sub(0.35).div(12).floor().max(0), zone = r.div(30).floor().min(2);
+  const vi = phI.add(zone).add(c.pick(18, 4)).mod(4);
+  const ov = phI.add(c.rnd(18).mul(12).floor()).mod(3); // 0 graphite-and-gold, 1 keyhole depths, 2 soft mask
+  // layer-keyhole + depth-parallax: through the black between the shapes, the same dot rows twice more, deeper, slower, dimmer
+  const deepDots = (pitch, rot, rad) => {
+    const rq = r.div(pitch), ry = rq.fract().sub(0.5).mul(pitch), n = rq.floor().add(0.5).mul(TAU).floor().max(3);
+    const tc = a.add(rot).mul(n).add(rq.floor().mul(0.5)).fract().sub(0.5);
+    return fill(length(vec2(tc.mul(r).mul(TAU).div(n), ry)).sub(rad));
+  };
+  const deep = K.fam.B.mul(deepDots(2.2, c.phrase.div(8).mul(c.dir), 0.55)).mul(0.3)
+    .add(K.fam.A.mul(deepDots(1.3, c.phrase.div(-16).mul(c.dir), 0.3)).mul(0.12));
+
   // reset: neon line-art outside the refilling radius
   const Rf = resetR(c.sec);
   const la = fill(Rf.sub(r));
@@ -92,7 +135,10 @@ export function material(ctx) {
   const lineCol = mix(K.fam.A, K.fam.B, u.mul(3).add(c.sec.div(24)).mul(TAU).sin().mul(0.5).add(0.5)).mul(1.2);
   const kl = kickAt(c, r);
   const lam = lit(c, r, a, i);
-  const bandBody = shade(col, lam).mul(kl.mul(lam).mul(0.3).add(1));
+  const colV = sel4(vi, col, colBd, colOp, colMo), dV = sel4(vi, d, sdB, dOp, dMo);
+  const lamV = max(lam, vi.sub(1).abs().lessThan(0.5).select(chase, 0));
+  const keyOn = max(ov.sub(1).abs().lessThan(0.5).select(1, 0), K.fam.full.select(1, 0));
+  const bandBody = shade(colV, lamV).mul(kl.mul(lamV).mul(0.3).add(1)).add(deep.mul(fill(dV).oneMinus()).mul(keyOn));
 
   // BLOOM = PHYLLOTAXIS. Bead n sits at angle n * 137.508 deg, radius C * sqrt(n). The nearest bead to this pixel is
   // found exactly: the beads are a lattice in (n, turn) space, solved in the two Fibonacci bases that are reduced
@@ -127,8 +173,10 @@ export function material(ctx) {
 
   // RESET = THE {7,3} HYPERBOLIC TILING of the Poincare disc, as line-art. The pixel is folded into the (2,3,7)
   // triangle: 7-fold dihedral fold about the centre, then inversion in the heptagon's edge circle, 7 times.
-  let zx = p.y.div(90), zy = p.x.div(90), gen = float(0);
-  const r02 = zx.mul(zx).add(zy.mul(zy));
+  const z0x = p.y.div(90), z0y = p.x.div(90), r02 = z0x.mul(z0x).add(z0y.mul(z0y));
+  // the Mobius slide z -> (z + t) / (1 + t z) along the mirror axis: the floor drifts without leaving the disc
+  const tM = c.sec.mul(TAU / 24).sin().mul(0.3).mul(c.dir), nX = z0x.add(tM), dX = tM.mul(z0x).add(1), dY = tM.mul(z0y), dn = dX.mul(dX).add(dY.mul(dY));
+  let zx = nX.mul(dX).add(z0y.mul(dY)).div(dn), zy = z0y.mul(dX).sub(nX.mul(dY)).div(dn), gen = float(0);
   const fold7 = () => {
     const rr = vec2(zx, zy).length(), af = atan2(zy, zx).add(Math.PI / 7 + TAU).mod(TAU / 7).sub(Math.PI / 7).abs();
     zx = rr.mul(af.cos()); zy = rr.mul(af.sin());
@@ -163,6 +211,12 @@ export function material(ctx) {
   const m = new MeshBasicNodeMaterial();
   m.colorNode = body.mul(fill(r.sub(R))).add(vec3(1, 1, 1).mul(rim)).add(K.fam.H.mul(ripple).mul(fill(r.sub(R)))).add(vec3(0.3, 0.4, 1).mul(seed)).mul(endFade(c.sec));
   m.colorNode = roll(c, m.colorNode);
+  // graphite-and-gold: the whole field embossed near-black, only the gold teeth lit where the hand passes
+  const inBloom = win(c.sec, SEC.bloom);
+  const ggOn = ov.lessThan(0.5).and(K.fam.full.not()).select(1, 0).mul(inBloom.oneMinus()).mul(la.oneMinus()).mul(fill(r.sub(R)));
+  const lumG = m.colorNode.x.mul(0.3).add(m.colorNode.y.mul(0.6)).add(m.colorNode.z.mul(0.1)).min(1);
+  const teeth = k.sub(3).abs().lessThan(0.5).select(fill(d3), 0);
+  m.colorNode = mix(m.colorNode, vec3(0.75, 0.82, 1.0).mul(lumG.mul(0.1)).add(vec3(1.0, 0.62, 0.05).mul(teeth).mul(lam.mul(1.2).add(0.08))).mul(endFade(c.sec)), ggOn);
   // THE LAYER SCORE: a real cutout that opens from the centre like an iris. Only the grown part is surface;
   // and the self-cutout: on every 2nd bar the stripe bands swap which of them have their black gaps cut away.
   const grown = max(fill(r.sub(R).sub(0.3)), fill(r.sub(0.45)).mul(c.sec.lessThan(SEC.pulse[0] + 0.5).select(1, 0)));
@@ -171,8 +225,13 @@ export function material(ctx) {
   const cutK = select(cutV.lessThan(0.5), float(1), select(cutV.lessThan(1.5), float(3), float(0)));
   const gap = select(cutV.lessThan(0.5), fill(d1).oneMinus(), select(cutV.lessThan(1.5), fill(d3).oneMinus().mul(fill(g3.sub(0.3)).oneMinus()), fill(d0).oneMinus()));
   const hole = k.sub(cutK).abs().lessThan(0.5).and(swap.lessThan(0.5)).select(gap.mul(fill(inset(0.44))), 0);
+  // soft-mask-reveal: a lobed ring, soft-edged by dither, wipes slowly outward and uncovers what lies under the field
+  const softOn = max(ov.sub(2).abs().lessThan(0.5).select(1, 0), K.fam.full.select(1, 0)).mul(inBloom.oneMinus()).mul(la.oneMinus());
+  const Rm = c.phrase.div(2).fract().mul(70).add(12).add(a.mul(TAU).mul(NS).cos().mul(5));
+  const dith = p.x.mul(91.7).add(p.y.mul(57.3)).sin().mul(43758.5).fract();
+  const soft = smoothstep(6, 2, r.sub(Rm).abs()).greaterThan(dith.mul(0.9).add(0.05)).select(1, 0).mul(softOn);
   const seedOn = c.sec.lessThan(SEC.pulse[0] + 0.5).select(1, 0);
-  m.opacityNode = max(shown(c, "field", r.div(90)), seedOn).mul(grown).mul(float(1).sub(hole));
+  m.opacityNode = max(shown(c, "field", r.div(90)), seedOn).mul(grown).mul(float(1).sub(hole)).mul(float(1).sub(soft));
   m.alphaTest = 0.5;
   m.fog = false;
   return m;
