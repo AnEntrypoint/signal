@@ -268,7 +268,13 @@ export function look(ctx) {
   // black stays black: a soft floor under the dim graphite
   col = col.mul(mix(float(1), smoothstep(mix(float(0.012), float(0.1), wDeep), mix(float(0.06), float(0.22), wDeep), luma(col)), on)); // deep: a harder black floor, half the frame stays black
   // dome mask, return fade to black 190-193 and hold, vignette
-  col = col.mul(domeMask).mul(mix(float(1), smoothstep(193, 190, sec), on));
+  // the return closes as the Eye's lid, 190-193: an almond of black shutting top and bottom toward the centre line,
+  // its rim a scalloped row of beads, so the picture leaves through a shape, never a whole-frame dim
+  const lidOpen = float(1).sub(smoothstep(190, 193, sec));
+  const lx = p0.x.div(1.4), lidY = lidOpen.mul(1.2).mul(float(1).sub(lx.mul(lx)))
+    .add(p0.x.mul(46).sin().abs().mul(0.014).mul(lidOpen));
+  const lid = smoothstep(lidY, lidY.add(0.004), p0.y.abs());
+  col = col.mul(domeMask).mul(mix(float(1), float(1).sub(lid), on));
   // FOCUS: depth of field gives the layers meaning. A being on stage (74 m out on the camera's line) stands sharp,
   // the running scene around it goes soft. Otherwise the focus pulls slowly through the layers, near to far and
   // back once every two phrases, so one layer reads at a time while the others breathe out of focus.
