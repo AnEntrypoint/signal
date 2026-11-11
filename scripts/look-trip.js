@@ -141,10 +141,10 @@ export function look(ctx) {
   const aR = aStep.mul(0.17).add(0.12).add(petal).add(breath.mul(0.015));
   const aWin = smoothstep(aR, aR.sub(0.03), apr);
   // peak's mirror modes change every 12 s phrase. A mode never swaps across the whole frame at once: it closes as an iris
-  // into the centre over the phrase's last bar, so the clean world is back by the change, and the next mode opens out
-  // of the centre over the first bar.
+  // into the centre over the phrase's last two bars, so the clean world is back by the change, and the next mode opens out
+  // of the centre over the first two.
   const pfr = sec.sub(SEC.peak[0]).div(12).fract();
-  const pOpen = smoothstep(0, 0.125, pfr).mul(smoothstep(1, 0.875, pfr));
+  const pOpen = smoothstep(0, 0.25, pfr).mul(smoothstep(1, 0.75, pfr));   // two bars each way
   const pR = pOpen.mul(1.15).add(petal.mul(pOpen));
   const pWin = smoothstep(pR, pR.sub(0.06), apr);
   const kmix = aWin.mul(0.95).mul(wAsc).add(pk.mul(pWin).mul(wPeak)).clamp(0, 1);
