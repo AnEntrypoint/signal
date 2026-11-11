@@ -328,7 +328,7 @@ const G = gIn.mul(gOut);
   }
 
   const thS = atan2(q0.x, q0.y).abs(), inArc = step(thS, 6.5 * STEP);
-  solid(step(rr, R + 0.6).max(step(rr, ARC + RM + 0.5).mul(inArc)).mul(step(0.004, pd)));
+  cover = cover.max(step(rr, R + 0.6).max(step(rr, ARC + RM + 0.5).mul(inArc)).mul(step(0.004, pd)));
   m.colorNode = col;
   m.opacityNode = cover.mul(live).mul(G);
   m.alphaTest = 0.5;
