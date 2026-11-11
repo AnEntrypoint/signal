@@ -24,6 +24,6 @@ export function material(ctx) {
   const yo = E.mul(o).add(inv.mul(d));
   const m = new MeshBasicNodeMaterial();
   m.positionNode = vec3(mix(xo, x, isBody), sgn.mul(mix(yo, yBody, isBody)), g.z);
-  m.colorNode = vertexColor().xyz.mul(1.7).mul(smoothstep(0.0, 0.1, o)).mul(c.kick.mul(0.25).add(1));
+  m.colorNode = vertexColor().xyz.mul(0.95).mul(smoothstep(0.0, 0.1, o)).mul(c.kick.mul(0.15).add(0.9));
   return m;
 }

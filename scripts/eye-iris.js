@@ -75,8 +75,8 @@ export function material(ctx) {
   const rk = c.beat.fract().mul(10).add(5);
   const kr = smoothstep(rk.sub(0.55), rk.sub(0.1), r).mul(float(1).sub(smoothstep(rk.add(0.1), rk.add(0.3), r)));
   const power = c.kick.pow(0.35).mul(win(c.sec, SEC.pulse).mul(1.4).add(0.7)).min(1);
-  col = mix(col, vec3(2.2, 2.8, 3.2), kr.mul(power));
-  col = col.mul(c.kick.mul(0.3).add(1));
+  col = mix(col, vec3(0.75, 1.1, 1.25), kr.mul(power));
+  col = col.mul(c.kick.mul(0.18).add(0.9));
 
   const m = new MeshBasicNodeMaterial();
   m.colorNode = col;

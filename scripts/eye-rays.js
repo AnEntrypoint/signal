@@ -18,6 +18,6 @@ export function material(ctx) {
   const cs = th.cos(), sn = th.sin();
   const m = new MeshBasicNodeMaterial();
   m.positionNode = vec3(g.x.mul(cs).sub(g.y.mul(sn)).mul(k), g.x.mul(sn).add(g.y.mul(cs)).mul(k), g.z);
-  m.colorNode = vertexColor().xyz.mul(1.6).mul(smoothstep(0.0, 0.1, o)).mul(c.kick.mul(0.3).add(1));
+  m.colorNode = vertexColor().xyz.mul(0.95).mul(smoothstep(0.0, 0.1, o)).mul(c.kick.mul(0.2).add(0.9));
   return m;
 }
