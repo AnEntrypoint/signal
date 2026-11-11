@@ -1,0 +1,27 @@
+// 24 tapering petals r 15..26 in two hues (black inset, three dots each) and a 96-dot halo at r 27, flat, facing +Z.
+export function geometry(ctx) {
+  const Z = -0.5;
+  const prof = [[14.6, 1.5], [16.4, 1.78], [18.6, 1.45], [21.5, 0.85], [24.3, 0.36], [26, 0]];
+  const disc = (cx, cy, rad, z, n = 12) => { for (let i = 0; i < n; i++) { const a = (i / n) * 6.28318, b = ((i + 1) / n) * 6.28318; ctx.tri(cx, cy, z, cx + rad * Math.cos(a), cy + rad * Math.sin(a), z, cx + rad * Math.cos(b), cy + rad * Math.sin(b), z); } };
+  for (let i = 0; i < 24; i++) {
+    const t = (i / 24) * Math.PI * 2, cx = Math.cos(t), cy = Math.sin(t);
+    const P = (u, v) => [u * cx - v * cy, u * cy + v * cx];
+    const petal = (u0, us, ws, z) => {
+      for (let k = 0; k < prof.length - 1; k++) {
+        const ua = u0 + (prof[k][0] - 14.6) * us, ub = u0 + (prof[k + 1][0] - 14.6) * us, wa = prof[k][1] * ws, wb = prof[k + 1][1] * ws;
+        const a = P(ua, -wa), b = P(ua, wa), c = P(ub, wb), d = P(ub, -wb);
+        ctx.quad(a[0], a[1], z, b[0], b[1], z, c[0], c[1], z, d[0], d[1], z);
+      }
+    };
+    if (i % 2) ctx.color(0.2, 0.95, 1); else ctx.color(0.72, 0.2, 1);
+    petal(14.6, 1, 1, Z);
+    ctx.color(0, 0, 0);
+    petal(15.3, 0.8, 0.62, Z + 0.03);
+    if (i % 2) ctx.color(1, 0.2, 0.8); else ctx.color(1, 0.93, 0.1);
+    [[16.5, 0.42], [18.3, 0.32], [19.8, 0.24], [21.1, 0.17]].forEach(([u, rad]) => { const q = P(u, 0); disc(q[0], q[1], rad, Z + 0.06); });
+  }
+  ctx.color(1, 1, 1);
+  for (let i = 0; i < 96; i++) { const t = (i / 96) * Math.PI * 2; disc(27 * Math.cos(t), 27 * Math.sin(t), i % 4 ? 0.2 : 0.34, Z, 10); }
+  return { bounds: { min: [-31, -31, -1], max: [31, 31, 0] } };
+}
+export function collider() { return null; }
