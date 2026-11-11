@@ -1,6 +1,6 @@
 // knot-serpent: two mirrored (p,q) torus knots flanking the totem, a striped tube with a light running its length.
 // (p,q) from the seed: (2,3), (3,5) or (2,5). C(u) = ((R + r cos qu) cos pu, (R + r cos qu) sin pu, r sin qu).
-import { positionLocal, uv, attribute, float, vec3, select, varying, step, smoothstep, cross, normalize, mix } from "builtin/tsl";
+import { positionLocal, uv, attribute, float, vec3, select, varying, step, smoothstep, mix } from "builtin/tsl";
 import { MeshBasicNodeMaterial, DoubleSide } from "builtin/three";
 import { tripClock } from "./lib/trip.js";
 import { finish, colours, shown, kickAt, win, SEC, TAU } from "./serpents-lib.js";
@@ -16,8 +16,8 @@ export function material(ctx) {
   const R = float(7.5).mul(br), r = float(3.2).mul(k.mul(0.06).add(1));
   const turn = c.sec.mul(TAU / 72).mul(c.dir).mul(side);
   const C = (t) => { const a = t.mul(TAU); const rr = R.add(r.mul(a.mul(Q).cos())); return vec3(rr.mul(a.mul(P).add(turn).cos()), rr.mul(a.mul(P).add(turn).sin()), r.mul(a.mul(Q).sin())); };
-  const c0 = C(u), T = normalize(C(u.add(0.002)).sub(c0));
-  const N = normalize(cross(T, vec3(0, 0, 1)).add(vec3(0.0001, 0, 0))), B = cross(T, N);
+  const c0 = C(u), T = C(u.add(0.002)).sub(c0).normalize();
+  const N = T.cross(vec3(0, 0, 1)).add(vec3(0.0001, 0, 0)).normalize(), B = T.cross(N);
   const g = smoothstep(108.35, 114.35, c.sec).mul(smoothstep(190, 186, c.sec));
   const tube = float(0.55).mul(g);
   const ang = w.mul(TAU);
