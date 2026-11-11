@@ -76,7 +76,7 @@ export function material(ctx) {
   const sense = (n) => step(0.5, rn(n)).mul(2).sub(1);
   // hue family crosses the palette: 0 blue/violet, 1 magenta/orange, 2 green/yellow, 3 white-led op-art (white wood,
   // one hot accent fruit); channel 18 swaps which colour is wood and which is fruit inside the family
-  const fam = pk(0, 4), hot = pk(16, 3), swp = pk(18, 2);
+  const fam = c.seed.add(pk(0, 4)).mod(4).floor(), hot = pk(16, 3), swp = pk(18, 2);
   const blue = vec3(0.05, 0.12, 1.0), violet = vec3(0.45, 0.05, 1.0), pink = vec3(1.0, 0.05, 0.6), orange = vec3(1.0, 0.38, 0.02);
   const yellow = vec3(1.0, 0.85, 0.05), green = vec3(0.1, 1.0, 0.15), W = vec3(1, 1, 1);
   const H = pink.mul(is(hot, 0)).add(orange.mul(is(hot, 1))).add(yellow.mul(is(hot, 2)));   // hot accent
