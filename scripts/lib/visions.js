@@ -32,7 +32,12 @@ export const BEINGS = [
 function rnd(seed, n) { const x = Math.sin((seed + 1) * (n * 7.1234 + 3.1)) * 15731.743; return x - Math.floor(x) }
 
 // [{ slot: [a, b], being }] for this roll; [] when idle (seed 0).
+const VDEALT = new Map()   // one deal per seed, built once and reused
 export function dealVisions(seed) {
+  let d = VDEALT.get(seed); if (d) return d
+  d = dealVisionsFresh(seed); if (VDEALT.size > 8) VDEALT.clear(); VDEALT.set(seed, d); return d
+}
+function dealVisionsFresh(seed) {
   if (!seed) return []
   const order = BEINGS.filter((b) => b.built).map((b) => ({ b, r: rnd(seed, 40 + b.k) })).sort((p, q) => p.r - q.r).map((p) => p.b)
   // a being is part of its stretch, not a cut-away: it starts drawing in up to 16 bars before the drop (never in the

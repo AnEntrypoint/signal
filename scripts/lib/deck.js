@@ -6,7 +6,12 @@ import SCORE from './data/score.yml'
 const D = SCORE.deck, S = SCORE.sections
 function rnd(seed, n) { const x = Math.sin((seed + 1) * (n * 9.137 + 1.7)) * 24634.6345; return x - Math.floor(x) }
 // [{ a, b, src, rate, name }] per drop stretch; seed 0 = the score as written
+const DEALT = new Map()   // one deal per seed, built once and reused every frame (no per-frame garbage)
 export function dealDeck(seed) {
+  let d = DEALT.get(seed); if (d) return d
+  d = dealFresh(seed); if (DEALT.size > 8) DEALT.clear(); DEALT.set(seed, d); return d
+}
+function dealFresh(seed) {
   if (!seed) return D.segments.map(([a, b]) => ({ a, b, src: a, rate: 1, name: null }))
   const long = D.long.map((n, k) => ({ n, r: rnd(seed, 80 + k) })).sort((p, q) => p.r - q.r).map((p) => p.n)
   const short = D.short[Math.min(D.short.length - 1, Math.floor(rnd(seed, 90) * D.short.length))]
