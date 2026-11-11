@@ -53,7 +53,7 @@ lens:
   flight: { bulge: 0.45, swirl: 0.3,  fold: 0, hyper: 0.0,  droste: 0 }
   hex:    { bulge: 0.0,  swirl: 0.0,  fold: 1, hyper: 0.25, droste: 0 }
   reset:  { bulge: 0.0,  swirl: -0.25, fold: 0, hyper: 0.55, droste: 0 }
-  ascent: { bulge: 0.2,  swirl: 0.2,  fold: 1, hyper: 0.3,  droste: 0 }
+  ascent: { bulge: 0.15, swirl: 0.1,  fold: 0, hyper: 0.15, droste: 0 }   # calmer: the petal window carries the mirror
   peak:   { bulge: 0.3,  swirl: 0.3,  fold: 1, hyper: 0.45, droste: 0 }
   return: { bulge: -0.2, swirl: 0.0,  fold: 0, hyper: 0.0,  droste: 1 }
 # The maths each section is COMPOSED with: a different family every time, never the same trick twice running.

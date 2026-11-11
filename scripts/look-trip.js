@@ -119,7 +119,15 @@ export function look(ctx) {
   const kg = screenUV.mul(asp).mul(9).fract().sub(0.5).length();
   const holes = smoothstep(0.3, 0.27, kg.sub(breath.mul(0.06)));
   const pk = mix(float(0.6), select(st.lessThan(0.5), float(1), select(st.lessThan(1.5), float(0), select(st.lessThan(2.5), float(1), holes))), float(1).sub(first));
-  const kmix = smoothstep(SEC.ascent[0], SEC.ascent[1], sec).mul(0.85).mul(wAsc).add(pk.mul(wPeak)).clamp(0, 1);
+  // ascent: the mirror world opens as a petal window from the centre, one step every 6 s (its petal count is the
+  // fold count it shows), each step easing in over a bar while the clean world keeps moving outside it.
+  // Layered, not a full-frame swap: inside is reflection, outside is the world, the edge is the flower.
+  const aq = sec.sub(SEC.ascent[0]).div(6), aStep = aq.floor().clamp(0, 3).add(smoothstep(0, 0.25, aq.fract()));
+  const ap = ub.sub(0.5).mul(asp), apr = ap.length(), apa = atan(ap.x, ap.y);
+  const petal = apa.mul(nA).add(kRot.mul(-2)).cos().mul(0.5).add(0.5).mul(0.07);
+  const aR = aStep.mul(0.17).add(0.12).add(petal).add(breath.mul(0.015));
+  const aWin = smoothstep(aR, aR.sub(0.03), apr);
+  const kmix = aWin.mul(0.95).mul(wAsc).add(pk.mul(wPeak)).clamp(0, 1);
 
   // chromatic aberration: R and B pushed radially, growing toward the edge
   const ab = float(0.0015).add(c.kick.mul(0.006).mul(on));
