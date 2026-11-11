@@ -200,7 +200,7 @@ export function material(ctx) {
       const ga = atan2(g.y, g.x).sub(roll), f = g.length().div(1.6).sub(ga.div(TAU)).fract();
       const spiral = stroke(f.min(inv(f)).mul(1.6), 0.12).mul(step(g.length(), sz - 1));
       const rim = puff.mul(inv(dot(g.add(vec2(0, 0.7)).length(), sz - 0.6)));
-      col = mix(col, mix(C, H, 0.5).mul(spiral.mul(0.6).add(rim)).mul(flash.mul(1.4)), puff);
+      col = mix(col, C.mul(spiral).add(H.mul(rim)).mul(flash.mul(1.1).add(0.3)), puff);   // black puff, palette spiral + rim lit by the kick
       cover = cover.max(puff);
     }
     // near sparks: small bolt glyphs or rain beads blown sideways in gusts across the lower sides
