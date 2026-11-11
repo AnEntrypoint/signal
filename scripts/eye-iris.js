@@ -5,7 +5,7 @@
 // Neighbour rows crawl opposite ways at different rates (48..96 s a turn). One hue family per phrase (eye-lib fam).
 import { MeshBasicNodeMaterial } from "builtin/three";
 import { positionGeometry, float, vec3, smoothstep, mix, step, atan2, length, fwidth } from "builtin/tsl";
-import { tripClock, win, SEC } from "./lib/trip.js";
+import { tripClock, win, SEC, shown } from "./lib/trip.js";
 import { TAU, fam, sweep, relight, gate, breathScale } from "./eye-lib.js";
 
 export function material(ctx) {
@@ -83,5 +83,11 @@ export function material(ctx) {
   const m = new MeshBasicNodeMaterial();
   m.positionNode = positionGeometry.mul(vec3(s, s, 1));
   m.colorNode = col;
+  // layer score cutout (wipes out from the pupil) + self-cutout: every 4th 0.4 m ring of the blue zone is a real
+  // hole showing the tunnel/rays behind; the holes step one ring inward per bar.
+  const k = r.sub(5.4).div(0.4).floor();
+  const hole = step(5.4, r).mul(step(r, 9.0)).mul(step(k.add(c.bar.floor()).mod(4), 0.5)).mul(step(12.35, c.sec));
+  m.opacityNode = shown(c, "eye", r.div(15)).mul(float(1).sub(hole));
+  m.alphaTest = 0.5;
   return m;
 }

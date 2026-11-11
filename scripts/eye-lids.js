@@ -2,7 +2,7 @@
 // Shut: two black sheets meet on the horizon and nothing glows. Open: only the striped rim and the lashes remain.
 import { MeshBasicNodeMaterial } from "builtin/three";
 import { positionGeometry, vertexColor, float, vec3, step, mix, smoothstep, varying } from "builtin/tsl";
-import { tripClock } from "./lib/trip.js";
+import { tripClock, shown } from "./lib/trip.js";
 import { lidOpen, LID, fam, ripple, barStep, relight, gate, breathScale } from "./eye-lib.js";
 
 export function material(ctx) {
@@ -34,7 +34,10 @@ export function material(ctx) {
   const any = step(0.5, vc.x.max(vc.y).max(vc.z));
   const col = mix(mix(mix(F.hot(0.1), F.A, isY), F.at(0.15), isG), vec3(1, 1, 1), isW).mul(any);
   const bs = breathScale(c.sec);
-  m.positionNode = vec3(mix(xo, x, isBody).mul(bs), sgn.mul(mix(yo, yBody, isBody)).mul(bs), g.z);
+  const P = vec3(mix(xo, x, isBody).mul(bs), sgn.mul(mix(yo, yBody, isBody)).mul(bs), g.z);
+  m.positionNode = P;
+  m.opacityNode = shown(c, "eye", varying(P.xy.length().div(22)));
+  m.alphaTest = 0.5;
   m.colorNode = relight(col, lit.max(isW.mul(0.55).mul(step(12.35, c.sec)))).mul(smoothstep(0.0, 0.1, o));
   return m;
 }

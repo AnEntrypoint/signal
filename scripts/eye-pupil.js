@@ -3,7 +3,7 @@
 // flight through the hole is clean and the tunnel shows on the approach.
 import { MeshBasicNodeMaterial } from "builtin/three";
 import { positionGeometry, positionWorld, cameraPosition, float, vec3, smoothstep, mix, length, atan2, distance, fwidth } from "builtin/tsl";
-import { tripClock } from "./lib/trip.js";
+import { tripClock, shown } from "./lib/trip.js";
 import { TAU, fam, breathScale } from "./eye-lib.js";
 
 export function material(ctx) {
@@ -30,7 +30,7 @@ export function material(ctx) {
   const s = breathScale(c.sec);
   m.positionNode = positionGeometry.mul(vec3(s, s, 1));
   m.colorNode = col;
-  m.opacityNode = smoothstep(12, 26, distance(cameraPosition, positionWorld));
+  m.opacityNode = smoothstep(12, 26, distance(cameraPosition, positionWorld)).mul(shown(c, "eye", r.div(15)));
   m.transparent = true;
   m.depthWrite = false;
   return m;

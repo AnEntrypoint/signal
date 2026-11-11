@@ -3,7 +3,7 @@
 // the beads it passes, and the kick ripple swells each ring 8 % as it reaches it. Each pupil looks at the camera.
 import { MeshBasicNodeMaterial } from "builtin/three";
 import { positionGeometry, instanceIndex, cameraPosition, modelWorldMatrix, float, vec3, vec4, step, mix, smoothstep, normalize, dot, varying } from "builtin/tsl";
-import { tripClock } from "./lib/trip.js";
+import { tripClock, shown } from "./lib/trip.js";
 import { TAU, fam, ripple, barStep, relight, gate, breathScale } from "./eye-lib.js";
 
 export function material(ctx) {
@@ -39,5 +39,7 @@ export function material(ctx) {
   const m = new MeshBasicNodeMaterial();
   m.positionNode = positionGeometry.mul(size).add(centre);
   m.colorNode = col;
+  m.opacityNode = shown(c, "eye", varying(R.div(15)));
+  m.alphaTest = 0.5;
   return m;
 }

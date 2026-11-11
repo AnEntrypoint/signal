@@ -3,7 +3,7 @@
 // before) and stretches them 5 %. They grow out from behind the iris as the lid opens, so a shut eye shows nothing.
 import { MeshBasicNodeMaterial } from "builtin/three";
 import { positionGeometry, vertexColor, float, vec3, step, mix, smoothstep, length, varying } from "builtin/tsl";
-import { tripClock } from "./lib/trip.js";
+import { tripClock, shown } from "./lib/trip.js";
 import { lidOpen, TAU, fam, ripple, sweep, relight, gate, breathScale } from "./eye-lib.js";
 
 export function material(ctx) {
@@ -29,5 +29,7 @@ export function material(ctx) {
   const m = new MeshBasicNodeMaterial();
   m.positionNode = vec3(X.mul(k), Y.mul(k), g.z);
   m.colorNode = relight(col, lit).mul(smoothstep(0.0, 0.1, o));
+  m.opacityNode = shown(c, "rays", r.sub(15).div(12));
+  m.alphaTest = 0.5;
   return m;
 }
