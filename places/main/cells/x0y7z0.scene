@@ -1,8 +1,28 @@
 # spawn-scene v2 yaml x0y7z0
 vision-world-tree:
-  feetPosition: {x: 0, y: 900, z: 0}
+  castShadow: false
+  feetPosition: {x: 0, y: 920, z: 0}
   id: vision-world-tree
-  material: {kind: scripted, script: engine/blueprint}
+  material: {kind: scripted, params: {k0: -1, k1: -1, layer: being, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-world-tree-mat.js}
   physics: none
-  primitive: {depth: 1, height: 40, kind: box, width: 64}
-  tags: [blueprint]
+  primitive: {kind: scripted, params: {h: 40, w: 64}, script: scripts/vision-world-tree-geo.js}
+  receiveShadow: false
+  tags: [trip, vision-world-tree]
+vision-world-tree-ring:
+  castShadow: false
+  feetPosition: {x: 0, y: 920, z: -12}
+  id: vision-world-tree-ring
+  material: {kind: scripted, params: {k0: -1, k1: -1, layer: ring, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-world-tree-mat.js}
+  physics: none
+  primitive: {kind: scripted, params: {h: 40, w: 76}, script: scripts/vision-world-tree-geo.js}
+  receiveShadow: false
+  tags: [trip, vision-world-tree]
+vision-world-tree-veil:
+  castShadow: false
+  feetPosition: {x: 0, y: 920, z: 10}
+  id: vision-world-tree-veil
+  material: {kind: scripted, params: {k0: -1, k1: -1, layer: veil, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-world-tree-mat.js}
+  physics: none
+  primitive: {kind: scripted, params: {h: 56, w: 90}, script: scripts/vision-world-tree-geo.js}
+  receiveShadow: false
+  tags: [trip, vision-world-tree]
