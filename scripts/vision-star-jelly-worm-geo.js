@@ -2,7 +2,7 @@
 // radius 1, 12 sides, 80 rings). vision-star-jelly-worm-mat.js bends it along its spine IN DEPTH and corkscrews it
 // in the vertex stage, reading along-length (y) and around-angle (atan2(z, x)) off these positions.
 export function geometry(ctx) {
-  const SIDES = 12, RINGS = 80;
+  const far = (ctx.lod ?? 1) >= 4, SIDES = far ? 6 : 12, RINGS = far ? 16 : 80;
   for (let i = 0; i < RINGS; i++) {
     const y0 = i / RINGS, y1 = (i + 1) / RINGS;
     for (let j = 0; j < SIDES; j++) {
