@@ -122,7 +122,7 @@ export function look(ctx) {
   const uk0 = kal(ub, nK, kRot);
   const tq = ub.mul(3), tc = tq.floor(), tf = tq.fract();
   const tile = vec2(mix(tf.x, float(1).sub(tf.x), tc.x.mod(2)), mix(tf.y, float(1).sub(tf.y), tc.y.mod(2)));
-  const isTile = on1(st.sub(2).abs().lessThan(0.5)).mul(float(1).sub(first)).mul(wPeak);
+  const isTile = float(0); // retired 11-11: tiled copies of the frame read as confusion, not layering
   const uk = mix(uk0, tile, isTile);
   // layer-keyhole: the kaleido shows only through a dealt mask over the clean view; each peak phrase deals a new one
   // (seeded), swapped while the phrase iris is closed. Tile mode shows its tiles through the NEGATIVE of another mask.
@@ -152,11 +152,11 @@ export function look(ctx) {
   ];
   const kPick = (salt) => pi.add(c.seed.mul(0.37)).add(salt).mul(91.7).sin().mul(43758.5453).fract().mul(KMASKS.length).floor();
   const kMask = (salt) => { const i = kPick(salt); return KMASKS.reduce((acc, m, j) => acc.add(m.mul(on1(i.sub(j).abs().lessThan(0.5)))), float(0)); };
-  const holes = kMask(0), tileHoles = float(1).sub(kMask(5.3));
+  const holes = kMask(0);
   // creator 11-11 13:02: "overlay unnecessary versions of themselves causing confusion instead of layering": the mirror
   // read is never laid translucently over the clean view, and never the whole frame. It is a second layer seen only
   // through one symbol window, opaque inside it; one phrase in four plays clean
-  const pk = select(st.sub(1).abs().lessThan(0.5).and(first.lessThan(0.5)), float(0), select(st.sub(2).abs().lessThan(0.5).and(first.lessThan(0.5)), tileHoles, holes));
+  const pk = select(st.sub(1).abs().lessThan(0.5).and(first.lessThan(0.5)), float(0), holes);
   // ascent: the mirror world opens as a petal window from the centre, one step every 6 s (its petal count is the
   // fold count it shows), each step easing in over a bar while the clean world keeps moving outside it.
   // Layered, not a full-frame swap: inside is reflection, outside is the world, the edge is the flower.
