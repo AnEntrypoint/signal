@@ -34,9 +34,9 @@ export function material(ctx) {
   const along = uv().x, across = uv().y;
 
   // ---- the motion: each pair of arms sways about its shoulders on its own clock, mirrored
-  const amp = mix(2.0, 4.5, c.rnd(15)) * 1, ph = c.rnd(16).mul(TAU);
+  const amp = mix(2.0, 4.5, c.rnd(15)).mul(Math.PI / 180), ph = c.rnd(16).mul(TAU);
   const per = pair.mul(4.5).add(12);
-  const th = c.sec.mul(TAU).div(per).add(ph).add(pair.mul(1.3)).sin().mul(amp * Math.PI / 180).mul(side).mul(isArm);
+  const th = c.sec.mul(TAU).div(per).add(ph).add(pair.mul(1.3)).sin().mul(amp).mul(side).mul(isArm);
   const S = vec2(side.mul(3), 3.6);
   const rel = positionGeometry.xy.sub(S);
   const rot = vec2(rel.x.mul(th.cos()).sub(rel.y.mul(th.sin())), rel.x.mul(th.sin()).add(rel.y.mul(th.cos()))).add(S);
