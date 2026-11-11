@@ -234,20 +234,8 @@ export function look(ctx) {
   const gold = vec3(1.6, 1.0, 0.18).mul(l0.mul(2.2)).mul(sweep);
   col = mix(col, graphite.add(gold), wGG);
 
-  // trails: deep (0.8, inward, +0.4 deg/frame), flight (0.55, other way), kick-echo (shrinking hue-shifted ghosts)
-  const tDeep = raw("deep"), tFl = raw("flight"), tEcho = raw("pulse").add(raw("bloom")).add(raw("ascent")).mul(echoOn).clamp(0, 1).mul(c.kick);
-  const decay = tDeep.mul(0.62).add(tFl.mul(0.5)).add(tEcho.mul(0.5)).clamp(0, 0.7); // lower in deep: the droste recursion feeds the trail and flooded the black
-  const trail = ctx.target("trip-trail", { scale: low ? 0.5 : 1 });
-  const tex = ctx.pass(trail, (uv) => {
-    const tp = uv.sub(0.5).mul(asp);
-    const a = tDeep.mul(0.4).sub(tFl.mul(0.4)).mul(c.dir).mul(Math.PI / 180);
-    const z = float(1).add(tDeep.mul(0.015)).sub(tFl.mul(0.008)).add(tEcho.mul(0.04));
-    const pu = rot2(tp, a).mul(z).div(asp).add(0.5);
-    const prev = hueRot(trail.previous.sample(pu).rgb, tEcho.mul(0.35));
-    const cur = S(mix(uv, bendUv(c, uv, aspect), on));
-    return vec4(cur.max(prev.mul(decay)), 1);
-  });
-  col = mix(col, col.max(tex.sample(screenUV).rgb.mul(smoothstep(0.08, 0.3, luma(tex.sample(screenUV).rgb)))), decay.mul(1.4).clamp(0, 0.8)); // faint ghosts drop to black, not a wash
+  // (retired 11-11 13:47: the rotating / zooming feedback trail and the kick-echo ghosts were 2D picture warps and smear,
+  //  read as blur and as copies of the scene; motion stays the geometry's own)
 
   // deep: pulled toward deep ultramarine, near-monochrome
   const dl = luma(col);
@@ -312,13 +300,14 @@ export function look(ctx) {
   }
   const hasSubject = step(zC, 400);
   // on a vision the subject is the being itself, wherever the director's fit has hung it (74 m x fit): the centre tap
-  const zMid = ctx.viewZAt(vec2(0.5, 0.5)).negate(), zV = select(zMid.greaterThan(1.5).and(zMid.lessThan(300)), zMid, zC.min(74));
+  // the being's layers are additive and write no depth, so the depth buffer can't find it: the director hands its real depth (vd = 74 x fit)
+  const zV = ctx.param("vd", 74);
   const razor = step(0.7, c.phrase.floor().add(c.seed).mul(78.233).sin().mul(43758.5453).fract());
   const focusD = mix(zC.clamp(4, 200), zV.clamp(4, 200), vis);
   // realistic focus (creator, 11-11): the subject and its own depth stay sharp; only what sits clearly nearer or farther softens.
   // No razor band: a band thinner than the subject blurred the subject itself, which read as plain blur.
   void razor;
-  const focusR = mix(zC.mul(0.3).add(4), zV.mul(0.45).add(6), vis); // being + its ring/veil sharp; only the far world and the near fore soften
+  const focusR = mix(zC.mul(0.3).add(4), zV.mul(0.3).add(4), vis); // being + its ring/veil sharp; only the far world and the near fore soften
   // the beat as occlusion: on the kick one side of the subject's depth blinks to black, so layers trade places
   // as figure and ground instead of the whole picture pumping
   const dz = ctx.viewZ.negate();
@@ -335,7 +324,8 @@ export function look(ctx) {
   // creator 11-11 (#15279, again 12:59 "a lot of elements still go unnecessarily blurry"): blur only ever as a real lens
   // racks to a subject: what sits well IN FRONT of it softens (a worm swimming past the glass); the subject and everything
   // behind it stay sharp, so no layer goes soft just for being far
-  const nearOnly = smoothstep(focusD.mul(0.6), focusD.mul(0.35), dz);
+  // a hard rule: nothing at or past 60% of the subject's distance is ever touched, so the subject can never go soft
+  const nearOnly = float(1).sub(smoothstep(focusD.mul(0.3), focusD.mul(0.55), dz)).mul(step(0.5, dz));
   const dofW = on.mul(pullOn.mul(hasSubject).max(vis)).mul(float(1).sub(kmix)).mul(nearOnly);
   return vignette(mix(graded, focused, dofW), ctx.param("vignette", 0.35), { color: [0, 0, 0] });
 }

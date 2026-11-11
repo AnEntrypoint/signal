@@ -34,7 +34,7 @@ function push(ctx, t0, on, seed, k, vs, t = cineTime(ctx)) {
   }
   stageBeing(ctx, vs, on ? seed : 0, t)
   const a = ctx.place.atmosphere
-  if (a.look) { a.look.params ??= {}; setAll(a.look.params, t0, on, seed, k, deal); a.look.params.v0 = vs[0]; a.look.params.v1 = vs[1] }
+  if (a.look) { a.look.params ??= {}; setAll(a.look.params, t0, on, seed, k, deal); a.look.params.v0 = vs[0]; a.look.params.v1 = vs[1]; a.look.params.vd = DEPTH * (ctx.self.session.fit ?? 1) }
 }
 
 // THE BEING ON STAGE: the dealt being of the slot now playing (or next) rides the camera's view at depth, so it
@@ -106,7 +106,7 @@ export function update(ctx, dt) {
     const cam = cameraAt(t, c.seed ?? 0)
     const d = Math.hypot(cam.aim.x - cam.eye.x, cam.aim.y - cam.eye.y, cam.aim.z - cam.eye.z)
     const fit = Math.round(Math.max(0.15, Math.min(1, (0.9 * d) / (DEPTH + 30))) * 100) / 100
-    if (fit !== ctx.self.session.fit) { ctx.self.session.fit = fit; stageBeing(ctx, vs, c.seed ?? 0, t) }
+    if (fit !== ctx.self.session.fit) { ctx.self.session.fit = fit; stageBeing(ctx, vs, c.seed ?? 0, t); const lk = ctx.place.atmosphere.look; if (lk?.params) lk.params.vd = DEPTH * fit } // the look's focus plane: the being's real depth (its additive layers write no depth)
   }
   ctx.sleep(0.25)
 }

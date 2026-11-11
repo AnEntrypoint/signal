@@ -165,7 +165,9 @@ export function bendUv(c, uv, aspect = 1.78) {
   const p0 = uv.sub(0.5).mul(vec2(aspect, 1));
   const r = p0.length();
   const a = lens(c, "swirl").mul(c.dir).mul(mix(0.6, 1.5, c.rnd(4))).mul(float(1).sub(r.mul(1.3)).clamp(0, 1)).mul(c.sec.mul(6.28318 / 24).sin());
-  const p1 = vec2(p0.x.mul(a.cos()).sub(p0.y.mul(a.sin())), p0.x.mul(a.sin()).add(p0.y.mul(a.cos())));
+  // 11-11 13:47 creator: 'still lots of 2d warping': swirl, droste and the mirror fold are flat remaps of the picture: retired.
+  // the lens keeps only what a real lens does: fisheye bulge and the hyperbolic (Poincare) slide.
+  void a; const p1 = p0;
   // 2026-11-11 (lanmower: pixelated after stretching): the centre may be magnified at most 1.35x
   const p2 = p1.div(float(1).add(k.min(0.45).mul(r.mul(r)).mul(1.6)).max(0.74));
   // hyperbolic: Mobius slide of the Poincare disc, w = (z + a) / (1 + conj(a) z), centre held
@@ -179,8 +181,8 @@ export function bendUv(c, uv, aspect = 1.78) {
   // droste: log-polar recursion, radius wrapped into one x4 octave that zooms through once per phrase
   const r3 = p3.length().max(0.0005);
   const oct = r3.log().div(1.3863).add(c.sec.div(12)).fract();
-  const p4 = mix(p3, p3.div(r3).mul(oct.mul(1.3863).exp().mul(0.12)), lens(c, "droste"));
-  const px = mix(p4.x, p4.x.abs().mul(c.rnd(7).step(0.5).mul(2).sub(1)), lens(c, "fold").mul(smoothstep(0.0, 0.02, p4.x.abs())));
+  void oct; const p4 = p3;
+  const px = p4.x;
   return vec2(px, p4.y).div(vec2(aspect, 1)).add(0.5);
 }
 
