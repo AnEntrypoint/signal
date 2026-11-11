@@ -214,8 +214,15 @@ export function material(ctx) {
   const genOn = gen.lessThan(c.sec.sub(SEC.reset[0]).div(0.75)).select(1, 0); // the tiling draws itself on, ring by ring
   const genLit = gen.sub(barI).mod(4).lessThan(0.5).select(1.25, 0.3);       // one generation lit, stepping out a bar
   const drift = mix(K.fam.A, K.fam.B, zy.mul(9).add(gen.mul(0.37)).add(c.sec.div(24)).mul(TAU).sin().mul(0.5).add(0.5));
-  const hyp = drift.mul(line(dEdge, 0.1)).mul(genLit).add(K.fam.B.mul(line(dSpoke, 0.03)).mul(0.22))
-    .add(target(dHub, 0.9, K.fam.H, K.fam.A).mul(genLit)).mul(rimFade).mul(genOn);
+  // hand-drawn, not electronic: stroke weight swells and thins along each edge, the edge itself wavers a little,
+  // and the strokes grow out of bloom's beads, which stay lit under them and go dark one generation at a time
+  const rs = c.sec.sub(SEC.reset[0]);
+  const wgt = zy.mul(37).add(gen.mul(1.7)).sin().mul(0.5).add(0.5).mul(0.09).add(0.04);
+  const dEdgeW = dEdge.add(zy.mul(23).add(zx.mul(17)).add(c.sec.mul(0.4)).sin().mul(0.06));
+  const beadKeep = smoothstep(gen.mul(0.75).add(3.5), gen.mul(0.75).add(0.75), rs).mul(smoothstep(-1.0, 0.0, rs));
+  const hyp = drift.mul(line(dEdgeW, wgt)).mul(genLit).add(K.fam.B.mul(line(dSpoke, 0.03)).mul(0.22))
+    .add(target(dHub, 0.9, K.fam.H, K.fam.A).mul(genLit)).mul(rimFade).mul(genOn)
+    .add(phyBody.mul(beadKeep).mul(0.85));
 
   const body = mix(mix(bandBody, phyBody, win(c.sec, SEC.bloom)), hyp, la);
 
