@@ -90,7 +90,7 @@ export function truchet(c, x, a) {
 // through the cells: the keyhole), a turning split down the tube.
 export function selfCut(c, x, a) {
   const v = c.pick(51, 3);
-  const band = step(0.5, x.div(2.8).floor().sub(c.bar.div(2).floor()).mod(4).lessThan(0.5).select(float(1), float(0)));
+  const band = select(x.div(2.8).floor().sub(c.bar.div(2).floor()).mod(4).lessThan(0.5), float(1), float(0));
   const u = x.div(1.1), w = a.mul(9), q = vec2(u.add(w), u.sub(w)).fract().sub(0.5);
   const holes = step(q.length(), 0.16).mul(step(c.bar.mod(4), 2));
   const split = step(0.78, a.add(c.bar.div(16)).mul(2).fract());
