@@ -1,6 +1,6 @@
 // THE TRIP'S LOOK: the full-screen layer. Every move is on the score (scripts/lib/data/score.yml), gated by on.
 // Idle (on = 0): only aberration, vignette, bloom. Deck of tropes dealt by the roll's seed on channels 70-79.
-import { float, vec2, vec3, vec4, mix, smoothstep, select, screenUV, screenSize, convertToTexture, mx_noise_float, atan } from "builtin/tsl";
+import { float, vec2, vec3, vec4, mix, smoothstep, select, screenUV, screenSize, convertToTexture, mx_noise_float, atan, step } from "builtin/tsl";
 import { vignette } from "builtin/postfx";
 import { tripClock, win, SEC, pal, bendUv } from "./lib/trip.js";
 
