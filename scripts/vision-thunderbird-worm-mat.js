@@ -47,7 +47,7 @@ export function material(ctx) {
   // the skin, by along-length s (metres) and around-angle
   const ang = atan2(sa, ca), s = uu.mul(LEN), rf = inv(uu).max(0).sqrt().mul(r0);
   const ring = stripes(s, 0.5, 0.06);                                            // op-art: black / white rings
-  const cStr = mix(W.mul(0.75), C.mul(1.2), step(0.5, s.mul(0.5).add(0.25).fract())).mul(ring)
+  const cStr = mix(W.mul(0.5), C.mul(1.3), step(0.5, s.mul(0.5).add(0.25).fract())).mul(ring)
     .add(Hh.mul(stripes(s.add(0.5), 0.5, 0.012)).mul(0.9));
   const row = s.div(2.4).floor();
   const bd = vec2(s.div(2.4).fract().sub(0.5).mul(2.4), ang.div(TAU).mul(6).add(row.mul(0.5)).fract().sub(0.5).mul(rf.mul(TAU / 6))).length();
