@@ -36,12 +36,36 @@ export function rollRnd(seed, n) { const x = Math.sin((seed + 1) * (n * 12.9898 
 // size, how high the rises go, how wide the lens opens. Seed 0 (idle, old rolls) is the path as written.
 export function cameraAt(t, seed = 0) {
   // a vision being joins the scene (stage.js brings it into view): the camera never cuts away to it
-  const c = cameraRaw(sceneTime(t, dealDeck(seed))) // the dealt scene's own shot, cut on the drop
-  if (!seed) return c
+  const deal = dealDeck(seed)
+  const c0 = cameraRaw(sceneTime(t, deal)) // the dealt scene's own shot, cut on the drop
+  if (!seed) return c0
+  const c = shotMove(c0, t, deal, seed)
   const side = rollRnd(seed, 1) < 0.5 ? -1 : 1, rs = (rollRnd(seed, 2) < 0.5 ? -1 : 1) * (0.6 + rollRnd(seed, 3) * 0.9)
   const lift = 0.8 + rollRnd(seed, 4) * 0.5, wide = 0.92 + rollRnd(seed, 5) * 0.18
   const y = (v) => 15 + (v - 15) * lift
   return { eye: { x: c.eye.x * side, y: y(c.eye.y), z: c.eye.z }, aim: { x: c.aim.x * side, y: c.aim.y, z: c.aim.z }, fov: c.fov * wide, roll: c.roll * rs }
+}
+// THE SHOT DECK: each drop stretch flies one of five moves over its scene's written path, dealt by the roll:
+// 0 as written, 1 a slow orbit round what it looks at, 2 a push in, 3 a pull out, 4 low and looking up.
+// The move eases in from nothing at the stretch's start, so the cut on the drop still lands on the written frame.
+function shotMove(c, t, deal, seed) {
+  const gi = deal.findIndex((g) => t >= g.a && t < g.b)
+  if (gi < 0) return c
+  const g = deal[gi], u = (t - g.a) / (g.b - g.a), e = u * u * (3 - 2 * u)
+  const kind = Math.floor(rollRnd(seed, 30 + gi) * 5)
+  const d = { x: c.eye.x - c.aim.x, y: c.eye.y - c.aim.y, z: c.eye.z - c.aim.z }
+  let eye = c.eye, fov = c.fov
+  if (kind === 1) {
+    const a = (rollRnd(seed, 40 + gi) < 0.5 ? -1 : 1) * 0.9 * e, ca = Math.cos(a), sa = Math.sin(a)
+    eye = { x: c.aim.x + d.x * ca - d.z * sa, y: c.eye.y, z: c.aim.z + d.x * sa + d.z * ca }
+  } else if (kind === 2) {
+    const k = 1 - 0.35 * e; eye = { x: c.aim.x + d.x * k, y: c.aim.y + d.y * k, z: c.aim.z + d.z * k }; fov = c.fov * (1 + 0.1 * e)
+  } else if (kind === 3) {
+    const k = 1 + 0.4 * e; eye = { x: c.aim.x + d.x * k, y: c.aim.y + d.y * k, z: c.aim.z + d.z * k }; fov = c.fov * (1 - 0.12 * e)
+  } else if (kind === 4) {
+    eye = { x: c.eye.x, y: c.eye.y - 6 * e, z: c.eye.z }; fov = c.fov * (1 + 0.08 * e)
+  }
+  return { eye, aim: c.aim, fov, roll: c.roll }
 }
 function cameraRaw(t) {
   const k = SHOTS.keys
