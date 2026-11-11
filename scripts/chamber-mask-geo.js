@@ -53,6 +53,7 @@ export function geometry(ctx) {
     }
   };
   const beadsAlong = (pts, kind, gap, r, z) => { // beads at even arc length on pts, along = their arc fraction
+    if (ctx.lod >= 3 && kind < 40) return;
     let acc = 0, tot = 0;
     for (let i = 1; i < pts.length; i++) tot += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
     let next = gap * 0.5;

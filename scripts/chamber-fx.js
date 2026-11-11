@@ -2,7 +2,7 @@
 // near(): 1 once the camera is deep in the tunnel (z < -230), 0 from the field (z > -150): every chamber
 // material collapses its geometry while it is 0, so nothing of the chamber shows from outside.
 import { cameraPosition, smoothstep, fwidth, abs, float, step, fract, floor, mix, vec3, exp, sin } from "builtin/tsl";
-import { HUE } from "./lib/trip.js";
+import { HUE, pal } from "./lib/trip.js";
 export const near = () => float(1).sub(smoothstep(-230, -150, cameraPosition.z));
 export const alive = (g) => step(0.001, g);
 // A line about 2 px wide wherever x crosses an integer (screen-space width: true line-art at any distance).
@@ -23,16 +23,16 @@ export const ripple = (c, dist) => {
 };
 // The shared breath: one swell per phrase, 0..1.
 export const breath = (c) => sin(c.sec.mul(6.28318 / 12)).mul(0.5).add(0.5);
-// One hue family per phrase: two neighbouring cool hues for the structure, one hot accent pair.
-// Three families; the roll's seed (channel 40) picks where the cycle starts, each phrase steps to the next.
+// One hue family per phrase: two neighbouring hues for the structure, one hot accent pair, all off the roll's
+// c.hue (so every roll wears its own colours); the seed (channel 40) picks the step, each phrase steps 0.31 on.
 export const family = (c) => {
   const i = floor(c.phrase.add(64)).add(c.pick(40, 3)).mod(3);
-  const mx = (p, q, r) => mix(mix(vec3(...p), vec3(...q), step(0.5, i)), vec3(...r), step(1.5, i));
+  const h = c.hue.add(i.mul(0.31)), sp = mix(0.05, 0.11, c.rnd(43));
   // graphite-and-gold: one roll in three the structure is embossed graphite and only gold is lit
   const gold = step(floor(c.rnd(42).mul(89)).mod(3), 0.5), gg = (v, q) => mix(v, vec3(...q), gold);
   return {
-    a: gg(mx(HUE.green, HUE.blue, HUE.violet), [0.09, 0.09, 0.1]), b: gg(mx([0.02, 0.9, 0.55], HUE.violet, HUE.magenta), [0.12, 0.11, 0.1]),
-    hot: gg(mx(HUE.orange, HUE.magenta, [1, 0.8, 0.04]), [1, 0.7, 0.05]), hot2: gg(mx(HUE.red, [1, 0.05, 0.3], HUE.orange), [1, 0.48, 0.02]),
+    a: gg(pal(h), [0.09, 0.09, 0.1]), b: gg(pal(h.add(sp)), [0.12, 0.11, 0.1]),
+    hot: gg(pal(h.add(0.42)), [1, 0.7, 0.05]), hot2: gg(pal(h.add(0.42).add(sp)), [1, 0.48, 0.02]),
   };
 };
 // The trope deal: this roll's hand, 0..2. dealt(c, [1, 0, 1]) is 1 when the roll's hand shows that trope.
