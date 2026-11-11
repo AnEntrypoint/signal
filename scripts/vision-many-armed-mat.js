@@ -2,6 +2,15 @@
 // params.layer: world (temple doorways: dark arch bands + floor tiles with openings between), ring (lotus petals), being,
 // veil (lamps), fore (falling petals). Entrances and exits are arm by arm / mudra ring by ring / doorway petals, dealt
 // by seed (channels 254-279); mid-slot the ring or the veil really moves in z and trades occluder roles with the being.
+// SCHEDULE (u = visionU; one new group begins per bar ~.031):        element  in -> whole | out -> gone
+//  heart ripple (first stroke, ALONE)  .000 -> .15 | .15 -> .19     body outline (seat,legs,torso,head) .155 -> .25 | .945 -> .968
+//  chakras .185 -> .25 | .93 -> .955    arms one by one (+hands) .215 -> .465 | .88 -> .962 (dealt order)
+//  RING line .25 -> .30 | .92 -> .95    RING petals .28 -> .40 | .90 -> .94    RING beads .31 -> .42 | .89 -> .92
+//  leg stripes .34 -> .38 | with body   WORLD doorway .37 -> .57 | .983 -> .9995 LAST LIT (being whole ~.47)
+//  hand symbols .46 -> .63 | .88 -> .93   WORLD bowls .50 -> .62 | .89 -> .92   bowl smoke .53 -> .66 | with bowls
+//  face details (eyes, third eye, necklace, halo) .56 -> .70 | .875 -> .90   worm 1/2/3/4 .59/.65/.71/.77 -> +.08 | .896 ..
+//  VEIL lamps .62 -> .83 | .87 -> .93     FORE petals .68 -> .81 | .86 -> .92    FORE kick sparks .74 -> .80 | .86 -> .88
+//  culmination .80 -> .86: ring spokes, half the lamps and every third petal go dark. No after-image copies of the arms.
 import { MeshBasicNodeMaterial, DoubleSide } from "builtin/three";
 import { positionGeometry, float, vec2, vec3, smoothstep, step, mix, atan2, fwidth, select } from "builtin/tsl";
 import { tripClock, visionShown, visionU, climb, inv, is } from "./lib/trip.js";
@@ -19,7 +28,7 @@ export function material(ctx) {
   const sm = (a, b, x = u) => smoothstep(a, b, x);
   const out = (a, b) => inv(smoothstep(a, b, u));
   const aa = fwidth(p.x).mul(1.2).max(0.015);
-  const fill = (d) => smoothstep(aa, aa.negate(), d);
+  const fill = (d) => inv(smoothstep(aa.negate(), aa, d));
   const ln = (d, w) => fill(float(d).abs().sub(w));
   const fam = c.pick(260, 3);
   const pk = (a, b, cc) => select(fam.lessThan(0.5), vec3(...a), select(fam.lessThan(1.5), vec3(...b), vec3(...cc)));
@@ -37,9 +46,9 @@ export function material(ctx) {
   const dith = (dens) => step(mix(cx.mul(2), float(3).sub(cx.mul(2)), cy).add(0.5).div(4), float(dens));
   const kf = c.beat.fract();
   const kwave = (dist, reach) => c.kick.mul(inv(smoothstep(0, reach * 0.12, float(dist).sub(kf.mul(reach)).abs())));
-  const fanP = sm(0.72, 0.75).mul(out(0.79, 0.81));
+  const fanP = sm(0.8, 0.82).mul(out(0.85, 0.87));
   const sw = c.pick(259, 2); // who trades depth mid-slot: 0 the ring comes in front of the being, 1 the veil goes behind it
-  const fanN = mix(float(4.5), float(7.0), c.pick(267, 2)); // degrees between after-images
+  const fanN = mix(float(4.5), float(7.0), c.pick(267, 2)); // degrees between ring spokes
   const stepPh = c.beat.floor().mod(2).mul(0.5).mul(c.live);
 
   if (layer === "world") {
@@ -57,7 +66,7 @@ export function material(ctx) {
     const gate = (v, P) => step(base, P.mul(215).sub(0.6)).mul(is(v, 0))
       .add(step(hash(kI), P.mul(1.02)).mul(is(v, 1)))
       .add(step(hv.length().div(190), P.mul(1.6).sub(hash(sect).mul(0.6)).clamp(0, 1).mul(1.02)).mul(is(v, 2))).mul(step(0.001, P));
-    const pIn = u.div(0.4).clamp(0, 1), pOut = out(0.983, 0.9995);
+    const pIn = u.sub(0.37).div(0.2).clamp(0, 1), pOut = out(0.983, 0.9995);
     // the canvas never shows its rectangle: everything thins through the dither on a concentric falloff
     const rim = inv(smoothstep(0.8, 1.0, vec2(p.x.div(165), p.y.div(96)).length()));
     const inside = gate(vE, pIn).mul(gate(vX, pOut)).mul(dith(rim));
@@ -84,7 +93,7 @@ export function material(ctx) {
     paint(mix(C, W, 0.3), ln(p.y.sub(GY), 0.12).mul(inside));
     // offering bowls along the ground line, lit outward one by one, bead-smoke rising from each
     const xr = ax.sub(20), ci = xr.div(26).add(0.5).floor().max(0), fx = xr.sub(ci.mul(26));
-    const bp = sm(0.5, 0.7).mul(out(0.9, 0.93)), bon = step(ci.add(0.5).div(5), bp).mul(inside);
+    const bp = sm(0.5, 0.62).mul(out(0.89, 0.92)), bon = step(ci.add(0.5).div(5), bp).mul(inside);
     const by = p.y.sub(GY + 3.2);
     const bowl = vec2(fx, by).length().sub(3.2).max(by);
     paint(K, fill(bowl).mul(bon));
@@ -93,13 +102,13 @@ export function material(ctx) {
     const sy = p.y.sub(GY + 4), rise = sy.div(2.6).sub(sec.mul(0.45)).sub(ci.mul(0.37));
     const wob = sy.mul(0.42).add(sec.mul(0.8)).add(ci.mul(2.1)).sin().mul(sy.mul(0.09));
     const smk = fill(vec2(fx.sub(wob), rise.fract().sub(0.5).mul(2.6)).length().sub(float(0.75).sub(sy.mul(0.02)).max(0.1)));
-    const sh = sm(0.56, 0.74).mul(26);
+    const sh = sm(0.53, 0.66).mul(26);
     paint(mix(B, W, sy.div(26).clamp(0, 1)).mul(0.9), smk.mul(bon).mul(step(0.4, sy)).mul(step(sy, sh)));
   } else if (layer === "ring") {
     const q = p.sub(vec2(0, 3.5)), r = q.length(), th = atan2(q.y, q.x), rot = sec.mul(TAU / 44).mul(dir);
     const N = c.pick(263, 3).mul(4).add(8);
     const pa = th.sub(rot).div(TAU).add(0.5).fract().mul(N), pid = pa.floor(), e = pa.fract().sub(0.5).mul(2);
-    const petP = sm(0.4, 0.54).mul(out(0.9, 0.95));
+    const petP = sm(0.28, 0.4).mul(out(0.9, 0.94));
     const fr = sm(0.6, 0.68).mul(out(0.8, 0.86)).mul(is(sw, 0)); // 1: the ring stands 6 m in front of the being
     m.positionNode = positionGeometry.add(vec3(0, 0, fr.mul(18)));
     const pon = step(pid.add(0.5).div(N), petP.mul(1.02));
@@ -111,12 +120,12 @@ export function material(ctx) {
     paint(W.mul(0.85).mul(inv(fr)), body.mul(band(r.sub(24).div(11).add(sec.mul(0.05)), 5)).mul(pid.mod(2)).mul(step(r, rOut.sub(0.7))));
     paint(C.mul(float(0.8).add(kwave(r, 60))), ln(r.sub(rOut), 0.2).mul(pon).mul(step(24, r)));
     paint(C2, ln(e.mul(r).mul(3.14159).div(N), 0.1).mul(pon).mul(step(25, r)).mul(step(r, rOut.sub(2.5))).mul(inv(pid.mod(2))));
-    const ringP = sm(0.42, 0.5).mul(out(0.93, 0.96));
+    const ringP = sm(0.25, 0.3).mul(out(0.92, 0.95));
     const clk = step(th.div(TAU).add(0.75).fract().sub(0.5).abs().mul(2), ringP.mul(1.01)); // closes from below both ways
     paint(C.mul(0.9), ln(r.sub(23.2), 0.12).add(ln(r.sub(19.6), 0.08)).mul(clk));
     // the counter-turning bead row
     const ba = th.add(rot.mul(2.3)).div(TAU).add(0.5).fract().mul(40), bid = ba.floor();
-    const beadP = sm(0.46, 0.6).mul(out(0.89, 0.93));
+    const beadP = sm(0.31, 0.42).mul(out(0.89, 0.92));
     const bd = fill(vec2(ba.fract().sub(0.5).mul(TAU / 40).mul(21.4), r.sub(21.4)).length().sub(float(0.55).add(c.kick.mul(0.12))));
     paint(mix(B, W, bid.mod(2).mul(0.7)), bd.mul(step(bid.add(0.5).div(40), beadP)));
     // culmination: spokes turning against the being's stepping arm fans
@@ -138,18 +147,11 @@ export function material(ctx) {
       const da = ang.sub(a), along = r.mul(da.cos()), perp = r.mul(da.sin());
       // ARM BY ARM: eight arms, one at a time, the order dealt apart for the way in and the way out
       const o1 = float(i * 2).add(sideL), o2 = float((3 - i) * 2).add(inv(sideL));
-      const tIn = u.sub(mix(o1, o2, aIn).mul(0.025).add(0.1)), tOut = u.sub(mix(o2, o1, aOut).mul(0.011).add(0.86));
+      const tIn = u.sub(mix(o1, o2, aIn).mul(0.022).add(0.215)), tOut = u.sub(mix(o2, o1, aOut).mul(0.008).add(0.88));
       const g = sm(0, 0.07, tIn).mul(inv(sm(0.006, 0.026, tOut)));
       const handP = sm(0.07, 0.095, tIn).mul(inv(sm(0, 0.008, tOut)));
       const Hc = S.add(vec2(a.cos(), a.sin()).mul(L + 2.4)), hv = q.sub(Hc);
       arms.push({ i, da, along, perp, g, handP, L, hv, hdist: hv.length() });
-      // the after-image fan, behind the arm: copies stepping on the kick, neighbours opposite ways
-      const sense = i % 2 ? -1 : 1, dl = fanN.mul(D);
-      const phi = sec.mul(0.22).add(stepPh).mul(sense).fract();
-      const jq = da.div(dl).sub(phi), jn = jq.add(0.5).floor().clamp(-5, 5), off = jq.sub(jn).mul(dl).mul(r);
-      const fade = inv(jn.add(phi).abs().div(6.2)).clamp(0, 1), lit = step(jn.abs(), fanP.mul(5.4)).mul(step(0.01, fanP));
-      const trail = ln(off, 0.085).mul(step(3.5, r)).mul(step(r, L)).add(fill(vec2(off, r.sub(L + 0.4)).length().sub(0.42)));
-      if (!low) paint(mix(A, B, jn.abs().div(5)).mul(fade.mul(float(0.7).add(hi.mul(0.6)))), trail.mul(lit).mul(step(0.12, fade)));
     }
     for (const o of arms) {
       const hw = mix(float(1.25), float(0.7), o.along.div(o.L).clamp(0, 1)), Lg = o.g.mul(o.L);
@@ -169,7 +171,7 @@ export function material(ctx) {
     // the symbol this roll deals to this hand, opening like an iris, one hand after another
     const sIdx = hid.add(sideL.mul(4));
     const sym = sIdx.mul(c.pick(262, 3).mul(2).add(1)).add(c.pick(261, 8)).mod(8);
-    const gp = sm(0, 0.03, u.sub(0.5).sub(sIdx.mul(0.022))).mul(inv(sm(0, 0.02, u.sub(0.83).sub(sIdx.mul(0.004)))));
+    const gp = sm(0, 0.03, u.sub(0.46).sub(sIdx.mul(0.02))).mul(inv(sm(0, 0.02, u.sub(0.88).sub(sIdx.mul(0.004)))));
     const g = hq.div(1.75), gr = g.length(), gth = atan2(g.y, g.x), w = 0.085;
     const moon = fill(gr.sub(0.88).max(float(0.72).sub(g.sub(vec2(0.36, 0)).length())));
     const sec5 = atan2(g.x, g.y).div(TAU / 5).add(0.5).fract().sub(0.5).abs().mul(TAU / 5);
@@ -189,28 +191,28 @@ export function material(ctx) {
       .add(flame.mul(is(sym, 4))).add(sun.mul(is(sym, 5))).add(yantra.mul(is(sym, 6))).add(bindu.mul(is(sym, 7)));
     paint(mix(B, W, float(0.35).add(c.kick.mul(0.4))), gl.clamp(0, 1).mul(step(gr, gp.mul(1.2))).mul(step(best, 2.2)).mul(step(0.99, handOn)));
     // the seat, legs, torso, head: black bodies, the outline spreading from the heart
-    const bodyP = sm(0.03, 0.16).mul(out(0.955, 0.985)), rv = step(hd.div(17), bodyP.mul(1.02));
+    const bodyP = sm(0.155, 0.25).mul(out(0.945, 0.968)), rv = step(hd.div(17), bodyP.mul(1.02));
     const front = float(1).add(inv(smoothstep(0, 0.05, hd.div(17).sub(bodyP).abs())).mul(step(bodyP, 0.98)).mul(2));
     const sx = q.x.div(3).fract().sub(0.5).mul(3);
     const seat = vec2(sx, q.y.add(8.2).mul(0.75)).length().sub(1.45).max(q.x.sub(10.5)).max(float(-8.4).sub(q.y).mul(0.75).sub(0.2));
     paint(K, fill(seat).mul(rv)); paint(C2.mul(front), ln(seat, 0.09).mul(rv));
     const legs = q.sub(vec2(0, 16)).length().max(q.sub(vec2(0, -27.2)).length()).sub(23.8);
     paint(K, fill(legs).mul(rv));
-    paint(W.mul(0.8), fill(legs.add(0.7)).mul(band(q.x.add(q.y.add(5.6).abs().mul(1.5)), 2)).mul(rv).mul(sm(0.2, 0.3)));
+    paint(W.mul(0.8), fill(legs.add(0.7)).mul(band(q.x.add(q.y.add(5.6).abs().mul(1.5)), 2)).mul(rv).mul(sm(0.34, 0.38)));
     paint(A.mul(front), ln(legs, 0.12).mul(rv));
-    const torso = q.x.sub(float(2.1).add(smoothstep(-1, 5, q.y).mul(1.5)).add(smoothstep(-1, -4.6, q.y).mul(1.2))).max(q.y.sub(0.5).abs().sub(5.0));
+    const torso = q.x.sub(float(2.1).add(smoothstep(-1, 5, q.y).mul(1.5)).add(inv(smoothstep(-4.6, -1, q.y)).mul(1.2))).max(q.y.sub(0.5).abs().sub(5.0));
     paint(K, fill(torso).mul(rv)); paint(A.mul(front), ln(torso, 0.12).mul(rv));
     const hc = q.sub(vec2(0, 8.3)), hr = hc.length(), head = hr.sub(2.35);
     paint(K, fill(head).mul(rv)); paint(A.mul(front), ln(head, 0.12).mul(rv));
     // first stroke: the bindu at the heart and its ripple, then the seven chakras rising
-    paint(W, ln(hd.sub(u.mul(160)), 0.1).mul(out(0.03, 0.09)).mul(step(0.001, u)));
-    const ck = sm(0.0, 0.1).mul(out(0.965, 0.992));
+    paint(W, ln(hd.sub(u.mul(110)), 0.1).mul(out(0.15, 0.19)).mul(step(0.001, u)));
+    const ck = sm(0.185, 0.25).mul(out(0.93, 0.955));
     for (let k = 0; k < 7; k++) {
       const d = vec2(q.x, q.y.sub(-4.3 + k * 1.5)).length();
       paint(k % 3 === 0 ? B : k % 3 === 1 ? W : A, fill(d.sub(float(0.36).add(kwave(k * 5, 40).mul(0.18)))).mul(step((k + 0.5) / 7, ck)));
     }
-    // placed details .5-.7: closed eyes, the third eye, the necklace, the halo (beads or rays by the seed)
-    const det = sm(0.52, 0.7).mul(out(0.84, 0.88));
+    // placed details .56-.7: closed eyes, the third eye, the necklace, the halo (beads or rays by the seed)
+    const det = sm(0.56, 0.7).mul(out(0.875, 0.9));
     paint(A, ln(vec2(q.x.sub(0.95), q.y.sub(8.6)).length().sub(0.55), 0.07).mul(step(q.y, 8.35)).mul(step(0.1, det)));
     const te = vec2(q.x, q.y.sub(9.45)), tv = te.sub(vec2(0, -0.45)).length().max(te.sub(vec2(0, 0.45)).length()).sub(0.72);
     paint(B.mul(float(1).add(hi)), ln(tv, 0.06).add(fill(te.length().sub(0.13))).mul(step(0.25, det)));
@@ -225,7 +227,7 @@ export function material(ctx) {
     const ax = p.x.abs(), sgn = step(0, p.x).mul(2).sub(1), TOP = 46;
     const id = ax.sub(17).div(11).floor().clamp(0, 5), xc0 = id.mul(11).add(22.5);
     const hsh = hash(id.add(sgn.mul(7.3)).add(c.rnd(270).mul(31)));
-    const drop = sm(0, 0.1, u.sub(0.6).sub(float(5).sub(id).mul(0.022))).mul(inv(sm(0, 0.03, u.sub(0.83).sub(id.mul(0.006)))));
+    const drop = sm(0, 0.1, u.sub(0.62).sub(float(5).sub(id).mul(0.022))).mul(inv(sm(0, 0.03, u.sub(0.87).sub(id.mul(0.006)))));
     m.positionNode = positionGeometry.add(vec3(0, 0, sm(0.62, 0.7).mul(out(0.8, 0.84)).mul(is(sw, 1)).mul(-16)));
     const Ln = hsh.mul(24).add(12).mul(drop), bot = float(TOP).sub(Ln);
     const swing = sec.mul(TAU).div(hsh.mul(4).add(6)).add(hsh.mul(9)).sin().mul(0.09);
@@ -243,12 +245,12 @@ export function material(ctx) {
     const lt = lamp.y.add(0.5).div(2.2).clamp(0, 1);
     const lf = select(lamp.y.greaterThan(-0.5), lamp.x.abs().sub(inv(lt).max(0.0001).pow(0.8).mul(0.95)), lamp.add(vec2(0, 0.5)).length().sub(0.95));
     const flick = sec.mul(hsh.mul(3).add(5)).sin().mul(0.15).add(1);
-    paint(mix(B, W, 0.5).mul(flick), fill(lf.add(0.25)).add(ln(lf, 0.07)).clamp(0, 1).mul(on).mul(sm(0.7, 0.76)).mul(inv(fanP.mul(step(0.5, hsh)))));
+    paint(mix(B, W, 0.5).mul(flick), fill(lf.add(0.25)).add(ln(lf, 0.07)).clamp(0, 1).mul(on).mul(sm(0.72, 0.78)).mul(inv(fanP.mul(step(0.5, hsh)))));
   } else {
     // fore: near lotus petals falling down the frame sides (black, rimmed), each its own tumble; kick sparks
     for (let i = 0; i < (low ? 4 : 6); i++) {
       const sg = i % 2 ? -1 : 1, x0 = c.rnd(273 + i).mul(34).add(22), sp = 1.6 + i * 0.37;
-      const pp = sm(0, 0.03, u.sub(0.6 + i * 0.035)).mul(out(0.8 + i * 0.008, 0.83 + i * 0.008));
+      const pp = sm(0, 0.03, u.sub(0.68 + i * 0.02)).mul(out(0.86 + i * 0.006, 0.89 + i * 0.006));
       const y = c.rnd(279 - i).mul(90).sub(sec.mul(sp)).mod(100).sub(50);
       const xx = sec.mul(0.5 + i * 0.13).add(i * 2).sin().mul(3.5).add(x0).mul(sg);
       const rot = sec.mul(0.35 + i * 0.09).mul(sg).add(i);
@@ -258,10 +260,10 @@ export function material(ctx) {
       const litp = inv(fanP.mul(i % 3 === 0 ? 1 : 0)); // every third goes to silhouette at the culmination
       paint(K, fill(pet));
       paint((i % 2 ? B : A).mul(litp), ln(pet, 0.09).add(ln(lx, 0.05).mul(fill(pet.add(0.5)))).clamp(0, 1));
-      paint(W.mul(0.8).mul(litp), fill(pet.add(0.45)).mul(band(ly.abs().add(lx.abs()), 0.9)).mul(sm(0.74, 0.76)).mul(i % 2));
+      paint(W.mul(0.8).mul(litp), fill(pet.add(0.45)).mul(band(ly.abs().add(lx.abs()), 0.9)).mul(sm(0.76, 0.78)).mul(i % 2));
       const sv = p.sub(vec2(c.rnd(266 + i).mul(40).add(20).mul(-sg), c.rnd(273 + i).mul(50).sub(25)));
       const s4 = sv.x.abs().max(0.00001).sqrt().add(sv.y.abs().max(0.00001).sqrt());
-      paint(W, fill(s4.sub(c.kick.mul(1.1).mul(sm(0.66 + i * 0.03, 0.7 + i * 0.03)).mul(out(0.8, 0.83)))));
+      paint(W, fill(s4.sub(c.kick.mul(1.1).mul(sm(0.74 + i * 0.01, 0.76 + i * 0.01)).mul(out(0.86, 0.88)))));
     }
   }
   m.colorNode = col;

@@ -21,8 +21,8 @@ export function material(ctx) {
   const A = fp([0.1, 1.0, 0.15], [1.0, 0.05, 0.6], [1.0, 0.85, 0.05]);
   const C = fp([0.05, 0.12, 1.0], [0.45, 0.05, 1.0], [0.05, 0.12, 1.0]);
   const W = vec3(1, 1, 1);
-  const x0 = 0.9 + 0.012 * (4 - n);
-  const grow = smoothstep(0.55 + 0.03 * (n - 1), 0.74 + 0.02 * (n - 1), u).mul(inv(smoothstep(x0, x0 + 0.035, u)));
+  const x0 = 0.86 + 0.012 * (4 - n);
+  const grow = smoothstep(0.59 + 0.06 * (n - 1), 0.67 + 0.06 * (n - 1), u).mul(inv(smoothstep(x0, x0 + 0.035, u)));
   const here = n === 4 ? step(0.45, c.rnd(268)) : float(1);
   const g = vec2(s.mul(44), a.mul(12)), d1 = g.x.add(g.y).fract().sub(0.5).abs(), d2 = g.x.sub(g.y).fract().sub(0.5).abs();
   const bl = vec2(s.mul(40).fract().sub(0.5), a.mul(6).fract().sub(0.5).mul(1.3)).length();
@@ -36,9 +36,9 @@ export function material(ctx) {
   // the deal: tail n wears skin (roll + n) % 4, then a second one travels up it root to tip
   const m1 = c.pick(265, 4).add(n).mod(4), m2 = m1.add(1).add(c.pick(407 + n, 2)).mod(4);
   const wear = (v) => skins.reduce((acc, sk, i) => acc.add(sk.mul(is(v, i))), vec3(0));
-  const k1 = 0.66 + n * 0.03;
+  const k1 = 0.6 + n * 0.06;
   let skin = low ? wear(m1) : mix(wear(m1), wear(m2), step(s, smoothstep(k1, k1 + 0.1, u).mul(1.05)));
-  const sil = smoothstep(0.72, 0.75, u).mul(inv(smoothstep(0.79, 0.82, u))).mul(is(c.pick(266, 2).add(1), n));
+  const sil = smoothstep(0.8, 0.82, u).mul(inv(smoothstep(0.85, 0.87, u))).mul(is(c.pick(266, 2).add(1), n));
   skin = skin.mul(inv(sil)).mul(float(0.85).add(c.kick.mul(0.35)));
   const nz = normalView.z.abs().clamp(0, 1), rim = inv(nz).max(0.0001).pow(3);
   m.colorNode = skin.mul(nz.mul(0.75).add(0.25)).add(C.mul(rim).mul(mix(float(1.4), float(0.9), sil)));
