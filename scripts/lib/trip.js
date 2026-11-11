@@ -10,7 +10,7 @@
 //   win(c.sec, SEC.flight)  -> 0..1 window, 1 inside that section, 1.5 s soft edges (or win(sec,[a,b],fade))
 // A param write is how the roll starts: the director writes params.t0 (seconds on the shader `time` clock)
 // and params.on (1 rolling, 0 idle) to every object tagged "trip", to look.params and to sky.params.
-import { time, float, vec2, vec3, smoothstep, step, audioSpectrum, select, mix } from "builtin/tsl";
+import { time, float, vec2, vec3, smoothstep, step, audioSpectrum, select, mix, positionWorld, atan } from "builtin/tsl";
 import SCORE from "./data/score.yml";
 import ENERGY from "./data/energy.yml"; // the track measured bar by bar (tools/analyse-track.py)
 // KICK RUNS: the stretches of bars where the measured bass really carries a kick (bass >= 0.6),
@@ -73,8 +73,22 @@ export const HUE = {
 // the show and the hide both travel outward over SCORE.wipe seconds, so a layer opens like an iris and is
 // eaten away the same way. Use it as the material's cutout (m.opacityNode = shown(...); m.alphaTest = 0.5),
 // never as a fade to black: a hidden layer must uncover what stands behind it.
+// PIECE BY PIECE: on top of the radial lag, every fragment carries its own delay from a cell of its layer's own
+// pattern (hex-ish cells, rings or sectors, sized per layer), so a layer enters and leaves one piece at a time across
+// ~2 bars and its neighbours' pieces cross through each other. Never the whole layer on one frame.
+const salt = (name) => { let h = 7; for (const ch of name) h = (h * 31 + ch.charCodeAt(0)) % 9973; return h; };
+function pieceLag(name) {
+  const h = salt(name), kind = h % 3, size = 2.5 + (h % 5) * 1.5; // metres
+  const P = positionWorld;
+  let id;
+  if (kind === 0) { const q = P.xz.add(P.y.mul(0.5)).div(size); id = q.floor().add(vec2(q.y.floor().mul(0.5).fract(), 0)).floor(); id = id.x.add(id.y.mul(57)); }
+  else if (kind === 1) id = P.sub(vec3(0, 15, 0)).length().div(size).floor();                 // rings
+  else id = atan(P.x, P.z.sub(P.y.mul(0.3))).div(6.2831853).add(0.5).mul(12 + (h % 4) * 4).floor(); // sectors
+  const r = id.add(h * 0.731).sin().mul(43758.5453).fract();
+  return r.mul(SCORE.piece ?? 2.25);
+}
 export function shown(c, name, d = 0) {
-  const lag = float(d).clamp(0, 1).mul(SCORE.wipe);
+  const lag = float(d).clamp(0, 1).mul(SCORE.wipe).add(pieceLag(name));
   let v = float(0);
   for (const [a, b] of SCORE.layers[name]) {
     v = v.add(smoothstep(a, a + 0.2, c.sec.sub(lag)).mul(smoothstep(b + 0.2, b, c.sec.sub(lag))));

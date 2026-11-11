@@ -28,6 +28,7 @@ layout:
 # (discarded, so what is behind it shows). Each show and hide is a wipe travelling out from the composition
 # centre over `wipe` seconds, so a layer uncovers the next instead of everything standing at once.
 wipe: 3
+piece: 2.25   # each fragment's own extra delay, 0..this many seconds (1.5 bars): layers change over piece by piece
 layers:
   eye:      [[3.35, 57.35], [108.35, 195]]      # lids open at 3.35; cut away as we pass the pupil; back for ascent
   rays:     [[12.35, 36.35], [132.35, 180.35]]  # the lash/ray crown: pulse, gone while the field grows, back at peak
