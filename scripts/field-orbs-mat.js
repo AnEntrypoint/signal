@@ -18,9 +18,9 @@ export function material(ctx) {
     .add(vec3(ang.cos().mul(o.x), o.w.add(bob), ang.sin().mul(o.x)));
   const nz = normalView.z.abs();
   const kind = varying(t.y.mod(3));
-  const bodyC = select(kind.lessThan(0.5), V(HUE.orange, 1.5), select(kind.lessThan(1.5), V(HUE.red, 1.5), V(HUE.yellow, 1.3)));
-  const coreC = select(kind.lessThan(0.5), V(HUE.red, 0.9), select(kind.lessThan(1.5), V(HUE.magenta, 0.8), V(HUE.orange, 1.0)));
-  const rimC = select(kind.lessThan(1.5), V(HUE.yellow, 2.2), V(HUE.white, 2.0));
+  const bodyC = select(kind.lessThan(0.5), vec3(1.0,0.3,0.0), select(kind.lessThan(1.5), vec3(1.0,0.03,0.02), vec3(1.0,0.7,0.0)));
+  const coreC = select(kind.lessThan(0.5), vec3(0.75,0.02,0.02), select(kind.lessThan(1.5), vec3(0.8,0.0,0.4), vec3(0.9,0.2,0.0)));
+  const rimC = select(kind.lessThan(1.5), vec3(1.3,0.95,0.05), vec3(1.3,0.5,0.0));
   const e = (x) => smoothstep(x - 0.012, x + 0.012, nz);
   let col = rimC;
   col = mix(col, vec3(0), e(0.3));

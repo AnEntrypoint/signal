@@ -31,9 +31,9 @@ export function backOut(x) {
 }
 // The body colours (deep blue / violet) and the hot accents, by index.
 const V = (h, g = 1) => vec3(h[0] * g, h[1] * g, h[2] * g);
-export function base(i) { return select(float(i).mod(2).lessThan(0.5), V(HUE.blue, 1.5), V(HUE.violet, 1.35)); }
+export function base(i) { return select(float(i).mod(2).lessThan(0.5), vec3(0.015, 0.05, 0.9), vec3(0.3, 0.0, 0.85)); }
 export function hot(i) {
   const k = float(i).mod(5);
-  return select(k.lessThan(0.5), V(HUE.yellow, 1.5), select(k.lessThan(1.5), V(HUE.magenta, 1.5),
-    select(k.lessThan(2.5), V(HUE.green, 1.3), select(k.lessThan(3.5), V(HUE.orange, 1.6), V(HUE.red, 1.6)))));
+  return select(k.lessThan(0.5), vec3(1.0, 0.72, 0.0), select(k.lessThan(1.5), vec3(1.0, 0.0, 0.5),
+    select(k.lessThan(2.5), vec3(0.03, 0.95, 0.06), select(k.lessThan(3.5), vec3(1.0, 0.3, 0.0), vec3(1.0, 0.02, 0.02)))));
 }

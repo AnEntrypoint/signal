@@ -22,8 +22,8 @@ export function material(ctx) {
   m.positionNode = select(part.greaterThan(0.5), bead, stem).mul(s).add(vec3(ang.cos().mul(r), 0, ang.sin().mul(r)));
   const vh = varying(h), vhop = varying(hop), vrow = varying(row);
   const H = hot(vrow), H2 = hot(vrow.add(2));
-  const beadCol = mix(mix(H, vec3(0), step(0.6, v)), H2, step(0.8, v)).mul(vhop.mul(1.2).add(1.1));
-  const stemCol = vec3(1.3, 1.3, 1.3).mul(step(0.5, v.mul(vh).mul(2.5).fract()));
+  const beadCol = mix(mix(H, vec3(0), step(0.6, v)), H2, step(0.8, v)).mul(vhop.mul(0.5).add(0.9));
+  const stemCol = vec3(0.9, 0.9, 0.9).mul(step(0.5, v.mul(vh).mul(2.5).fract()));
   m.colorNode = select(part.greaterThan(0.5), beadCol, stemCol);
   m.fog = false;
   return m;

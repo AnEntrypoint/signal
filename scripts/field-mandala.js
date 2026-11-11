@@ -28,14 +28,14 @@ export function material(ctx) {
     return { tc, cw, x: tc.mul(cw) };
   };
   const A = base(i), B = base(i.add(1)), H = hot(i), H2 = hot(i.add(2));
-  const W = vec3(1.5, 1.5, 1.5);
+  const W = vec3(0.95, 0.95, 0.95);
   const inset = (m) => f.sub(0.5).abs().sub(m).mul(BW);
 
   // 0: three staggered rows of target dots
   const j0 = f.mul(3).floor(), fy0 = f.mul(3).fract().sub(0.5).mul(BW / 3);
   const c0 = cell(BW / 3, j0.mul(0.5));
   const l0 = length(vec2(c0.x, fy0));
-  const col0 = target(l0, 0.44, H, H2), d0 = l0.sub(0.44);
+  const col0 = mix(A.mul(fill(inset(0.47))).mul(fill(l0.sub(0.58)).oneMinus()), target(l0, 0.44, H, H2), fill(l0.sub(0.44))), d0 = l0.sub(0.44);
 
   // 1: black/white radial stripes, each white stripe carrying a row of body-colour dots
   const c1 = cell(1.3);
@@ -64,7 +64,7 @@ export function material(ctx) {
   const c4 = cell(0.95, j4.mul(0.5));
   const l4 = length(vec2(c4.x, g4.mul(2).fract().sub(0.5).mul(BW * 0.32)));
   const in4 = g4.greaterThan(0).and(g4.lessThan(1)).select(1, 0);
-  const col4 = H.mul(1.6).mul(fill(dL)).add(target(l4, 0.36, H2, A).mul(in4));
+  const col4 = H.mul(1.15).mul(fill(dL)).add(target(l4, 0.36, H2, A).mul(in4));
   const d4 = min(dL, select(in4.greaterThan(0.5), l4.sub(0.36), float(9)));
 
   // 5: a pinstriped body band with black portholes, a target in each
@@ -84,17 +84,17 @@ export function material(ctx) {
   // reset: neon line-art outside the refilling radius
   const Rf = resetR(c.sec);
   const la = fill(Rf.sub(r));
-  const lineCol = mix(hot(i.add(1)), vec3(HUE.cyan[0], HUE.cyan[1], HUE.cyan[2]), k.mod(2)).mul(1.7);
+  const lineCol = mix(hot(i.add(1)), vec3(HUE.cyan[0], HUE.cyan[1], HUE.cyan[2]), k.mod(2)).mul(1.15);
   let body = mix(col, lineCol.mul(line(d, 0.05)), la);
-  body = body.mul(c.barHit.mul(i.mod(4).lessThan(0.5).select(1.6, 0)).add(1));
+  body = body.mul(c.barHit.mul(i.mod(4).lessThan(0.5).select(0.9, 0)).add(1));
 
   // bloom: the hard growing edge with its white rim
   const R = growR(c.sec);
   const rimOn = c.sec.greaterThan(SEC.pulse[0]).and(R.lessThan(90.5)).select(1, 0);
-  const rim = line(r.sub(R), 0.14).mul(rimOn).mul(3).add(line(r.sub(Rf), 0.14).mul(Rf.lessThan(95).and(Rf.greaterThan(0.5)).select(3, 0)));
+  const rim = line(r.sub(R), 0.14).mul(rimOn).mul(1.6).add(line(r.sub(Rf), 0.14).mul(Rf.lessThan(95).and(Rf.greaterThan(0.5)).select(1.6, 0)));
   const seed = fill(r.sub(0.45)).mul(smoothstep(SEC.pulse[0] + 0.5, SEC.pulse[0], c.sec)).mul(0.5);
   // the kick ripple: one thin ring a beat, running the whole radius
-  const ripple = line(r.sub(c.beat.fract().mul(90)), 0.22).mul(c.kick.pow(0.3)).mul(2.6);
+  const ripple = line(r.sub(c.beat.fract().mul(90)), 0.22).mul(c.kick.pow(0.3)).mul(1.5);
 
   const m = new MeshBasicNodeMaterial();
   m.colorNode = body.mul(fill(r.sub(R))).add(vec3(1, 1, 1).mul(rim)).add(vec3(0.5, 0.8, 1.0).mul(ripple)).add(vec3(0.3, 0.4, 1).mul(seed)).mul(endFade(c.sec));
