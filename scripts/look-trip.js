@@ -84,14 +84,8 @@ export function look(ctx) {
   const sweep = smoothstep(0.55, 1.0, ang0.abs().sub(hand).cos()) // two mirrored hands;
   const breath = sec.mul(TAU / 12).sin().mul(0.5).add(0.5);
 
-  // ---- geometric warps of where the frame is read (height-unit space) ----
-  let p = p0.mul(float(1).sub(breath.mul(0.02).mul(on)));                                 // breath (rule 8)
-  p = p.mul(float(1).sub(c.kick.mul(0.015).mul(wPulse).mul(job(0))));                                  // pulse zoom-punch
-  const bf = c.beat.fract(), ring = r0.sub(bf.mul(1.1)).div(0.035);                        // pulse-ripple: a refracting ring out per beat
-  p = p.mul(float(1).sub(ring.mul(ring).negate().exp().mul(float(1).sub(bf)).mul(0.03).mul(wRip).mul(c.live)));
-  p = p.mul(float(1).add(r0.mul(TAU * 6).sin().mul(breath.sub(0.5)).mul(0.024).mul(wCB)));  // counter-breath: neighbour rings antiphase
-  const nz = vec3(p.mul(2.2), sec.mul(0.07));
-  p = p.add(vec2(mx_noise_float(nz), mx_noise_float(nz.add(7.3))).mul(0.03).mul(wTurb));  // fluid-turbulence (one octave, breakdowns)
+  // ---- no 2D warps of the picture (creator, 11-11: flat warps don't work; only the lens bends: fisheye/hyperbolic via bendUv) ----
+  const p = p0;
   // inversion-return: the frame through one circle, then shrunk back to its point
   const wInv = smoothstep(181, 186, sec).mul(wRet);
   const pinv = p.mul(float(0.09).div(p.dot(p).max(0.004)));
