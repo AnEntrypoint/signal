@@ -3,7 +3,7 @@
 // the petals weave through each other. Strokes are neon: colour runs along the line inside the section's family,
 // a lit head travels each petal on the bars, the rest rests dim; the kick ripple swells it outward 4 %.
 import { MeshBasicNodeMaterial } from "builtin/three";
-import { positionGeometry, positionWorld, cameraPosition, vertexColor, float, vec3, step, mix, smoothstep, length, distance, varying } from "builtin/tsl";
+import { attribute, positionGeometry, positionWorld, cameraPosition, vertexColor, float, vec3, step, mix, smoothstep, length, distance, varying } from "builtin/tsl";
 import { tripClock, shown } from "./lib/trip.js";
 import { TAU, fam, ripple, barStep, relight, gate, breathScale, pupilDeal, lidOpen } from "./eye-lib.js";
 
@@ -12,7 +12,10 @@ export function material(ctx) {
   const F = fam(c);
   const g = positionGeometry;
   const vc = vertexColor().xyz;
-  const t = vc.x, fi = step(0.5, vc.y), cp = step(0.45, vc.z), L = vc.z.sub(cp.mul(0.5)).mul(8).floor(), border = step(L, 0.5), core = step(1.5, L);
+  const code = float(attribute("knot", "uint"));
+  const t = vc.x.max(0).pow(1 / 2.2);
+  const cp = step(7.5, code), fi = step(3.5, code.mod(8)), L = code.mod(4);
+  const border = step(L, 0.5), core = step(1.5, L);
   const keep = float(1).sub(fi.sub(c.pick(35, 2)).abs());
   const th = c.sec.mul(TAU / 72).mul(c.dir).mul(mix(0.8, 1.25, c.rnd(37))).add(TAU / 24).mul(cp.mul(-2).add(1));
   const cs = th.cos(), sn = th.sin();

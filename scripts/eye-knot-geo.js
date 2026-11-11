@@ -1,7 +1,8 @@
 // knot-flower: two sixfold looping curves (spirograph sums of e^{int} whose frequencies differ by 6), each drawn twice
 // (the material turns the copies opposite ways so they weave), as neon ribbons with a black border, rising and
 // sinking in depth along their length so the crossings go over and under. Vertex colour is a code:
-// r = position along the curve 0..1, g = family (0/1), b = copy*0.5 + layer*0.125 + 1/16 (layer 0 black border, 1 colour, 2 hot core).
+// red = position along the curve 0..1 (sRGB),
+// attribute knot = copy*8 + family*4 + layer (layer 0 black border, 1 colour, 2 hot core).
 const FAMS = [[[1, 1], [-5, 0.5], [13, 0.35]], [[1, 1], [7, 0.5]]];
 export function geometry(ctx) {
   const N = ctx.lod >= 4 ? 120 : ctx.lod >= 2 ? 360 : 720, R = 4.0;
@@ -19,7 +20,8 @@ export function geometry(ctx) {
       let prev = edge(0);
       for (let i = 1; i <= N; i++) {
         const cur = edge(i);
-        ctx.color(Math.min(1, i / N), fi, cp * 0.5 + b * 0.125 + 0.0625);
+        ctx.color(Math.min(1, i / N), 0, 0);
+        ctx.attribute("knot", cp * 8 + fi * 4 + b);
         ctx.quad(...prev[0], ...prev[1], ...cur[1], ...cur[0]);
         prev = cur;
       }
