@@ -1,17 +1,17 @@
 {
   "schemaVersion": 1,
-  "basedOnSpecVersion": 221,
-  "updatedAt": "2026-11-11T10:59:35.737Z",
-  "summary": "Signal Stage is a multiplayer walkable motion-graphics stage with a synchronized, seeded 198-second cinematic on the measured 160-bpm track. The director deals both scene variations and vision slots, sending shared timing and parameters to shader-built field, eye, serpents, tunnel, chamber, celestial vision assemblies and the full-screen look; camera and HUD follow the same roll state.",
+  "basedOnSpecVersion": 241,
+  "updatedAt": "2026-11-11T11:07:34.834Z",
+  "summary": "Signal Stage is a multiplayer walkable motion-graphics stage with a synchronized, seeded 198-second cinematic on the measured 160-bpm track. The director deals scene variations and vision slots, sending shared timing to shader-built stage assemblies and the full-screen look; camera and HUD follow the shared roll state.",
   "scriptPaths": [],
   "places": [
     "places/main/config.yaml (main, 3D) - black void, spawn at (0, 0.1, 16), gravity and place-wide scripts/look-trip.js atmosphere look.",
     "places/main/cells/x0z0.scene - #director and stage floor, field/eye/serpents assemblies; eye portal at (0,15,-34), field at origin.",
-    "places/main/cells/x0z-1.scene - sun-eye layers above the stage and five tunnel layers along -Z.",
-    "places/main/cells/x0z-3.scene - chamber room/circuit/hands/hex/Lissajous/mask/solids plus tunnel-knot at the tunnel end.",
+    "places/main/cells/x0z-1.scene and x0z-3.scene - sun-eye above the stage, tunnel along -Z, then chamber assembly and tunnel-knot at its end.",
     "places/main/cells/x0y2z0.scene - three-layer vision-sun-father assembly at y=300.",
     "places/main/cells/x0y3z0.scene and x0y4z0.scene - three-layer vision-moon-mother at y=420; vision-contour-oracle at y=500.",
-    "places/main/cells/x0y5z0.scene - three-layer vision-many-armed assembly at y=620; these four built visions occupy separate high-altitude patches of black."
+    "places/main/cells/x0y5z0.scene - three-layer vision-many-armed at y=620 and three-layer vision-ouroboros at y=720.",
+    "places/main/cells/x0y6z0.scene, x0y7z0.scene, x0y8z0.scene - three-layer vision-thunderbird at y=820, vision-world-tree at y=920, and single-canvas vision-giving-hands at y=1020."
   ],
   "roots": [
     "world.config.yaml - multiplayer services, player/camera templates, movement and cine actions, arrival, lighting, HUD and nametag.",
@@ -23,25 +23,21 @@
   "shared": [
     "scripts/lib/cine.js - CPU score clock, section lookup and seeded camera path; used by player/camera/HUD and stage.",
     "scripts/lib/deck.js - deterministic per-seed scene-deck deal and track-to-scene-time mapping; used by cine.js and stage.js.",
-    "scripts/lib/visions.js - ten-being registry, four marked built, seeded slot dealing, vision camera shots and measured-energy lookup; used by cine.js and stage.js.",
+    "scripts/lib/visions.js - ten-being registry, four currently marked built, seeded slot dealing, vision camera shots and measured-energy lookup; used by cine.js and stage.js.",
     "scripts/lib/data/score.yml and shots.yml - musical sections, layers, lens, scene-deck choices and authored camera keys; energy.yml holds measured track data and vision slots.",
     "scripts/lib/trip.js - shared shader clocks, kick runs, seeded palette/random choices, scene/layer visibility, lens bending and vision visibility/clocks.",
     "scripts/field-lib.js, eye-lib.js, tunnel-lib.js, chamber-lib.js and chamber-fx.js - family-specific spatial, timing and shader helpers.",
     "scripts/sun-lib.js - sun-eye shader helpers; scripts/serpents-data.js and serpents-curve.js - shared serpent records, spine and frame math."
   ],
   "notableExports": [
-    "scripts/player.js exports onInput, update; scripts/camera.js exports finiteNumber, update; scripts/stage.js exports update.",
+    "scripts/player.js exports onInput, update; scripts/camera.js exports finiteNumber, update; scripts/stage.js exports update; scripts/look-trip.js exports look.",
     "scripts/lib/cine.js exports SCORE, SHOTS, CINE, cineTime, sectionAt, rollRnd, cameraAt, beatEnv; scripts/lib/deck.js exports dealDeck, sceneTime.",
-    "scripts/lib/visions.js exports BEINGS, dealVisions, visionAt, visionShot, energyAt; scripts/lib/trip.js exports KICK_RUNS, tripClock, shown, lens, bendUv, visionShown, visionU and masks.",
-    "scripts/look-trip.js exports look; field geometry/material scripts export geometry/material, with field-mandala.js exporting material.",
-    "scripts/eye-*-geo.js export geometry/collider where defined; eye shader scripts export material.",
-    "scripts/serpents-*-geo.js export geometry (and collider where defined); serpent layer materials export material; serpents-lib.js exports shared skin, clock, movement, lighting and cut helpers.",
-    "scripts/tunnel-geo.js exports geometry/collider; tunnel layer scripts export material; scripts/chamber-*-geo.js and vision-*-geo.js export geometry/collider where defined and paired shader scripts export material.",
-    "scripts/sun-lib.js exports shared sun helpers; sun layer scripts export material."
+    "scripts/lib/visions.js exports BEINGS, dealVisions, visionAt, visionShot, energyAt; scripts/lib/trip.js exports KICK_RUNS, SEC, BPS, tripClock, win, pal, stripes, HUE, shown, lens, bendUv, visionShown.",
+    "Field, eye, serpent, tunnel, chamber, sun and vision geometry scripts export geometry/collider where defined; paired shader scripts export material (field-mandala.js also exports material)."
   ],
   "ownership": [
     "scripts/player.js - local movement intent/velocity and shared world.state.cine = {start, by, seed} or null from cine input.",
-    "scripts/stage.js on #director - shared audio session; trip materials and look receive t0/on/seed/kick/deck params, and vision-tagged materials receive their dealt vw0/vw1 slots.",
+    "scripts/stage.js on #director - shared audio session; trip materials/look receive t0/on/seed/kick/deck params, look receives v0/v1, and vision-tagged materials receive vw0/vw1 slots.",
     "scripts/camera.js / templates/camera.js - viewer-local camera pose/FOV and seeded authored or vision shot path.",
     "scripts/humanoid-locomotion.js - avatar gait/sit state; scripts/ui.js and ui/nametag.js - viewer-local presentation only.",
     "places/main/config.yaml owns atmosphere, spawn, gravity, terrain mode and look params; world.config.yaml owns world services, inputs and templates."
@@ -50,13 +46,12 @@
     "P/cine action or HUD sendAction('cine') → scripts/player.js onInput → world.state.cine={start: now+300ms, by, seed} or null.",
     "world.state.cine → scripts/ui.js render → viewer-local ROLL/CUT and rolling progress/section label.",
     "world.state.cine + score track → #director scripts/stage.js → shared audio at c.start; director stops audio and clears/renews ended cine.",
-    "stage.js → trip-tagged materials/look params: t0, on, seed, kick bounds k0/k1 and dealt scene mappings ds0..ds3/dr0..dr3.",
-    "stage.js + visions.js → objects tagged vision-<id> get vw0/vw1 slot seconds, or -1/-1 when not dealt; trip.js visionShown/visionU gate and clock their shaders.",
+    "stage.js → trip-tagged materials/look params: t0, on, seed, kick bounds k0/k1 and dealt scene mappings ds0..ds3/dr0..dr3; look also gets current vision slot v0/v1.",
+    "stage.js + visions.js → objects tagged vision-<id> get vw0/vw1 slot seconds or -1/-1; trip.js vision clock/gate drives their shader materials.",
     "energy.yml → trip.js KICK_RUNS and visions.js measured vision slots → director supplies kick runs and seeded vision slot assignment.",
     "score.yml + deck.js → seeded scene per drop stretch → cine.js cameraAt and trip.js scene clock use the same assigned source section/rate.",
     "cine.js cameraAt → visions.js visionAt/visionShot during a dealt slot, otherwise seeded shots.yml path → scripts/camera.js viewer camera.",
-    "score.yml + trip.js tripClock/shown/lens/mask helpers → field, eye, serpents, tunnel, chamber, vision assemblies and look-trip shader timing, cutouts and UV effects.",
-    "places/main/cells/x0z0.scene serpents layers → serpents geometry/material family; serpents-lib.js and serpents-curve.js share body movement, skin and curve/frame math.",
+    "score.yml + trip.js tripClock/shown/lens/mask helpers → field, eye, serpents, tunnel, chamber, vision assemblies and look-trip shader timing and cutouts.",
     "scripts/sun-lib.js → sun-eye disc/drips/halo shaders; tunnel-geo.js kind-selected geometry → tunnel wall/core/dust/gates/ribs and knot layers.",
     "places/main/config.yaml atmosphere.look params → scripts/look-trip.js; world.config.yaml movement actions → scripts/player.js velocity, while templates/player.js also runs avatar locomotion."
   ],
@@ -67,7 +62,7 @@
     "scripts/tunnel-* - wall, core, dust, gates, ribs and knot share tunnel geometry kinds and tunnel-lib.js spatial/color helpers; materials vary motif and seeded palette.",
     "scripts/chamber-* - room, circuit, hands, hex, Lissajous, solids and bilateral mask share chamber shader helpers and scored cutouts.",
     "scripts/sun-disc.js, sun-drips.js and sun-halo.js - sun-eye layers share sun-lib.js but vary disc, hanging-drip and depth-halo imagery.",
-    "scripts/vision-*-geo.js and vision-*-mat.js - four built vision beings share trip/slot shader gating but use distinct geometry/material imagery; sun-father and moon-mother reuse one material across three depth/layer variants.",
+    "scripts/vision-*-geo.js and vision-*-mat.js - eight beings have scene assemblies, but only sun-father, moon-mother, contour-oracle and many-armed are marked built in visions.js and enter the deal; multi-layer beings reuse their material/geometry pair by layer.",
     "scripts/look-trip.js and scripts/lib/trip.js - full-screen post-processing and scene shaders share score clock, seeded scene deal, visibility and lens math; templates/player.js composes gait with input/movement."
   ],
   "probableOrphans": [
@@ -77,9 +72,9 @@
   "migrationNotes": [
     "world.state.cine is the synchronized start/cut source; starts are scheduled 300 ms ahead. cine.js uses milliseconds for start/ctx.now() and seconds for score/shot keys.",
     "stage.js converts c.start to shader t0 seconds modulo 3600 and repeats parameter pushes over several ticks so late-built materials receive the roll; tagged trip materials need t0/on/seed and kick bounds k0/k1.",
-    "There are two synchronized clocks: trip.js maps each dealt drop stretch to scene time sec for layer/lens composition, while real track time remains authoritative for beats, kicks and vision slots; ds0..ds3 are source starts and dr0..dr3 rates.",
-    "energy.yml remains the measured-track source for kick runs and vision slots; visions.js has ten deck IDs but only sun-father, moon-mother, contour-oracle and many-armed are marked built and have scene assemblies. Slot values vw0/vw1 are track seconds.",
+    "Trip shaders normally use dealt scene time; vision-tagged materials with vw0 switch to real track seconds and suppress the scene seam. Scene lens and look treatments change at section cuts (0.04 s window); look is held untreated during its v0/v1 vision slot.",
+    "energy.yml remains the measured-track source for kick runs and vision slots; visions.js lists ten IDs but currently only four have built:true, so the newly placed ouroboros, thunderbird, world-tree and giving-hands scenes are not yet dealt by the registry.",
     "Score is 198 seconds at 160 bpm, first beat 0.35 s; idle shaders free-run the duration loop. Units are metres, +Y up, vision canvases face +Z; main composition runs from field/eye through tunnel to chamber on -Z.",
-    "Layer visibility is shader cutout via shown()/masks, not a fade to black; hidden layers uncover what is behind. Vision materials use visionShown/visionU and their scene objects must retain matching vision-<id> tags for stage slot propagation."
+    "Layer visibility is shader cutout via shown()/masks, not a fade to black; vision materials use visionShown/visionU and scene objects must retain matching vision-<id> tags for stage slot propagation."
   ]
 }
