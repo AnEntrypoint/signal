@@ -63,7 +63,8 @@ export function material(ctx) {
   const m0 = pk(8, 3).add(pair).mod(3), m1 = m0.add(1).mod(3);
   const t1 = 0.8 + pair * 0.03;
   const dark = is(float(n), step(0.5, rn(13)).add(1)).mul(step(uu, smoothstep(0.85, 0.91, u).mul(1.02)));
-  const skin = mix(skinOf(m0), skinOf(m1), step(inv(uu), smoothstep(t1, t1 + 0.08, u).mul(1.02))).mul(face).mul(inv(dark));
+  // the body reads BLACK: its skin is a dim pattern on the black (35%), the neon lives only at the silhouette rim
+  const skin = mix(skinOf(m0), skinOf(m1), step(inv(uu), smoothstep(t1, t1 + 0.08, u).mul(1.02))).mul(face).mul(inv(dark)).mul(0.35);
   const drop = smoothstep(grow.sub(0.07), grow.sub(0.015), uu);
   const rimCol = mix(A, W, run.mul(0.5)).mul(run.mul(0.6).add(1));
   m.colorNode = mix(mix(skin, rimCol, rim), mix(H, W, 0.3).mul(1.2), drop.mul(inv(face.mul(0.6))));
