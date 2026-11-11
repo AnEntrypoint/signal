@@ -27,7 +27,19 @@ function segment(t) {
   return { i, u }
 }
 // The camera at t: a spline through the keys; a key with cut: true starts a new shot (no glide into it).
-export function cameraAt(t) {
+// A roll's own number 0..1 per channel n, the CPU twin of trip.js c.rnd (not the same values, the same idea).
+export function rollRnd(seed, n) { const x = Math.sin((seed + 1) * (n * 12.9898 + 78.233)) * 43758.5453; return x - Math.floor(x) }
+// The roll's seed varies the flight without leaving the axis: which side the orbits pass, the roll's sense and
+// size, how high the rises go, how wide the lens opens. Seed 0 (idle, old rolls) is the path as written.
+export function cameraAt(t, seed = 0) {
+  const c = cameraRaw(t)
+  if (!seed) return c
+  const side = rollRnd(seed, 1) < 0.5 ? -1 : 1, rs = (rollRnd(seed, 2) < 0.5 ? -1 : 1) * (0.6 + rollRnd(seed, 3) * 0.9)
+  const lift = 0.8 + rollRnd(seed, 4) * 0.5, wide = 0.92 + rollRnd(seed, 5) * 0.18
+  const y = (v) => 15 + (v - 15) * lift
+  return { eye: { x: c.eye.x * side, y: y(c.eye.y), z: c.eye.z }, aim: { x: c.aim.x * side, y: c.aim.y, z: c.aim.z }, fov: c.fov * wide, roll: c.roll * rs }
+}
+function cameraRaw(t) {
   const k = SHOTS.keys
   const { i, u } = segment(t)
   const b = k[i], c = k[i + 1]

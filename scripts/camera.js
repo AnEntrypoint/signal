@@ -21,7 +21,7 @@ export function update(ctx, dt) {
   const t = cineTime(ctx)
   if (t != null) {
     if (!ctx.self.session.rolling) { ctx.self.session.rolling = true; ctx.self.orientation = { source: 'look', authoredAxes: ['yaw', 'pitch'] } }
-    const c = cameraAt(t)
+    const c = cameraAt(t, ctx.world.state.cine?.seed ?? 0)
     ctx.self.feetPosition = c.eye
     const dx = c.aim.x - c.eye.x, dy = c.aim.y - c.eye.y, dz = c.aim.z - c.eye.z
     ctx.self.rotation = { yaw: Math.atan2(-dx, -dz) * RAD_TO_DEG, pitch: Math.atan2(dy, Math.hypot(dx, dz)) * RAD_TO_DEG, roll: c.roll }

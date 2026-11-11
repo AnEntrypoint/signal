@@ -2,14 +2,13 @@
 // Nothing here moves per tick: the motion lives in the shaders (scripts/lib/trip.js).
 import { SCORE, cineTime } from './lib/cine.js'
 
-function push(ctx, t0, on) {
+function push(ctx, t0, on, seed) {
   for (const o of ctx.query({ tags: ['trip'] })) {
     const h = ctx.getObject(o.id)
-    if (h?.material?.params) { h.material.params.t0 = t0; h.material.params.on = on }
+    if (h?.material?.params) { h.material.params.t0 = t0; h.material.params.on = on; h.material.params.seed = seed }
   }
   const a = ctx.place.atmosphere
-  if (a.look) { a.look.params ??= {}; a.look.params.t0 = t0; a.look.params.on = on }
-  a.sky ??= {}; a.sky.params ??= {}; a.sky.params.t0 = t0; a.sky.params.on = on
+  if (a.look) { a.look.params ??= {}; a.look.params.t0 = t0; a.look.params.on = on; a.look.params.seed = seed }
 }
 
 export function update(ctx, dt) {
@@ -20,7 +19,7 @@ export function update(ctx, dt) {
     // written a few ticks running so late-built materials get it too
     ctx.self.session.n = ctx.self.session.key === key ? (ctx.self.session.n ?? 0) + 1 : 0
     ctx.self.session.key = key
-    push(ctx, t != null ? (c.start / 1000) % 3600 : 0, t != null ? 1 : 0)
+    push(ctx, t != null ? (c.start / 1000) % 3600 : 0, t != null ? 1 : 0, t != null ? (c.seed ?? 0) : 0)
   }
   if (t != null && ctx.self.state.track !== c.start) {
     ctx.self.state.track = c.start

@@ -24,7 +24,15 @@ export function tripClock(ctx) {
   const beat = sec.sub(SCORE.firstBeat).mul(BPS);
   const live = smoothstep(SCORE.kickFrom - 0.05, SCORE.kickFrom, sec).mul(smoothstep(SCORE.kickTo + 0.05, SCORE.kickTo, sec));
   const env = (b, k) => b.fract().mul(k).negate().exp().mul(live);
+  // THE ROLL'S SEED: a new integer every roll (0 idle), the same on every machine in the room.
+  // c.rnd(n): 0..1, fixed for this roll, different per channel n. Channels 1-9 are the spine's; a piece uses 10+.
+  // c.hue: this roll's palette offset (add it inside every pal()). c.dir: +1 or -1, this roll's turning sense.
+  // c.pick(n, k): an integer 0..k-1 for this roll (a symmetry count, a variant), as a float node.
+  const seed = ctx.param("seed", 0);
+  const rnd = (n) => seed.add(1).mul(n * 12.9898 + 78.233).sin().mul(43758.5453).fract();
+  const pick = (n, k) => rnd(n).mul(k).floor().min(k - 1);
   return {
+    seed, rnd, pick, hue: rnd(1), dir: rnd(2).step(0.5).mul(2).sub(1),
     sec, beat, on, bar: beat.div(4), phrase: beat.div(32),
     kick: env(beat, 4.5), half: env(beat.div(2).add(0.5), 6), barHit: env(beat.div(4), 6),
     bass: audioSpectrum(0.08), high: audioSpectrum(0.75),
@@ -76,14 +84,14 @@ export function lens(c, key) {
 // Bulge breathes with the phrase and kicks 4% on the beat; the swirl twists the centre, not the edge.
 export function bendUv(c, uv, aspect = 1.78) {
   const breath = c.sec.mul(6.28318 / 12).sin().mul(0.5).add(0.5);
-  const k = lens(c, "bulge").mul(breath.mul(0.4).add(0.8)).add(c.kick.mul(0.04));
+  const k = lens(c, "bulge").mul(mix(0.6, 1.4, c.rnd(3))).mul(breath.mul(0.4).add(0.8)).add(c.kick.mul(0.04));
   const p0 = uv.sub(0.5).mul(vec2(aspect, 1));
   const r = p0.length();
-  const a = lens(c, "swirl").mul(float(1).sub(r.mul(1.3)).clamp(0, 1)).mul(c.sec.mul(6.28318 / 24).sin());
+  const a = lens(c, "swirl").mul(c.dir).mul(mix(0.6, 1.5, c.rnd(4))).mul(float(1).sub(r.mul(1.3)).clamp(0, 1)).mul(c.sec.mul(6.28318 / 24).sin());
   const p1 = vec2(p0.x.mul(a.cos()).sub(p0.y.mul(a.sin())), p0.x.mul(a.sin()).add(p0.y.mul(a.cos())));
   const p2 = p1.div(float(1).add(k.mul(r.mul(r)).mul(1.6)));
   // hyperbolic: Mobius slide of the Poincare disc, w = (z + a) / (1 + conj(a) z), centre held
-  const h = lens(c, "hyper"), th = c.sec.mul(6.28318 / 24);
+  const h = lens(c, "hyper").mul(mix(0.7, 1.3, c.rnd(5))), th = c.sec.mul(6.28318 / 24).mul(c.dir).add(c.rnd(6).mul(6.28318));
   const ax = h.mul(th.cos()), ay = h.mul(th.sin());
   const zx = p2.x.mul(1.6), zy = p2.y.mul(1.6);
   const nx = zx.add(ax), ny = zy.add(ay);
@@ -94,6 +102,6 @@ export function bendUv(c, uv, aspect = 1.78) {
   const r3 = p3.length().max(0.0005);
   const oct = r3.log().div(1.3863).add(c.sec.div(12)).fract();
   const p4 = mix(p3, p3.div(r3).mul(oct.mul(1.3863).exp().mul(0.12)), lens(c, "droste"));
-  const px = mix(p4.x, p4.x.abs().negate(), lens(c, "fold").mul(smoothstep(0.0, 0.02, p4.x.abs())));
+  const px = mix(p4.x, p4.x.abs().mul(c.rnd(7).step(0.5).mul(2).sub(1)), lens(c, "fold").mul(smoothstep(0.0, 0.02, p4.x.abs())));
   return vec2(px, p4.y).div(vec2(aspect, 1)).add(0.5);
 }

@@ -22,7 +22,7 @@ function walkOf(ctx) {
 export function onInput(ctx, input) {
   // Roll / cut the cinematic for the whole room. Starts 0.3 s out so every machine starts together.
   if (input.pressed.cine) {
-    ctx.world.state.cine = cineTime(ctx) == null ? { start: ctx.now() + 300, by: ctx.self.id } : null
+    ctx.world.state.cine = cineTime(ctx) == null ? { start: ctx.now() + 300, by: ctx.self.id, seed: Math.floor(ctx.random() * 9973) + 1 } : null
   }
 
   const facingSin = input.axes.aimYawSin ?? 0
