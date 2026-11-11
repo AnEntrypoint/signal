@@ -193,7 +193,7 @@ export function look(ctx) {
 
   // deep: pulled toward deep ultramarine, near-monochrome
   const dl = luma(col);
-  col = mix(col, vec3(0.1, 0.2, 1.0).mul(dl.mul(2.0)).add(vec3(0.5, 0.6, 1).mul(dl.sub(0.6).max(0))), wDeep.mul(0.75).add(wRet.mul(float(1).sub(retGG)).mul(0.7)));
+  col = mix(col, vec3(0.08, 0.16, 1.0).mul(smoothstep(0.05, 0.9, dl).mul(1.5)).add(vec3(0.6, 0.45, 1).mul(dl.sub(0.75).max(0).mul(2))), wDeep.mul(0.75).add(wRet.mul(float(1).sub(retGG)).mul(0.7)));
 
   // hue-family-swap: the whole frame steps its hue on the phrase line (small, blue stays blue/violet)
   const ph = c.phrase.floor().add(c.seed).mul(0.618).fract().mul(3).floor().sub(1);
