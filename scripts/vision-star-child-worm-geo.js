@@ -2,7 +2,7 @@
 // 12 sides, 72 rings). vision-star-child-worm-mat.js bends it IN DEPTH and undulates it in the vertex stage; along-length
 // is y, around-angle atan2(z, x). The bounds are the whole scene's room.
 export function geometry(ctx) {
-  const SIDES = 12, RINGS = 72;
+  const L = ctx.lod ?? 1, SIDES = L > 2 ? 6 : L > 1 ? 10 : 12, RINGS = L > 2 ? 24 : L > 1 ? 48 : 72;
   for (let i = 0; i < RINGS; i++) {
     const y0 = i / RINGS, y1 = (i + 1) / RINGS;
     for (let j = 0; j < SIDES; j++) {
