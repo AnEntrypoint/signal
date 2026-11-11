@@ -37,7 +37,7 @@ const io = (a, b) => io0(a, b, 2, 3);
 const aa = fwidth(q.x).mul(1.2).max(0.02);
 const stroke = strokeAA(aa);
 const rr = q.length(), ang = atan2(q.y, q.x);
-const grow = io(0.0, 0.3), Rg = grow.mul(118);
+const grow = io(0.0, 0.3), Rg = grow.mul(84);
 const sf = ang.div(TAU).mul(28).fract().sub(0.5).mul(2);
 const scallop = inv(sf.mul(sf)).max(0).sqrt().mul(5);
 const cover = step(rr, Rg.sub(5).add(scallop)).mul(step(0.004, grow));
