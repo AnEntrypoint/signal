@@ -80,7 +80,7 @@ const G = gIn.mul(gOut);
     const stroke = (d, w) => inv(smoothstep(float(w), aa.add(w), d));
     const q0 = P.sub(vec2(0, cyL)), ax = P.x.abs();
     const de = vec2(q0.x.div(1.5), q0.y).length();
-    const grow = io(0.0, 0.3, 2, 3), Rg = grow.mul(118), lead = de.sub(Rg);
+    const grow = io(0.0, 0.3, 2, 3), Rg = grow.mul(66), lead = de.sub(Rg);
     const rings = step(lead.div(5).fract(), float(0.55).sub(lead.div(15).mul(0.5))).mul(step(lead, 15)).mul(step(0, lead));
     const cover = step(de, Rg).max(rings).mul(step(0.004, grow));
     const front = c.beat.fract().mul(110);
@@ -96,7 +96,7 @@ const G = gIn.mul(gOut);
     const bead = inv(smoothstep(br.sub(aa), br, vec2(cx, P.y.sub(yc).sub(wave)).length())).mul(step(0.0001, v));
     const glade = smoothstep(v.mul(0.3).add(5), 0, ax).mul(tide);                       // the moon's path on the water
     const horizon = stroke(P.y.sub(yH).abs(), 0.07).mul(step(ax.div(3).fract(), 0.6));
-    let col = mix(mix(A, B, ri.mod(2)), W, glade.mul(0.8)).mul(bead).mul(float(0.3).add(tide.mul(0.3)).add(kl.mul(0.7)).add(glade.mul(0.5)));
+    let col = mix(mix(A, B, ri.mod(2)), W, glade.mul(0.8)).mul(bead).mul(inv(smoothstep(Rg.mul(0.55), Rg.add(12), de)).mul(0.85).add(0.15)).mul(float(0.3).add(tide.mul(0.3)).add(kl.mul(0.7)).add(glade.mul(0.5)));
     col = col.add(A.mul(horizon).mul(0.5));
     const th = rn(10).sub(0.5).mul(0.8).add(c.real.mul(0.004).mul(sense(11)));
     const sq = vec2(ax, P.y.sub(10)), cs = th.cos(), sn = th.sin();
