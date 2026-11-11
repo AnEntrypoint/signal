@@ -22,6 +22,10 @@ export function look(ctx) {
   const v0 = ctx.param("v0", -1), v1 = ctx.param("v1", -1);
   const vis = step(v0, c.real).mul(step(c.real, v1)).mul(step(0, v0));
   const on = c.on.clamp(0, 1);
+  // THE BEAT'S JOB, dealt every four bars by the roll: 0 a centre push (the old habit, now one in four),
+  // 1 the far layers drop to black behind the subject, 2 the near layers go silhouette in front of it, 3 rest.
+  const beatJob = c.bar.div(4).floor().add(c.seed.mul(0.37)).mul(91.7).sin().mul(43758.5453).fract().mul(4).floor();
+  const job = (n) => on1(beatJob.sub(n).abs().lessThan(0.5));
   const onLens = on.mul(float(1).sub(vis.mul(0.8))); // the being stands in the scene: the bend eases off it, the scene's treatment stays
   const sec = c.sec;
   const aspect = screenSize.x.div(screenSize.y);
@@ -79,7 +83,7 @@ export function look(ctx) {
 
   // ---- geometric warps of where the frame is read (height-unit space) ----
   let p = p0.mul(float(1).sub(breath.mul(0.02).mul(on)));                                 // breath (rule 8)
-  p = p.mul(float(1).sub(c.kick.mul(0.015).mul(wPulse)));                                  // pulse zoom-punch
+  p = p.mul(float(1).sub(c.kick.mul(0.015).mul(wPulse).mul(job(0))));                                  // pulse zoom-punch
   const bf = c.beat.fract(), ring = r0.sub(bf.mul(1.1)).div(0.035);                        // pulse-ripple: a refracting ring out per beat
   p = p.mul(float(1).sub(ring.mul(ring).negate().exp().mul(float(1).sub(bf)).mul(0.03).mul(wRip).mul(c.live)));
   p = p.mul(float(1).add(r0.mul(TAU * 6).sin().mul(breath.sub(0.5)).mul(0.024).mul(wCB)));  // counter-breath: neighbour rings antiphase
@@ -138,7 +142,7 @@ export function look(ctx) {
   const kmix = aWin.mul(0.95).mul(wAsc).add(pk.mul(wPeak)).clamp(0, 1);
 
   // chromatic aberration: R and B pushed radially, growing toward the edge
-  const ab = float(0.0015).add(c.kick.mul(0.006).mul(on));
+  const ab = float(0.0015).add(c.kick.mul(0.006).mul(on).mul(job(0)));
   const rgb = (u) => {
     const d = u.sub(0.5).mul(ab.mul(2));
     return vec3(S(u.add(d)).x, S(u).y, S(u.sub(d)).z);
@@ -266,6 +270,11 @@ export function look(ctx) {
   const razor = step(0.7, c.phrase.floor().add(c.seed).mul(78.233).sin().mul(43758.5453).fract());
   const focusD = mix(zC.clamp(4, 200), float(74), vis);
   const focusR = mix(mix(zC.mul(0.35).add(3), zC.mul(0.08).add(1), razor), float(16), vis);
+  // the beat as occlusion: on the kick one side of the subject's depth blinks to black, so layers trade places
+  // as figure and ground instead of the whole picture pumping
+  const dz = ctx.viewZ.negate();
+  const farSide = step(zC.mul(1.25).add(2), dz), nearSide = step(dz, zC.mul(0.75)).mul(step(0.5, dz));
+  col = col.mul(float(1).sub(c.kick.pow(0.5).mul(0.92).mul(on).mul(hasSubject).mul(float(1).sub(vis)).mul(job(1).mul(farSide).add(job(2).mul(nearSide)))));
   const graded = col.max(vec3(0));
   const focused = dof(graded, ctx.viewZ, focusD, focusR, low ? 3 : 6);
   // only when it means something: a being on stage, or a phrase the roll deals a focus pull (about 1 in 3),
