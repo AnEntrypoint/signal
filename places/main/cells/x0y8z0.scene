@@ -1,0 +1,8 @@
+# spawn-scene v2 yaml x0y8z0
+vision-giving-hands:
+  feetPosition: {x: 0, y: 1000, z: 0}
+  id: vision-giving-hands
+  material: {kind: scripted, script: engine/blueprint}
+  physics: none
+  primitive: {depth: 1, height: 40, kind: box, width: 64}
+  tags: [blueprint]
