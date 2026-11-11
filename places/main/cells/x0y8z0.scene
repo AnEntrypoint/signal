@@ -1,8 +1,28 @@
 # spawn-scene v2 yaml x0y8z0
 vision-giving-hands:
-  feetPosition: {x: 0, y: 1000, z: 0}
+  castShadow: false
+  feetPosition: {x: 0, y: 1020, z: 0}
   id: vision-giving-hands
-  material: {kind: scripted, script: engine/blueprint}
+  material: {kind: scripted, params: {k0: -1, k1: -1, layer: being, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-giving-hands-mat.js}
   physics: none
-  primitive: {depth: 1, height: 40, kind: box, width: 64}
-  tags: [blueprint]
+  primitive: {kind: scripted, params: {h: 40, w: 64}, script: scripts/vision-giving-hands-geo.js}
+  receiveShadow: false
+  tags: [trip, vision-giving-hands]
+vision-giving-hands-ring:
+  castShadow: false
+  feetPosition: {x: 0, y: 1020, z: -12}
+  id: vision-giving-hands-ring
+  material: {kind: scripted, params: {k0: -1, k1: -1, layer: ring, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-giving-hands-mat.js}
+  physics: none
+  primitive: {kind: scripted, params: {h: 48, w: 84}, script: scripts/vision-giving-hands-geo.js}
+  receiveShadow: false
+  tags: [trip, vision-giving-hands]
+vision-giving-hands-veil:
+  castShadow: false
+  feetPosition: {x: 0, y: 1020, z: 10}
+  id: vision-giving-hands-veil
+  material: {kind: scripted, params: {k0: -1, k1: -1, layer: veil, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-giving-hands-mat.js}
+  physics: none
+  primitive: {kind: scripted, params: {h: 56, w: 90}, script: scripts/vision-giving-hands-geo.js}
+  receiveShadow: false
+  tags: [trip, vision-giving-hands]
