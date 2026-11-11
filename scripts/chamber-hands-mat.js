@@ -41,6 +41,6 @@ export function material(ctx) {
     .add(stroke.mul(inner).mul(float(1).sub(rim)).mul(e.mul(1.9).add(0.16)))
     .add(F.hot.mul(hollow).mul(e.mul(1.5).add(1.0)))
     .add(F.b.mul(pupil).mul(e.mul(2.4).add(0.3)));
-  m.colorNode = col.mul(g);
+  m.colorNode = col.mul(g.mul(0.6));
   return m;
 }

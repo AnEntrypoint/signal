@@ -16,7 +16,7 @@ export function material(ctx) {
   const snap = (x, w) => floor(x).add(smoothstep(0, w, x.fract()));
   const fill = smoothstep(93.35, 93.95, c.sec).mul(step(c.sec, 96.35));
   const stepRad = select(id.mod(3).lessThan(0.5), 0.1309, 0.0873); // 7.5 or 5 degrees a bar
-  const ang = dir.mul(stepRad).mul(snap(c.bar, 0.25)).mul(frame).add(snap(c.bar, 0.3).mul(-1.0472).mul(glyph));
+  const ang = dir.mul(stepRad).mul(snap(c.bar, 0.25).sub(60)).mul(frame).add(snap(c.bar, 0.3).mul(-1.0472).mul(glyph));
   const rad = id.mul(1.225).add(1.2).min(13);
   const e = ripple(c, rad);
   const p = positionLocal, ca = cos(ang), sa = sin(ang);
@@ -29,7 +29,7 @@ export function material(ctx) {
   const stroke = mix(F.hot, F.hot2, sin(v.mul(12.566).add(c.sec.mul(0.35)).add(id)).mul(0.5).add(0.5));
   const line = stroke.mul(lit.mul(2.6).add(0.16));
   const beadC = mix(F.a, F.b, id.mod(2)).mul(lit.mul(3.0).add(0.12));
-  m.colorNode = mix(line, beadC, isBead).mul(g);
+  m.colorNode = mix(line, beadC, isBead).mul(g.mul(0.6));
   const reveal = c.sec.sub(82.35).div(4).sub(id.mul(0.03));
   m.opacityNode = step(v, reveal.mul(1.1));
   m.alphaTest = 0.5;
