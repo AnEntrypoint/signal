@@ -1,11 +1,31 @@
 # spawn-scene v2 yaml x0y9z0
 vision-star-child:
-  feetPosition: {x: 0, y: 1200, z: 0}
+  castShadow: false
+  feetPosition: {x: 0, y: 1220, z: 0}
   id: vision-star-child
-  material: {kind: scripted, script: engine/blueprint}
+  material: {kind: scripted, params: {k0: -1, k1: -1, layer: being, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-star-child-mat.js}
   physics: none
-  primitive: {depth: 1, height: 40, kind: box, width: 64}
-  tags: [blueprint]
+  primitive: {kind: scripted, params: {h: 40, w: 64}, script: scripts/vision-star-child-geo.js}
+  receiveShadow: false
+  tags: [trip, vision-star-child]
+vision-star-child-ring:
+  castShadow: false
+  feetPosition: {x: 0, y: 1220, z: -12}
+  id: vision-star-child-ring
+  material: {kind: scripted, params: {k0: -1, k1: -1, layer: ring, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-star-child-mat.js}
+  physics: none
+  primitive: {kind: scripted, params: {h: 56, w: 56}, script: scripts/vision-star-child-geo.js}
+  receiveShadow: false
+  tags: [trip, vision-star-child]
+vision-star-child-veil:
+  castShadow: false
+  feetPosition: {x: 0, y: 1220, z: 10}
+  id: vision-star-child-veil
+  material: {kind: scripted, params: {k0: -1, k1: -1, layer: veil, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-star-child-mat.js}
+  physics: none
+  primitive: {kind: scripted, params: {h: 56, w: 90}, script: scripts/vision-star-child-geo.js}
+  receiveShadow: false
+  tags: [trip, vision-star-child]
 vision-star-jelly:
   castShadow: false
   feetPosition: {x: 0, y: 1120, z: 0}
