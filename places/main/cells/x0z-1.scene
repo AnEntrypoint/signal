@@ -1,19 +1,1 @@
 # spawn-scene v2 yaml x0z-1
-gz-10:
-  feetPosition: {x: 0, y: 0, z: -80}
-  id: gz-10
-  material: {color: "#2a5cff", emissive: "#2a5cff", emissiveIntensity: 1.2, roughness: 0.4}
-  primitive: {depth: 0.03, height: 0.01, kind: box, width: 80}
-  tags: [stage]
-gz-8:
-  feetPosition: {x: 0, y: 0, z: -68}
-  id: gz-8
-  material: {color: "#2a5cff", emissive: "#2a5cff", emissiveIntensity: 0.5, roughness: 0.4}
-  primitive: {depth: 0.03, height: 0.01, kind: box, width: 80}
-  tags: [stage]
-gz-9:
-  feetPosition: {x: 0, y: 0, z: -74}
-  id: gz-9
-  material: {color: "#2a5cff", emissive: "#2a5cff", emissiveIntensity: 0.5, roughness: 0.4}
-  primitive: {depth: 0.03, height: 0.01, kind: box, width: 80}
-  tags: [stage]
