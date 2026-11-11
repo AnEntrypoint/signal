@@ -49,7 +49,7 @@ export function material(ctx) {
     const rot = c.real.div(mix(70, 120, c.rnd(106).mul(2).fract())).mul(sense).mul(TAU);
     const mm = c.pick(108, 2).add(2);                                    // {8/2} two squares or {8/3} star
     const R = 23, h = mm.mul(Math.PI / 8).cos().mul(R), half = mm.mul(Math.PI / 8).sin().mul(R);
-    const blur = aa.mul(5).add(0.12);
+    const blur = aa.mul(3).add(0.05);
     let line = float(0), tips = float(0);
     for (let k = 0; k < 8; k++) {
       const a = rot.add(k * TAU / 8);
@@ -62,7 +62,7 @@ export function material(ctx) {
     }
     const pr = smoothstep(0.0, 0.3, u).mul(float(1).sub(ex));
     const draw = maskClock(pr, atan2(p.x, p.y));
-    const lit = float(0.09).add(cul.mul(0.1)).add(c.kick.mul(0.06));
+    const lit = float(0.035).add(cul.mul(0.04)).add(c.kick.mul(0.03));
     m.colorNode = mix(A, W, 0.2).mul(line).mul(lit).add(mix(B, W, 0.5).mul(tips).mul(lit.add(0.15)));
     m.opacityNode = draw.mul(visionShown(ctx, c, rr.div(30)));
     m.transparent = true;
