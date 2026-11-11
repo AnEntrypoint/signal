@@ -69,4 +69,4 @@ export function material(ctx) {
   m.colorNode = mix(col, mix(A, W, 0.5).mul(smoothstep(0.95, 1, edge)).mul(0.7), dark);
   return m;
 }
-function sign(r) { return r.step ? step(0.5, r).mul(2).sub(1) : (r > 0.5 ? 1 : -1); }
+function sign(r) { return step(0.5, r).mul(2).sub(1); }
