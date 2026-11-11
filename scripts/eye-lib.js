@@ -27,7 +27,7 @@ export function lidOpen(sec) {
 export const breath = (sec) => sec.mul(TAU / 12).sin().mul(0.5).add(0.5);
 export const breathScale = (sec) => breath(sec).mul(0.03).add(1);
 // the kick as a ripple: leaves the pupil rim (r = 5 m) on the kick, travels outward 10 m a beat, 1 as it passes r
-export const ripple = (c, r) => c.beat.sub(float(r).sub(5).div(10)).fract().mul(-5).exp().mul(live(c.sec));
+export const ripple = (c, r) => c.beat.sub(float(r).sub(5).div(10)).fract().mul(-5).exp().mul(c.live);
 // bars as steps: a counter that clicks forward on each bar's first beat
 export const barStep = (c) => c.bar.floor().add(smoothstep(0, 0.3, c.bar.fract()));
 // the light as a clock hand, mirrored left-right, clicking round on the bars (bottom to top in 16 bars)

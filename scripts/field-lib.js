@@ -66,7 +66,7 @@ export function breath(sec) { return sec.mul(TAU / 12).sin().mul(0.5).add(0.5).m
 export function mirrorTurn(x, z) { return atan2(z, x.abs()).div(TAU); }
 // The kick as a ripple: 1 as the ring from the centre passes radius r, settling before the next.
 export function kickAt(c, r) {
-  const live = smoothstep(SCORE.kickFrom - 0.05, SCORE.kickFrom, c.sec).mul(smoothstep(SCORE.kickTo + 0.05, SCORE.kickTo, c.sec));
+  const live = c.live; // the measured kick runs (director's k0/k1), never a fixed window
   return c.beat.sub(r.div(90)).fract().mul(-5).exp().mul(live);
 }
 // The travelling light: a mirrored hand that steps round on each bar (a turn of the half-field per 16 bars,

@@ -10,7 +10,7 @@ export const sel = (i, vals) => { let v = float(vals[0]); for (let k = 1; k < va
 // one shared swell per phrase
 export const breath = (sec) => sec.mul(TAU / 17).add(1.3).sin().mul(0.5).add(0.5); // the sun's own slow clock, out of step with the field's 12 s
 // the kick as a ripple leaving the pupil on each beat, 9 m a beat outward; 1 as it passes r
-export const ripple = (c, r) => c.beat.sub(float(r).div(9)).fract().mul(-6).exp().mul(live(c.sec));
+export const ripple = (c, r) => c.beat.sub(float(r).div(9)).fract().mul(-6).exp().mul(c.live);
 export const barStep = (c) => c.bar.floor().add(smoothstep(0, 0.3, c.bar.fract()));
 // the roll's symmetry order 6, 8 or 12 (the spine's channel 8, shared by every radial piece)
 export const order = (c) => sel(c.pick(8, 3), [6, 8, 12]);

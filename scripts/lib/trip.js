@@ -40,7 +40,7 @@ export function tripClock(ctx) {
   const pick = (n, k) => rnd(n).mul(k).floor().min(k - 1);
   return {
     seed, rnd, pick, hue: rnd(1), dir: rnd(2).step(0.5).mul(2).sub(1),
-    sec, beat, on, bar: beat.div(4), phrase: beat.div(32),
+    sec, beat, on, live, bar: beat.div(4), phrase: beat.div(32),
     kick: env(beat, 4.5), half: env(beat.div(2).add(0.5), 6), barHit: env(beat.div(4), 6),
     bass: audioSpectrum(0.08), high: audioSpectrum(0.75),
   };
