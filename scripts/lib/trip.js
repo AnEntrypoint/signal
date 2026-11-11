@@ -98,12 +98,16 @@ function pieceLag(name) {
   const r = id.add(h * 0.731).sin().mul(43758.5453).fract();
   return r.mul(SCORE.piece ?? 2.25);
 }
+const SCENE_STARTS = new Set(Object.values(SCORE.sections).map(([a]) => a));
 export function shown(c, name, d = 0) {
   // a dealt seam: pieces leave before it and arrive after it, never all at once (40% stand at the seam itself)
   const seamGate = step(pieceLag(name).div(SCORE.piece ?? 2.25), mix(float(0.4), float(1), c.seamD.div(SCORE.deck.seam).clamp(0, 1)));
   const lag = float(d).clamp(0, 1).mul(SCORE.wipe).add(pieceLag(name));
   let v = float(0);
-  for (const [a, b] of SCORE.layers[name]) {
+  for (const [a0, b] of SCORE.layers[name]) {
+    // a layer that opens its scene is already standing when the scene is dealt in: its own entry wipe would
+    // leave every dealt scene black for its first bars. The seam gate above brings it in piece by piece instead.
+    const a = SCENE_STARTS.has(a0) ? a0 - SCORE.wipe - (SCORE.piece ?? 2.25) - 0.2 : a0;
     v = v.add(smoothstep(a, a + 0.2, c.sec.sub(lag)).mul(smoothstep(b + 0.2, b, c.sec.sub(lag))));
   }
   return v.clamp(0, 1).mul(seamGate);
