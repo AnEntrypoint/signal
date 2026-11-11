@@ -27,9 +27,29 @@ vision-many-armed-veil:
   receiveShadow: false
   tags: [trip, vision-many-armed]
 vision-ouroboros:
-  feetPosition: {x: 0, y: 700, z: 0}
+  castShadow: false
+  feetPosition: {x: 0, y: 720, z: 0}
   id: vision-ouroboros
-  material: {kind: scripted, script: engine/blueprint}
+  material: {kind: scripted, params: {k0: -1, k1: -1, layer: being, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-ouroboros-mat.js}
   physics: none
-  primitive: {depth: 1, height: 40, kind: box, width: 64}
-  tags: [blueprint]
+  primitive: {kind: scripted, params: {h: 40, w: 64}, script: scripts/vision-ouroboros-geo.js}
+  receiveShadow: false
+  tags: [trip, vision-ouroboros]
+vision-ouroboros-ring:
+  castShadow: false
+  feetPosition: {x: 0, y: 720, z: -12}
+  id: vision-ouroboros-ring
+  material: {kind: scripted, params: {k0: -1, k1: -1, layer: ring, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-ouroboros-mat.js}
+  physics: none
+  primitive: {kind: scripted, params: {h: 50, w: 50}, script: scripts/vision-ouroboros-geo.js}
+  receiveShadow: false
+  tags: [trip, vision-ouroboros]
+vision-ouroboros-veil:
+  castShadow: false
+  feetPosition: {x: 0, y: 720, z: 10}
+  id: vision-ouroboros-veil
+  material: {kind: scripted, params: {k0: -1, k1: -1, layer: veil, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-ouroboros-mat.js}
+  physics: none
+  primitive: {kind: scripted, params: {h: 56, w: 90}, script: scripts/vision-ouroboros-geo.js}
+  receiveShadow: false
+  tags: [trip, vision-ouroboros]
