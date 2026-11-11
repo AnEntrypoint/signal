@@ -22,7 +22,7 @@ export function material(ctx) {
   const g0 = 0.3 + (n - 1) * 0.05, x0 = 0.86 + ((n * 2) % 3) * 0.025;
   const grow = smoothstep(g0, g0 + 0.3, u).mul(inv(smoothstep(x0, x0 + 0.07, u)));
   const exists = third ? step(0.4, rn(7)) : float(1);
-  const tip = smoothstep(grow, grow.sub(0.07), uu);
+  const tip = inv(smoothstep(grow.sub(0.07), grow, uu));
   const rad = inv(uu).max(0).sqrt().mul(0.85).add(0.15).mul(r0).mul(tip.max(0).sqrt()).mul(live).mul(exists).mul(step(0.002, grow));
   const ph = n * 1.3, env = uu.mul(0.8).add(0.2);
   const w1 = uu.mul(8).sub(c.real.mul(1.1)).add(ph).sin().mul(env).mul(5);
@@ -42,7 +42,7 @@ export function material(ctx) {
   const bd = vec2(s.div(2.6).fract().sub(0.5).mul(2.6), ang.div(TAU).mul(6).add(row.mul(0.5)).fract().sub(0.5).mul(rf.mul(TAU / 6))).length();
   const brad = rf.mul(0.38).min(0.75);
   const skins = [
-    A.mul(smoothstep(0.35, 0, s.div(7).fract().sub(0.5).abs().mul(7).sub(0.25))),
+    A.mul(inv(smoothstep(0, 0.35, s.div(7).fract().sub(0.5).abs().mul(7).sub(0.25)))),
     mix(mix(A, W, 0.35), B, s.mul(0.3).floor().mod(2)).mul(stripes(s, 0.3, 0.04)),
     mix(mix(B, W, 0.4), mix(H, H2, step(row.mod(4), 1.5)), step(row.mod(2), 0.5)).mul(inv(smoothstep(brad.sub(0.08), brad, bd))),
     mix(H2, W, 0.2).mul(stripes(s.mul(0.28).add(t), 1, 0.06).mul(stripes(s.mul(0.28).sub(t), 1, 0.06))),
@@ -52,7 +52,7 @@ export function material(ctx) {
   const wear = (v) => skins.reduce((acc, sk, i) => acc.add(sk.mul(is(v, i))), vec3(0));
   const k1 = 0.6 + n * 0.04;
   const skin = low ? wear(m1) : mix(wear(m1), wear(m2), step(uu, smoothstep(k1, k1 + 0.1, u).mul(1.02)));
-  const run = smoothstep(0.05, 0, uu.sub(c.beat.fract()).abs()).mul(step(0.001, c.kick));
+  const run = inv(smoothstep(0, 0.05, uu.sub(c.beat.fract()).abs())).mul(step(0.001, c.kick));
   const edge = ca.abs();
   const lit = skin.mul(sa.abs().mul(0.45).add(0.55)).add(mix(A, W, 0.4).mul(smoothstep(0.86, 1, edge)).mul(run.add(0.45)));
   const dark = is(float(n), step(0.5, rn(9)).add(1)).mul(step(uu, smoothstep(0.7, 0.75, u).mul(1.02))).mul(step(u, 0.84));

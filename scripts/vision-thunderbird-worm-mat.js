@@ -20,7 +20,7 @@ export function material(ctx) {
   const r0 = pair ? 2.4 : 3.6;
   const grow = io(0.5 + pair * 0.04, 0.75, 0.95, 0.98 - pair * 0.01);
   const exists = pair ? step(0.45, rn(n === 3 ? 12 : 13)) : float(1);
-  const tip = smoothstep(grow, grow.sub(0.07), uu);
+  const tip = inv(smoothstep(grow.sub(0.07), grow, uu));
   const rad = inv(uu).max(0).pow(0.5).mul(r0).mul(tip.sqrt()).mul(live).mul(exists).mul(step(0.002, grow));
   // the spine in screen metres at the being's depth, scaled by depth so it projects where it is laid out
   const ph = pair * 2.1 + (sg > 0 ? 0 : 0.9), env = uu.mul(0.8).add(0.2);
@@ -54,7 +54,7 @@ export function material(ctx) {
   const cSc = mix(C, D, s.mul(0.3).add(t).floor().mod(2)).mul(stripes(s.mul(0.3).add(t), 1, 0.07).max(stripes(s.mul(0.3).sub(t), 1, 0.07)));
   // feather barbs: herringbone chevrons pointing up the body
   const fe = s.mul(0.35).add(ang.abs().div(3.14159).mul(1.2));
-  const cFe = low ? cStr : mix(Hh, mix(D, W, 0.3), fe.floor().mul(0.5).fract().mul(2)).mul(stripes(fe, 1, 0.07)).add(W.mul(0.6).mul(smoothstep(0.12, 0.04, ang.abs())));
+  const cFe = low ? cStr : mix(Hh, mix(D, W, 0.3), fe.floor().mul(0.5).fract().mul(2)).mul(stripes(fe, 1, 0.07)).add(W.mul(0.6).mul(inv(smoothstep(0.04, 0.12, ang.abs()))));
   const skins = [cStr, cBe, cSc, cFe], wear = (k) => skins.reduce((acc, sk, i) => acc.add(sk.mul(is(k, i))), vec3(0));
   const sA = pk(14 + n * 0.1, 4), sB0 = sA.add(1).add(pk(14.5 + n * 0.1, 3)), sB = sB0.sub(step(3.5, sB0).mul(4));
   const skin = mix(wear(sA), wear(sB).mul(build.mul(0.5).add(1)), step(uu, build.mul(1.02)));

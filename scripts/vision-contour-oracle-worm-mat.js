@@ -48,13 +48,13 @@ export function material(ctx) {
   const w = fwidth(al.mul(L)).mul(0.7).add(0.001);
   const sb = sL.div(3.4).add(edge.mul(edge).mul(0.9)), fb = sb.fract().sub(0.5).abs().mul(2);
   const bands = float(1).sub(smoothstep(float(0.5), w.add(0.5), fb));
-  const bandCol = mix(A, W, smoothstep(0.5, 0.1, fb));
+  const bandCol = mix(A, W, inv(smoothstep(0.1, 0.5, fb)));
   const row = sL.div(2.4), ri = row.floor(), cx = uv().y.mul(12).add(ri.mod(2).mul(0.5)).fract().sub(0.5), cy = row.fract().sub(0.5);
   const beads = float(1).sub(smoothstep(0.3, 0.36, vec2(cx.mul(0.9), cy).length()));
   const beadCol = mix(mix(B, W, 0.5), P, step(ri.mod(4), 0.5));
   const changed = step(al, Su(0.74, 0.84).mul(1.05)), swap = step(0.5, R(4));
   const useB = mix(changed, float(1).sub(changed), swap);
-  const run = low ? float(0) : smoothstep(0.06, 0, al.sub(c.beat.fract()).abs()).mul(step(0.001, c.kick));
+  const run = low ? float(0) : inv(smoothstep(0, 0.06, al.sub(c.beat.fract()).abs())).mul(step(0.001, c.kick));
   const dark = is(pk(15, 2), n - 1).mul(step(al, Su(0.84, 0.89).mul(out(0.93, 0.94)).mul(1.1)));
   const skin = (low ? bandCol.mul(bands) : mix(bandCol.mul(bands), beadCol.mul(beads), useB)).mul(nz.mul(0.7).add(0.3)).mul(float(0.85).add(run.mul(0.7)));
   const rim = smoothstep(0.78, 0.95, edge);

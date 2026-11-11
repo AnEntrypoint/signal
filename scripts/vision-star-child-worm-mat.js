@@ -23,7 +23,7 @@ export function material(ctx) {
   const count = pk(15, 3).add(2);
   const exists = step(float(n), count.add(0.1));
   const grow = io(0.55 + top * 0.04, 0.8, 0.93 + top * 0.004, 0.965);
-  const tipc = smoothstep(grow, grow.sub(0.06), uu);
+  const tipc = inv(smoothstep(grow.sub(0.06), grow, uu));
   const capx = uu.sub(0.9).div(0.1).clamp(0, 1);
   const prof = uu.pow(0.7).mul(0.7).add(0.3).mul(inv(capx.mul(capx)).max(0).sqrt());
   const rad = prof.mul(r0).mul(tipc.sqrt()).mul(live).mul(exists).mul(step(0.002, grow));

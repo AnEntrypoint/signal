@@ -30,7 +30,7 @@ export function material(ctx) {
   const uu = positionGeometry.y, ca = positionGeometry.x, sa = positionGeometry.z;
   const r0 = pair ? 2.6 : 3.6;
   const grow = io(0.44 + pair * 0.06, 0.66 + pair * 0.04, 0.86, 0.93 - pair * 0.01);
-  const tip = smoothstep(grow, grow.sub(0.06), uu);
+  const tip = inv(smoothstep(grow.sub(0.06), grow, uu));
   const rf = varying(inv(uu).max(0).pow(0.55).mul(r0).add(0.15));
   const rad = inv(uu).max(0).pow(0.55).mul(r0).add(0.15).mul(tip.max(0).sqrt()).mul(live).mul(exists).mul(step(0.002, grow));
   const [P0, PM, P2] = PATHS[pair ? "high" : "low"];
