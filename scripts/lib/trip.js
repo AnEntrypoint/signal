@@ -142,11 +142,12 @@ function drift(c, name, d) {
   return smoothstep(ebb, ebb.add(0.04), rank);
 }
 // A lens number ("bulge" | "swirl" | "fold" | "hyper" | "droste") at this moment. The lens is the scene's own:
-// it changes ON the section line with the cut, never morphing from one scene's bend into the next.
+// one scene's bend drifts into the next over 8 s; a floor of hyperbolic slide always stays.
 export function lens(c, key) {
   let v = float(0);
-  for (const name in SCORE.lens) v = v.add(win(c.sec, SEC[name], 0.04).mul(SCORE.lens[name][key]));
-  return v;
+  // 2026-11-11 (lanmower: more view distortion, no hard cuts): one bend drifts into the next over 8 s
+  for (const name in SCORE.lens) v = v.add(win(c.sec, SEC[name], 8).mul(SCORE.lens[name][key]));
+  return v.add(key === "hyper" ? 0.22 : 0);   // the hyperbolic slide never fully lets go
 }
 // THE BENT CAMERA. bendUv(c, uv, aspect): where on the undistorted frame this screen pixel reads from.
 // Bulge breathes with the phrase and kicks 4% on the beat; the swirl twists the centre, not the edge.

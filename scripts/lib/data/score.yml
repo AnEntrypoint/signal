@@ -55,15 +55,15 @@ layers:
 # droste (0..1: log-polar recursion, the frame repeats inside itself x4 smaller and zooms through, one copy per 12 s).
 lens:
   seed:   { bulge: 0.0,  swirl: 0.0,  fold: 0, hyper: 0.0,  droste: 0 }
-  pulse:  { bulge: 0.12, swirl: 0.0,  fold: 0, hyper: 0.0,  droste: 0 }
-  bloom:  { bulge: 0.1,  swirl: 0.15, fold: 0, hyper: 0.35, droste: 0 }
-  deep:   { bulge: -0.35, swirl: 0.5, fold: 0, hyper: 0.0,  droste: 1 }
-  flight: { bulge: 0.45, swirl: 0.3,  fold: 0, hyper: 0.0,  droste: 0 }
-  hex:    { bulge: 0.0,  swirl: 0.0,  fold: 1, hyper: 0.25, droste: 0 }
-  reset:  { bulge: 0.0,  swirl: -0.25, fold: 0, hyper: 0.55, droste: 0 }
-  ascent: { bulge: 0.15, swirl: 0.1,  fold: 0, hyper: 0.15, droste: 0 }   # calmer: the petal window carries the mirror
-  peak:   { bulge: 0.3,  swirl: 0.3,  fold: 1, hyper: 0.45, droste: 0 }
-  return: { bulge: -0.2, swirl: 0.0,  fold: 0, hyper: 0.0,  droste: 1 }
+  pulse:  { bulge: 0.19, swirl: 0.0,  fold: 0, hyper: 0.0,  droste: 0 }
+  bloom:  { bulge: 0.16,  swirl: 0.24, fold: 0, hyper: 0.52, droste: 0 }
+  deep:   { bulge: -0.56, swirl: 0.8, fold: 0, hyper: 0.0,  droste: 1 }
+  flight: { bulge: 0.72, swirl: 0.48,  fold: 0, hyper: 0.0,  droste: 0 }
+  hex:    { bulge: 0.0,  swirl: 0.0,  fold: 1, hyper: 0.38, droste: 0 }
+  reset:  { bulge: 0.0,  swirl: -0.4, fold: 0, hyper: 0.72, droste: 0 }
+  ascent: { bulge: 0.24, swirl: 0.16,  fold: 0, hyper: 0.22, droste: 0 }   # calmer: the petal window carries the mirror
+  peak:   { bulge: 0.48,  swirl: 0.48,  fold: 1, hyper: 0.68, droste: 0 }
+  return: { bulge: -0.32, swirl: 0.0,  fold: 0, hyper: 0.0,  droste: 1 }
 # The maths each section is COMPOSED with: a different family every time, never the same trick twice running.
 # The piece that leads a section draws that section's pattern with that maths (win(c.sec, SEC.<name>)).
 maths:

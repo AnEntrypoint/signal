@@ -19,10 +19,10 @@ keys:
   - { t: 78.35,  eye: [0, 15, -250],  aim: [0, 15, -300], fov: 82, roll: 68, ease: linear }
   - { t: 84.35,  eye: [0, 15, -334],  aim: [0, 15, -362], fov: 66, roll: 90 }
   # hex: stopped. on the axis, a 12 s creep toward the hands
-  - { t: 84.36,  eye: [0, 15, -340],  aim: [0, 15, -366], fov: 58, cut: true }
+  - { t: 84.36,  eye: [0, 15, -340],  aim: [0, 15, -366], fov: 58 }   # was cut: true; 2026-11-11 no hard cuts
   - { t: 96.35,  eye: [0, 15, -346],  aim: [0, 15, -366], fov: 50 }
   # reset: cut to straight overhead of the field, one eighth turn in 12 s
-  - { t: 96.36,  eye: [0, 120, 1],    aim: [0, 0, 0],     fov: 40, cut: true }
+  - { t: 96.36,  eye: [0, 120, 1],    aim: [0, 0, 0],     fov: 40 }   # was cut: true; 2026-11-11 no hard cuts
   - { t: 108.35, eye: [0, 96, 1],     aim: [0, 0, 0],     fov: 42, roll: 45 }
   # ascent: one unbroken spiral down and in
   - { t: 120.35, eye: [36, 44, 30],   aim: [0, 8, -12],   fov: 46, roll: 20 }

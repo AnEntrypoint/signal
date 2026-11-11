@@ -46,7 +46,7 @@ export function material(ctx) {
   };
   const sp = spine(uu);
   const T = normalize(spine(uu.add(0.01)).sub(sp));
-  const N1 = normalize(cross(T, vec3(0, 0, 1)));
+  const N1 = normalize(cross(T, mix(vec3(0, 0, 1), vec3(1, 0, 0), step(0.9, T.z.abs()))));   // never parallel: no NaN
   const N2 = cross(N1, T);
   const nrm = N1.mul(ca).add(N2.mul(sa));
   const m = new MeshBasicNodeMaterial();
