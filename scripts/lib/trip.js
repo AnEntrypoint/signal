@@ -12,6 +12,10 @@
 // and params.on (1 rolling, 0 idle) to every object tagged "trip", to look.params and to sky.params.
 import { time, float, vec2, vec3, smoothstep, step, audioSpectrum, select, mix } from "builtin/tsl";
 import SCORE from "./data/score.yml";
+import ENERGY from "./data/energy.yml"; // the track measured bar by bar (tools/analyse-track.py)
+// KICK RUNS: the stretches of bars where the measured bass really carries a kick (bass >= 0.6),
+// so no pulse ever fires where the track has no beat. Recomputed from energy.yml for any track.
+export const KICK_RUNS = (() => { const r = []; let a = -1; ENERGY.bars.forEach((b, i) => { const on = b[1] >= 0.6; if (on && a < 0) a = i; if (!on && a >= 0) { r.push([ENERGY.firstBeat + a * ENERGY.bar, ENERGY.firstBeat + i * ENERGY.bar]); a = -1; } }); if (a >= 0) r.push([ENERGY.firstBeat + a * ENERGY.bar, ENERGY.firstBeat + ENERGY.bars.length * ENERGY.bar]); return r; })();
 
 export { SCORE };
 export const SEC = SCORE.sections;
@@ -22,7 +26,9 @@ export function tripClock(ctx) {
   const rolled = time.sub(t0).add(3600).mod(3600).min(SCORE.duration);
   const sec = select(on.greaterThan(0.5), rolled, time.mod(SCORE.duration));
   const beat = sec.sub(SCORE.firstBeat).mul(BPS);
-  const live = smoothstep(SCORE.kickFrom - 0.05, SCORE.kickFrom, sec).mul(smoothstep(SCORE.kickTo + 0.05, SCORE.kickTo, sec));
+  let live = float(0);
+  for (const [a, b] of KICK_RUNS) live = live.add(smoothstep(a - 0.05, a, sec).mul(smoothstep(b + 0.05, b, sec)));
+  live = live.min(1);
   const env = (b, k) => b.fract().mul(k).negate().exp().mul(live);
   // THE ROLL'S SEED: a new integer every roll (0 idle), the same on every machine in the room.
   // c.rnd(n): 0..1, fixed for this roll, different per channel n. Channels 1-9 are the spine's; a piece uses 10+.
