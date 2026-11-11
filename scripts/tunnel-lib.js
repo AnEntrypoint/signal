@@ -85,9 +85,9 @@ export function light(c, d) {
 // THE LAYER SCORE: the tunnel's cutout, opening from the mouth and eaten away the same way (d = depth / 300).
 import { shown } from "./lib/trip.js";
 export const cut = (c, p = positionWorld) => shown(c, "tunnel", float(Z0).sub(p.z).div(LEN));
-// The wall's self-cutout: mirrored panels (8 around x 12 m cells), one in four cut away, the set stepping every 2 bars.
+// The wall's self-cutout: mirrored helical bands (8 arms winding one turn per 96 m), one in four cut away, the set stepping every 2 bars.
 export function panels(c, p = positionWorld) {
-  const pa = floor(mirAng(p).add(0.25).mul(8)), pc = floor(float(Z0).sub(p.z).div(12));
-  const k = mod(pa.add(pc.mul(2)).add(floor(c.bar.div(2))), 4);
+  // helical bands, not blocks: the cut winds down the tunnel like a spiral arm, the set stepping every 2 bars
+  const k = mod(floor(mirAng(p).add(0.25).mul(8).add(float(Z0).sub(p.z).div(12))).add(floor(c.bar.div(2))), 4);
   return float(1).sub(step(k, 0.5).mul(smoothstep(60.35, 61.85, c.sec)));
 }
