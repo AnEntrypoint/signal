@@ -24,7 +24,7 @@ vision-moon-mother-ring:
   id: vision-moon-mother-ring
   material: {kind: scripted, params: {k0: -1, k1: -1, layer: ring, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-moon-mother-mat.js}
   physics: none
-  primitive: {kind: scripted, params: {h: 54, w: 48}, script: scripts/vision-moon-mother-geo.js}
+  primitive: {kind: scripted, params: {h: 100, w: 100}, script: scripts/vision-moon-mother-geo.js}
   receiveShadow: false
   tags: [trip, vision-moon-mother]
 vision-moon-mother-veil:
