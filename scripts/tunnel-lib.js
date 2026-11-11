@@ -39,19 +39,35 @@ export const GRAPH = vec3(0.012, 0.012, 0.04);
 export const mirAng = (p = positionWorld) => atan2(p.y.sub(AXY), abs(p.x)).div(6.2831853);
 // One shared breath a phrase, 0..1.
 export const breath = (c) => c.sec.mul(6.2831853 / 12).sin().mul(0.5).add(0.5);
-// One hue family per phrase (two neighbours + one accent), swapped on the phrase line; deep and return are mono.
-const FA = [[0.02, 0.07, 1], [0.38, 0, 1], [0.02, 0.07, 1], [1, 0, 0.55]];
-const FB = [[0.38, 0, 1], [1, 0, 0.55], [0.03, 0.8, 1], [1, 0.03, 0.03]];
-const FC = [[1, 0.8, 0.02], [0.05, 1, 0.1], [1, 0.3, 0], [1, 0.8, 0.02]];
+// One hue family per phrase, seeded: the roll's c.hue sets where the wheel starts, each phrase line steps it.
+// a and b are neighbours (the body), acc a hotter neighbour, never a second family; deep and return are mono.
+import { pal } from "./lib/trip.js";
 export function fam(c) {
-  const k = mod(floor(c.phrase), 4);
-  const pick = (rows) => { let o = vec3(0, 0, 0); rows.forEach((h, i) => { o = o.add(vec3(h[0], h[1], h[2]).mul(step(abs(k.sub(i)), 0.5))); }); return o; };
+  const H = c.hue.add(floor(c.phrase).mul(0.17)).add(0.62);
+  const a0 = pal(H), b0 = pal(H.add(0.085)), acc0 = pal(H.sub(0.13));
   const mono = max(step(c.sec, 60.35), step(180.35, c.sec));
-  const mc = mix(vec3(0.02, 0.07, 1), vec3(0.38, 0, 1), step(180.35, c.sec));
-  const a = mix(pick(FA), mc, mono), b = mix(pick(FB), mc, mono), acc = mix(pick(FC), mc, mono);
-  return { a, b, acc,
+  const mc = pal(c.hue.add(0.62));
+  const a = mix(a0, mc, mono), b = mix(b0, pal(c.hue.add(0.7)), mono), acc = mix(acc0, pal(c.hue.add(0.55)), mono);
+  return { a, b, acc, H,
     base: (idx) => mix(a, b, mod(floor(float(idx)), 2)),
     hot: (idx) => mix(acc, b, step(1.5, mod(floor(float(idx)), 3))) };
+}
+// THE DEAL. The tunnel's six switchable tropes: 0 hourglass-throat, 1 hyperspace-streaks, 2 radial-gates,
+// 3 orb-domes, 4 serpent-teeth, 5 truchet-skin. Each phrase shows 2 or 3 (c.pick 37) of a seed-rotated deck
+// (c.pick 30), stepping 2 a phrase, so the four tunnel phrases deal all six. 1 = dealt now.
+export function deal(c, id) {
+  const o = c.pick(30, 6), cnt = c.pick(37, 2).add(2);
+  return step(mod(float(id).sub(o).sub(floor(c.phrase).mul(2)).add(60), 6), cnt.sub(0.5));
+}
+// HOURGLASS: the tube pinched to a throat at a seeded depth per phrase, easing in and out inside the phrase.
+// s = radius scale at depth d (1 = untouched); g = how deep in the waist (0..1) for the streak stretch.
+export function pinch(c, d) {
+  const n = floor(c.phrase), f = fract(c.phrase);
+  const dw = fract(c.rnd(36).add(n.mul(0.37))).mul(150).add(70);
+  const wide = c.pick(36, 3).mul(6).add(12);
+  const x = float(d).sub(dw).div(wide);
+  const g = x.mul(x).negate().exp().mul(smoothstep(0, 0.2, f).mul(smoothstep(1, 0.8, f))).mul(deal(c, 0));
+  return { s: float(1).sub(g.mul(0.62)), g };
 }
 // THE LIGHT TRAVELS: how lit a thing at depth d is. A window of light 36 m long every 72 m slides down-tunnel
 // (slow in deep, 18 m/s in flight, entering as a front from the eye at 60.35), and each kick is a thin ring
