@@ -1,0 +1,8 @@
+# spawn-scene v2 yaml x0y7z0
+vision-world-tree:
+  feetPosition: {x: 0, y: 900, z: 0}
+  id: vision-world-tree
+  material: {kind: scripted, script: engine/blueprint}
+  physics: none
+  primitive: {depth: 1, height: 40, kind: box, width: 64}
+  tags: [blueprint]
