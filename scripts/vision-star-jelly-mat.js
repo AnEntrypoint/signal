@@ -48,7 +48,7 @@ export function material(ctx) {
     const am = rin.mul(rex).mul(fall), cover = step(d, am.mul(CELL * 0.75)).mul(step(0.004, am));
     const mg = smoothstep(0.8, 0.95, am), front = inv(smoothstep(0.8, 0.95, rin.mul(rex)));
     const wv = r.mul(mix(0.16, 0.3, rn(9))).sub(t.mul(1.6).mul(sgn(rn(36)))).sin().mul(0.5).add(0.5), w2 = wv.mul(wv);
-    let col = mix(A, B, wv).mul(w2.mul(0.3).add(0.14)).mul(smoothstep(0.86, 0.96, u).mul(0.9).add(1)).mul(step(d, w2.mul(0.26).add(0.06).mul(CELL)));
+    let col = mix(A, B, smoothstep(0.42, 0.58, wv)).mul(w2.mul(0.3).add(0.14)).mul(smoothstep(0.86, 0.96, u).mul(0.9).add(1)).mul(step(d, w2.mul(0.26).add(0.06).mul(CELL)));
     // the surface overhead: a caustic line-net, foreshortened toward its horizon, drawn from the centre outward
     const yy = p.y.sub(30), deep = yy.add(6).max(0.5), cs = mix(0.8, 1.3, rn(9));
     const X = p.x.div(deep).mul(14).mul(cs), Y = float(260).div(deep).mul(cs);
