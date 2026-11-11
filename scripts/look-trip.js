@@ -303,7 +303,10 @@ export function look(ctx) {
   const zMid = ctx.viewZAt(vec2(0.5, 0.5)).negate(), zV = select(zMid.greaterThan(1.5).and(zMid.lessThan(300)), zMid, zC.min(74));
   const razor = step(0.7, c.phrase.floor().add(c.seed).mul(78.233).sin().mul(43758.5453).fract());
   const focusD = mix(zC.clamp(4, 200), zV.clamp(4, 200), vis);
-  const focusR = mix(mix(zC.mul(0.35).add(3), zC.mul(0.08).add(1), razor), zV.mul(0.45).add(6), vis); // being + its ring/veil sharp; only the far world and the near fore soften
+  // realistic focus (creator, 11-11): the subject and its own depth stay sharp; only what sits clearly nearer or farther softens.
+  // No razor band: a band thinner than the subject blurred the subject itself, which read as plain blur.
+  void razor;
+  const focusR = mix(zC.mul(0.3).add(4), zV.mul(0.45).add(6), vis); // being + its ring/veil sharp; only the far world and the near fore soften
   // the beat as occlusion: on the kick one side of the subject's depth blinks to black, so layers trade places
   // as figure and ground instead of the whole picture pumping
   const dz = ctx.viewZ.negate();
@@ -316,6 +319,7 @@ export function look(ctx) {
   const phF = c.phrase.floor(), phu = c.phrase.fract();
   const pullOn = step(0.66, phF.add(c.seed).mul(12.9898).sin().mul(43758.5453).fract())
     .mul(smoothstep(0, 0.125, phu)).mul(float(1).sub(smoothstep(0.875, 1, phu)));
-  const dofW = on.mul(pullOn.mul(hasSubject).max(vis));
+  // a mirrored / tiled / keyhole read shows pixels from elsewhere, so its depth is not its own: no lens blur there
+  const dofW = on.mul(pullOn.mul(hasSubject).max(vis)).mul(float(1).sub(kmix));
   return vignette(mix(graded, focused, dofW), ctx.param("vignette", 0.35), { color: [0, 0, 0] });
 }
