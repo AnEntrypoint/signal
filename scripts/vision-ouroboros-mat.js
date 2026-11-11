@@ -118,7 +118,7 @@ export function material(ctx) {
     const Ri = 16.2, inside = inv(smoothstep(Ri - 0.3, Ri, rr));
     const orb = c.real.mul(TAU / 19).mul(sense(12)).add(rn(17).mul(TAU));
     const sd = vec2(orb.cos(), orb.sin()), sunP = sd.mul(9.6), moonP = sd.mul(-9.6);
-    const dayS = step(0, q.dot(sd));
+    const dayS = smoothstep(-6, 6, q.dot(sd));
     const tm = q.dot(vec2(sd.y.negate(), sd.x));
     const term = stroke(q.dot(sd).abs(), 0.07).mul(step(tm.div(1.4).fract(), 0.55)).mul(maskDraw(io(0.3, 0.36, 0.955, 0.97), tm.div(Ri).abs()));
     const rays = stroke(ang.div(TAU).mul(48).fract().sub(0.5).abs().mul(rr.mul(TAU / 48)), 0.04).mul(smoothstep(4, 8, rr)).mul(dayS).mul(0.22).mul(maskIris(pIn, rr.div(Ri)));
