@@ -19,7 +19,7 @@ export const BEINGS = [
   { id: 'thunderbird',    name: 'the winged eye', built: true },
   { id: 'world-tree',     name: 'the world tree', built: true },
   { id: 'giving-hands',   name: 'the giving hands', built: true },
-  { id: 'star-jelly',     name: 'the star medusa' },
+  { id: 'star-jelly',     name: 'the star medusa', built: true },
   { id: 'star-child',     name: 'the star child' },
 ].map((b, k) => ({ ...b, k, centre: { x: 0, y: 320 + k * 100, z: 0 } }))
 
