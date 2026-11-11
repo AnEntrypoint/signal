@@ -85,6 +85,7 @@ serpents:
   physics: none
   primitive: {depth: 170, height: 60, kind: box, width: 170}
   tags: [blueprint]
+  visible: false
 stage-floor:
   feetPosition: {x: 0, y: -0.3, z: 0}
   id: stage-floor
