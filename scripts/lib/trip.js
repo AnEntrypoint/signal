@@ -120,3 +120,27 @@ export function visionU(ctx, c) {
   const a = ctx.param("vw0", -1), b = ctx.param("vw1", -1);
   return c.sec.sub(a).div(b.sub(a).max(0.01)).clamp(0, 1);
 }
+
+// ---- ENTRANCES AND EXITS: an element draws itself in and takes itself out, one by one, through a mask
+// that MEANS something. p = 0..1 progress (0 hidden, 1 whole); every mask returns 0/1 cover (cutout, alphaTest .5).
+// stage(c, from, to, inBars, outBars): an element's own progress, rising over inBars after `from`
+// and falling over outBars before `to` (seconds; bars of 1.5 s). Stagger elements by a bar or two each.
+export function stage(c, from, to, inBars = 2, outBars = 2) {
+  const b = 60 / SCORE.bpm * 4;
+  return smoothstep(from, from + inBars * b, c.sec).mul(smoothstep(to, to - outBars * b, c.sec));
+}
+// iris: opens from the centre outward (d = distance from centre / radius); the eye opening, a pupil dilating
+export const maskIris = (p, d) => step(float(d), float(p).mul(1.02));
+// lid: two edges closing on a horizontal line (y = -1..1 across the element): a blink, a mouth
+export const maskLid = (p, y) => step(float(y).abs(), float(p).mul(1.02));
+// clock: a hand sweeping round from the top (a = angle -pi..pi from +y): a sundial, a moon phase
+export const maskClock = (p, a) => step(float(a).div(6.28318).add(0.5).fract(), float(p).mul(1.001));
+// eclipse: a dark disc of radius 1 sliding across from side `dir` (+1/-1); x, y in element radii: an occultation
+export const maskEclipse = (p, x, y, dir = 1) => step(float(1), vec2(float(x).sub(float(p).mul(2.2).sub(1.1).mul(-dir).add(dir * 0)).add(float(dir).mul(float(p).mul(-2.2).add(2.2))), float(y)).length());
+// beads: element ids (0..1 hash per bead / dot / cell) light one after another in order k (0..1 along the row)
+export const maskBeads = (p, k) => step(float(k), float(p).mul(1.02));
+// line-draw: a stroke draws itself along its own length u (0..1), the pen's head a bright nib
+export const maskDraw = (p, u) => step(float(u), float(p).mul(1.01));
+export const nib = (p, u, w = 0.02) => smoothstep(w, 0, float(u).sub(float(p)).abs());
+// what the track gives right now, live on every listener: the overtones climbing = culmination
+export const climb = (c) => c.high.mul(1.6).clamp(0, 1);
