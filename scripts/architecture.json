@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "basedOnSpecVersion": 549,
-  "updatedAt": "2026-11-11T13:46:35.113Z",
-  "summary": "Signal Stage is a walkable 3D motion-graphics stage with a synchronized, seeded 198-second cinematic on a measured 160-bpm track. A shared director, score/deck clocks and shader helpers drive the stage assemblies and two long vision slots; scene layers use spatially dithered holds across dealt-scene seams.",
+  "basedOnSpecVersion": 554,
+  "updatedAt": "2026-11-11T13:53:30.458Z",
+  "summary": "Signal Stage is a walkable 3D motion-graphics stage with a synchronized, seeded 198-second cinematic on a measured 160-bpm track. A shared director, score/deck clocks and shader helpers drive the stage assemblies and vision slots; scored motion lives in materials and the full-screen look.",
   "scriptPaths": [],
   "places": [
     "places/main/config.yaml (main, 3D) - black-void stage configuration, spawn/environment and place-wide scripts/look-trip.js post-processing.",
@@ -25,7 +25,7 @@
     "scripts/lib/deck.js - cached deterministic per-seed scene-deck deal and track-to-scene-time mapping; used by cine.js and stage.js.",
     "scripts/lib/visions.js - 16-being registry, cached seeded slot deal, vision timing/shots and measured-energy lookup; used by cine.js and stage.js.",
     "scripts/lib/data/score.yml and shots.yml - sections, layers, lens, maths, deck and authored camera keys; energy.yml holds measured track data, drops and two 48-second vision slots.",
-    "scripts/lib/trip.js - shared shader clocks, kick runs, seeded palette/random choices, scene/layer visibility, lens bending, vision clocks and reusable vision-shader primitives; imported by scripted materials, sky and look.",
+    "scripts/lib/trip.js - shared shader clocks, kick runs, seeded palette/random choices, scene/layer visibility, fisheye and hyperbolic lens mapping, vision clocks and reusable vision-shader primitives; imported by scripted materials, sky and look.",
     "scripts/field-lib.js - field placement/timing/color helpers plus seamHold/held, a spatially dithered seam-light hold reused by field, eye, serpent, tunnel, sun and chamber materials.",
     "scripts/eye-lib.js, tunnel-lib.js, chamber-lib.js and chamber-fx.js - family-specific spatial, timing and shader helpers; scripts/sun-lib.js and serpents-data.js/serpents-curve.js serve sun-eye and serpent geometry."
   ],
@@ -48,14 +48,14 @@
     "world.state.cine → scripts/ui.js render → viewer-local ROLL/CUT and rolling progress/section label.",
     "world.state.cine + score track → #director scripts/stage.js → shared audio at c.start; director stops audio and clears/renews ended cine.",
     "energy.yml → trip.js KICK_RUNS and visions.js slot timing → stage.js seeded choice from built BEINGS; vision materials receive vw0/vw1 or -1/-1.",
-    "stage.js → trip-tagged material/look params t0/on/seed, kick bounds k0/k1 and dealt scene mappings ds0..ds3/dr0..dr3; look also receives current vision slot v0/v1.",
+    "stage.js → trip-tagged material/look params t0/on/seed, kick bounds k0/k1 and dealt scene mappings ds0..ds3/dr0..dr3; look also receives current vision slot v0/v1 and focus depth vd.",
     "stage.js + vision-<id> tags → selected being layers and worms attach to camera starting 3 s before their slot at depth 74 with layer offsets; others return home unless held by visionTest.",
     "score.yml + deck.js → one seeded scene across [12.35,180.35] per roll → cine.js cameraAt and trip.js shader scene clock share assigned source section/rate.",
     "cine.js cameraAt → scripts/camera.js viewer camera; dealt beings and companion worms join the camera view rather than replacing it with separate vision shots.",
     "stage.js computes camera-shot-dependent fit scale for camera-attached vision layers so the whole being stays in front of the viewed subject; applies same factor to depth and scale.",
     "score.yml + trip.js tripClock/shown/lens/mask helpers → field, eye, serpents, tunnel, chamber, vision assemblies and look-trip shader timing/cutouts.",
     "trip.js supplies scene sec and seamD → field-lib.js seamHold/held → selected far scene layers remain lit as spatially hashed beads near a dealt seam, combined with their normal shown opacity.",
-    "look-trip.js reads scene depth and vision v0/v1 → subject-aware near-only depth of field and seeded kick jobs; peak mirror imagery appears opaquely through one dealt symbol window."
+    "look-trip.js reads scene depth and vision v0/v1/vd → near-only subject-aware depth of field (stage supplies the vision focus depth because additive vision layers write no depth), seeded kick jobs and opaque peak symbol window; flat-picture swirl/Droste/fold remaps and feedback trails are retired."
   ],
   "behaviorFamilies": [
     "scripts/field-* - mandala, stalks, orbs and glyph/cartouche field layers share field-lib.js placement/timing; mandala, disc and stalk motifs vary, with seam holds on the mandala.",
@@ -64,7 +64,7 @@
     "scripts/tunnel-* - wall, core, dust, gates, ribs and knot share tunnel geometry kinds and tunnel-lib.js spatial/color helpers; materials vary motif and seeded palette; wall holds at scene seams.",
     "scripts/chamber-* - room, circuit, hands, hex, Lissajous, solids and bilateral mask share chamber shader helpers and scored cutouts; room uses a seam hold.",
     "scripts/sun-disc.js, sun-drips.js and sun-halo.js - sun-eye layers share sun-lib.js but vary disc, hanging-drip and depth-halo imagery; disc uses a seam hold.",
-    "scripts/vision-*-geo.js / -mat.js - 16 staged beings share trip clocks and layer offsets; motifs and seeded entrance/exit masks vary by being. vision-sun-father-mat.js confines exit glow to growing ray tips and bead rims, not whole rays.",
+    "scripts/vision-*-geo.js / -mat.js - 16 staged beings share trip clocks and layer offsets; motifs and seeded entrance/exit masks vary by being. Twin-serpents' coil and central body use dark, crisp stripe patterns; giving-hands drip-worms keep opaque black bodies with a thin neon edge rim.",
     "scripts/companion-worm-geo.js, vision-*-worm-geo.js and corresponding worm materials - camera-attached and vision-being worms share unit-tube geometry bent by shader paths; geo resolution scales by ctx.lod."
   ],
   "probableOrphans": [],
@@ -74,6 +74,6 @@
     "energy.yml defines vision slots [48.35,96.35] and [132.35,180.35]; only built entries in BEINGS can be dealt. Vision layers attach 3 s before a slot; vision houses are above the field in +Y and selected layers ride the camera at depth 74.",
     "score.yml deck has one segment [12.35,180.35] per roll; preserve distinction between deck source time and full trip clock, plus fixed 12 s seed/return sections.",
     "Canonical vision layer offsets are world -30, ring -12, being 0, veil +10, fore +22; stage.js derives home z from tag suffix and fit scales depth and object scale together.",
-    "field-lib seamHold uses trip scene time c.sec, score layer intervals and c.seamD (seconds to nearest dealt-deck boundary); held=max(normal opacity, hold). Its hashed 3D bead cells are measured in world units, so keep each caller's explicit scale."
+    "Vision layers are additive and write no depth: stage.js must keep look parameter vd synchronized to 74 x session.fit for the vision focus plane. look-trip's DOF only softens pixels in front of the subject (hard fade by 55% of focus distance); trip.js bendUv keeps fisheye/hyperbolic lens motion, not flat-image swirl, Droste, fold or feedback-smear effects."
   ]
 }
