@@ -1,11 +1,91 @@
 # spawn-scene v2 yaml x0y4z0
 vision-contour-oracle:
-  audience: all
   castShadow: false
-  feetPosition: {x: 0, y: 500, z: 0}
+  feetPosition: {x: 0, y: 520, z: 0}
   id: vision-contour-oracle
-  material: {kind: scripted, params: {k0: -1, k1: -1, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-contour-oracle-mat.js}
+  material: {kind: scripted, params: {k0: -1, k1: -1, layer: being, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-contour-oracle-mat.js}
   physics: none
-  primitive: {kind: scripted, params: {}, script: scripts/vision-contour-oracle-geo.js}
+  primitive: {kind: scripted, params: {h: 100, w: 110}, script: scripts/vision-contour-oracle-geo.js}
   receiveShadow: false
   tags: [trip, vision-contour-oracle]
+  visible: false
+vision-contour-oracle-fore:
+  castShadow: false
+  feetPosition: {x: 0, y: 520, z: 22}
+  id: vision-contour-oracle-fore
+  material: {kind: scripted, params: {k0: -1, k1: -1, layer: fore, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-contour-oracle-mat.js}
+  physics: none
+  primitive: {kind: scripted, params: {h: 85, w: 150}, script: scripts/vision-contour-oracle-geo.js}
+  receiveShadow: false
+  tags: [trip, vision-contour-oracle]
+  visible: false
+vision-contour-oracle-ring:
+  castShadow: false
+  feetPosition: {x: 0, y: 520, z: -12}
+  id: vision-contour-oracle-ring
+  material: {kind: scripted, params: {k0: -1, k1: -1, layer: ring, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-contour-oracle-mat.js}
+  physics: none
+  primitive: {kind: scripted, params: {h: 120, w: 120}, script: scripts/vision-contour-oracle-geo.js}
+  receiveShadow: false
+  tags: [trip, vision-contour-oracle]
+  visible: false
+vision-contour-oracle-veil:
+  castShadow: false
+  feetPosition: {x: 0, y: 520, z: 10}
+  id: vision-contour-oracle-veil
+  material: {kind: scripted, params: {k0: -1, k1: -1, layer: veil, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-contour-oracle-mat.js}
+  physics: none
+  primitive: {kind: scripted, params: {h: 110, w: 190}, script: scripts/vision-contour-oracle-geo.js}
+  receiveShadow: false
+  tags: [trip, vision-contour-oracle]
+  visible: false
+vision-contour-oracle-world:
+  castShadow: false
+  feetPosition: {x: 0, y: 520, z: -30}
+  id: vision-contour-oracle-world
+  material: {kind: scripted, params: {k0: -1, k1: -1, layer: world, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-contour-oracle-mat.js}
+  physics: none
+  primitive: {kind: scripted, params: {h: 180, w: 320}, script: scripts/vision-contour-oracle-geo.js}
+  receiveShadow: false
+  tags: [trip, vision-contour-oracle]
+  visible: false
+vision-contour-oracle-worm-1:
+  castShadow: false
+  feetPosition: {x: 0, y: 520, z: 0}
+  id: vision-contour-oracle-worm-1
+  material: {kind: scripted, params: {k0: -1, k1: -1, n: 1, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-contour-oracle-worm-mat.js}
+  physics: none
+  primitive: {kind: scripted, params: {n: 1}, script: scripts/vision-contour-oracle-worm-geo.js}
+  receiveShadow: false
+  tags: [trip, vision-contour-oracle]
+  visible: false
+vision-contour-oracle-worm-2:
+  castShadow: false
+  feetPosition: {x: 0, y: 520, z: 0}
+  id: vision-contour-oracle-worm-2
+  material: {kind: scripted, params: {k0: -1, k1: -1, n: 2, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-contour-oracle-worm-mat.js}
+  physics: none
+  primitive: {kind: scripted, params: {n: 2}, script: scripts/vision-contour-oracle-worm-geo.js}
+  receiveShadow: false
+  tags: [trip, vision-contour-oracle]
+  visible: false
+vision-contour-oracle-worm-3:
+  castShadow: false
+  feetPosition: {x: 0, y: 520, z: 0}
+  id: vision-contour-oracle-worm-3
+  material: {kind: scripted, params: {k0: -1, k1: -1, n: 3, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-contour-oracle-worm-mat.js}
+  physics: none
+  primitive: {kind: scripted, params: {n: 3}, script: scripts/vision-contour-oracle-worm-geo.js}
+  receiveShadow: false
+  tags: [trip, vision-contour-oracle]
+  visible: false
+vision-contour-oracle-worm-4:
+  castShadow: false
+  feetPosition: {x: 0, y: 520, z: 0}
+  id: vision-contour-oracle-worm-4
+  material: {kind: scripted, params: {k0: -1, k1: -1, n: 4, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-contour-oracle-worm-mat.js}
+  physics: none
+  primitive: {kind: scripted, params: {n: 4}, script: scripts/vision-contour-oracle-worm-geo.js}
+  receiveShadow: false
+  tags: [trip, vision-contour-oracle]
+  visible: false
