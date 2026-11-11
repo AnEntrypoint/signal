@@ -4,7 +4,25 @@
 import { MeshBasicNodeMaterial } from "builtin/three";
 import { positionGeometry, positionWorld, cameraPosition, float, vec2, vec3, step, smoothstep, mix, length, atan2, distance, fwidth } from "builtin/tsl";
 import { tripClock, shown } from "./lib/trip.js";
-import { TAU, fam, breathScale, deal, symN } from "./eye-lib.js";
+import { TAU, fam, breathScale, deal, symN, pupilDeal, barStep } from "./eye-lib.js";
+
+// the gasket: outer circle -1, three inner of r = 1/(1+2/sqrt3) at 90/210/330 deg, every gap filled 3 levels deep
+const GASKET = (() => {
+  const out = [], r1 = 1 / (1 + 2 / Math.sqrt(3));
+  const O = { k: -1, x: 0, y: 0 };
+  const inner = [90, 210, 330].map((a) => ({ k: 1 / r1, x: (1 - r1) * Math.cos((a * Math.PI) / 180), y: (1 - r1) * Math.sin((a * Math.PI) / 180) }));
+  const add = (C, l) => { if (1 / C.k > 0.012) out.push([C.x, C.y, 1 / Math.abs(C.k), l]); };
+  const fill = (a, b, d, e, l) => {
+    const k = 2 * (a.k + b.k + d.k) - e.k;
+    const n = { k, x: (2 * (a.k * a.x + b.k * b.x + d.k * d.x) - e.k * e.x) / k, y: (2 * (a.k * a.y + b.k * b.y + d.k * d.y) - e.k * e.y) / k };
+    add(n, l);
+    if (l < 3) { fill(a, b, n, d, l + 1); fill(a, d, n, b, l + 1); fill(b, d, n, a, l + 1); }
+  };
+  out.push([0, 0, 1, 0]); inner.forEach((C) => add(C, 0));
+  const [A, B, C] = inner;
+  fill(A, B, C, O, 1); fill(O, A, B, C, 1); fill(O, B, C, A, 1); fill(O, A, C, B, 1);
+  return out;
+})();
 
 export function material(ctx) {
   const c = tripClock(ctx);
@@ -20,24 +38,35 @@ export function material(ctx) {
   // 12 orange targets turning against the iris' white row
   const an = atan2(p.y, p.x).div(TAU).sub(c.phrase.mul(0.25).mul(c.dir).mul(mix(0.7, 1.3, c.rnd(21))));
   const N = symN(c);
-  // apollonian-eye (dealt): the well is a circle-inversion gasket, and every cell of it is a smaller eye
-  let gq = p.div(4.6), gs = float(1), pre = gq;
-  for (let i = 0; i < 3; i++) {
-    gq = gq.mul(0.5).add(0.5).fract().mul(2).sub(1);
-    pre = gq;
-    const kk = float(1.15).div(gq.dot(gq).max(0.02));
-    gq = gq.mul(kk); gs = gs.mul(kk);
+  // apollonian-eye (dealt): a true Apollonian gasket (Descartes' theorem, 3 levels) drawn as neon line-art on black,
+  // every circle a smaller eye (rim + inner ring); the light steps inward level by level on the bars, colour runs
+  // round each rim. c.pick(34) flips it top/bottom, so it stays mirrored about x = 0.
+  const PD = pupilDeal(c);
+  const flip = c.pick(34, 2).mul(2).sub(1);
+  const gp = vec2(p.x, p.y.mul(flip)).div(4.4);
+  const gw = fwidth(gp.x).max(0.0005);
+  const hw = gw.mul(0.9).max(0.008);
+  const lvlLit = barStep(c).mod(4);
+  let gcol = vec3(0, 0, 0);
+  for (const C of GASKET) {
+    const q = gp.sub(vec2(C[0], C[1]));
+    const dq = length(q);
+    const rim = smoothstep(hw.add(gw), hw, dq.sub(C[2]).abs());
+    const eyeR = C[2] > 0.06 ? smoothstep(hw.mul(0.7).add(gw), hw.mul(0.7), dq.sub(C[2] * 0.45).abs()) : float(0);
+    const run = atan2(q.y, q.x.abs()).mul(2).add(c.sec.mul(0.5).mul(c.dir)).cos().mul(0.5).add(0.5);
+    const hueC = C[3] === 0 ? F.A : C[3] === 1 ? mix(F.A, F.B, run) : C[3] === 2 ? mix(F.B, F.at(0.1), run) : F.hot(0.15);
+    const on = smoothstep(0.8, 0.0, lvlLit.sub(C[3]).abs()).mul(0.75).add(0.35);
+    gcol = gcol.max(hueC.mul(rim.max(eyeR.mul(0.7))).mul(on));
   }
-  const gl = smoothstep(0.03, 0.015, gq.length().sub(1).abs().div(gs));
-  const pl = pre.length();
-  const gcol = F.A.mul(gl).add(F.hot(0.0).mul(step(0.3, pl)).mul(step(pl, 0.42))).add(F.B.mul(step(pl, 0.16)));
-  col = mix(col, gcol, deal(c, 0));
+  const gA = PD.g.mul(step(r, 4.45));
+  const heart = smoothstep(0.7, 0.8, r);
+  col = mix(col.mul(heart), gcol, gA);
   // the target row; depth-parallax (dealt): the same row at three depths, sliding with the camera at three rates,
   // turning at three speeds, the far ones dimmer and softer
   const cam = vec2(cameraPosition.x, cameraPosition.y.sub(15));
   const par = deal(c, 3);
   const row = (base, rc, n, depth, dim, soft, on) => {
-    const pp = p.add(cam.mul(depth * 0.04).mul(par));
+    const pp = p.add(cam.mul(depth * 0.04).add(vec2(0, c.sec.mul(TAU / 12).sin().mul(depth * 0.28))).mul(par));
     const rr = length(pp);
     const a2 = atan2(pp.y, pp.x).div(TAU).sub(an.sub(atan2(p.y, p.x).div(TAU)).mul(1 - depth * 0.3));
     const q = a2.mul(n).fract().sub(0.5).mul(float(TAU * rc).div(n));
@@ -49,8 +78,8 @@ export function material(ctx) {
   col = row(col, 1.25, N.mul(0.5), 2, 0.3, 0.25, par);
   col = row(col, 2.25, N, 1, 0.55, 0.12, par);
   col = row(col, 3.3, N.mul(float(1).add(step(N, 7))), 0, 1, 0, float(1));
-  // black heart
-  col = col.mul(smoothstep(0.7, 0.8, r));
+  // the knot-flower stands in front: the well goes dark behind it
+  col = col.mul(float(1).sub(PD.k.mul(0.85)));
   const m = new MeshBasicNodeMaterial();
   const s = breathScale(c.sec);
   m.positionNode = positionGeometry.mul(vec3(s, s, 1));
