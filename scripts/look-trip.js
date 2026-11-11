@@ -145,8 +145,8 @@ export function look(ctx) {
   }
   edge = smoothstep(0.12, 0.45, edge);
   // strokes draw on round the circle over the hex's first 2 bars; hue drifts along the screen angle, stepping on the bar
-  const drawn = smoothstep(0, 0.04, sec.sub(SEC.hex[0]).div(3).sub(ang0.div(TAU).add(0.5)).add(wReset));
-  const lineHue = fam.add(ang0.div(TAU).mul(0.22)).add(c.bar.floor().mul(0.031));
+  const drawn = smoothstep(0, 0.04, sec.sub(SEC.hex[0]).div(3).sub(ang0.abs().div(Math.PI)).add(wReset));
+  const lineHue = fam.add(ang0.abs().div(Math.PI).mul(0.22)).add(c.bar.floor().mul(0.031));
   const lineLit = mix(float(1), sweep.mul(0.75).add(0.25), wReset.mul(sliceOn));     // light-sweep on reset lines
   const lines = pal(lineHue).mul(edge).mul(2.4).mul(drawn).mul(lineLit);
   const revR = sec.sub(SEC.reset[0]).div(12).mul(1.3);
@@ -223,7 +223,7 @@ export function look(ctx) {
   const latLine = smoothstep(0.035, 0.0, lf.x.abs().max(lf.y.abs()).sub(0.47).abs());
   const bead = lf.abs().sub(0.5).length();
   const beadRing = smoothstep(0.03, 0.0, bead.sub(0.1).abs());
-  const latCol = vec3(0.05, 0.05, 0.07).mul(latLine).add(pal(fam).mul(beadRing).mul(sweep.mul(1.4).add(0.08)));
+  const latCol = vec3(0.02, 0.02, 0.04).mul(latLine).add(pal(fam).mul(beadRing).mul(sweep.mul(1.4).add(0.08)));
   col = col.add(latCol.mul(wLat).mul(black));
 
   // peak: whole-frame hue rotation one turn per 2 phrases; from 156.35 a soft bar swell (+15%)
