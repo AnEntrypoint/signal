@@ -2,6 +2,7 @@
 import SCORE from './data/score.yml'
 import SHOTS from './data/shots.yml'
 import { visionAt, visionShot } from './visions.js'
+import { KICK_RUNS } from './trip.js'
 export { SCORE, SHOTS }
 export const CINE = { duration: SCORE.duration, bpm: SCORE.bpm, music: SCORE.music, keys: SHOTS.keys }
 
@@ -55,5 +56,5 @@ function cameraRaw(t) {
 }
 export function beatEnv(seconds) {
   const b = (seconds - SCORE.firstBeat) * SCORE.bpm / 60
-  return seconds < SCORE.kickFrom || seconds > SCORE.kickTo ? 0 : Math.exp(-(b - Math.floor(b)) * 4.5)
+  return !KICK_RUNS.some(([a, b]) => seconds >= a && seconds < b) ? 0 : Math.exp(-(b - Math.floor(b)) * 4.5)
 }

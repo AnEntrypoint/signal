@@ -26,9 +26,10 @@ export function tripClock(ctx) {
   const rolled = time.sub(t0).add(3600).mod(3600).min(SCORE.duration);
   const sec = select(on.greaterThan(0.5), rolled, time.mod(SCORE.duration));
   const beat = sec.sub(SCORE.firstBeat).mul(BPS);
-  let live = float(0);
-  for (const [a, b] of KICK_RUNS) live = live.add(smoothstep(a - 0.05, a, sec).mul(smoothstep(b + 0.05, b, sec)));
-  live = live.min(1);
+  // the kick only where the measured track has one: the director (stage.js) hands the current/next kick run
+  // as params k0 / k1 (seconds, from KICK_RUNS); idle or none: no kick at all
+  const k0 = ctx.param("k0", -1), k1 = ctx.param("k1", -1);
+  const live = smoothstep(k0.sub(0.05), k0, sec).mul(smoothstep(k1.add(0.05), k1, sec));
   const env = (b, k) => b.fract().mul(k).negate().exp().mul(live);
   // THE ROLL'S SEED: a new integer every roll (0 idle), the same on every machine in the room.
   // c.rnd(n): 0..1, fixed for this roll, different per channel n. Channels 1-9 are the spine's; a piece uses 10+.
