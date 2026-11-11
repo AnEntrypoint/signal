@@ -34,6 +34,8 @@ export function tripClock(ctx) {
     seamD = seamD.min(real.sub(a).abs()).min(real.sub(b).abs());
   });
   seamD = select(on.greaterThan(0.5), seamD, float(99));
+  // a vision being lives on the track's own clock: its slot (vw0/vw1) is real seconds, never a dealt scene's
+  if (ctx.params && ctx.params.vw0 !== undefined) { sec = real; seamD = float(99); }
   const beat = real.sub(SCORE.firstBeat).mul(BPS);
   // the kick only where the measured track has one: the director (stage.js) hands the current/next kick run
   // as params k0 / k1 (seconds, from KICK_RUNS); idle or none: no kick at all
