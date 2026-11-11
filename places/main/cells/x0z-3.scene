@@ -69,3 +69,13 @@ chamber-solids:
   primitive: {kind: scripted, params: {}, script: scripts/chamber-solids-geo.js}
   receiveShadow: false
   tags: [trip, chamber]
+tunnel-knot:
+  audience: all
+  castShadow: false
+  feetPosition: {x: 0, y: 9, z: -336}
+  id: tunnel-knot
+  material: {kind: scripted, params: {"on": 0, seed: 0, t0: 0}, script: scripts/tunnel-knot.js}
+  physics: none
+  primitive: {kind: scripted, params: {kind: knot}, script: scripts/tunnel-geo.js}
+  receiveShadow: false
+  tags: [trip, tunnel]
