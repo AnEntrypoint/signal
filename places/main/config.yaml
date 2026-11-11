@@ -8,7 +8,7 @@ atmosphere:
     color: "#000000"
   look:
     script: scripts/look-trip.js
-    params: {bloomRadius: 0.9, bloomStrength: 0.55, bloomThreshold: 0.85, "on": 0, seed: 0, t0: 0}
+    params: {bloomRadius: 0.9, bloomStrength: 0.55, bloomThreshold: 0.85, "on": 0, seed: 0, t0: 0, k0: -1, k1: -1}
     toneMapping: neutral
   moon:
     enabled: false
