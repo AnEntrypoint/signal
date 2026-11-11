@@ -1,0 +1,8 @@
+# spawn-scene v2 yaml x0z0
+stage-floor:
+  feetPosition: {x: 0, y: -0.3, z: 0}
+  id: stage-floor
+  material: {color: oklch(0.12 0.01 270), metalness: 0.6, roughness: 0.18}
+  physics: static
+  primitive: {height: 0.3, kind: cylinder, radialSegments: 64, radiusBottom: 140, radiusTop: 140}
+  tags: [stage]

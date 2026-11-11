@@ -1,34 +1,32 @@
 atmosphere:
   clouds:
-    altitude: 600
-    density: 0.35
-    enabled: true
-    opacity: 0.7
-    thickness: 900
+    enabled: false
   fog:
-    far: 1400
+    far: 160
     kind: linear
-    near: 600
+    near: 30
+    color: "#07070d"
   look:
     script: scripts/look-default.js
   moon:
-    intensity: 3
+    intensity: 0.6
   sky:
     kind: realistic
     model: hosek
   stars:
-    density: 0.6
+    density: 0.4
     enabled: true
-    milkyWay: 0.6
-  timeOfDay: 11.7
+    milkyWay: 0.2
+  timeOfDay: 0
   wind:
     direction: 230
     speed: 2
+  ambient:
+    light: {color: "#3a3f6a", intensity: 0.35}
 defaultSpawnPoint:
   x: 0
-  y:
-    terrain: 0
-  z: 0
+  y: 0.1
+  z: 16
 gravity:
   x: 0
   y: -24
@@ -36,19 +34,4 @@ gravity:
 # 3d: the engine draws this place, so it needs 3D graphics to open. A game that is only its HTML screen is mode ui.
 mode: 3d
 terrain:
-  generator: scripts/flat-starter-terrain.js
-  kind: heightmap
-  materials:
-    - albedo: cdn/texture-terrain-grass-realistic-albedo-summer-exploration.png
-      id: grass
-      pbr: true
-      tint: oklch(0.68 0.12 140)
-    - albedo: cdn/texture-terrain-gravel-realistic-albedo.png
-      id: gravel
-      pbr: true
-      tint: oklch(0.70 0.02 80)
-    - albedo: cdn/texture-terrain-rock-realistic-albedo.png
-      id: rock
-      pbr: true
-      tint: oklch(0.58 0.02 260)
-  seed: 1
+  kind: "off"
