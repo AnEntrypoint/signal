@@ -44,7 +44,7 @@ export function material(ctx) {
   // guarded frame: a stalled head (d -> 0) still gives a unit tangent, never a NaN vertex (white/garbage)
   const T = normalize(body(s.add(0.012)).sub(P).add(vec3(0, 1e-4, 0)));
   const ref = mix(vec3(0, 0, 1), vec3(1, 0, 0), step(0.9, T.z.abs()));   // never parallel to T: no NaN
-  const N1 = normalize(cross(T, ref)), N2 = cross(N1, T);
+  const N1 = normalize(cross(T, ref).add(vec3(1e-5, 0, 0))), N2 = cross(N1, T);
   const nrm = N1.mul(ca).add(N2.mul(sa));
 
   // presence: its own tide, and everyone in around a scene change (seamD = seconds to the nearest drop)
@@ -55,7 +55,7 @@ export function material(ctx) {
   const len = smoothstep(show, show.sub(0.08), s);
   const swell = s.mul(22).sub(t.mul(5.5)).sin().mul(0.28).add(1);            // peristalsis, head -> tail
   const kickRun = smoothstep(0.07, 0, s.sub(c.beat.fract().mul(1.2)).abs()).mul(c.kick.max(0).min(1));
-  const r = float(2.2).add(rn(13).mul(1.6)).mul(inv(s).pow(0.4).mul(0.85).add(0.15)).mul(s.mul(40).min(1).sqrt())
+  const r = float(2.2).add(rn(13).mul(1.6)).mul(inv(s).clamp(0, 1).pow(0.4).mul(0.85).add(0.15)).mul(s.mul(40).clamp(0, 1).sqrt())
     .mul(swell).mul(kickRun.mul(0.35).add(1)).mul(len)
     .mul(smoothstep(8, 26, P.length()).mul(0.5).add(0.5));   // thins as it passes close: never fills the lens
   const m = new MeshBasicNodeMaterial();
