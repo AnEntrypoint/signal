@@ -14,7 +14,7 @@ export function geometry(ctx) {
     const M = 110;
     for (let i = 0; i < M; i++) {
       const a = -W + (2 * W * i) / M + X, b = -W + (2 * W * (i + 1)) / M + X;
-      ctx.color(1, 0.93, 0.1);
+      ctx.color(1, 0.78, 0.02);
       ctx.quad(a, -0.12, Z + 0.1, b, -0.12, Z + 0.1, b, 0.16, Z + 0.1, a, 0.16, Z + 0.1);
       const v = i % 2 ? 1 : 0; ctx.color(v, v, v);
       ctx.quad(a, 0.16, Z + 0.1, b, 0.16, Z + 0.1, b, BAND, Z + 0.1, a, BAND, Z + 0.1);
@@ -26,7 +26,7 @@ export function geometry(ctx) {
       const tip = BAND + (k % 2 ? 2.1 : 1.35);
       ctx.color(1, 1, 1);
       ctx.tri(x - 0.17, BAND, Z + 0.15, x + 0.17, BAND, Z + 0.15, x, tip, Z + 0.15);
-      if (k % 2) ctx.color(1, 0.2, 0.8); else ctx.color(0.35, 1, 0.4);
+      if (k % 2) ctx.color(1, 0.03, 0.55); else ctx.color(0.06, 1, 0.1);
       const R = k % 2 ? 0.3 : 0.24, U = 10, V = 6;
       const P = (u, v) => { const p = (u / U) * Math.PI * 2, q = (v / V) * Math.PI; return [x + R * Math.sin(q) * Math.cos(p), tip + R * Math.cos(q), Z + 0.15 + R * Math.sin(q) * Math.sin(p)]; };
       for (let v = 0; v < V; v++) for (let u = 0; u < U; u++) {

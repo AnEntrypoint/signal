@@ -13,11 +13,11 @@ export function geometry(ctx) {
         ctx.quad(a[0], a[1], z, b[0], b[1], z, c[0], c[1], z, d[0], d[1], z);
       }
     };
-    if (i % 2) ctx.color(0.2, 0.95, 1); else ctx.color(0.72, 0.2, 1);
+    if (i % 2) ctx.color(0.03, 0.12, 1); else ctx.color(0.42, 0.02, 1);
     petal(14.6, 1, 1, Z);
     ctx.color(0, 0, 0);
     petal(15.3, 0.8, 0.62, Z + 0.03);
-    if (i % 2) ctx.color(1, 0.2, 0.8); else ctx.color(1, 0.93, 0.1);
+    if (i % 2) ctx.color(1, 0.03, 0.55); else ctx.color(1, 0.78, 0.02);
     [[16.5, 0.42], [18.3, 0.32], [19.8, 0.24], [21.1, 0.17]].forEach(([u, rad]) => { const q = P(u, 0); disc(q[0], q[1], rad, Z + 0.06); });
   }
   ctx.color(1, 1, 1);
