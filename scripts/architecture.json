@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "basedOnSpecVersion": 547,
-  "updatedAt": "2026-11-11T13:42:41.008Z",
-  "summary": "Signal Stage is a walkable 3D motion-graphics stage with a synchronized, seeded 198-second cinematic on a measured 160-bpm track. A shared director, score/deck clocks and shader helpers drive the stage assemblies and two long vision slots; scene layers now use a shared, spatially dithered hold across dealt-scene seams.",
+  "basedOnSpecVersion": 549,
+  "updatedAt": "2026-11-11T13:46:35.113Z",
+  "summary": "Signal Stage is a walkable 3D motion-graphics stage with a synchronized, seeded 198-second cinematic on a measured 160-bpm track. A shared director, score/deck clocks and shader helpers drive the stage assemblies and two long vision slots; scene layers use spatially dithered holds across dealt-scene seams.",
   "scriptPaths": [],
   "places": [
     "places/main/config.yaml (main, 3D) - black-void stage configuration, spawn/environment and place-wide scripts/look-trip.js post-processing.",
@@ -64,7 +64,7 @@
     "scripts/tunnel-* - wall, core, dust, gates, ribs and knot share tunnel geometry kinds and tunnel-lib.js spatial/color helpers; materials vary motif and seeded palette; wall holds at scene seams.",
     "scripts/chamber-* - room, circuit, hands, hex, Lissajous, solids and bilateral mask share chamber shader helpers and scored cutouts; room uses a seam hold.",
     "scripts/sun-disc.js, sun-drips.js and sun-halo.js - sun-eye layers share sun-lib.js but vary disc, hanging-drip and depth-halo imagery; disc uses a seam hold.",
-    "scripts/vision-*-geo.js / -mat.js - 16 staged beings share trip clocks and layer offsets; motifs and seeded entrance/exit masks vary by being. Many-Armed's staged heart, body, arms, ring/world details, veil and fore petals now follow a sequenced visionU schedule; Twin Serpents reveal/withdraw body links in seeded order.",
+    "scripts/vision-*-geo.js / -mat.js - 16 staged beings share trip clocks and layer offsets; motifs and seeded entrance/exit masks vary by being. vision-sun-father-mat.js confines exit glow to growing ray tips and bead rims, not whole rays.",
     "scripts/companion-worm-geo.js, vision-*-worm-geo.js and corresponding worm materials - camera-attached and vision-being worms share unit-tube geometry bent by shader paths; geo resolution scales by ctx.lod."
   ],
   "probableOrphans": [],
@@ -74,6 +74,6 @@
     "energy.yml defines vision slots [48.35,96.35] and [132.35,180.35]; only built entries in BEINGS can be dealt. Vision layers attach 3 s before a slot; vision houses are above the field in +Y and selected layers ride the camera at depth 74.",
     "score.yml deck has one segment [12.35,180.35] per roll; preserve distinction between deck source time and full trip clock, plus fixed 12 s seed/return sections.",
     "Canonical vision layer offsets are world -30, ring -12, being 0, veil +10, fore +22; stage.js derives home z from tag suffix and fit scales depth and object scale together.",
-    "field-lib seamHold uses trip scene time c.sec, score layer intervals and c.seamD (seconds to nearest dealt-deck boundary); held=max(normal opacity, hold). Its hashed 3D bead cells are measured in world units, so keep each caller's explicit size (field 2.4, chamber 1.5, eye 0.9, serpent 1.2, sun 0.8, tunnel 1.8). Vision shaders set seamD to 99 and remain on their track-clock schedule, not this seam hold."
+    "field-lib seamHold uses trip scene time c.sec, score layer intervals and c.seamD (seconds to nearest dealt-deck boundary); held=max(normal opacity, hold). Its hashed 3D bead cells are measured in world units, so keep each caller's explicit scale."
   ]
 }
