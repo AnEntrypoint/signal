@@ -118,7 +118,10 @@ export function shown(c, name, d = 0) {
   // 2026-11-11 (lanmower saw a whole scene flip in one frame at the drop): the scene clock jumps at the seam,
   // so NOTHING may stand on it. Every piece is out by the seam itself and the next scene builds out of the dark;
   // the companion worms and the bend carry the eye across that half-second.
-  const seamGate = smoothstep(0, 0.06, mix(float(-0.1), float(1.25), c.seamD.div(SCORE.deck.seam).clamp(0, 1))
+  // 2026-11-11 (watched seed 9 at 1:36: the old scene snapped off in ~0.3 s and a worm sat alone on black ~2 s):
+  // each piece now fades over ~1.1 s on its own turn, the turns spread over ~2 s, and only the seam instant is fully dark
+  const seamO = pieceLag(name).div(SCORE.piece ?? 2.25).mul(0.25).add(float(d).clamp(0, 1).mul(0.35)).add(turn * 0.45).mul(0.3);
+  const seamGate = smoothstep(seamO, seamO.add(0.18), c.seamD.div(SCORE.deck.seam).clamp(0, 1));
     .sub(pieceLag(name).div(SCORE.piece ?? 2.25).mul(0.25).add(float(d).clamp(0, 1).mul(0.35)).add(turn * 0.45).mul(0.38))); // 2026-11-11: the seam watched went black for ~10 s; now pieces thin out over ~6 s and the full dark is under 1 s // the heart of every layer stands through the drop: never an empty frame
   const lag = float(d).clamp(0, 1).mul(SCORE.wipe).add(pieceLag(name));
   let v = float(0);
