@@ -26,3 +26,10 @@ vision-many-armed-veil:
   primitive: {kind: scripted, params: {layer: veil}, script: scripts/vision-many-armed-geo.js}
   receiveShadow: false
   tags: [trip, vision-many-armed]
+vision-ouroboros:
+  feetPosition: {x: 0, y: 700, z: 0}
+  id: vision-ouroboros
+  material: {kind: scripted, script: engine/blueprint}
+  physics: none
+  primitive: {depth: 1, height: 40, kind: box, width: 64}
+  tags: [blueprint]
