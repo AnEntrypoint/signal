@@ -3,7 +3,7 @@
 // once per phrase (or, the other deal, the light comes down with the kick's ripple and the clock hand).
 import { MeshBasicNodeMaterial, DoubleSide } from "builtin/three";
 import { positionGeometry, attribute, float, vec2, vec3, smoothstep, step, mix, length } from "builtin/tsl";
-import { tripClock, shown, stripes } from "./lib/trip.js";
+import { tripClock, shown, stripes, win, SEC, HUE } from "./lib/trip.js";
 import { PI, sel, ripple, sweep, fam, relight, allLit } from "./sun-lib.js";
 
 export function material(ctx) {
@@ -12,7 +12,8 @@ export function material(ctx) {
   const i = float(attribute("drip", "uint")), k = i.sub(4).abs();
   const a = i.sub(4).mul(13 * PI / 180);
   const rx = a.sin().mul(12.2), ry = a.cos().mul(-12.2);
-  const x = g.x.sub(rx), s = ry.sub(g.y);
+  const flame = c.pick(67, 2).greaterThan(0.5).toFloat().max(win(c.sec, SEC.peak).mul(step(c.rnd(68), 0.5))); // flame-teardrops deal
+  const s = ry.sub(g.y), x = g.x.sub(rx).sub(i.sub(4).mul(0.07).mul(s).mul(flame));
   const base = sel(k, [1.0, 0.55, 0.8, 0.42, 0.66]).mul(mix(0.78, 1.0, sel(k, [c.rnd(66), c.rnd(67), c.rnd(68), c.rnd(69), c.rnd(60)])));
   const ib = c.bar.mod(8);
   const grow = float(0.42).add(ib.floor().add(smoothstep(0, 0.35, ib.fract())).div(8).mul(0.58));
@@ -32,7 +33,11 @@ export function material(ctx) {
   const chev = stripes(s.sub(x.abs().mul(0.7)).sub(sec.mul(0.3)), 0.8, 0.05);
   const body = F.at(smoothstep(0, 30, s).mul(0.7)).mul(mix(1, 0.12, chev));
   const headCol = mix(mix(F.at(0).mul(0.75).add(0.25), vec3(0), step(dh, 0.62)), F.hot(), step(dh, 0.48));
-  const col = mix(body, headCol, head);
+  // flame: white-hot head, yellow -> orange -> red tail, no chevrons
+  const tailT = float(1).sub(smoothstep(0, Ld, s));
+  const fTail = mix(mix(vec3(...HUE.red), vec3(...HUE.orange), smoothstep(0.0, 0.5, tailT)), vec3(...HUE.yellow), smoothstep(0.5, 1.0, tailT)).mul(0.9);
+  const fHead = mix(vec3(...HUE.yellow).mul(0.95), vec3(1.0, 0.95, 0.8), step(dh, 0.6));
+  const col = mix(mix(body, headCol, head), mix(fTail, fHead, head), flame);
   const glow = clockLit.mul(allLit(c)).mul(0.25);
   const m = new MeshBasicNodeMaterial();
   m.side = DoubleSide;
