@@ -3,6 +3,7 @@ import SCORE from './data/score.yml'
 import SHOTS from './data/shots.yml'
 import { visionAt, visionShot } from './visions.js'
 import { KICK_RUNS } from './trip.js'
+import { dealDeck, sceneTime } from './deck.js'
 export { SCORE, SHOTS }
 export const CINE = { duration: SCORE.duration, bpm: SCORE.bpm, music: SCORE.music, keys: SHOTS.keys }
 
@@ -36,7 +37,7 @@ export function rollRnd(seed, n) { const x = Math.sin((seed + 1) * (n * 12.9898 
 export function cameraAt(t, seed = 0) {
   const v = visionAt(t, seed)
   if (v) return visionShot(v, t, seed) // a vision: hard cut to the dealt being on the phrase line, back on the next
-  const c = cameraRaw(t)
+  const c = cameraRaw(sceneTime(t, dealDeck(seed))) // the dealt scene's own shot, cut on the drop
   if (!seed) return c
   const side = rollRnd(seed, 1) < 0.5 ? -1 : 1, rs = (rollRnd(seed, 2) < 0.5 ? -1 : 1) * (0.6 + rollRnd(seed, 3) * 0.9)
   const lift = 0.8 + rollRnd(seed, 4) * 0.5, wide = 0.92 + rollRnd(seed, 5) * 0.18

@@ -3,6 +3,7 @@
 import { SCORE, cineTime } from './lib/cine.js'
 import { BEINGS, dealVisions } from './lib/visions.js'
 import { KICK_RUNS } from './lib/trip.js'
+import { dealDeck } from './lib/deck.js'
 
 // the kick run that holds t, else the next one: [k0, k1] seconds; [-1, -1] idle or past the last
 function kickRun(t) {
@@ -11,10 +12,15 @@ function kickRun(t) {
   return [-1, -1]
 }
 
+function setAll(p, t0, on, seed, k, deal) {
+  p.t0 = t0; p.on = on; p.seed = seed; p.k0 = k[0]; p.k1 = k[1]
+  deal.forEach((g, i) => { p['ds' + i] = g.src; p['dr' + i] = g.rate })
+}
 function push(ctx, t0, on, seed, k) {
+  const deal = dealDeck(on ? seed : 0)
   for (const o of ctx.query({ tags: ['trip'] })) {
     const h = ctx.getObject(o.id)
-    if (h?.material?.params) { h.material.params.t0 = t0; h.material.params.on = on; h.material.params.seed = seed; h.material.params.k0 = k[0]; h.material.params.k1 = k[1] }
+    if (h?.material?.params) setAll(h.material.params, t0, on, seed, k, deal)
   }
   // each vision being learns its slot this roll: params.vw0 / vw1 seconds, -1 when not dealt
   const dealt = {}
@@ -27,7 +33,7 @@ function push(ctx, t0, on, seed, k) {
     }
   }
   const a = ctx.place.atmosphere
-  if (a.look) { a.look.params ??= {}; a.look.params.t0 = t0; a.look.params.on = on; a.look.params.seed = seed; a.look.params.k0 = k[0]; a.look.params.k1 = k[1] }
+  if (a.look) { a.look.params ??= {}; setAll(a.look.params, t0, on, seed, k, deal) }
 }
 
 export function update(ctx, dt) {

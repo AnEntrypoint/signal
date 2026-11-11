@@ -10,10 +10,10 @@ import ENERGY from './data/energy.yml' // the track measured bar by bar (tools/a
 // The shot: eye at centre + (0, 0, 64) creeping to + (0, 0, 46) across the slot, aim at centre, fov 42:
 // the frame holds about 40 m tall by 70 m wide around the centre. Everything faces +Z.
 export const BEINGS = [
-  { id: 'sun-father',     name: 'the sun father' },
-  { id: 'moon-mother',    name: 'the moon mother' },
-  { id: 'contour-oracle', name: 'the contour oracle' },
-  { id: 'many-armed',     name: 'the many-armed one' },
+  { id: 'sun-father',     name: 'the sun father', built: true },
+  { id: 'moon-mother',    name: 'the moon mother', built: true },
+  { id: 'contour-oracle', name: 'the contour oracle', built: true },
+  { id: 'many-armed',     name: 'the many-armed one', built: true },
   { id: 'ouroboros',      name: 'the ouroboros' },
   { id: 'thunderbird',    name: 'the winged eye' },
   { id: 'world-tree',     name: 'the world tree' },
@@ -27,7 +27,7 @@ function rnd(seed, n) { const x = Math.sin((seed + 1) * (n * 7.1234 + 3.1)) * 15
 // [{ slot: [a, b], being }] for this roll; [] when idle (seed 0).
 export function dealVisions(seed) {
   if (!seed) return []
-  const order = BEINGS.map((b) => ({ b, r: rnd(seed, 40 + b.k) })).sort((p, q) => p.r - q.r).map((p) => p.b)
+  const order = BEINGS.filter((b) => b.built).map((b) => ({ b, r: rnd(seed, 40 + b.k) })).sort((p, q) => p.r - q.r).map((p) => p.b)
   return ENERGY.visions.map((slot, i) => ({ slot, being: order[i] }))
 }
 export function visionAt(t, seed) {

@@ -1,5 +1,6 @@
 // The HUD: a roll button when idle; letterbox, a thin progress line and a cut button while rolling.
 import { CINE, cineTime, sectionAt } from './lib/cine.js'
+import { dealDeck, sceneTime } from './lib/deck.js'
 
 const STYLE = `<style>
 @keyframes cine-grow { from { width: 0 } to { width: 100% } }
@@ -19,6 +20,6 @@ export default function render(ctx, player) {
     <div style="position:absolute;left:0;right:0;top:0;background:#000;animation:cine-bar .6s ease-out ${-t}s forwards"></div>
     <div style="position:absolute;left:0;right:0;bottom:0;background:#000;animation:cine-bar .6s ease-out ${-t}s forwards"></div>
     <div style="position:absolute;left:0;bottom:0;height:2px;background:#ff3fb4;box-shadow:0 0 10px #ff3fb4;animation:cine-grow ${CINE.duration}s linear ${-t}s forwards"></div>
-    <div style="position:absolute;left:24px;bottom:3vh;color:#9a8fc0;font-size:12px;letter-spacing:.4em;text-transform:uppercase">${sectionAt(t)}</div>
+    <div style="position:absolute;left:24px;bottom:3vh;color:#9a8fc0;font-size:12px;letter-spacing:.4em;text-transform:uppercase">${sectionAt(sceneTime(t, dealDeck(ctx.world.state.cine?.seed ?? 0)))}</div>
     <button onclick="sendAction('cine')" style="pointer-events:auto;position:absolute;right:90px;bottom:3vh;background:none;border:1px solid #ff3fb466;color:#ff9fdc;padding:4px 10px;font-size:13px;letter-spacing:.2em">↻ NEW ROLL${key ? ` [${key}]` : ''}</button>`
 }

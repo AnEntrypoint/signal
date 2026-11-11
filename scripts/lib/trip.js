@@ -20,40 +20,20 @@ export const KICK_RUNS = (() => { const r = []; let a = -1; ENERGY.bars.forEach(
 export { SCORE };
 export const SEC = SCORE.sections;
 export const BPS = SCORE.bpm / 60;
-// the deck on the CPU: the same dealing the shaders decode. deckOf(seed) -> 0..11 (0 for seed 0: as written).
-export const DECK_PERMS = [[0, 1, 2], [0, 2, 1], [1, 0, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0]];
-export function deckOf(seed) { if (!seed) return 0; const x = Math.sin((seed + 1) * 61.7) * 43758.5453; const d = Math.floor((x - Math.floor(x)) * 12); return d === 0 ? 7 : d; }
-// real track seconds -> scene seconds under deck d
-export function sceneTime(t, d) {
-  if (!d || t == null) return t;
-  const D = SCORE.deck, p = DECK_PERMS[d % 6], sw = Math.floor(d / 6);
-  for (let i = 0; i < 3; i++) { const a = D.long[i]; if (t >= a && t < a + D.longLen) return D.long[p[i]] + (t - a); }
-  for (let i = 0; i < 2; i++) { const a = D.short[i]; if (t >= a && t < a + D.shortLen) return (sw ? D.short[1 - i] : a) + (t - a); }
-  return t;
-}
-
 export function tripClock(ctx) {
   const t0 = ctx.param("t0", 0), on = ctx.param("on", 0);
   const rolled = time.sub(t0).add(3600).mod(3600).min(SCORE.duration);
   const real = select(on.greaterThan(0.5), rolled, time.mod(SCORE.duration));
-  // THE DECK: the roll's dealt order of scenes (params.dk, from the director; 0 = as written). sec is SCENE time:
-  // what every layer, lens and window reads; real is the track's own time: beat, kick and vision slots.
-  const dk = ctx.param("dk", 0).mul(on.greaterThan(0.5).select(1, 0));
-  const D = SCORE.deck, pi = dk.mod(6), sw = dk.div(6).floor();
+  // THE DECK (lib/deck.js): sec is SCENE time, what every layer, lens and window reads; real is the track's time
+  // (beat, kick, vision slots). Each drop stretch maps to its dealt scene: ds<i> its start, dr<i> its rate.
   let sec = real, seamD = float(99);
-  const longSrc = (i) => { let v = float(D.long[DECK_PERMS[5][i]]); for (let k = 4; k >= 0; k--) v = select(pi.lessThan(k + 0.5), float(D.long[DECK_PERMS[k][i]]), v); return v; };
-  D.long.forEach((a, i) => {
-    const inS = step(a, real).mul(float(1).sub(step(a + D.longLen, real)));
-    sec = sec.add(inS.mul(longSrc(i).sub(a)));
-    seamD = seamD.min(real.sub(a).abs()).min(real.sub(a + D.longLen).abs());
+  SCORE.deck.segments.forEach(([a, b], i) => {
+    const s0 = ctx.param("ds" + i, a), r = ctx.param("dr" + i, 1);
+    const inS = step(a, real).mul(float(1).sub(step(b, real)));
+    sec = sec.add(inS.mul(s0.add(real.sub(a).mul(r)).sub(real)));
+    seamD = seamD.min(real.sub(a).abs()).min(real.sub(b).abs());
   });
-  D.short.forEach((a, i) => {
-    const inS = step(a, real).mul(float(1).sub(step(a + D.shortLen, real)));
-    const src = select(sw.greaterThan(0.5), float(D.short[1 - i]), float(a));
-    sec = sec.add(inS.mul(src.sub(a)));
-    seamD = seamD.min(real.sub(a).abs()).min(real.sub(a + D.shortLen).abs());
-  });
-  seamD = select(dk.greaterThan(0.5), seamD, float(99));
+  seamD = select(on.greaterThan(0.5), seamD, float(99));
   const beat = real.sub(SCORE.firstBeat).mul(BPS);
   // the kick only where the measured track has one: the director (stage.js) hands the current/next kick run
   // as params k0 / k1 (seconds, from KICK_RUNS); idle or none: no kick at all
