@@ -1,11 +1,14 @@
 # spawn-scene v2 yaml x0y4z0
 vision-contour-oracle:
+  audience: all
+  castShadow: false
   feetPosition: {x: 0, y: 500, z: 0}
   id: vision-contour-oracle
-  material: {kind: scripted, script: engine/blueprint}
+  material: {kind: scripted, params: {k0: -1, k1: -1, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-contour-oracle-mat.js}
   physics: none
-  primitive: {depth: 10, height: 40, kind: box, width: 70}
-  tags: [blueprint]
+  primitive: {kind: scripted, params: {}, script: scripts/vision-contour-oracle-geo.js}
+  receiveShadow: false
+  tags: [trip, vision-contour-oracle]
 vision-many-armed:
   feetPosition: {x: 0, y: 600, z: 0}
   id: vision-many-armed
