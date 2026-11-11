@@ -1,24 +1,10 @@
-// THE NIGHT OWL (vision being owl-mask): a mirrored neon line-art owl mask: two great ringed eyes whose ring sets
-// counter-rotate while the pupils track a slow lissajous (the mask looks around), a beak of nested teardrops,
-// ear tufts, forehead diamonds, whiskers, feather fans left and right built of bead rows, spines, squiggles and ocelli.
-// ONE SCENE, FIVE LAYERS at five depths, one script (material params.layer), each on its OWN motion:
-//   "world" z -30  SCROLLS   black plumage growing from the owl outward as rows of feather scales; on it sparkle
-//                            four-point stars, pill cartouches holding a glyph and aztec crosses scrolling up, feathers falling
-//   "ring"  z -12  TURNS     a bead ring one way, a sparkle ring and its ocelli the other (soft, additive)
-//   "being" z   0  BREATHES  the mask (cutout, solid black body under its line-art)
-//   "veil"  z +10  SWAYS     feather charms hanging on bead strings from the top, pendulum-swaying, hiding the fans' edges
-//   "fore"  z +22  UNDULATES small black petal-feathers and sparks riding a travelling swell through the corners
-//   the BRANCH-WORMS are real 3D tubes winding in depth: scripts/vision-owl-mask-worm-geo.js / -worm-mat.js
-// THE SCORE (u of the slot): 0 beak draws / .06 black face opens / .1 outline / .13 eyes open / .18 tufts / .2 brows /
-// .24 fans fan out / .25 the plumage world grows / .4 bead ring, .48 sparkle ring / .5 diamonds, stars / .52 iris beads,
-// cartouches / .55 fan beads, crosses / .58 whiskers, beard / .6 squiggles, falling feathers, worms / .62 charms /
-// .64 ocelli / .66 sparks / .85 the illusion (spiral eyes or figure-ground flip) / .93.. out, last-in first-out.
-// Seed channels 480..499: 0 hue family, 1 hot, 2 second hot, 3 feather count, 4 eye sense, 5 lissajous ratio,
-// 6 illusion variant, 7 worm count, 8 worm skin order, 9 dark worm, 10 beard/chevron set, 11 cartouche glyphs,
-// 12 scroll sense, 13 ring bead count, 14 ring sense, 15 charm count, 16 tuft beads, 17 fan arc style, 18 star turn, 19 worm 3 side.
+// THE NIGHT OWL: mirrored neon owl mask on five canvases (params.layer: world z-30 scrolls, ring z-12 turns, being breathes,
+// veil z+10 sways, fore z+22 undulates). Everything enters and leaves through one of three OWL masks dealt by seed
+// (feather strokes / iris dots / plumage scale rows), exit never the entrance's; parts leave one by one over u .8..1,
+// the world plumage last (lit to u .98). Seed channels 480..501.
 import { MeshBasicNodeMaterial, AdditiveBlending, DoubleSide } from "builtin/three";
 import { positionGeometry, float, vec2, vec3, smoothstep, step, mix, atan2, fwidth, select } from "builtin/tsl";
-import { tripClock, visionShown, visionU, climb, maskDraw, maskBeads, maskIris } from "./lib/trip.js";
+import { tripClock, visionShown, visionU, climb, maskDraw, maskBeads, maskIris, inv, is } from "./lib/trip.js";
 
 const TAU = 6.28318, PI = 3.14159;
 const DEPTH = { world: 104, ring: 86, being: 74, veil: 64, fore: 52 };
@@ -29,8 +15,6 @@ const CARTS = [[55, 20], [86, -15], [46, -46], [110, 36], [78, 60]];
 const CROSS = [[30, 28], [70, -38], [106, -2], [128, -42]];
 const FALL = [[52, 0], [92, 30], [118, -22]];
 
-const inv = (x) => float(1).sub(x);
-const is = (v, i) => step(v.sub(i).abs(), 0.5);
 const rot = (v, a) => { const c = a.cos(), s = a.sin(); return vec2(v.x.mul(c).sub(v.y.mul(s)), v.x.mul(s).add(v.y.mul(c))); };
 // a teardrop, round end of radius r at the origin, tip at (0, -L): signed distance
 function tear(q, r, L) {
@@ -38,12 +22,12 @@ function tear(q, r, L) {
   const t = qx.mul(s).add(qy.mul(co)), line = qx.mul(co).sub(qy.mul(s));
   return select(t.lessThan(L * co), select(t.lessThan(0), vec2(qx, qy).length(), line), q.length().sub(r));
 }
-const four = (d, sz) => d.x.abs().div(sz).sqrt().add(d.y.abs().div(sz).sqrt());   // < 1 inside a four-point sparkle
+const four = (d, sz) => d.x.abs().div(sz).sqrt().add(d.y.abs().div(sz).sqrt());
 
 export function material(ctx) {
   const layer = ctx.params.layer ?? "being";
   const c = tripClock(ctx), u = visionU(ctx, c), live = visionShown(ctx, c, 0);
-  const io = (a, b, x, y) => smoothstep(a, b, u).mul(inv(smoothstep(x, y, u)));
+  const low = ctx.quality === "low";
   const rn = (n) => c.rnd(480 + n), pk = (n, k) => c.pick(480 + n, k);
   const sense = (n) => step(0.5, rn(n)).mul(2).sub(1);
   const fam = pk(0, 3), h1 = pk(1, 4), h2 = h1.add(1).add(pk(2, 3)).mod(4);
@@ -58,59 +42,76 @@ export function material(ctx) {
   const P = positionGeometry.xy;
   const aa = fwidth(P.x).mul(1.2).max(0.02);
   const stroke = (d, w) => inv(smoothstep(float(w), aa.add(w), d));
-  const cul = io(0.85, 0.88, 0.93, 0.95).mul(climb(c).mul(0.4).add(0.6));
+  const cul = smoothstep(0.7, 0.73, u).mul(inv(smoothstep(0.8, 0.84, u))).mul(climb(c).mul(0.4).add(0.6));
+  // THE OWL MASKS: per fragment an order o (0 first .. 1 last) and a shape key k; a piece shows where k < its own progress
+  const gq = P.div(sc).sub(vec2(0, CY)), gx = gq.x.abs(), gr = gq.length();
+  const gf = atan2(gq.y, gx).div(PI).add(0.5).mul(9), gw = gf.fract().sub(0.5).mul(2), gfo = gf.floor().div(9);
+  const o0 = mix(gfo, inv(gfo), step(0.5, rn(22))), k0 = gr.div(125).min(1).add(gw.mul(gw).mul(0.6)).div(1.6);
+  const gc = vec2(gx, gq.y).div(6), gi = gc.floor().add(0.5);
+  const o1 = gi.mul(6).sub(vec2(9.5, 3.5)).length().div(125).min(1), k1 = gc.sub(gi).length().div(0.7072);
+  const gri = gr.div(6).floor(), grc = gri.add(0.5).mul(6), gn = grc.mul(TAU / 6).floor().max(6);
+  const gk = atan2(gq.y, gq.x).div(TAU).mul(gn).add(gri.mul(0.5));
+  const k2 = vec2(gk.fract().sub(0.5).mul(grc.mul(TAU).div(gn)), gr.sub(grc)).length().div(4.7);
+  const o2 = gri.div(21).min(1).mul(0.6).add(gri.mod(2).mul(0.4));
+  const vE = pk(20, 3), vX = vE.add(1).add(pk(21, 2)).mod(3);
+  const sel = (v, a, b, d) => a.mul(is(v, 0)).add(b.mul(is(v, 1))).add(d.mul(is(v, 2)));
+  const oE = sel(vE, o0, o1, o2), kE = sel(vE, k0, k1, k2), oX = sel(vX, o0, o1, o2), kX = sel(vX, k0, k1, k2);
+  const gs = (k, o, p) => step(k, float(p).mul(1.7).sub(o.mul(0.7)).mul(1.04).sub(0.002));
+  const gate = (pi, po) => gs(kE, oE, pi).mul(gs(kX, oX, po));
+  const io = (a, b, x, y) => { const pi = smoothstep(a, b, u), po = inv(smoothstep(x, y, u)); return pi.mul(gate(pi, po)).sub(0.003); };
   const m = new MeshBasicNodeMaterial();
   m.side = DoubleSide;
 
-  // ------------------------------------------------------------------ WORLD: plumage, stars, cartouches (scrolls)
+  // ---- WORLD: plumage, stars, cartouches (scrolls)
   if (layer === "world") {
     const q = P.sub(vec2(0, CY * sc)), ax = q.x.abs();
-    const de = vec2(q.x.div(1.45), q.y).length(), ang = atan2(q.y, q.x);
-    const grow = io(0.25, 0.45, 0.955, 0.995), Rg = grow.mul(128);
+    const de = vec2(q.x.div(1.78), q.y).length(), ang = atan2(q.y, q.x);
+    const grow = smoothstep(0, 0.4, u), Rg = grow.max(0.0001).pow(0.6).mul(74);
+    const wg = gate(1, inv(smoothstep(0.982, 0.999, u))), wl = smoothstep(0.8, 0.95, u).mul(1.6).add(1);
     // the grown edge is three rows of feather scales, each row smaller: plumage spreading from the owl
-    const lead = de.sub(Rg), ri = lead.div(6).floor(), rc = Rg.add(ri.add(0.5).mul(6));
+    const lead = de.sub(Rg), ri = lead.div(5).floor(), rc = Rg.add(ri.add(0.5).mul(5));
     const nc = rc.mul(TAU / 7).max(6).floor();
     const kc = ang.div(TAU).mul(nc).add(ri.mul(0.5));
-    const cd = vec2(kc.fract().sub(0.5).mul(rc.mul(TAU).div(nc)), lead.sub(ri.add(0.5).mul(6))).length();
-    const sr = float(3.9).sub(ri.mul(1.0)), band = step(0, lead).mul(step(lead, 18));
+    const cd = vec2(kc.fract().sub(0.5).mul(rc.mul(TAU).div(nc)), lead.sub(ri.add(0.5).mul(5))).length();
+    const sr = float(3.3).sub(ri.mul(0.8)), band = step(0, lead).mul(step(lead, 15));
     const scale = step(cd, sr).mul(band);
-    const cover = step(de, Rg).max(scale).mul(step(0.004, grow));
+    const cover = step(de, Rg).max(scale).mul(step(0.0005, grow)).mul(wg);
     let col = mix(A, B, ri.mod(2)).mul(stroke(cd.sub(sr).abs(), 0.12)).mul(band).mul(0.7);
     // ghost plumage: faint scalloped growth rings inside
-    const gi = de.div(24).floor(), gr = gi.add(0.5).mul(24), gn = gr.mul(TAU / 10).max(6).floor();
-    const gk = ang.div(TAU).mul(gn).add(gi.mul(0.5));
-    const gd = vec2(gk.fract().sub(0.5).mul(gr.mul(TAU).div(gn)), de.sub(gr)).length();
-    col = col.add(A.mul(stroke(gd.sub(5).abs(), 0.1)).mul(step(de, Rg.sub(6))).mul(0.16));
+    const hi = de.div(12).floor(), hr = hi.add(0.5).mul(12), hn = hr.mul(TAU / 10).max(6).floor();
+    const hk2 = ang.div(TAU).mul(hn).add(hi.mul(0.5));
+    const gd = vec2(hk2.fract().sub(0.5).mul(hr.mul(TAU).div(hn)), de.sub(hr)).length();
+    if (!low) col = col.add(A.mul(stroke(gd.sub(5).abs(), 0.1)).mul(step(de, Rg.sub(6))).mul(0.16));
     // sparse bead rows on two plumage rings, a kick ripple running out through them
     const front = c.beat.fract().mul(130), kl = smoothstep(6, 0, de.sub(front).abs()).mul(kickOn).mul(smoothstep(130, 60, front));
-    [72, 100].forEach((R, j) => {
+    [44, 64].forEach((R, j) => {
       const n = Math.round(R * TAU / 5), k = ang.div(TAU).mul(n).add(c.real.mul(0.02 * (j ? -1 : 1)));
       const bd = vec2(k.fract().sub(0.5).mul(R * TAU / n), de.sub(R)).length();
       col = col.add(mix(B, H, kl).mul(stroke(bd, 0.45)).mul(float(0.35).add(kl)).mul(maskBeads(grow.mul(1.6).sub(0.6 + j * 0.15).clamp(0, 1), k.fract())));
     });
-    const sw = sense(12), pst = io(0.5, 0.62, 0.95, 0.965), pca = io(0.53, 0.65, 0.945, 0.96), pcr = io(0.56, 0.66, 0.94, 0.955), pfe = io(0.6, 0.7, 0.935, 0.95);
+    const sw = sense(12), pst = io(0.5, 0.62, 0.86, 0.9), pca = io(0.53, 0.65, 0.88, 0.92), pcr = io(0.56, 0.66, 0.9, 0.94), pfe = io(0.6, 0.7, 0.84, 0.88);
     const gly = pk(11, 3);
-    STARS.forEach(([x, y, s], i) => {
+    (low ? STARS.slice(0, 4) : STARS).forEach(([x, y, s], i) => {
       const tw = c.real.mul(1.3).add(i * 2.1).sin().mul(0.25).add(0.75);
       const sp = rot(vec2(ax.sub(x), q.y.sub(y)), rn(18).mul(0.8).add(c.real.mul(0.05)));
       const st = step(four(sp, float(s).mul(tw)), 1).mul(maskBeads(pst, i / 8));
       col = mix(col, mix(H2, W, 0.6).mul(float(0.9).add(kl)), st);
     });
-    CARTS.forEach(([x, y0], i) => {
+    (low ? CARTS.slice(0, 3) : CARTS).forEach(([x, y0], i) => {
       const y = float(y0).add(c.real.mul(1.1).mul(sw)).add(80).mod(160).sub(80);
       const cq = vec2(ax.sub(x), q.y.sub(y)), vert = i % 2 === 1;
       const qq = vert ? vec2(cq.y, cq.x) : cq;
-      const sd = vec2(qq.x.abs().sub(5.5).max(0), qq.y).length().sub(2.6);         // a pill: rounded ends
+      const sd = vec2(qq.x.abs().sub(5.5).max(0), qq.y).length().sub(2.6);
       const on = maskBeads(pca, i / 5);
       const inner = qq.sub(vec2(0, 0));
-      const g0 = stroke(vec2(inner.x.abs().sub(3).abs(), inner.y).length(), 0.7).max(stroke(inner.length(), 0.7));            // three dots
-      const g1 = stroke(inner.x.abs().add(inner.y.abs()).sub(1.6).abs(), 0.15).max(stroke(inner.length(), 0.45));          // diamond + dot
-      const g2 = stroke(vec2(inner.x.div(2.4), inner.y.div(1.2)).length().sub(1).abs(), 0.12).max(stroke(inner.length(), 0.6)); // an eye
+      const g0 = stroke(vec2(inner.x.abs().sub(3).abs(), inner.y).length(), 0.7).max(stroke(inner.length(), 0.7));
+      const g1 = stroke(inner.x.abs().add(inner.y.abs()).sub(1.6).abs(), 0.15).max(stroke(inner.length(), 0.45));
+      const g2 = stroke(vec2(inner.x.div(2.4), inner.y.div(1.2)).length().sub(1).abs(), 0.12).max(stroke(inner.length(), 0.6));
       const g = g0.mul(is(gly, 0)).add(g1.mul(is(gly, 1))).add(g2.mul(is(gly, 2)));
       col = mix(col, K, step(sd, 0).mul(on));
       col = col.add(H.mul(stroke(sd.abs(), 0.18)).add(mix(H2, W, 0.3).mul(g).mul(step(sd, -0.4))).mul(on));
     });
-    CROSS.forEach(([x, y0], i) => {
+    (low ? CROSS.slice(0, 2) : CROSS).forEach(([x, y0], i) => {
       const y = float(y0).add(c.real.mul(1.1).mul(sw)).add(80).mod(160).sub(80);
       const cq = rot(vec2(ax.sub(x), q.y.sub(y)), c.real.mul(0.12 * (i % 2 ? 1 : -1)));
       const r1 = vec2(cq.x.abs().sub(3.3), cq.y.abs().sub(1.2)), r2 = vec2(cq.x.abs().sub(1.2), cq.y.abs().sub(3.3));
@@ -119,7 +120,7 @@ export function material(ctx) {
       col = mix(col, K, step(sd, 0).mul(on));
       col = col.add(H2.mul(stroke(sd.abs(), 0.16)).add(B.mul(stroke(cq.x.abs().add(cq.y.abs()).sub(0.9).abs(), 0.14))).mul(on));
     });
-    FALL.forEach(([x, y0], i) => {
+    (low ? FALL.slice(0, 1) : FALL).forEach(([x, y0], i) => {
       const ph = c.real.mul(0.7).add(i * 1.9);
       const y = float(y0).sub(c.real.mul(1.6)).add(80).mod(160).sub(80);
       const f = rot(vec2(ax.sub(x).sub(ph.sin().mul(4)), q.y.sub(y)), ph.add(1).sin().mul(0.5));
@@ -129,17 +130,17 @@ export function material(ctx) {
       col = mix(col, K, step(fe, 1).mul(on));
       col = col.add(B.mul(stroke(fe.sub(1).abs().mul(2.3), 0.14).max(stroke(f.x.abs(), 0.12).mul(step(fe, 1))).max(barbs.mul(0.5))).mul(on).mul(0.8));
     });
-    m.colorNode = col;
+    m.colorNode = col.mul(wl);
     m.opacityNode = cover.mul(live);
     m.alphaTest = 0.5;
     return m;
   }
 
-  // ------------------------------------------------------------------ RING: bead ring and sparkle ring (turns, soft)
+  // ---- RING: bead ring and sparkle ring (turns, soft)
   if (layer === "ring") {
     const q = P.div(sc).sub(vec2(0, CY)), r = q.length(), a = atan2(q.y, q.x);
     const s14 = sense(14), w1 = c.real.mul(TAU / 70).mul(s14), w2 = c.real.mul(TAU / 46).mul(s14).negate();
-    const p1 = io(0.4, 0.48, 0.96, 0.98), p2 = io(0.48, 0.56, 0.955, 0.975), p3 = io(0.52, 0.6, 0.95, 0.97);
+    const p1 = io(0.4, 0.48, 0.88, 0.94), p2 = io(0.48, 0.56, 0.86, 0.92), p3 = io(0.52, 0.6, 0.84, 0.9);
     const nb = pk(13, 3).mul(8).add(28);
     const ka = a.add(w1).div(TAU).add(0.5);
     const k1 = ka.mul(nb);
@@ -152,7 +153,7 @@ export function material(ctx) {
     const l2 = stroke(r.sub(47.5).abs(), 0.09).mul(maskDraw(p2, inv(kb)));
     const k3 = k2.add(0.5), od = vec2(k3.fract().sub(0.5).mul(r.mul(TAU).div(12)), r.sub(42)).length();
     const oce = stroke(od.sub(1.3).abs(), 0.12).max(stroke(od, 0.45)).mul(maskBeads(p3, k3.floor().div(12)));
-    const halo = r.sub(38).div(4).pow(2).negate().exp().mul(p1).mul(0.12);
+    const halo = r.sub(38).div(4).pow(2).negate().exp().mul(p1.max(0)).mul(0.12);
     const lit = float(0.8).add(cul.mul(0.6));
     m.colorNode = A.mul(l1.add(l2).mul(0.6)).add(mix(B, H, step(k1.mod(4), 0.5)).mul(bead)).add(mix(H2, W, 0.5).mul(spark)).add(H.mul(oce)).add(A.mul(halo)).mul(lit);
     m.opacityNode = live;
@@ -162,10 +163,10 @@ export function material(ctx) {
     return m;
   }
 
-  // ------------------------------------------------------------------ VEIL: feather charms on bead strings (sways)
+  // ---- VEIL: feather charms on bead strings (sways)
   if (layer === "veil") {
     const q = P.div(sc).sub(vec2(0, CY)), ax = q.x.abs();
-    const pv = io(0.62, 0.74, 0.93, 0.96), nch = pk(15, 2).add(2);
+    const pv = io(0.62, 0.74, 0.82, 0.89), nch = pk(15, 2).add(2);
     const drift = c.real.mul(0.13).sin().mul(4);
     let col = K, cover = float(0);
     [[52, 10, 0], [66, -6, 1], [40, 24, 2]].forEach(([x, yEnd, i]) => {
@@ -173,13 +174,13 @@ export function material(ctx) {
       const top = 52, len = top - yEnd;
       const th = c.real.mul(0.8).add(i * 1.7).sin().mul(0.1);
       const pin = vec2(float(x).add(drift), top);
-      const lq = rot(vec2(ax, q.y).sub(pin), th.negate());                       // string frame: down is -y
-      const along = lq.y.negate().div(len);                                        // 0 at the pin .. 1 at the feather
+      const lq = rot(vec2(ax, q.y).sub(pin), th.negate());
+      const along = lq.y.negate().div(len);
       const pi = pv.mul(1.4).sub(i * 0.15).clamp(0, 1).mul(exists);
       const bk = lq.y.negate().div(2.6);
       const bd = vec2(lq.x, bk.fract().sub(0.5).mul(2.6)).length();
       const beads = step(bd, 0.75).mul(step(along, 1)).mul(step(0, along)).mul(maskDraw(pi.mul(1.3), along));
-      const f = lq.add(vec2(0, len + 8));                                          // the feather hangs below the string
+      const f = lq.add(vec2(0, len + 8));
       const fe = vec2(f.x.div(4.6), f.y.div(9)).length();
       const fon = maskIris(pi.mul(1.3).sub(0.3).clamp(0, 1), fe);
       const body = step(fe, 1).mul(fon);
@@ -190,7 +191,7 @@ export function material(ctx) {
       const barbs = stroke(f.y.mul(0.5).add(f.x.abs().mul(0.45)).fract().sub(0.5).abs().mul(2), 0.12).mul(step(fe, 0.85)).mul(step(1.8 + 0.6, oc));
       const fc = A.mul(rim).add(B.mul(spine.max(barbs)).mul(0.8)).add(mix(H, W, 0.3).mul(ocl));
       col = mix(col, mix(H2, H, bk.floor().mod(2)).mul(0.9), beads.mul(inv(body)));
-      col = mix(col, fc.mul(inv(cul.mul(0.7))), body);                             // the culmination dims them to silhouettes
+      col = mix(col, fc.mul(inv(cul.mul(0.7))), body);
     });
     m.colorNode = col;
     m.opacityNode = cover.mul(live);
@@ -198,12 +199,12 @@ export function material(ctx) {
     return m;
   }
 
-  // ------------------------------------------------------------------ FORE: petal-feathers and sparks on a swell (undulates)
+  // ---- FORE: petal-feathers and sparks on a swell (undulates)
   if (layer === "fore") {
     const q = P.div(sc), ax = q.x.abs();
-    const pf = io(0.66, 0.78, 0.93, 0.95);
+    const pf = io(0.66, 0.78, 0.8, 0.86);
     let col = K, cover = float(0);
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < (low ? 4 : 6); i++) {
       const lo = i < 3, s = c.real.mul(0.022).add(i / 3).fract();
       const x = float(108).sub(s.mul(48));
       const y = float(lo ? -46 : 46).add(s.mul(9).add(c.real.mul(0.8)).add(i).sin().mul(6)).add(s.mul(lo ? 8 : -8));
@@ -228,14 +229,14 @@ export function material(ctx) {
     return m;
   }
 
-  // ------------------------------------------------------------------ BEING: the owl mask (breathes)
+  // ---- BEING: the owl mask (breathes)
   const br = c.real.mul(0.45).sin().mul(0.022).add(1);
   const q = P.sub(vec2(0, CY)).div(br), ax = q.x.abs(), sx = select(q.x.lessThan(0), float(-1), float(1));
-  const pBeak = io(0.0, 0.08, 0.985, 1.0), pBody = io(0.06, 0.16, 0.975, 0.995), pLine = io(0.1, 0.2, 0.965, 0.985);
-  const pEye = io(0.13, 0.22, 0.955, 0.975), pTuft = io(0.18, 0.26, 0.95, 0.97), pBrow = io(0.2, 0.27, 0.95, 0.97);
-  const pFan = io(0.24, 0.34, 0.945, 0.965), pDia = io(0.5, 0.55, 0.94, 0.955), pIb = io(0.52, 0.58, 0.94, 0.955);
-  const pFb = io(0.55, 0.66, 0.935, 0.95), pWh = io(0.58, 0.68, 0.935, 0.95), pBe = io(0.58, 0.7, 0.93, 0.945);
-  const pSq = io(0.6, 0.68, 0.935, 0.95), pOc = io(0.64, 0.72, 0.93, 0.945);
+  const pBeak = io(0.0, 0.08, 0.94, 0.98), pBody = io(0.06, 0.16, 0.95, 0.985), pLine = io(0.1, 0.2, 0.92, 0.96);
+  const pEye = io(0.13, 0.22, 0.93, 0.975), pTuft = io(0.18, 0.26, 0.9, 0.95), pBrow = io(0.2, 0.27, 0.89, 0.94);
+  const pFan = io(0.24, 0.34, 0.87, 0.93), pDia = io(0.5, 0.55, 0.86, 0.91), pIb = io(0.52, 0.58, 0.85, 0.9);
+  const pFb = io(0.55, 0.66, 0.84, 0.89), pWh = io(0.58, 0.68, 0.83, 0.88), pBe = io(0.58, 0.7, 0.82, 0.87);
+  const pSq = io(0.6, 0.68, 0.81, 0.86), pOc = io(0.64, 0.72, 0.8, 0.85);
   let col = K, lines = float(0);
   const put = (colour, mask) => { col = mix(col, colour, mask); lines = lines.max(mask); };
 
