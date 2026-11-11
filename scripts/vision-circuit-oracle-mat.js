@@ -262,7 +262,8 @@ export function material(ctx) {
   }
   // the face body: black, filling out from the third eye behind the drawing pen
   const ax = qm.x, y = qb.y;
-  const sd = ax.sub(12.8 * F).max(y.sub(18.8 * F)).max(y.negate().sub(12.8 * F)).max(ax.add(y).sub(24.8 * F)).max(ax.sub(y).sub(16.8 * F));
+  const yc = y.sub(3 * F), chin = yc.negate().div(16 * F).clamp(0, 1);           // a serene oval, narrowing to the chin
+  const sd = vec2(ax.div(float(13.6 * F).mul(float(1).sub(chin.mul(chin).mul(0.3)))), yc.div(16.6 * F)).length().sub(1);
   const pb = io(0.04, 0.28, 0.965, 0.998);
   const bodyIn = step(sd, 0).mul(step(dE, pb.mul(60))).mul(step(0.004, pb));
   const rows = wellBeads(qb.sub(E), float(2.4), float(0), float(0.16));
