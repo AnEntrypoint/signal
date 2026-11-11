@@ -7,7 +7,9 @@ atmosphere:
     near: 300
     color: "#000000"
   look:
-    script: scripts/look-default.js
+    script: scripts/look-trip.js
+    params: {bloomRadius: 0.9, bloomStrength: 0.55, bloomThreshold: 0.85, "on": 0, seed: 0, t0: 0}
+    toneMapping: neutral
   moon:
     enabled: false
   sky:
