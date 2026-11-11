@@ -34,7 +34,7 @@ export function hot(idx) {
 // ---- The TAS rules, shared by every tunnel piece --------------------------------------------------------------
 import { smoothstep, fract, mix, max } from "builtin/tsl";
 // Rest colour: graphite, still readable as form.
-export const GRAPH = vec3(0.04, 0.04, 0.062);
+export const GRAPH = vec3(0.012, 0.012, 0.04);
 // Left-right mirrored angle (turns, -0.25..0.25): the composition is symmetric about x = 0.
 export const mirAng = (p = positionWorld) => atan2(p.y.sub(AXY), abs(p.x)).div(6.2831853);
 // One shared breath a phrase, 0..1.
