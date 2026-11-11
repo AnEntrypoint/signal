@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "basedOnSpecVersion": 471,
-  "updatedAt": "2026-11-11T12:51:14.409Z",
+  "basedOnSpecVersion": 473,
+  "updatedAt": "2026-11-11T13:00:36.156Z",
   "summary": "Signal Stage is a walkable 3D motion-graphics stage with a synchronized, seeded 198-second cinematic on the measured 160-bpm track. A shared director, score/deck clocks and shader helpers drive the stage assemblies, two long vision slots per roll, and camera-riding beings and worms.",
   "scriptPaths": [],
   "places": [
@@ -32,7 +32,7 @@
   "notableExports": [
     "scripts/player.js exports onInput, update; scripts/camera.js exports finiteNumber, update; scripts/stage.js exports update; scripts/look-trip.js exports look; scripts/ui.js exports default.",
     "scripts/lib/cine.js exports CINE, cineTime, sectionAt, rollRnd, cameraAt, beatEnv; scripts/lib/deck.js exports dealDeck, sceneTime.",
-    "scripts/lib/visions.js exports BEINGS, dealVisions, visionAt, visionShot, energyAt; scripts/lib/trip.js exports KICK_RUNS, SEC, BPS, tripClock, win, pal, stripes, HUE, shown, lens, bendUv, visionShown, inv, is, sgn, ang2, smin, segH, capsule, rbox, strokeAA, ioU, famPick, NEON.",
+    "scripts/lib/visions.js exports BEINGS, dealVisions, visionAt, visionShot, energyAt; scripts/lib/trip.js exports KICK_RUNS, SEC, BPS, tripClock, win, pal, stripes, HUE, shown, lens, bendUv, visionShown, inv, is, sgn, ang2, smin, segH, capsu…",
     "Vision *-geo modules export geometry/collider and *-mat modules export material; vision worm pairs and companion-worm-geo.js / companion-worm-mat.js provide animated depth-winding meshes/materials.",
     "scripts/tunnel-lib.js exports Z0, FEET, BOUNDS, tun, inside, camDepth, v3, BLUE, base, hot, GRAPH, mirAng; tunnel-core.js, tunnel-gates.js and tunnel-ribs.js export material."
   ],
@@ -63,7 +63,7 @@
     "scripts/tunnel-* - wall, core, dust, gates, ribs and knot share tunnel geometry kinds and tunnel-lib.js spatial/color helpers; materials vary motif and seeded palette.",
     "scripts/chamber-* - room, circuit, hands, hex, Lissajous, solids and bilateral mask share chamber shader helpers and scored cutouts.",
     "scripts/sun-disc.js, sun-drips.js and sun-halo.js - sun-eye layers share sun-lib.js but vary disc, hanging-drip and depth-halo imagery.",
-    "scripts/vision-*-geo.js / -mat.js - all 16 beings share trip clocks and staged attachment; canvas planes/motifs vary, and worm-enabled beings add four unit-tube depth-winding meshes; shared vision SDF/palette/stroke helpers now live in trip.js.",
+    "scripts/vision-*-geo.js / -mat.js - all 16 beings share trip clocks and staged attachment; canvas planes/motifs vary, and worm-enabled beings add four unit-tube depth-winding meshes; owl-mask layers use seeded entry/exit masks for their staged piecewise departure.",
     "scripts/companion-worm-geo.js and companion-worm-mat.js - three camera-attached swimmers share one animated shader/geometry pair, varied by material param n."
   ],
   "probableOrphans": [],
@@ -72,7 +72,7 @@
     "stage.js converts c.start to shader t0 seconds modulo 3600 and repeats parameter pushes over several ticks so late-built materials receive the roll; trip-tagged materials need t0/on/seed and kick bounds k0/k1.",
     "energy.yml defines two 48-second vision slots; only built entries in BEINGS can be dealt. Vision layers attach only from 3 s before their slot; vision houses are above the field in +Y and selected layers ride the camera at depth 74.",
     "Canonical vision layer offsets are world -30, ring -12, being 0, veil +10, fore +22; stage.js derives home z from tag suffix. Worm meshes use material param n for distinct paths; they are not serpents-curve.js meshes.",
-    "Camera attachment fit scales both depth and object scale together based on cameraAt(t,seed); preserve that coupling. look-trip focus uses center view depth for the hung being and blurs only depths away from its subject; mirrored/tiled/keyhole pixels skip depth blur.",
-    "trip.js shown() owns the scene-seam piece handover: it staggers fade/cutout by layer name and radial distance, with only a brief dark seam; look-trip keeps the vision lens/blackout hand off through the being's exit. Keep smoothstep edges low-to-high (invert the result rather than reversing edges on GPUs)."
+    "vision-owl-mask-mat.js seeds entry and distinct exit mask choices from channels 500..501; its parts leave in order over vision u .8..1, with world plumage last and lit through u .98. It also imports shared inv/is from trip.js; low quality reduces world ornament counts and disables ghost plumage.",
+    "Camera attachment fit scales both depth and object scale together based on cameraAt(t,seed); preserve that coupling. trip.js shown() owns scene-seam handover and look-trip keeps the vision lens/blackout hand off through the being's exit."
   ]
 }
