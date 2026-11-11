@@ -125,7 +125,7 @@ export function material(ctx) {
     const vdot = inv(smoothstep(vr.mul(0.4), vr.mul(0.4).add(aa), v1.min(v2))).mul(step(14, r));
     const front = c.beat.fract().mul(140);
     const kl = smoothstep(7, 0, r.sub(front).abs()).mul(kickOn).mul(smoothstep(140, 60, front));
-    const edgeGlow = smoothstep(3, 0, ahead.abs()).mul(step(0.004, grow)).mul(inv(grow.step(0.999)));
+    const edgeGlow = smoothstep(3, 0, ahead.abs()).mul(step(0.004, grow)).mul(inv(step(0.999, grow)));
     const traces = bus.max(spoke).max(jog);
     let col = A.mul(traces).mul(float(0.2).add(kl.mul(0.9)).add(edgeGlow.mul(0.6)));
     col = col.add(B.mul(vias).mul(float(0.35).add(kl))).add(mix(B, H, kl).mul(vdot).mul(float(0.25).add(kl.mul(1.2))));
