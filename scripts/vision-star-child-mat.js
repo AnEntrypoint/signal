@@ -53,7 +53,16 @@ const stroke = strokeAA(aa);
 const m = new MeshBasicNodeMaterial();
 m.side = DoubleSide;
 m.fog = false;
-const cutout = (col, cover) => { m.colorNode = col; m.opacityNode = cover.mul(live); m.alphaTest = 0.5; return m; };
+const WIN = { ring: [0.38, 0.5, 0.88, 0.94, 3, 30], veil: [0.6, 0.7, 0.84, 0.9, 2.5, 40], fore: [0.56, 0.68, 0.8, 0.86, 4, 70], being: [0.12, 0.42, 0.9, 0.98, 1.3, 14] }[layer];
+let gIn = float(1), gOut = float(1), spark = float(0);
+if (WIN) {
+const GI = stars(p0, smoothstep(WIN[0], WIN[1], u), vin, WIN[4], rn(18).mul(31), WIN[5]);
+const GO = stars(p0, inv(smoothstep(WIN[2], WIN[3], u)), vout, WIN[4], rn(19).mul(71), WIN[5]);
+gIn = GI.cover; gOut = GO.cover;
+spark = inv(smoothstep(0.04, 0.12, GI.d)).mul(GI.live).add(inv(smoothstep(0.04, 0.12, GO.d)).mul(GO.live)).clamp(0, 1);
+if (layer !== "being") gOut = gOut.mul(gIn);
+}
+const cutout = (col, cover) => { m.colorNode = col.mul(gOut).add(W.mul(1.3).mul(spark)); m.opacityNode = cover.mul(gOut).max(step(0.5, spark)).mul(live); m.alphaTest = 0.5; return m; };
 if (layer === "world") {
 const P = vec2(p0.x.mul(step(0.5, rn(9)).mul(2).sub(1)), p0.y), R = P.length(), ang = ang2(P.x, P.y);
 const ein = smoothstep(0.1, 0.42, u), eout = smoothstep(uEnd, 1, u);
@@ -124,7 +133,7 @@ return cutout(col.mul(0.85).add(BG), cover.max(sglow.add(lk).clamp(0, 1).mul(ste
 if (layer === "ring") {
 const p = p0, rr = p.length();
 const blur = aa.mul(4).add(0.2);
-const soft = (d, w) => smoothstep(blur.add(w), float(w), d);
+const soft = (d, w) => inv(smoothstep(float(w), blur.add(w), d));
 const sense = step(0.5, rn(4)).mul(2).sub(1);
 const T = mix(70, 120, rn(6));
 const rotC = c.real.div(T).mul(sense), rotS = c.real.div(T.mul(0.7)).mul(sense).negate();
@@ -135,7 +144,7 @@ const pc = smoothstep(0.40, 0.48, u).mul(xo), ps = smoothstep(0.44, 0.54, u).mul
 const circ = soft(rr.sub(R).abs(), 0.06).mul(maskClock(pc, a));
 const at = a.div(TAU).add(rotC).fract().mul(48);
 const tq = at.fract().sub(0.5).mul(TAU * R / 48);
-const tick = smoothstep(blur.add(0.3), 0.3, vec2(tq, rr.sub(R)).length()).mul(maskBeads(pc, a.div(TAU).add(0.5)));
+const tick = inv(smoothstep(0.3, blur.add(0.3), vec2(tq, rr.sub(R)).length())).mul(maskBeads(pc, a.div(TAU).add(0.5)));
 const twoSq = pk(5, 2);
 let sq = float(0);
 for (let s = 0; s < 2; s++) {
@@ -168,7 +177,7 @@ const planet = soft(pd.sub(pr), 0.0).add(soft(pd.sub(pr.mul(1.7)).abs(), 0.06).m
 col = col.add(mix(C3, W, 0.35).mul(planet).mul(back).mul(step(0.98, po)).mul(lit.add(0.3)));
 }
 const sh = visionShown(ctx, c, 0);
-m.colorNode = col.mul(sh);
+m.colorNode = col.mul(gOut).add(W.mul(spark)).mul(sh);
 m.opacityNode = sh;
 m.transparent = true;
 m.blending = AdditiveBlending;
@@ -225,7 +234,7 @@ for (let i = 0; i < 2; i++) {
 const sg = i === 0 ? 1 : -1;
 const cc = vec2(sg * 50, diag.mul(sg * 24));
 const pc = smoothstep(0.58 + i * 0.03, 0.66 + i * 0.03, u).mul(inv(smoothstep(0.93 + i * 0.006, 0.95 + i * 0.006, u)));
-for (let k = 0; k < 9; k++) {
+for (let k = 0; k < (low ? 5 : 9); k++) {
 const t = c.real.mul(TAU / 11).mul(sg).sub(k * 0.16).add(i * 2.1);
 const pos = cc.add(vec2(t.cos().mul(12), t.mul(2).sin().mul(6)));
 const rb = float(1.5 - k * 0.13);
@@ -314,6 +323,7 @@ add(W.mul(1.5), head);
 const aq = sd.sub(4 * SP + 0.85).abs();
 const abead = stroke(aq, 0.16).mul(step(k.mul(70).fract().sub(0.5).abs(), 0.18)).mul(maskBeads(io(0.7, 0.8, 0.952, 0.958), k));
 add(mix(C3, W, 0.3).mul(0.9), abead);
+col = col.mul(gIn); cover = cover.mul(gIn);
 const hp = smoothstep(0.0, 0.04, u).mul(step(out, 0.97));
 const hrad = c.kick.mul(cul.mul(0.6).add(0.3)).add(1).mul(0.55);
 add(W.mul(float(1.6).add(c.kick.mul(1.5))), maskIris(hp, rh.div(hrad)));
