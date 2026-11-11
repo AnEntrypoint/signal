@@ -64,7 +64,7 @@ export function material(ctx) {
     const pe = smoothstep(0.0, 0.14, u).mul(keep), pe2 = smoothstep(0.04, 0.18, u).mul(keep), pb = smoothstep(0.02, 0.22, u).mul(keep);
     const l1 = stroke(rr.sub(22).abs(), 0.05).mul(maskDraw(pe, k));
     const l2 = stroke(rr.sub(20.6).abs(), 0.04).mul(maskDraw(pe2, k));
-    const rot = c.sec.div(72).mul(c.dir).mul(mix(0.7, 1.3, c.rnd(16)));
+    const rot = c.sec.div(mix(60, 110, c.rnd(16))).mul(c.rnd(17).step(0.5).mul(2).sub(1));   // its own clock and sense
     const an = atan2(q0.y, q0.x).div(TAU).add(rot).fract().mul(28);
     const quarter = step(an.floor().mod(7), 0.5);
     const loc = an.fract().sub(0.5).mul(TAU * 21.3 / 28);
@@ -86,7 +86,7 @@ export function material(ctx) {
     let glow = float(0);
     for (let j = 0; j < 6; j++) {
       const L = 9 + j * 3.2, uu = float(top).sub(p.y).div(L);
-      const sway = c.sec.mul(0.31 + j * 0.07).add(j * 1.7).sin().mul(0.45).mul(uu);
+      const sway = c.sec.mul(mix(0.6, 1.4, c.rnd(18)).mul(0.31 + j * 0.07)).add(j * 1.7).sin().mul(0.45).mul(uu);
       const xj = float(14 + j * 3.4).add(sway);
       const pj = pv.mul(1.5).sub((5 - j) / 5 * 0.5).clamp(0, 1);
       const on = step(j + 0.5, nS).mul(step(uu, pj)).mul(step(0, uu));
@@ -143,7 +143,7 @@ export function material(ctx) {
   const edgeIn = stroke(occ.sub(R).abs(), 0.07).mul(smoothstep(float(R).add(0.3), R, rr)).mul(step(0.002, pc));
   const hatch = step(occ.sub(R).div(0.5).fract(), 0.16).mul(cres);
   const angB = atan2(q0.x, q0.y.negate()).div(TAU).abs().mul(2);       // 0 bottom .. 1 top, both horns
-  const comet = smoothstep(0.08, 0, angB.sub(c.sec.div(6).fract()).abs());
+  const comet = smoothstep(0.08, 0, angB.sub(c.sec.div(mix(4.5, 8, c.rnd(19))).fract()).abs());
   const bj = atan2(q0.y, q0.x).div(TAU).mul(56).fract().sub(0.5).mul(TAU * (R - 0.8) / 56);
   const bd = bj.mul(bj).add(rr.sub(R - 0.8).mul(rr.sub(R - 0.8))).sqrt();
   const cbead = float(1).sub(smoothstep(float(0.2).sub(aa), 0.2, bd)).mul(smoothstep(float(R).add(0.25), R + 0.45, occ));
