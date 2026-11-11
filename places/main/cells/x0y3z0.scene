@@ -1,8 +1,28 @@
 # spawn-scene v2 yaml x0y3z0
 vision-moon-mother:
-  feetPosition: {x: 0, y: 400, z: 0}
+  castShadow: false
+  feetPosition: {x: 0, y: 420, z: 0}
   id: vision-moon-mother
-  material: {kind: scripted, script: engine/blueprint}
+  material: {kind: scripted, params: {k0: -1, k1: -1, layer: being, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-moon-mother-mat.js}
   physics: none
-  primitive: {depth: 10, height: 40, kind: box, width: 70}
-  tags: [blueprint]
+  primitive: {kind: scripted, params: {h: 40, w: 64}, script: scripts/vision-moon-mother-geo.js}
+  receiveShadow: false
+  tags: [trip, vision-moon-mother]
+vision-moon-mother-ring:
+  castShadow: false
+  feetPosition: {x: 0, y: 420, z: -12}
+  id: vision-moon-mother-ring
+  material: {kind: scripted, params: {k0: -1, k1: -1, layer: ring, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-moon-mother-mat.js}
+  physics: none
+  primitive: {kind: scripted, params: {h: 54, w: 48}, script: scripts/vision-moon-mother-geo.js}
+  receiveShadow: false
+  tags: [trip, vision-moon-mother]
+vision-moon-mother-veil:
+  castShadow: false
+  feetPosition: {x: 0, y: 420, z: 10}
+  id: vision-moon-mother-veil
+  material: {kind: scripted, params: {k0: -1, k1: -1, layer: veil, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-moon-mother-mat.js}
+  physics: none
+  primitive: {kind: scripted, params: {h: 56, w: 90}, script: scripts/vision-moon-mother-geo.js}
+  receiveShadow: false
+  tags: [trip, vision-moon-mother]
