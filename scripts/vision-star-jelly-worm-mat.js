@@ -6,7 +6,7 @@
 // body (.78-.86), one goes pure black with a thin rim at the culmination, all retract tip-first on the exit.
 // Seed channels shared with the scene: 360 hue, 372 count, 373 second skin, 374 which goes dark, 378 corkscrew sense.
 import { MeshBasicNodeMaterial, DoubleSide } from "builtin/three";
-import { positionGeometry, float, vec2, vec3, smoothstep, step, mix, atan2, cross, normalize } from "builtin/tsl";
+import { positionGeometry, float, vec2, vec3, smoothstep, step, mix, atan2, cross, normalize, varying } from "builtin/tsl";
 import { tripClock, visionShown, visionU, stripes } from "./lib/trip.js";
 
 const TAU = 6.28318, LEN = 120;
@@ -26,7 +26,7 @@ export function material(ctx) {
   const rn = (k) => c.rnd(360 + k), pk = (k, m) => c.pick(360 + k, m);
   const fam = pk(0, 4);
   const famCol = (slot) => { let v = vec3(0); FAMS.forEach((f, i) => { v = v.add(vec3(...COL[f[slot]]).mul(is(fam, i))); }); return v; };
-  const A = famCol(0), B = famCol(1), H = famCol(2), H2 = famCol(3), W = vec3(1, 1, 1);
+  const A = varying(famCol(0)), B = varying(famCol(1)), H = varying(famCol(2)), H2 = varying(famCol(3)), W = vec3(1, 1, 1);   // per vertex: the 16-way family pick never runs per pixel
   const cnt = pk(12, 3).add(2);
   const exists = step(float(n), cnt.add(0.5));
 
@@ -55,7 +55,7 @@ export function material(ctx) {
   m.positionNode = sp.add(nrm.mul(rad));
 
   // the skin by along-length s (metres) and around-angle
-  const ang = atan2(sa, ca), s = uu.mul(LEN), rf = inv(uu).max(0).pow(0.55).mul(r0).add(0.15);
+  const ang = atan2(sa, ca), s = uu.mul(LEN), rf = varying(inv(uu).max(0).pow(0.55).mul(r0).add(0.15));
   const sk = s.mul(0.4).floor().mod(3);
   const cStr = A.mul(is(sk, 0)).add(mix(A, W, 0.7).mul(is(sk, 1))).add(H2.mul(0.9).mul(is(sk, 2))).mul(stripes(s.add(ang.mul(0.6)), 0.4, 0.04));
   const row = s.div(2.2).floor();
@@ -68,8 +68,8 @@ export function material(ctx) {
   const t1 = 0.78 + pair * 0.03;
   const skin = mix(cStr, mix(cBe, cSc, swap), step(uu, smoothstep(t1, t1 + 0.08, u).mul(1.02)));
   const run = float(1).sub(smoothstep(0, 0.05, uu.sub(c.beat.fract()).abs())).mul(step(0.001, c.kick));
-  const rim = inv(nrm.z.abs());                                                  // 1 at the silhouette as the camera sees it
-  const lit = skin.mul(nrm.z.abs().mul(0.5).add(0.5)).add(mix(A, W, 0.5).mul(smoothstep(0.75, 1, rim)).mul(run.mul(0.6).add(0.45)));
+  const nz = varying(nrm.z.abs()), rim = inv(nz);   // per vertex: the spine, its tangent and frame are never rebuilt per pixel                                                  // 1 at the silhouette as the camera sees it
+  const lit = skin.mul(nz.mul(0.5).add(0.5)).add(mix(A, W, 0.5).mul(smoothstep(0.75, 1, rim)).mul(run.mul(0.6).add(0.45)));
   const dark = is(float(n), step(0.5, rn(14)).add(1)).mul(step(uu, smoothstep(0.85, 0.9, u).mul(1.02)));
   m.colorNode = mix(lit, mix(A, W, 0.5).mul(smoothstep(0.9, 1, rim)).mul(0.8), dark);
   return m;
