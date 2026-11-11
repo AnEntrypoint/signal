@@ -221,7 +221,7 @@ export function material(ctx) {
       const d1 = q.length().sub(r);
       const d2 = q.sub(vec2(sg * -1, 1).mul(r * 0.42).add(dir.mul(-r * 0.15))).length().sub(r * 0.92);
       const wax = mix(r * 2.4, 0, pm);                                      // the shadow slides off: the moon waxes in
-      const d3 = q.sub(vec2(sg * wax, 0)).length().sub(r * 1.05);
+      const d3 = q.sub(vec2(wax.mul(sg), 0)).length().sub(r * 1.05);
       const body = step(d1, 0).mul(step(0, d2)).mul(step(0, d3).max(step(0.999, pm))).mul(has).mul(step(0.01, pm));
       const rim = stroke(d1.abs(), 0.14).max(stroke(d2.abs(), 0.1).mul(step(d1, 0)));
       const bq = ang2(q.x, q.y).mul(r * 0.82).div(1.25);
