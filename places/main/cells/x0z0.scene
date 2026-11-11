@@ -1,8 +1,502 @@
 # spawn-scene v2 yaml x0z0
+core:
+  feetPosition: {x: 0, y: 3.5, z: 0}
+  id: core
+  material: {color: "#eaf6ff", emissive: "#eaf6ff", emissiveIntensity: 3, metalness: 0.3, roughness: 0.2}
+  pivot: center
+  primitive: {detail: 0, kind: icosahedron, radius: 0.7}
+  state: {motion: {pulse: 0.35, size: 1, spin: [20, 35, 0]}}
+  tags: [mg, stage]
+core-light:
+  feetPosition: {x: 0, y: 3.5, z: 0}
+  id: core-light
+  light: {color: "#39d0ff", distance: 22, intensity: 6, kind: point}
+  tags: [stage]
+director:
+  audience: all
+  behavior: scripts/stage.js
+  feetPosition: {x: 0, y: 0, z: 0}
+  id: director
+  state: {}
+  tags: [stage]
+gx-1:
+  feetPosition: {x: -4, y: 0, z: -20}
+  id: gx-1
+  material: {color: "#2a5cff", emissive: "#2a5cff", emissiveIntensity: 0.5, roughness: 0.4}
+  primitive: {depth: 120, height: 0.01, kind: box, width: 0.03}
+  tags: [stage]
+gx-10:
+  feetPosition: {x: -40, y: 0, z: -20}
+  id: gx-10
+  material: {color: "#2a5cff", emissive: "#2a5cff", emissiveIntensity: 1.2, roughness: 0.4}
+  primitive: {depth: 120, height: 0.01, kind: box, width: 0.03}
+  tags: [stage]
+gx-2:
+  feetPosition: {x: -8, y: 0, z: -20}
+  id: gx-2
+  material: {color: "#2a5cff", emissive: "#2a5cff", emissiveIntensity: 0.5, roughness: 0.4}
+  primitive: {depth: 120, height: 0.01, kind: box, width: 0.03}
+  tags: [stage]
+gx-3:
+  feetPosition: {x: -12, y: 0, z: -20}
+  id: gx-3
+  material: {color: "#2a5cff", emissive: "#2a5cff", emissiveIntensity: 0.5, roughness: 0.4}
+  primitive: {depth: 120, height: 0.01, kind: box, width: 0.03}
+  tags: [stage]
+gx-4:
+  feetPosition: {x: -16, y: 0, z: -20}
+  id: gx-4
+  material: {color: "#2a5cff", emissive: "#2a5cff", emissiveIntensity: 0.5, roughness: 0.4}
+  primitive: {depth: 120, height: 0.01, kind: box, width: 0.03}
+  tags: [stage]
+gx-5:
+  feetPosition: {x: -20, y: 0, z: -20}
+  id: gx-5
+  material: {color: "#2a5cff", emissive: "#2a5cff", emissiveIntensity: 1.2, roughness: 0.4}
+  primitive: {depth: 120, height: 0.01, kind: box, width: 0.03}
+  tags: [stage]
+gx-6:
+  feetPosition: {x: -24, y: 0, z: -20}
+  id: gx-6
+  material: {color: "#2a5cff", emissive: "#2a5cff", emissiveIntensity: 0.5, roughness: 0.4}
+  primitive: {depth: 120, height: 0.01, kind: box, width: 0.03}
+  tags: [stage]
+gx-7:
+  feetPosition: {x: -28, y: 0, z: -20}
+  id: gx-7
+  material: {color: "#2a5cff", emissive: "#2a5cff", emissiveIntensity: 0.5, roughness: 0.4}
+  primitive: {depth: 120, height: 0.01, kind: box, width: 0.03}
+  tags: [stage]
+gx-8:
+  feetPosition: {x: -32, y: 0, z: -20}
+  id: gx-8
+  material: {color: "#2a5cff", emissive: "#2a5cff", emissiveIntensity: 0.5, roughness: 0.4}
+  primitive: {depth: 120, height: 0.01, kind: box, width: 0.03}
+  tags: [stage]
+gx-9:
+  feetPosition: {x: -36, y: 0, z: -20}
+  id: gx-9
+  material: {color: "#2a5cff", emissive: "#2a5cff", emissiveIntensity: 0.5, roughness: 0.4}
+  primitive: {depth: 120, height: 0.01, kind: box, width: 0.03}
+  tags: [stage]
+gx0:
+  feetPosition: {x: 0, y: 0, z: -20}
+  id: gx0
+  material: {color: "#2a5cff", emissive: "#2a5cff", emissiveIntensity: 1.2, roughness: 0.4}
+  primitive: {depth: 120, height: 0.01, kind: box, width: 0.03}
+  tags: [stage]
+gx1:
+  feetPosition: {x: 4, y: 0, z: -20}
+  id: gx1
+  material: {color: "#2a5cff", emissive: "#2a5cff", emissiveIntensity: 0.5, roughness: 0.4}
+  primitive: {depth: 120, height: 0.01, kind: box, width: 0.03}
+  tags: [stage]
+gx10:
+  feetPosition: {x: 40, y: 0, z: -20}
+  id: gx10
+  material: {color: "#2a5cff", emissive: "#2a5cff", emissiveIntensity: 1.2, roughness: 0.4}
+  primitive: {depth: 120, height: 0.01, kind: box, width: 0.03}
+  tags: [stage]
+gx2:
+  feetPosition: {x: 8, y: 0, z: -20}
+  id: gx2
+  material: {color: "#2a5cff", emissive: "#2a5cff", emissiveIntensity: 0.5, roughness: 0.4}
+  primitive: {depth: 120, height: 0.01, kind: box, width: 0.03}
+  tags: [stage]
+gx3:
+  feetPosition: {x: 12, y: 0, z: -20}
+  id: gx3
+  material: {color: "#2a5cff", emissive: "#2a5cff", emissiveIntensity: 0.5, roughness: 0.4}
+  primitive: {depth: 120, height: 0.01, kind: box, width: 0.03}
+  tags: [stage]
+gx4:
+  feetPosition: {x: 16, y: 0, z: -20}
+  id: gx4
+  material: {color: "#2a5cff", emissive: "#2a5cff", emissiveIntensity: 0.5, roughness: 0.4}
+  primitive: {depth: 120, height: 0.01, kind: box, width: 0.03}
+  tags: [stage]
+gx5:
+  feetPosition: {x: 20, y: 0, z: -20}
+  id: gx5
+  material: {color: "#2a5cff", emissive: "#2a5cff", emissiveIntensity: 1.2, roughness: 0.4}
+  primitive: {depth: 120, height: 0.01, kind: box, width: 0.03}
+  tags: [stage]
+gx6:
+  feetPosition: {x: 24, y: 0, z: -20}
+  id: gx6
+  material: {color: "#2a5cff", emissive: "#2a5cff", emissiveIntensity: 0.5, roughness: 0.4}
+  primitive: {depth: 120, height: 0.01, kind: box, width: 0.03}
+  tags: [stage]
+gx7:
+  feetPosition: {x: 28, y: 0, z: -20}
+  id: gx7
+  material: {color: "#2a5cff", emissive: "#2a5cff", emissiveIntensity: 0.5, roughness: 0.4}
+  primitive: {depth: 120, height: 0.01, kind: box, width: 0.03}
+  tags: [stage]
+gx8:
+  feetPosition: {x: 32, y: 0, z: -20}
+  id: gx8
+  material: {color: "#2a5cff", emissive: "#2a5cff", emissiveIntensity: 0.5, roughness: 0.4}
+  primitive: {depth: 120, height: 0.01, kind: box, width: 0.03}
+  tags: [stage]
+gx9:
+  feetPosition: {x: 36, y: 0, z: -20}
+  id: gx9
+  material: {color: "#2a5cff", emissive: "#2a5cff", emissiveIntensity: 0.5, roughness: 0.4}
+  primitive: {depth: 120, height: 0.01, kind: box, width: 0.03}
+  tags: [stage]
+gz-1:
+  feetPosition: {x: 0, y: 0, z: -26}
+  id: gz-1
+  material: {color: "#2a5cff", emissive: "#2a5cff", emissiveIntensity: 0.5, roughness: 0.4}
+  primitive: {depth: 0.03, height: 0.01, kind: box, width: 80}
+  tags: [stage]
+gz-2:
+  feetPosition: {x: 0, y: 0, z: -32}
+  id: gz-2
+  material: {color: "#2a5cff", emissive: "#2a5cff", emissiveIntensity: 0.5, roughness: 0.4}
+  primitive: {depth: 0.03, height: 0.01, kind: box, width: 80}
+  tags: [stage]
+gz-3:
+  feetPosition: {x: 0, y: 0, z: -38}
+  id: gz-3
+  material: {color: "#2a5cff", emissive: "#2a5cff", emissiveIntensity: 0.5, roughness: 0.4}
+  primitive: {depth: 0.03, height: 0.01, kind: box, width: 80}
+  tags: [stage]
+gz-4:
+  feetPosition: {x: 0, y: 0, z: -44}
+  id: gz-4
+  material: {color: "#2a5cff", emissive: "#2a5cff", emissiveIntensity: 0.5, roughness: 0.4}
+  primitive: {depth: 0.03, height: 0.01, kind: box, width: 80}
+  tags: [stage]
+gz-5:
+  feetPosition: {x: 0, y: 0, z: -50}
+  id: gz-5
+  material: {color: "#2a5cff", emissive: "#2a5cff", emissiveIntensity: 1.2, roughness: 0.4}
+  primitive: {depth: 0.03, height: 0.01, kind: box, width: 80}
+  tags: [stage]
+gz-6:
+  feetPosition: {x: 0, y: 0, z: -56}
+  id: gz-6
+  material: {color: "#2a5cff", emissive: "#2a5cff", emissiveIntensity: 0.5, roughness: 0.4}
+  primitive: {depth: 0.03, height: 0.01, kind: box, width: 80}
+  tags: [stage]
+gz-7:
+  feetPosition: {x: 0, y: 0, z: -62}
+  id: gz-7
+  material: {color: "#2a5cff", emissive: "#2a5cff", emissiveIntensity: 0.5, roughness: 0.4}
+  primitive: {depth: 0.03, height: 0.01, kind: box, width: 80}
+  tags: [stage]
+gz0:
+  feetPosition: {x: 0, y: 0, z: -20}
+  id: gz0
+  material: {color: "#2a5cff", emissive: "#2a5cff", emissiveIntensity: 1.2, roughness: 0.4}
+  primitive: {depth: 0.03, height: 0.01, kind: box, width: 80}
+  tags: [stage]
+gz1:
+  feetPosition: {x: 0, y: 0, z: -14}
+  id: gz1
+  material: {color: "#2a5cff", emissive: "#2a5cff", emissiveIntensity: 0.5, roughness: 0.4}
+  primitive: {depth: 0.03, height: 0.01, kind: box, width: 80}
+  tags: [stage]
+gz10:
+  feetPosition: {x: 0, y: 0, z: 40}
+  id: gz10
+  material: {color: "#2a5cff", emissive: "#2a5cff", emissiveIntensity: 1.2, roughness: 0.4}
+  primitive: {depth: 0.03, height: 0.01, kind: box, width: 80}
+  tags: [stage]
+gz2:
+  feetPosition: {x: 0, y: 0, z: -8}
+  id: gz2
+  material: {color: "#2a5cff", emissive: "#2a5cff", emissiveIntensity: 0.5, roughness: 0.4}
+  primitive: {depth: 0.03, height: 0.01, kind: box, width: 80}
+  tags: [stage]
+gz3:
+  feetPosition: {x: 0, y: 0, z: -2}
+  id: gz3
+  material: {color: "#2a5cff", emissive: "#2a5cff", emissiveIntensity: 0.5, roughness: 0.4}
+  primitive: {depth: 0.03, height: 0.01, kind: box, width: 80}
+  tags: [stage]
+gz4:
+  feetPosition: {x: 0, y: 0, z: 4}
+  id: gz4
+  material: {color: "#2a5cff", emissive: "#2a5cff", emissiveIntensity: 0.5, roughness: 0.4}
+  primitive: {depth: 0.03, height: 0.01, kind: box, width: 80}
+  tags: [stage]
+gz5:
+  feetPosition: {x: 0, y: 0, z: 10}
+  id: gz5
+  material: {color: "#2a5cff", emissive: "#2a5cff", emissiveIntensity: 1.2, roughness: 0.4}
+  primitive: {depth: 0.03, height: 0.01, kind: box, width: 80}
+  tags: [stage]
+gz6:
+  feetPosition: {x: 0, y: 0, z: 16}
+  id: gz6
+  material: {color: "#2a5cff", emissive: "#2a5cff", emissiveIntensity: 0.5, roughness: 0.4}
+  primitive: {depth: 0.03, height: 0.01, kind: box, width: 80}
+  tags: [stage]
+gz7:
+  feetPosition: {x: 0, y: 0, z: 22}
+  id: gz7
+  material: {color: "#2a5cff", emissive: "#2a5cff", emissiveIntensity: 0.5, roughness: 0.4}
+  primitive: {depth: 0.03, height: 0.01, kind: box, width: 80}
+  tags: [stage]
+gz8:
+  feetPosition: {x: 0, y: 0, z: 28}
+  id: gz8
+  material: {color: "#2a5cff", emissive: "#2a5cff", emissiveIntensity: 0.5, roughness: 0.4}
+  primitive: {depth: 0.03, height: 0.01, kind: box, width: 80}
+  tags: [stage]
+gz9:
+  feetPosition: {x: 0, y: 0, z: 34}
+  id: gz9
+  material: {color: "#2a5cff", emissive: "#2a5cff", emissiveIntensity: 0.5, roughness: 0.4}
+  primitive: {depth: 0.03, height: 0.01, kind: box, width: 80}
+  tags: [stage]
+halo:
+  feetPosition: {x: 0, y: 0.03, z: 0}
+  id: halo
+  material: {color: "#39d0ff", emissive: "#39d0ff", emissiveIntensity: 3, roughness: 0.4}
+  pivot: center
+  primitive: {kind: torus, radialSegments: 8, radius: 7, tube: 0.05, tubularSegments: 128}
+  state: {motion: {base: [90, 0, 0], pulse: 0.06, size: 1, spin: [0, 0, 8]}}
+  tags: [mg, stage]
+motes:
+  feetPosition: {x: 0, y: 0, z: -10}
+  fx: {script: "fx\npop motes n=?low:150|400 on=box(28,6,40).c(6) wrap=56;12;80 life=6..12 v=sdir()*.15+up(.05) size=.03..0.07 acc=curl(.3)*.2 col=oklch(.85 .12 220)..oklch(.8 .16 340) a=0>.2:.8>.8:.8>0 sz=$size r=sprite(mote,add)"}
+  id: motes
+  tags: [stage]
+orb-0:
+  feetPosition: {x: 5, y: 3.5, z: 0}
+  id: orb-0
+  material: {color: "#39d0ff", emissive: "#39d0ff", emissiveIntensity: 4, roughness: 0.4}
+  pivot: center
+  primitive: {depth: 0.35, height: 0.35, kind: box, width: 0.35}
+  state: {motion: {orbit: {phase: 0, r: 5, speed: 0.5, y: 3.5}, spin: [90, 120, 0]}}
+  tags: [mg, stage]
+orb-1:
+  feetPosition: {x: 5, y: 3.5, z: 0}
+  id: orb-1
+  material: {color: "#ff3fb4", emissive: "#ff3fb4", emissiveIntensity: 4, roughness: 0.4}
+  pivot: center
+  primitive: {depth: 0.35, height: 0.35, kind: box, width: 0.35}
+  state: {motion: {orbit: {phase: 0.7853981633974483, r: 5, speed: 0.5, y: 3.5}, spin: [90, 120, 0]}}
+  tags: [mg, stage]
+orb-2:
+  feetPosition: {x: 5, y: 3.5, z: 0}
+  id: orb-2
+  material: {color: "#39d0ff", emissive: "#39d0ff", emissiveIntensity: 4, roughness: 0.4}
+  pivot: center
+  primitive: {depth: 0.35, height: 0.35, kind: box, width: 0.35}
+  state: {motion: {orbit: {phase: 1.5707963267948966, r: 5, speed: 0.5, y: 3.5}, spin: [90, 120, 0]}}
+  tags: [mg, stage]
+orb-3:
+  feetPosition: {x: 5, y: 3.5, z: 0}
+  id: orb-3
+  material: {color: "#ff3fb4", emissive: "#ff3fb4", emissiveIntensity: 4, roughness: 0.4}
+  pivot: center
+  primitive: {depth: 0.35, height: 0.35, kind: box, width: 0.35}
+  state: {motion: {orbit: {phase: 2.356194490192345, r: 5, speed: 0.5, y: 3.5}, spin: [90, 120, 0]}}
+  tags: [mg, stage]
+orb-4:
+  feetPosition: {x: 5, y: 3.5, z: 0}
+  id: orb-4
+  material: {color: "#39d0ff", emissive: "#39d0ff", emissiveIntensity: 4, roughness: 0.4}
+  pivot: center
+  primitive: {depth: 0.35, height: 0.35, kind: box, width: 0.35}
+  state: {motion: {orbit: {phase: 3.141592653589793, r: 5, speed: 0.5, y: 3.5}, spin: [90, 120, 0]}}
+  tags: [mg, stage]
+orb-5:
+  feetPosition: {x: 5, y: 3.5, z: 0}
+  id: orb-5
+  material: {color: "#ff3fb4", emissive: "#ff3fb4", emissiveIntensity: 4, roughness: 0.4}
+  pivot: center
+  primitive: {depth: 0.35, height: 0.35, kind: box, width: 0.35}
+  state: {motion: {orbit: {phase: 3.9269908169872414, r: 5, speed: 0.5, y: 3.5}, spin: [90, 120, 0]}}
+  tags: [mg, stage]
+orb-6:
+  feetPosition: {x: 5, y: 3.5, z: 0}
+  id: orb-6
+  material: {color: "#39d0ff", emissive: "#39d0ff", emissiveIntensity: 4, roughness: 0.4}
+  pivot: center
+  primitive: {depth: 0.35, height: 0.35, kind: box, width: 0.35}
+  state: {motion: {orbit: {phase: 4.71238898038469, r: 5, speed: 0.5, y: 3.5}, spin: [90, 120, 0]}}
+  tags: [mg, stage]
+orb-7:
+  feetPosition: {x: 5, y: 3.5, z: 0}
+  id: orb-7
+  material: {color: "#ff3fb4", emissive: "#ff3fb4", emissiveIntensity: 4, roughness: 0.4}
+  pivot: center
+  primitive: {depth: 0.35, height: 0.35, kind: box, width: 0.35}
+  state: {motion: {orbit: {phase: 5.497787143782138, r: 5, speed: 0.5, y: 3.5}, spin: [90, 120, 0]}}
+  tags: [mg, stage]
+pillar-0:
+  feetPosition: {x: 14.782072520180588, y: 0, z: 6.1229349178414365}
+  id: pillar-0
+  material: {color: "#ff3fb4", emissive: "#ff3fb4", emissiveIntensity: 3, roughness: 0.4}
+  primitive: {depth: 0.12, height: 12, kind: box, width: 0.12}
+  tags: [stage]
+pillar-1:
+  feetPosition: {x: 6.122934917841437, y: 0, z: 14.782072520180588}
+  id: pillar-1
+  material: {color: "#39d0ff", emissive: "#39d0ff", emissiveIntensity: 3, roughness: 0.4}
+  primitive: {depth: 0.12, height: 12, kind: box, width: 0.12}
+  tags: [stage]
+pillar-2:
+  feetPosition: {x: -6.122934917841436, y: 0, z: 14.782072520180588}
+  id: pillar-2
+  material: {color: "#ff3fb4", emissive: "#ff3fb4", emissiveIntensity: 3, roughness: 0.4}
+  primitive: {depth: 0.12, height: 12, kind: box, width: 0.12}
+  tags: [stage]
+pillar-3:
+  feetPosition: {x: -14.782072520180588, y: 0, z: 6.122934917841437}
+  id: pillar-3
+  material: {color: "#39d0ff", emissive: "#39d0ff", emissiveIntensity: 3, roughness: 0.4}
+  primitive: {depth: 0.12, height: 12, kind: box, width: 0.12}
+  tags: [stage]
+pillar-4:
+  feetPosition: {x: -14.78207252018059, y: 0, z: -6.122934917841435}
+  id: pillar-4
+  material: {color: "#ff3fb4", emissive: "#ff3fb4", emissiveIntensity: 3, roughness: 0.4}
+  primitive: {depth: 0.12, height: 12, kind: box, width: 0.12}
+  tags: [stage]
+pillar-5:
+  feetPosition: {x: -6.122934917841445, y: 0, z: -14.782072520180584}
+  id: pillar-5
+  material: {color: "#39d0ff", emissive: "#39d0ff", emissiveIntensity: 3, roughness: 0.4}
+  primitive: {depth: 0.12, height: 12, kind: box, width: 0.12}
+  tags: [stage]
+pillar-6:
+  feetPosition: {x: 6.12293491784144, y: 0, z: -14.782072520180586}
+  id: pillar-6
+  material: {color: "#ff3fb4", emissive: "#ff3fb4", emissiveIntensity: 3, roughness: 0.4}
+  primitive: {depth: 0.12, height: 12, kind: box, width: 0.12}
+  tags: [stage]
+pillar-7:
+  feetPosition: {x: 14.782072520180584, y: 0, z: -6.122934917841446}
+  id: pillar-7
+  material: {color: "#39d0ff", emissive: "#39d0ff", emissiveIntensity: 3, roughness: 0.4}
+  primitive: {depth: 0.12, height: 12, kind: box, width: 0.12}
+  tags: [stage]
+ring-a:
+  feetPosition: {x: 0, y: 3.5, z: 0}
+  id: ring-a
+  material: {color: "#39d0ff", emissive: "#39d0ff", emissiveIntensity: 5, roughness: 0.4}
+  pivot: center
+  primitive: {kind: torus, radialSegments: 12, radius: 3, tube: 0.07, tubularSegments: 96}
+  state: {motion: {spin: [0, 40, 12]}}
+  tags: [mg, stage]
+ring-b:
+  feetPosition: {x: 0, y: 3.5, z: 0}
+  id: ring-b
+  material: {color: "#ff3fb4", emissive: "#ff3fb4", emissiveIntensity: 5, roughness: 0.4}
+  pivot: center
+  primitive: {kind: torus, radialSegments: 12, radius: 2.3, tube: 0.06, tubularSegments: 96}
+  state: {motion: {spin: [55, 0, -20]}}
+  tags: [mg, stage]
+ring-c:
+  feetPosition: {x: 0, y: 3.5, z: 0}
+  id: ring-c
+  material: {color: "#ffb347", emissive: "#ffb347", emissiveIntensity: 5, roughness: 0.4}
+  pivot: center
+  primitive: {kind: torus, radialSegments: 12, radius: 1.6, tube: 0.05, tubularSegments: 96}
+  state: {motion: {spin: [-30, 70, 45]}}
+  tags: [mg, stage]
 stage-floor:
   feetPosition: {x: 0, y: -0.3, z: 0}
   id: stage-floor
   material: {color: oklch(0.12 0.01 270), metalness: 0.6, roughness: 0.18}
   physics: static
   primitive: {height: 0.3, kind: cylinder, radialSegments: 64, radiusBottom: 140, radiusTop: 140}
+  tags: [stage]
+title:
+  feetPosition: {x: 0, y: 8.6, z: -1}
+  id: title
+  state: {line: SIGNAL}
+  tags: [stage]
+  vector: "<svg viewBox='0 0 600 100' width='12m'><text x='300' y='70' text-anchor='middle' font-family='display' font-size='64' fill='#f4fbff' filter='drop-shadow(0 0 8 #39d0ff)'>{{ state.line }}</text></svg>"
+tunnel-0:
+  feetPosition: {x: 0, y: 3.5, z: -10}
+  id: tunnel-0
+  material: {color: "#39d0ff", emissive: "#39d0ff", emissiveIntensity: 4, roughness: 0.4}
+  pivot: center
+  primitive: {kind: torus, radialSegments: 8, radius: 4, tube: 0.09, tubularSegments: 96}
+  state: {motion: {phase: 0, pulse: 0.18, size: 1, spin: [0, 0, -14]}}
+  tags: [mg, stage]
+tunnel-1:
+  feetPosition: {x: 0, y: 3.5, z: -15}
+  id: tunnel-1
+  material: {color: "#ff3fb4", emissive: "#ff3fb4", emissiveIntensity: 4, roughness: 0.4}
+  pivot: center
+  primitive: {kind: torus, radialSegments: 8, radius: 4, tube: 0.09, tubularSegments: 96}
+  state: {motion: {phase: 0.12, pulse: 0.18, size: 1, spin: [0, 0, 14]}}
+  tags: [mg, stage]
+tunnel-2:
+  feetPosition: {x: 0, y: 3.5, z: -20}
+  id: tunnel-2
+  material: {color: "#39d0ff", emissive: "#39d0ff", emissiveIntensity: 4, roughness: 0.4}
+  pivot: center
+  primitive: {kind: torus, radialSegments: 8, radius: 4, tube: 0.09, tubularSegments: 96}
+  state: {motion: {phase: 0.24, pulse: 0.18, size: 1, spin: [0, 0, -14]}}
+  tags: [mg, stage]
+tunnel-3:
+  feetPosition: {x: 0, y: 3.5, z: -25}
+  id: tunnel-3
+  material: {color: "#ff3fb4", emissive: "#ff3fb4", emissiveIntensity: 4, roughness: 0.4}
+  pivot: center
+  primitive: {kind: torus, radialSegments: 8, radius: 4, tube: 0.09, tubularSegments: 96}
+  state: {motion: {phase: 0.36, pulse: 0.18, size: 1, spin: [0, 0, 14]}}
+  tags: [mg, stage]
+tunnel-4:
+  feetPosition: {x: 0, y: 3.5, z: -30}
+  id: tunnel-4
+  material: {color: "#39d0ff", emissive: "#39d0ff", emissiveIntensity: 4, roughness: 0.4}
+  pivot: center
+  primitive: {kind: torus, radialSegments: 8, radius: 4, tube: 0.09, tubularSegments: 96}
+  state: {motion: {phase: 0.48, pulse: 0.18, size: 1, spin: [0, 0, -14]}}
+  tags: [mg, stage]
+tunnel-5:
+  feetPosition: {x: 0, y: 3.5, z: -35}
+  id: tunnel-5
+  material: {color: "#ff3fb4", emissive: "#ff3fb4", emissiveIntensity: 4, roughness: 0.4}
+  pivot: center
+  primitive: {kind: torus, radialSegments: 8, radius: 4, tube: 0.09, tubularSegments: 96}
+  state: {motion: {phase: 0.6, pulse: 0.18, size: 1, spin: [0, 0, 14]}}
+  tags: [mg, stage]
+tunnel-6:
+  feetPosition: {x: 0, y: 3.5, z: -40}
+  id: tunnel-6
+  material: {color: "#39d0ff", emissive: "#39d0ff", emissiveIntensity: 4, roughness: 0.4}
+  pivot: center
+  primitive: {kind: torus, radialSegments: 8, radius: 4, tube: 0.09, tubularSegments: 96}
+  state: {motion: {phase: 0.72, pulse: 0.18, size: 1, spin: [0, 0, -14]}}
+  tags: [mg, stage]
+tunnel-7:
+  feetPosition: {x: 0, y: 3.5, z: -45}
+  id: tunnel-7
+  material: {color: "#ff3fb4", emissive: "#ff3fb4", emissiveIntensity: 4, roughness: 0.4}
+  pivot: center
+  primitive: {kind: torus, radialSegments: 8, radius: 4, tube: 0.09, tubularSegments: 96}
+  state: {motion: {phase: 0.84, pulse: 0.18, size: 1, spin: [0, 0, 14]}}
+  tags: [mg, stage]
+tunnel-8:
+  feetPosition: {x: 0, y: 3.5, z: -50}
+  id: tunnel-8
+  material: {color: "#39d0ff", emissive: "#39d0ff", emissiveIntensity: 4, roughness: 0.4}
+  pivot: center
+  primitive: {kind: torus, radialSegments: 8, radius: 4, tube: 0.09, tubularSegments: 96}
+  state: {motion: {phase: 0.96, pulse: 0.18, size: 1, spin: [0, 0, -14]}}
+  tags: [mg, stage]
+tunnel-9:
+  feetPosition: {x: 0, y: 3.5, z: -55}
+  id: tunnel-9
+  material: {color: "#ff3fb4", emissive: "#ff3fb4", emissiveIntensity: 4, roughness: 0.4}
+  pivot: center
+  primitive: {kind: torus, radialSegments: 8, radius: 4, tube: 0.09, tubularSegments: 96}
+  state: {motion: {phase: 1.08, pulse: 0.18, size: 1, spin: [0, 0, 14]}}
+  tags: [mg, stage]
+tunnel-light:
+  feetPosition: {x: 0, y: 3.5, z: -32}
+  id: tunnel-light
+  light: {color: "#ff3fb4", distance: 30, intensity: 5, kind: point}
   tags: [stage]
