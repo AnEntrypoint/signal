@@ -248,7 +248,7 @@ export function material(ctx) {
     const Lo = op.mul(L);
     const pt = petals(rk, an, N, r0, Lo, rot);
     const lc = k % 2 ? B : A;
-    const edge = stroke(pt.ex, 0.22);
+    const edge = stroke(pt.ex, 0.22).mul(smoothstep(0.04, 0.16, pt.t));
     let det;
     if (k % 2 === 0) {
       const cont = stroke(pt.ex.div(1.2).fract().sub(0.5).abs().mul(1.2), 0.06).mul(step(0.7, pt.ex));
@@ -310,7 +310,7 @@ export function material(ctx) {
   const bs = q.sub(vec2(0, APEX + 2.4)).abs();
   const star = inv(smoothstep(0.85, 1, bs.x.div(1.4).sqrt().add(bs.y.div(2.2).sqrt()))).mul(step(0.01, pStar)).mul(step(bs.y, pStar.mul(2.3)));
   const gl = outl.max(lin).max(pod).max(star).max(bindu).max(anib);
-  const gc = mix(A, W, 0.25).mul(outl).add(mix(B, W, 0.2).mul(lin)).add(H.mul(pod).mul(inv(podCore))).add(W.mul(podCore))
+  const gc = mix(A, W, 0.45).mul(outl).mul(1.6).add(mix(B, W, 0.2).mul(lin)).add(H.mul(pod).mul(inv(podCore))).add(W.mul(podCore))
     .add(W.mul(star.max(bindu).max(anib)));
   col = mix(col, gc, gl);
   cover = cover.max(gl);
