@@ -74,12 +74,24 @@ function mixPose(p, q, e) {
   const l = (a, b) => a + (b - a) * e, v = (a, b) => ({ x: l(a.x, b.x), y: l(a.y, b.y), z: l(a.z, b.z) })
   return { eye: v(p.eye, q.eye), aim: v(p.aim, q.aim), fov: l(p.fov, q.fov), roll: l(p.roll, q.roll) }
 }
+// 2026-11-11: seed 7 flew 370 m from the tunnel to the peak in 6 s (7 m a frame). A long way gets a long glide:
+// about 25 m a second, 6 s at least, 16 s at most. Worked out once per stretch and kept.
+const GLIDES = new WeakMap()
+function glideFor(sp, i, deal, seed) {
+  let g = GLIDES.get(deal); if (!g) { g = {}; GLIDES.set(deal, g) }
+  if (g[i] != null) return g[i]
+  const a = sp[i].a, p = coast(sp[i - 1], a, deal, seed), q = poseAt(a + GLIDE, sp[i], a + GLIDE, deal, seed)
+  const D = Math.hypot(p.eye.x - q.eye.x, p.eye.y - q.eye.y, p.eye.z - q.eye.z)
+  return (g[i] = Math.min(16, Math.max(GLIDE, D / 25)))
+}
 function glideIn(t, deal, seed) {
   const sp = spans(deal)
   let i = sp.findIndex((g) => t >= g.a && t < g.b); if (i < 0) i = sp.length - 1
   const now = poseAt(t, sp[i], t, deal, seed)
-  if (i === 0 || t - sp[i].a >= GLIDE) return now
-  return mixPose(coast(sp[i - 1], t, deal, seed), now, ss((t - sp[i].a) / GLIDE))
+  if (i === 0) return now
+  const G = glideFor(sp, i, deal, seed)
+  if (t - sp[i].a >= G) return now
+  return mixPose(coast(sp[i - 1], t, deal, seed), now, ss((t - sp[i].a) / G))
 }
 // THE SHOT DECK: each drop stretch flies one of five moves over its scene's written path, dealt by the roll:
 // 0 as written, 1 a slow orbit round what it looks at, 2 a push in, 3 a pull out, 4 low and looking up.
