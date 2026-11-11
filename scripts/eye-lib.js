@@ -43,7 +43,7 @@ export function fam(c) {
   const h = float(0.3).sub(step(1, q).mul(0.08)).add(step(2, q).mul(0.14)).sub(step(3, q).mul(0.22));
   const peak = win(c.sec, SEC.peak);
   const mono = win(c.sec, SEC.seed, 0.1).add(win(c.sec, SEC.deep, 0.1)).add(win(c.sec, SEC.reset, 0.1)).add(win(c.sec, SEC.return, 0.1)).min(1);
-  const lift = vec3(0.04, 0.09, 0.0);
+  const lift = vec3(0.02, 0.035, 0.0);
   const at = (off) => pal(h.add(float(off).mul(peak))).add(lift);
   const A = at(0);
   return { h, peak, mono, at, A, B: mix(at(0.07), A.mul(0.45), mono), acc: mix(pal(h.add(0.5)), A, mono), acc2: mix(pal(h.add(0.58)), A.mul(0.45), mono),
