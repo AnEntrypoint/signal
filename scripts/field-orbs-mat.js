@@ -27,9 +27,8 @@ export function material(ctx) {
   let col = rimC;
   col = mix(col, vec3(0), e(0.3));
   col = mix(col, bodyC, e(0.37));
-  col = mix(col, coreC, e(0.7));
-  col = mix(col, vec3(0), e(0.86));
-  col = mix(col, rimC, e(0.9));
+  col = mix(col, coreC, e(0.62));
+  col = mix(col, bodyC, e(0.78));
   m.colorNode = shade(col, vL);
   m.opacityNode = varying(shown(c, "orbs", o.x.div(90)));
   m.alphaTest = 0.5;
