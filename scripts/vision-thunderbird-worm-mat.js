@@ -35,7 +35,7 @@ export function material(ctx) {
   const w1 = uu.mul(8).sub(c.real.mul(1.1)).add(ph).sin().mul(env).mul(4.5);
   const w2 = uu.mul(6).sub(c.real.mul(0.8)).add(ph * 1.7).cos().mul(env).mul(4);
   let z, xs, ys;
-  if (!pair) { z = uu.mul(70).sub(40); const b = inv(uu.mul(2)); xs = b.mul(b).mul(43).add(27); ys = uu.mul(92).sub(64); }
+  if (!pair) { z = uu.mul(70).sub(40); const b = inv(uu.mul(2)); xs = b.mul(b).mul(49).add(21); ys = uu.mul(92).sub(64); }
   else { z = uu.mul(60).sub(35); const b = inv(uu.mul(1.7)); xs = b.mul(b).mul(30).add(33); ys = float(64).sub(uu.mul(84)); }
   const fac = float(74).sub(z).div(74);
   const spine = vec3(xs.mul(sg).mul(fac).add(w1.mul(sg)), ys.mul(fac).add(w2.mul(0.6)), z.add(w2.mul(0.8)));
@@ -47,7 +47,7 @@ export function material(ctx) {
   // the skin, by along-length s (metres) and around-angle
   const ang = atan2(sa, ca), s = uu.mul(LEN), rf = inv(uu).max(0).sqrt().mul(r0);
   const ring = stripes(s, 0.5, 0.06);                                            // op-art: black / white rings
-  const cStr = mix(W.mul(0.85), C, step(0.5, s.mul(0.5).add(0.25).fract().mul(1).mod(1)).mul(0.0)).mul(ring)
+  const cStr = mix(W.mul(0.75), C.mul(1.2), step(0.5, s.mul(0.5).add(0.25).fract())).mul(ring)
     .add(Hh.mul(stripes(s.add(0.5), 0.5, 0.012)).mul(0.9));
   const row = s.div(2.4).floor();
   const bd = vec2(s.div(2.4).fract().sub(0.5).mul(2.4), ang.div(TAU).mul(6).add(row.mul(0.5)).fract().sub(0.5).mul(rf.mul(TAU / 6))).length();
@@ -60,7 +60,7 @@ export function material(ctx) {
   const skin = mix(cStr, mix(cBe, cSc, swap), step(uu, smoothstep(t1, t1 + 0.08, u).mul(1.02)));
   const run = smoothstep(0.05, 0, uu.sub(c.beat.fract()).abs()).mul(step(0.001, c.kick));   // the kick's light climbs the body
   const edge = ca.abs();
-  const lit = skin.mul(sa.abs().mul(0.45).add(0.55)).add(mix(C, W, 0.5).mul(smoothstep(0.86, 1, edge)).mul(run.add(0.4)));
+  const lit = skin.mul(sa.abs().mul(0.5).add(0.35)).add(mix(C, W, 0.5).mul(smoothstep(0.86, 1, edge)).mul(run.add(0.4)));
   const dark = is(float(n), step(0.5, rn(14).mul(2).fract()).add(1)).mul(step(uu, smoothstep(0.85, 0.9, u).mul(1.02)));
   m.colorNode = mix(lit, mix(C, W, 0.5).mul(smoothstep(0.95, 1, edge)).mul(0.8).add(Hh.mul(run).mul(smoothstep(0.9, 1, edge))), dark);
   return m;
