@@ -35,6 +35,12 @@ export function material(ctx) {
   const nor = N.mul(ar.cos()).add(Bn.mul(ar.sin()));
   const m = new MeshBasicNodeMaterial();
   m.positionNode = C.add(nor.mul(rad));
+  // THE DEPTH WEAVE: the mid-body swings through the canvas planes (ring -12, being 0, veil +10), so one body dips
+  // behind the being and comes out in front of it, more than once; the ends stay rooted. Seeded per body: swing, turns, phase.
+  { const S = float(al).clamp(0, 1), dz = step(0.5, c.rnd(391 + n)).mul(2).sub(1).mul(c.rnd(395 + n).mul(5).add(11));
+    const turns = c.rnd(399 + n).mul(1.6).add(1.4).mul(3.14159);
+    const weave = S.mul(turns).add(c.rnd(403 + n).mul(6.283)).add(c.real.mul(0.21 + 0.04 * n)).sin().mul(S.mul(float(1).sub(S)).mul(4)).mul(dz);
+    m.positionNode = m.positionNode.add(vec3(0, 0, weave)); }
   m.side = DoubleSide;
   const nz = nor.z.abs(), edge = float(1).sub(nz);
   const sL = al.mul(L);

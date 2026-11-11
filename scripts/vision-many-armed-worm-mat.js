@@ -17,6 +17,12 @@ export function material(ctx) {
   const ph = s.mul(9).sub(sec.mul(0.9 + n * 0.17).mul(dir)).add(n * 1.7);
   const amp = s.mul(s).mul(5.5).add(s.mul(1.2));
   m.positionNode = positionGeometry.add(vec3(ph.sin().mul(amp), ph.mul(0.63).add(1.3).cos().mul(amp).mul(0.7), ph.mul(1.31).sin().mul(amp).mul(0.5)));
+  // THE DEPTH WEAVE: the mid-body swings through the canvas planes (ring -12, being 0, veil +10), so one body dips
+  // behind the being and comes out in front of it, more than once; the ends stay rooted. Seeded per body: swing, turns, phase.
+  { const S = float(s).clamp(0, 1), dz = step(0.5, c.rnd(391 + n)).mul(2).sub(1).mul(c.rnd(395 + n).mul(5).add(11));
+    const turns = c.rnd(399 + n).mul(1.6).add(1.4).mul(3.14159);
+    const weave = S.mul(turns).add(c.rnd(403 + n).mul(6.283)).add(c.real.mul(0.21 + 0.04 * n)).sin().mul(S.mul(float(1).sub(S)).mul(4)).mul(dz);
+    m.positionNode = m.positionNode.add(vec3(0, 0, weave)); }
   const fam = c.pick(260, 3);
   const pk = (x, y, z) => select(fam.lessThan(0.5), vec3(...x), select(fam.lessThan(1.5), vec3(...y), vec3(...z)));
   const A = pk([0.1, 1.0, 0.15], [1.0, 0.05, 0.6], [1.0, 0.85, 0.05]);
