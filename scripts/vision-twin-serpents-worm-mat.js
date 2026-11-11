@@ -31,9 +31,9 @@ export function material(ctx) {
   const rad = inv(uu).max(0).pow(0.5).mul(0.85).add(0.15).mul(r0).mul(tip.sqrt()).mul(live).mul(exists).mul(step(0.002, grow));
   // the spine: a quadratic sweep root -> bend -> end (being metres, z + toward the camera), wound round by a coil that
   // turns slowly on its own clock, plus a travelling wave so the body swims
-  const R0 = pair ? [95 * sg, 82, -40] : [100 * sg, -80, -42];
-  const C0 = pair ? [44 * sg, 48, -16] : [46 * sg, -54, -14];
-  const E0 = pair ? [38 * sg, 21, 28] : [37 * sg, -19, 30];
+  const R0 = pair ? [95 * sg, 78, -40] : [105 * sg, -72, -42];
+  const C0 = pair ? [46 * sg, 40, -16] : [52 * sg, -32, -14];
+  const E0 = pair ? [26 * sg, 16, 28] : [24 * sg, -5, 30];
   const bez = (i) => inv(uu).mul(inv(uu)).mul(R0[i]).add(uu.mul(inv(uu)).mul(2 * C0[i])).add(uu.mul(uu).mul(E0[i]));
   const csn = step(0.5, rn(10)).mul(2).sub(1).mul(sg);
   const phi = uu.mul(TAU * 1.2).add(pair * 1.7).sub(c.real.mul(0.3).mul(csn));
