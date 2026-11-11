@@ -10,7 +10,7 @@
 //   win(c.sec, SEC.flight)  -> 0..1 window, 1 inside that section, 1.5 s soft edges (or win(sec,[a,b],fade))
 // A param write is how the roll starts: the director writes params.t0 (seconds on the shader `time` clock)
 // and params.on (1 rolling, 0 idle) to every object tagged "trip", to look.params and to sky.params.
-import { time, float, vec2, vec3, smoothstep, audioSpectrum, select, mix } from "builtin/tsl";
+import { time, float, vec2, vec3, smoothstep, step, audioSpectrum, select, mix } from "builtin/tsl";
 import SCORE from "./data/score.yml";
 
 export { SCORE };
@@ -136,7 +136,7 @@ export const maskLid = (p, y) => step(float(y).abs(), float(p).mul(1.02));
 // clock: a hand sweeping round from the top (a = angle -pi..pi from +y): a sundial, a moon phase
 export const maskClock = (p, a) => step(float(a).div(6.28318).add(0.5).fract(), float(p).mul(1.001));
 // eclipse: a dark disc of radius 1 sliding across from side `dir` (+1/-1); x, y in element radii: an occultation
-export const maskEclipse = (p, x, y, dir = 1) => step(float(1), vec2(float(x).sub(float(p).mul(2.2).sub(1.1).mul(-dir).add(dir * 0)).add(float(dir).mul(float(p).mul(-2.2).add(2.2))), float(y)).length());
+export const maskEclipse = (p, x, y, dir = 1) => step(float(1), vec2(float(x).sub(float(p).mul(2.2 * dir)), float(y)).length()); // p 0: the dark disc covers it, 1: slid clear
 // beads: element ids (0..1 hash per bead / dot / cell) light one after another in order k (0..1 along the row)
 export const maskBeads = (p, k) => step(float(k), float(p).mul(1.02));
 // line-draw: a stroke draws itself along its own length u (0..1), the pen's head a bright nib
