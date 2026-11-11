@@ -153,7 +153,10 @@ export function look(ctx) {
   const kPick = (salt) => pi.add(c.seed.mul(0.37)).add(salt).mul(91.7).sin().mul(43758.5453).fract().mul(KMASKS.length).floor();
   const kMask = (salt) => { const i = kPick(salt); return KMASKS.reduce((acc, m, j) => acc.add(m.mul(on1(i.sub(j).abs().lessThan(0.5)))), float(0)); };
   const holes = kMask(0), tileHoles = float(1).sub(kMask(5.3));
-  const pk = mix(float(0.6), select(st.lessThan(0.5), float(1), select(st.lessThan(1.5), float(0), select(st.lessThan(2.5), tileHoles, holes))), float(1).sub(first));
+  // creator 11-11 13:02: "overlay unnecessary versions of themselves causing confusion instead of layering": the mirror
+  // read is never laid translucently over the clean view, and never the whole frame. It is a second layer seen only
+  // through one symbol window, opaque inside it; one phrase in four plays clean
+  const pk = select(st.sub(1).abs().lessThan(0.5).and(first.lessThan(0.5)), float(0), select(st.sub(2).abs().lessThan(0.5).and(first.lessThan(0.5)), tileHoles, holes));
   // ascent: the mirror world opens as a petal window from the centre, one step every 6 s (its petal count is the
   // fold count it shows), each step easing in over a bar while the clean world keeps moving outside it.
   // Layered, not a full-frame swap: inside is reflection, outside is the world, the edge is the flower.
@@ -169,7 +172,7 @@ export function look(ctx) {
   const pOpen = smoothstep(0, 0.25, pfr).mul(float(1).sub(smoothstep(0.75, 1, pfr)));   // two bars each way
   const pR = pOpen.mul(1.15).add(petal.mul(pOpen));
   const pWin = smoothstep(pR, pR.sub(0.06), apr);
-  const kmix = aWin.mul(0.95).mul(wAsc).add(pk.mul(pWin).mul(wPeak)).clamp(0, 1);
+  const kmix = aWin.mul(wAsc).add(pk.mul(pWin).mul(wPeak)).clamp(0, 1);
 
   // chromatic aberration: R and B pushed radially, growing toward the edge
   // a being on stage plays clean: no resting fringe on its line-art (the split only rides a real kick, off-vision)
