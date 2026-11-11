@@ -62,6 +62,6 @@ export function light(c, d) {
   const sweep = smoothstep(0.5, 0.58, abs(fract(ph).sub(0.5)).mul(2));
   const front = step(rel, c.sec.sub(60.35).mul(150));
   const ring = smoothstep(2.2, 0.8, abs(rel.sub(fract(c.beat).mul(110)).sub(2))).mul(c.kick.mul(1.6).min(1));
-  const L = max(sweep.mul(mix(c.bass.min(1).mul(0.65).add(0.35), front, f)), ring.mul(mix(0.5, 1, f)));
+  const L = max(sweep.mul(mix(c.bass.min(1).mul(0.22).add(0.08), front, f)), ring.mul(mix(0.25, 1, f)));
   return { L, ring };
 }

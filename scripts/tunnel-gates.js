@@ -30,7 +30,7 @@ export function material(ctx) {
   const tgt = step(dl, 0.12), tring = step(dl, 0.2).sub(tgt);
   const tooth = step(float(5.62).sub(r).div(0.42), abs(fract(th.mul(n).mul(6)).sub(0.5)).mul(2));
   const aOp = band(5.2, 5.62).mul(tooth), aRim = band(5.68, 5.8);
-  const W = vec3(1, 1, 1);
+  const W = mix(F.a, vec3(1, 1, 1), step(60.35, c.sec).mul(step(c.sec, 180.35)));
   const body = W.mul(aLine).add(mix(F.base(gi), F.hot(gi), tgt).mul(aMain)).add(W.mul(aOp)).add(F.hot(gi).mul(aRim));
   const rest = GRAPH.mul(aLine.add(aMain).add(aOp).add(aRim).min(1).add(aMain.mul(tgt)));
   const beadCol = mix(GRAPH.mul(1.6), F.acc, max(chase.mul(0.9), L.mul(0.35)));

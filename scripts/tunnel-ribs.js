@@ -26,7 +26,7 @@ export function material(ctx) {
   const cellOn = step(dm, 0.4).mul(step(0.14, dm));
   const isBW = step(0.5, mod(vk, 2));
   const mask = mix(cellOn, bw, isBW);
-  const lit = mix(mix(F.acc, F.b, step(0.5, fract(dg.div(6)))), vec3(1, 1, 1), isBW);
+  const lit = mix(mix(F.acc, F.b, step(0.5, fract(dg.div(6)))), mix(F.a, vec3(1, 1, 1), step(60.35, c.sec).mul(step(c.sec, 180.35))), isBW);
   const tube = mix(GRAPH, lit, L).mul(mask);
   // each bead a target (belt, black ring, caps); bead j lights as the chase passes it
   const bj = floor(dg.div(1.5)), bz = abs(fract(dg.div(1.5)).sub(0.5)).mul(1.5);
