@@ -1,45 +1,27 @@
-// THE WEAVER (vision being BEINGS[13]): a spider grandmother at the centre of her web, 8 line-art legs, a patterned
-// abdomen holding a small spiral galaxy. The web IS her world.
-// ONE SCENE, FIVE LAYERS at five depths, one script (params.layer, baked), each on its OWN motion:
-//   "world" z -30  DRIFTS    the web billowing in a slow wind (outer threads move most): spokes nib-drawn one by one
-//                            from her, then the capture thread laid ring by ring, dew beads, caught glyphs on threads.
-//                            Opaque black; grows from her outward with a scalloped front like a web's frame threads.
-//   "ring"  z -12  TURNS     two twisted-cord rings and a ring of dew beads, counter-rotating (soft, additive)
-//   "being" z   0  BREATHES  dragline, thorax, 8 legs pair by pair, abdomen with op-art pattern, head, 8 eyes, galaxy
-//   "veil"  z +10  SCROLLS   silk threads paying out downward, silkworms wriggling down on them (solid black)
-//   "fore"  z +22  UNDULATES dew drops riding a travelling swell along the bottom corners; her nearest leg tips step
-//                            slowly in at the top corners, black with striped joints
-//   her SILK-WORMS are real 3D tubes winding in depth: scripts/vision-weaver-worm-geo.js / -worm-mat.js
-// being / veil / fore / world are CUTOUT (alphaTest, depth-writing): a near shape hides what is behind it.
-// THE SCORE (u): 0 hub dot + dragline up / .04 thorax / .1-.3 legs pair by pair, abdomen .2, head + palps .24, eyes .28,
-// silk paid down .27 / .25 world grows / .27 spokes one by one / .36 capture rings laid inside out / .4 cord ring,
-// .48 dew ring / .5 galaxy, eyes wake, leg beads / .52 dew on the web / .56 caught glyphs / .55 silkworms (3D) /
-// .62 veil silkworms descend / .68 near legs step in / .7 drifting dew / .85 FRASER: the rings twist into cords and the
-// dew lights a counter-spiral: concentric rings read as a spiral; one silkworm goes dark / .93.. last-in first-out.
-// Seed channels 460..479: 0 hue family, 1 spoke count, 2 hot accent, 3 glyph set + mirror, 4 wind sense, 5 ring sense,
-// 6 worm count, 7 worm skin, 8 dark worm, 9 cord twist sense, 10 ring spacing, 11 abdomen pattern, 12 galaxy arms,
-// 13 step phase, 14 veil thread count, 15 dew ring count, 16 galaxy sense.
+// THE WEAVER (vision being BEINGS[13]): a spider grandmother at the hub of her web. One script, five layers
+// (params.layer): world z-30 loom + web, ring z-12 cords + dew, being z0, veil z+10 silkworms, fore z+22 dew + near legs.
+// Every layer enters and leaves by WEB CELLS FILLING (cells()), order and shape dealt by the seed; fore leaves first,
+// the world stands lit to the slot's end. Seed channels 460+: 0 hue, 1 spokes, 2 hot, 3 glyphs, 4 drift, 5 ring sense,
+// 9 cord twist, 10 ring spacing, 11 abdomen, 12 galaxy arms, 13 step, 14 veil threads, 15 dew count, 16 galaxy sense,
+// 17 entrance order, 18 exit order, 19 cell shape, 20 loom angle, 21 loom pitch, 22 loom drift.
 import { MeshBasicNodeMaterial, AdditiveBlending, DoubleSide } from "builtin/three";
 import { positionGeometry, float, vec2, vec3, smoothstep, step, mix, atan2, fwidth, select } from "builtin/tsl";
-import { tripClock, visionShown, visionU, climb, maskDraw, maskBeads, maskIris, maskClock, nib, stripes } from "./lib/trip.js";
+import { tripClock, visionShown, visionU, climb, maskDraw, maskBeads, maskIris, maskClock, nib, inv, is, strokeAA, ioU } from "./lib/trip.js";
 
 const TAU = 6.28318;
-// her legs, right side (mirrored at x = 0), from the thorax rim out: femur up, tibia, tarsus to the foot
 const LEGS = [[[2.6, 4.6], [12, 15], [22, 19.5], [31, 12]], [[3.6, 3.2], [14, 9.5], [26, 8], [34, -1]],
   [[3.6, 1.2], [14, -1], [25, -7], [30, -17]], [[2.6, -0.4], [11, -9], [19, -18], [22, -30]]];
 const PALP = [[1.1, 9.6], [2.8, 12.2], [1.9, 14.4]];
 const EYES = [[0.75, 9.0, 0.5], [1.85, 8.6, 0.36], [0.55, 10.15, 0.3], [1.55, 9.95, 0.26]];
 const GLY = [[-66, 30], [74, -20], [-40, -56]];
 
-const is = (v, i) => step(v.sub(i).abs(), 0.5);
-const inv = (x) => float(1).sub(x);
+const hsh = (a, b) => a.mul(12.9898).add(b.mul(78.233)).sin().mul(43758.5453).fract();
 const rot = (v, a) => vec2(v.x.mul(a.cos()).sub(v.y.mul(a.sin())), v.x.mul(a.sin()).add(v.y.mul(a.cos())));
 function segD(q, a, b) {
   const bx = b[0] - a[0], by = b[1] - a[1], pa = q.sub(vec2(a[0], a[1]));
   const h = pa.dot(vec2(bx, by)).div(bx * bx + by * by).clamp(0, 1);
   return pa.sub(vec2(bx, by).mul(h)).length();
 }
-// distance to a polyline, length fraction u along it, distance jd to its inner joints; points JS or nodes
 function polyline(q, pts) {
   const P2 = pts.map((p) => (Array.isArray(p) ? vec2(p[0], p[1]) : p));
   const segs = [];
@@ -47,9 +29,9 @@ function polyline(q, pts) {
   for (let i = 0; i < P2.length - 1; i++) { const b = P2[i + 1].sub(P2[i]); const len = b.length(); segs.push([P2[i], b, len, total]); total = total.add(len); }
   let d = float(1000), u = float(0), jd = float(1000);
   for (const [a, b, len, L0] of segs) {
-    const pa = q.sub(a), h = pa.dot(b).div(b.dot(b)).clamp(0, 1);
+    const pa = q.sub(a), h = pa.dot(b).div(b.dot(b).max(0.0001)).clamp(0, 1);
     const di = pa.sub(b.mul(h)).length();
-    u = select(di.lessThan(d), h.mul(len).add(L0).div(total), u);
+    u = select(di.lessThan(d), h.mul(len).add(L0).div(total.max(0.0001)), u);
     d = d.min(di);
   }
   for (let i = 1; i < P2.length - 1; i++) jd = jd.min(q.sub(P2[i]).length());
@@ -59,7 +41,7 @@ function polyline(q, pts) {
 export function material(ctx) {
   const layer = ctx.params.layer ?? "being";
   const c = tripClock(ctx), u = visionU(ctx, c), t = c.real;
-  const io = (a, b, x, y) => smoothstep(a, b, u).mul(inv(smoothstep(x, y, u)));
+  const io = ioU(u), low = ctx.quality === "low";
   const rn = (n) => c.rnd(460 + n), pk = (n, k) => c.pick(460 + n, k);
   const sense = (n) => step(0.5, rn(n)).mul(2).sub(1);
   const fam = pk(0, 3), hot = pk(2, 4);
@@ -73,64 +55,96 @@ export function material(ctx) {
   const cul = io(0.85, 0.9, 0.93, 0.955).mul(climb(c).mul(0.4).add(0.6));
   const m = new MeshBasicNodeMaterial();
   m.side = DoubleSide;
+  // her web's own grid in a layer's plane: sector (sec, fr), chord radius rho, ring coordinate rl
+  const web = (q) => {
+    const r = q.length(), a01 = atan2(q.x, q.y.add(0.0001)).div(TAU).add(0.5);
+    const N = float(12).add(pk(1, 3).mul(2)), sec = a01.mul(N), fr = sec.fract(), SP = float(7.5).add(rn(10).mul(2.5));
+    const rho = r.mul(fr.sub(0.5).mul(TAU).div(N).cos()).div(float(Math.PI).div(N).cos().max(0.5));
+    return { r, a01, N, sec, fr, SP, rl: rho.sub(9).div(SP) };
+  };
+  // THE SYMBOL MASK: web cells filling. Each cell (sector x ring) opens from its own middle, as a trapezoid or a dew
+  // bead, in a dealt order: 0 along the capture spiral, 1 sector fans from the top, 2 scattered. Exit: another order.
+  const vIn = pk(17, 3), vOut = vIn.add(1).add(pk(18, 2)).mod(3), shp = step(0.5, rn(19));
+  const cells = (g, pIn, pOut, bias = 0, K = 10) => {
+    const rc = g.rl.max(-0.999), kc = rc.floor(), fk = rc.fract(), si = g.sec.floor();
+    const kn = kc.add(1).div(K).clamp(0, 1), fans = si.add(0.5).div(g.N).sub(0.5).abs().mul(2);
+    const o = [kn.add(si.div(g.N).div(K)).min(1), fans.mul(0.75).add(kn.mul(0.25)), hsh(si, kc).mul(0.65).add(kn.mul(0.35))];
+    const ord = (v) => mix(o[0].mul(is(v, 0)).add(o[1].mul(is(v, 1))).add(o[2].mul(is(v, 2))), kn, bias);
+    const d = vec2(g.fr.sub(0.5), fk.sub(0.5)), eT = d.x.abs().max(d.y.abs()).mul(2), eB = d.length().mul(1.4143);
+    const open = (p, v, sh) => step(mix(eT, eB, sh), p.mul(1.25).sub(ord(v)).div(0.25).clamp(0, 1).mul(1.02)).mul(step(0.002, p));
+    return open(pIn, vIn, shp).mul(open(pOut, vOut, inv(shp)));
+  };
+  const lin = (a, b) => u.sub(a).div(b - a).clamp(0, 1);
 
-  // ------------------------------------------------------------------ WORLD: the web (drifts in the wind)
+  // ---- WORLD: a loom woven across the whole frame behind her radial web; web cells fill, the edge dissolves into dew
   if (layer === "world") {
-    const aa = fwidth(P.x).mul(1.2).max(0.03);
-    const stroke = (d, w) => inv(smoothstep(float(w), aa.add(w), d));
-    const bow = P.length().div(150).clamp(0, 1);
-    const wind = vec2(t.mul(0.21).sin().mul(6).mul(sense(4)), t.mul(0.13).cos().mul(3));
-    const q = P.sub(wind.mul(bow.mul(bow)));
-    const r = q.length(), a01 = atan2(q.x, q.y).div(TAU).add(0.5);      // 0.5 straight up, 0 / 1 straight down
-    const N = float(12).add(pk(1, 3).mul(2));
-    const sec = a01.mul(N), fr = sec.fract();
-    // coverage: black silk ground spreading from her, its front scalloped between spokes like a web's frame threads
-    const grow = io(0.25, 0.45, 0.955, 0.995), Rg = grow.mul(190);
-    const frontR = Rg.mul(inv(fr.mul(Math.PI).sin().mul(0.2)));
-    const cover = step(r, frontR).mul(step(0.004, grow));
-    const frame = stroke(frontR.sub(r), 0.22).mul(step(0.004, grow));
+    const aa = fwidth(P.x).mul(1.2).max(0.03), stroke = strokeAA(aa);
+    const g = web(P), { r, a01, sec, fr, N, SP, rl } = g;
+    const slot = ctx.param("vw1", -1).sub(ctx.param("vw0", -1)).max(1);
+    const pIn = u.div(0.4).clamp(0, 1), pOut = inv(u).mul(slot).div(0.45).clamp(0, 1);   // out: the slot's last 0.45 s only
+    const gate = cells(g, pIn, pOut, 0, 22);
     const kf = c.beat.fract().mul(170);
     const kl = smoothstep(7, 0, r.sub(kf).abs()).mul(kickOn).mul(smoothstep(170, 70, kf));   // the kick: a tremor running out along the silk
-    // spokes, nib-drawn one by one from her, top first, both sides together
+    // the loom: a rigid lattice sliding slowly behind the web (seeded angle, pitch, drift), each thread drawn by its own nib
+    const R0 = rot(P, pk(20, 3).mul(0.3927)), pit = rn(21).mul(6).add(9);
+    const L = R0.add(vec2(t.mul(0.9).mul(sense(4)), t.mul(0.5).mul(sense(22))));
+    const lx = L.x.div(pit), ly = L.y.div(pit), ci = lx.round(), cj = ly.round();
+    const dx = lx.sub(ci).abs().mul(pit), dy = ly.sub(cj).abs().mul(pit), bd = vec2(dx, dy).length();
+    const hi = hsh(ci, float(3.1)), hj = hsh(float(7.7), cj), hx = hsh(ci, cj);
+    const odd = (k) => step(0.5, k.mul(0.5).fract().mul(2)), par = odd(ci.add(cj));
+    const uW0 = R0.y.div(420).add(0.5).clamp(0, 1), uW = mix(uW0, inv(uW0), odd(ci));
+    const uF0 = R0.x.div(420).add(0.5).clamp(0, 1), uF = mix(uF0, inv(uF0), odd(cj));
+    const pW = u.sub(hi.mul(0.3)).div(0.12).clamp(0, 1), pF = u.sub(hj.mul(0.3).add(0.06)).div(0.12).clamp(0, 1);
+    const onW = maskDraw(pW, uW).mul(step(0.002, pW)), onF = maskDraw(pF, uF).mul(step(0.002, pF));
+    let warp = stroke(dx, 0.14).mul(onW), weft = stroke(dy, 0.14).mul(onF), cordB = float(0), cordT = float(0);
+    if (!low) {   // plain weave: each thread dips under at alternate crossings; every 4th weft is a twisted op-art cord
+      warp = warp.mul(inv(inv(par).mul(step(dy, 1.3))));
+      weft = weft.mul(inv(par.mul(step(dx, 1.3))));
+      cordB = stroke(dy, 0.6).mul(onF).mul(step(cj.mul(0.25).fract(), 0.1)).mul(inv(step(dx, 1.5).mul(par)));
+      cordT = step(L.x.div(2.2).add(ly.sub(cj).mul(pit).mul(sense(9))).fract(), 0.5);
+    }
+    const nibL = nib(pW, uW, 0.008).mul(stroke(dx, 0.55)).mul(step(pW, 0.995)).mul(step(0.002, pW))
+      .add(nib(pF, uF, 0.008).mul(stroke(dy, 0.55)).mul(step(pF, 0.995)).mul(step(0.002, pF)));
+    const br = hx.mul(0.6).add(0.55), bead = inv(smoothstep(br, aa.add(br), bd));
+    const twk = t.mul(1.3).add(hx.mul(40)).sin().mul(0.5).add(0.5);
+    const beadC = mix(mix(B, W, 0.5), H, step(hx, 0.14)).mul(mix(twk.mul(0.3).add(0.22), float(1), onW.mul(onF))).mul(kl.mul(0.6).add(1));
+    const hush = mix(float(1), smoothstep(26, 80, r).mul(0.7).add(0.3), smoothstep(0.1, 0.3, u));   // the loom steps back behind her as she builds
+    let col = A.mul(warp).add(B.mul(weft)).mul(kl.add(0.6)).add(mix(A.mul(0.35), W.mul(0.8), cordT).mul(cordB)).add(W.mul(nibL).mul(1.3));
+    col = mix(col, beadC, bead).mul(hush);
+    // her web: spokes nib-drawn one by one from her, top first, both sides together
+    const up = (a, b) => smoothstep(a, b, u);
     const kS = sec.round().div(N).sub(0.5).abs().mul(2);
     const dSp = fr.min(inv(fr)).mul(TAU).div(N).mul(r);
-    const pSp = io(0.27, 0.42, 0.945, 0.97), pj = pSp.mul(1.3).sub(kS).div(0.3).clamp(0, 1), uS = r.div(170);
-    const spoke = stroke(dSp, 0.16).mul(maskDraw(pj, uS)).mul(step(5, r)).mul(step(0.002, pj));
+    const pj = up(0.2, 0.4).mul(1.3).sub(kS).div(0.3).clamp(0, 1), uS = r.div(190);
+    const spoke = stroke(dSp, 0.2).mul(maskDraw(pj, uS)).mul(step(5, r)).mul(step(0.002, pj));
     const nibS = nib(pj, uS, 0.012).mul(stroke(dSp, 0.6)).mul(step(pj, 0.995)).mul(step(0.002, pj));
     // the capture thread: straight chords between spokes, laid ring by ring from the hub out
-    const th = fr.sub(0.5).mul(TAU).div(N);
-    const rho = r.mul(th.cos()).div(float(Math.PI).div(N).cos());
-    const SP = float(7.5).add(rn(10).mul(2.5)), NR = 17;
-    const rl = rho.sub(9).div(SP), kr = rl.round(), dR = rl.sub(kr).abs().mul(SP);
+    const NR = 21, kr = rl.round(), dR = rl.sub(kr).abs().mul(SP);
     const okR = step(0, kr).mul(step(kr, NR)), kKey = kr.div(NR);
-    const pRg = io(0.36, 0.58, 0.95, 0.975), pr = pRg.sub(kKey.mul(0.8)).div(0.2).clamp(0, 1);
+    const pr = up(0.34, 0.6).sub(kKey.mul(0.8)).div(0.2).clamp(0, 1);
     const uR = a01.sub(0.5).abs().mul(2);
     const drawn = maskDraw(pr, uR).mul(okR).mul(step(0.002, pr));
-    const ringL = stroke(dR, 0.13).mul(drawn);
+    const ringL = stroke(dR, 0.15).mul(drawn);
     const nibR = nib(pr, uR, 0.02).mul(stroke(dR, 0.6)).mul(okR).mul(step(pr, 0.995)).mul(step(0.002, pr));
     // FRASER at the culmination: each ring becomes a twisted cord (black / white segments tilted one way)
     const s = a01.mul(TAU).mul(r), tilt = sense(9);
     const cord = step(s.div(2.2).add(rl.sub(kr).mul(SP).mul(1.2).mul(tilt)).add(kr.mul(0.5)).fract(), 0.5);
     const band = stroke(dR, 0.7).mul(drawn);
-    // dew: beads along the capture thread, appearing one by one; a counter-spiral of them lights against the cords
-    const sb = s.div(3.4), bid = sb.floor();
-    const bdd = vec2(sb.fract().sub(0.5).mul(3.4), rl.sub(kr).mul(SP)).length();
-    const h = kr.mul(12.9898).add(bid.mul(78.233)).sin().mul(43758.5453).fract();
-    const pDw = io(0.52, 0.68, 0.94, 0.965);
-    const dew = inv(smoothstep(0.48, aa.add(0.48), bdd)).mul(drawn).mul(maskBeads(pDw, h.mul(0.5).add(kKey.mul(0.5))));
-    const spv = a01.mul(3).add(r.add(1).log().mul(1.5).mul(tilt)).add(t.mul(0.05)).fract();
-    const spiral = smoothstep(0.22, 0, spv.sub(0.5).abs());
-    let col = A.mul(spoke.add(ringL.mul(inv(cul))).mul(kl.mul(1.2).add(0.5)));
-    col = col.add(mix(A.mul(0.35), W.mul(0.9), cord).mul(band).mul(cul));
-    col = col.add(W.mul(nibS.add(nibR)).mul(1.3)).add(B.mul(frame).mul(0.6));
-    const dewC = mix(mix(B, W, 0.6), H, step(h, 0.07)).mul(float(0.45).add(spiral.mul(cul.mul(1.2).add(0.25))).add(kl.mul(0.6)));
-    col = mix(col, dewC, dew);
-    // three caught glyphs hanging on short threads, swinging: moon (or eye), key (or star), feather
+    col = col.mul(inv(band.mul(cul))).add(mix(A, W, 0.25).mul(spoke.add(ringL.mul(inv(cul))).mul(kl.mul(1.2).add(0.8))));
+    col = col.add(mix(A.mul(0.35), W.mul(0.9), cord).mul(band).mul(cul)).add(W.mul(nibS.add(nibR)).mul(1.3));
+    if (!low) {   // dew along the capture thread, bead by bead; a counter-spiral of it lights against the cords
+      const sb = s.div(3.4), bdd = vec2(sb.fract().sub(0.5).mul(3.4), rl.sub(kr).mul(SP)).length();
+      const h = hsh(kr, sb.floor());
+      const dew = inv(smoothstep(0.48, aa.add(0.48), bdd)).mul(drawn).mul(maskBeads(up(0.52, 0.68), h.mul(0.5).add(kKey.mul(0.5))));
+      const spiral = smoothstep(0.22, 0, a01.mul(3).add(r.add(1).log().mul(1.5).mul(tilt)).add(t.mul(0.05)).fract().sub(0.5).abs());
+      col = mix(col, mix(mix(B, W, 0.6), H, step(h, 0.07)).mul(float(0.45).add(spiral.mul(cul.mul(1.2).add(0.25))).add(kl.mul(0.6))), dew);
+    }
+    // caught glyphs hanging on short threads, swinging: moon (or eye), key (or star), feather
     const mir = sense(3), alt = step(0.5, rn(3).mul(7).fract());
-    GLY.forEach(([gx, gy], i) => {
-      const pG = io(0.56 + i * 0.04, 0.62 + i * 0.04, 0.945 - i * 0.005, 0.962 - i * 0.005);
+    (low ? GLY.slice(0, 1) : GLY).forEach(([gx, gy], i) => {
+      const pG = up(0.56 + i * 0.04, 0.62 + i * 0.04);
       const top = vec2(mir.mul(gx), gy + 11);
-      const v = rot(q.sub(top), t.mul(0.8).add(i * 2.1).sin().mul(0.14)).add(vec2(0, 11));
+      const v = rot(P.sub(top), t.mul(0.8).add(i * 2.1).sin().mul(0.14)).add(vec2(0, 11));
       const thr = stroke(v.x.abs(), 0.12).mul(step(5.5, v.y)).mul(step(v.y, 11)).mul(maskDraw(pG.mul(2).clamp(0, 1), inv(v.y.sub(5.5).div(5.5))));
       const reveal = maskIris(pG.mul(2).sub(1).clamp(0, 1), v.length().div(6.5)).mul(step(0.5, pG));
       let gd;
@@ -140,26 +154,29 @@ export function material(ctx) {
         gd = mix(cres.abs(), eye, alt);
       } else if (i === 1) {
         const key = v.sub(vec2(0, 2.6)).length().sub(2.2).abs().min(segD(v, [0, 0.4], [0, -5])).min(segD(v, [0, -4.6], [1.7, -4.6])).min(segD(v, [0, -3.2], [1.3, -3.2]));
-        const ag = atan2(v.x, v.y), star = v.length().sub(ag.mul(5).cos().mul(1.6).add(3.4)).abs();
+        const star = v.length().sub(atan2(v.x, v.y.add(0.0001)).mul(5).cos().mul(1.6).add(3.4)).abs();
         gd = mix(key, star, alt);
       } else {
         const vane = vec2(v.x.div(2.4), v.y.div(5.5)).length();
         const barb = stroke(v.x.abs().mul(0.8).sub(v.y).div(1.1).fract().sub(0.5).abs(), 0.12).mul(step(vane, 1)).mul(step(0.25, v.x.abs()));
-        gd = vane.sub(1).abs().mul(2.4).min(segD(v, [0, -7], [0, 5.5])).min(float(1).sub(barb).mul(9));
+        gd = vane.sub(1).abs().mul(2.4).min(segD(v, [0, -7], [0, 5.5])).min(inv(barb).mul(9));
       }
-      const gc = i === 1 ? H : mix(B, W, 0.5);
-      col = col.mul(inv(reveal.mul(step(v.length(), 6)))).add(gc.mul(stroke(gd, 0.2)).mul(reveal)).add(A.mul(thr).mul(0.7));
+      col = col.mul(inv(reveal.mul(step(v.length(), 6)))).add((i === 1 ? H : mix(B, W, 0.5)).mul(stroke(gd, 0.2)).mul(reveal)).add(A.mul(thr).mul(0.7));
     });
+    // cover: filled web cells, plus loose dew glimmering frame-wide from u 0; no quad edge: it thins into crossing dots
+    const seedB = step(bd, br).mul(maskBeads(u.div(0.3).add(0.06).clamp(0, 1), hx)).mul(step(hx, pOut.mul(1.02))).mul(step(0.002, pOut));
+    const eE = vec2(P.x.div(152), P.y.div(84)).length();
+    const edge = step(bd, mix(float(0.85), float(0), smoothstep(0.66, 0.98, eE)).mul(pit));
     m.colorNode = col;
-    m.opacityNode = cover.mul(live);
+    m.opacityNode = gate.max(seedB).mul(edge).mul(live);
     m.alphaTest = 0.5;
     return m;
   }
 
-  // ------------------------------------------------------------------ RING: cords and dew (turns, soft)
+  // ---- RING: cords and dew (turns, soft)
   if (layer === "ring") {
     const aa = fwidth(P.x).mul(1.2).max(0.02);
-    const stroke = (d, w) => inv(smoothstep(float(w), aa.add(w), d));
+    const stroke = strokeAA(aa);
     const r = P.length(), a = atan2(P.x, P.y);
     const R1 = 47, R2 = 54, sn = sense(5);
     const r1 = t.mul(0.045).mul(sn), r2 = t.mul(-0.03).mul(sn);
@@ -176,7 +193,7 @@ export function material(ctx) {
     const kl = kickOn.mul(inv(kf)).mul(0.8);
     const col = mix(A.mul(0.25), mix(B, W, cul.mul(0.6).add(0.2)), cord).mul(band).mul(float(0.55).add(kl).add(cul.mul(0.5)))
       .add(A.mul(rails).mul(0.6)).add(mix(mix(B, W, 0.5), H, step(id.mod(4), 0.5)).mul(bead).mul(float(0.6).add(kl))).add(B.mul(silk).mul(0.3));
-    m.colorNode = col;
+    m.colorNode = col.mul(cells(web(P), lin(0.3, 0.55), inv(lin(0.87, 0.93))));
     m.opacityNode = live;
     m.transparent = true;
     m.blending = AdditiveBlending;
@@ -184,10 +201,10 @@ export function material(ctx) {
     return m;
   }
 
-  // ------------------------------------------------------------------ VEIL: silkworms paying down on silk (scrolls)
+  // ---- VEIL: silkworms paying down on silk (scrolls)
   if (layer === "veil") {
     const aa = fwidth(P.x).mul(1.2).max(0.02);
-    const stroke = (d, w) => inv(smoothstep(float(w), aa.add(w), d));
+    const stroke = strokeAA(aa);
     const ax = P.x.abs();
     let col = vec3(0), cover = float(0);
     const XS = [42, 55, 66], LN = [22, 36, 14];
@@ -197,13 +214,13 @@ export function material(ctx) {
       const dp = io(0.62 + i * 0.04, 0.76 + i * 0.04, 0.93 + (2 - i) * 0.006, 0.95 + (2 - i) * 0.006).mul(ex);
       const cy = float(52).sub(dp.mul(14 + LN[i])).add(t.mul(1.1).add(i).sin().mul(0.7).mul(dp));
       const sway = t.mul(0.55).add(i * 1.7).sin().mul(1.6);
-      const xt = sway.mul(float(52).sub(P.y).div(float(52).sub(cy)).clamp(0, 1)).add(X);
+      const xt = sway.mul(float(52).sub(P.y).div(float(52).sub(cy).max(0.01)).clamp(0, 1)).add(X);
       const dash = step(P.y.add(t.mul(4)).div(2.4).fract(), 0.62).mul(0.6).add(0.4);
       const thr = stroke(ax.sub(xt).abs(), 0.1).mul(step(cy, P.y)).mul(step(0.002, dp));
       col = col.add(mix(A, W, 0.3).mul(thr).mul(dash).mul(inv(cover)));
       cover = cover.max(thr.mul(step(0.5, dash)));
       // the worm: six segments hanging below the thread's end, wriggling on a wave that runs down it
-      for (let k = 0; k < 6; k++) {
+      for (let k = 0; k < (low ? 4 : 6); k++) {
         const sx = X + 0, sr = 1.55 - k * 0.14;
         const ctr = vec2(sway.add(sx).add(t.mul(2.2).sub(k * 0.9).sin().mul(0.5 + k * 0.12)), cy.sub(k * 2.4 + 1.4));
         const d = vec2(ax, P.y).sub(ctr).length();
@@ -215,19 +232,19 @@ export function material(ctx) {
       }
     });
     m.colorNode = col;
-    m.opacityNode = cover.mul(live);
+    m.opacityNode = cover.mul(cells(web(P), lin(0.55, 0.75), inv(lin(0.84, 0.9)))).mul(live);
     m.alphaTest = 0.5;
     return m;
   }
 
-  // ------------------------------------------------------------------ FORE: dew on a swell, her near legs (undulates)
+  // ---- FORE: dew on a swell, her near legs (undulates)
   if (layer === "fore") {
     const aa = fwidth(P.x).mul(1.2).max(0.01);
-    const stroke = (d, w) => inv(smoothstep(float(w), aa.add(w), d));
+    const stroke = strokeAA(aa);
     const ax = P.x.abs(), q = vec2(ax, P.y);
     let col = vec3(0), cover = float(0);
     const pDr = io(0.7, 0.8, 0.925, 0.945);
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < (low ? 3 : 6); i++) {
       const x = t.mul(1.6).add(i * 7.3).mod(42).add(32);
       const y = x.mul(0.12).sub(t.mul(0.9)).sin().mul(3).sub(27);
       const life = x.sub(32).div(42).mul(Math.PI).sin().clamp(0, 1);
@@ -249,15 +266,15 @@ export function material(ctx) {
       .add(mix(A, W, 0.3).mul(stroke(pl.d.sub(w).abs(), 0.12)).mul(on));
     cover = cover.max(body);
     m.colorNode = col;
-    m.opacityNode = cover.mul(live);
+    m.opacityNode = cover.mul(cells(web(P), lin(0.6, 0.8), inv(lin(0.8, 0.86)))).mul(live);
     m.alphaTest = 0.5;
     return m;
   }
 
-  // ------------------------------------------------------------------ THE BEING (breathes)
+  // ---- THE BEING (breathes)
   const p = P.div(t.mul(TAU / 6.5).sin().mul(0.025).add(1));
   const aa = fwidth(p.x).mul(1.2).max(0.01);
-  const stroke = (d, w) => inv(smoothstep(float(w), aa.add(w), d));
+  const stroke = strokeAA(aa);
   const ax = p.x.abs(), pm = vec2(ax, p.y), rr = p.length();
   const kf = c.beat.fract().mul(40);
   const kl = smoothstep(2.5, 0, rr.sub(kf).abs()).mul(kickOn).mul(smoothstep(40, 18, kf));
@@ -335,7 +352,7 @@ export function material(ctx) {
     add(W.mul(1.5), inv(smoothstep(er0 * 0.25, er0 * 0.35, pm.sub(vec2(ex - er0 * 0.3, ey + er0 * 0.3)).length())).mul(disc));
   });
   m.colorNode = col;
-  m.opacityNode = cover.mul(live);
+  m.opacityNode = cover.mul(cells(web(P), lin(0, 0.22), inv(lin(0.91, 0.985)), 0.6)).mul(live);
   m.alphaTest = 0.5;
   return m;
 }
