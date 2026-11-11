@@ -105,3 +105,18 @@ export function bendUv(c, uv, aspect = 1.78) {
   const px = mix(p4.x, p4.x.abs().mul(c.rnd(7).step(0.5).mul(2).sub(1)), lens(c, "fold").mul(smoothstep(0.0, 0.02, p4.x.abs())));
   return vec2(px, p4.y).div(vec2(aspect, 1)).add(0.5);
 }
+
+// A VISION BEING's cutout: 1 while this being's dealt slot plays (params vw0 / vw1, written by the director),
+// opening outward from its centre over 1.5 s as an iris and eaten away the same way at the slot's end.
+// d = 0..1, this fragment's distance from the being's centre over its radius. Not dealt (vw1 < 0): 0.
+// Testing by hand: set params t0 / on / seed AND vw0 / vw1 on the being's objects.
+export function visionShown(ctx, c, d = 0) {
+  const a = ctx.param("vw0", -1), b = ctx.param("vw1", -1);
+  const s = c.sec.sub(float(d).clamp(0, 1).mul(1.5));
+  return smoothstep(a, a.add(0.2), s).mul(smoothstep(b.add(0.2), b, s)).mul(b.greaterThan(0).select(float(1), float(0))).mul(c.on);
+}
+// how far into its slot the being is, 0..1 (its own clock for drawing itself in)
+export function visionU(ctx, c) {
+  const a = ctx.param("vw0", -1), b = ctx.param("vw1", -1);
+  return c.sec.sub(a).div(b.sub(a).max(0.01)).clamp(0, 1);
+}
