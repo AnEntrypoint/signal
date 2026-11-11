@@ -38,7 +38,7 @@ export function material(ctx) {
 
   // hue family (linear body, mid, hot), crossing the palette: 0 blue/violet, 1 magenta/orange, 2 green/yellow,
   // 3 white-led op-art (grey-white body, white mid, one hot accent picked on channel 217)
-  const fam = c.pick(200, 4);
+  const fam = c.seed.add(c.pick(200, 4)).mod(4).floor();   // consecutive seeds walk all four families
   const is = (v, i) => step(float(v).sub(i).abs(), 0.5);
   const acc = c.pick(217, 3);
   const accent = vec3(1, 0.04, 0.42).mul(is(acc, 0)).add(vec3(1, 0.38, 0.02).mul(is(acc, 1))).add(vec3(0.05, 0.12, 1).mul(is(acc, 2)));
