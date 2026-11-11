@@ -1,4 +1,4 @@
-// OUROBOROS vision: striped serpent ring round its own cosmos; layers world/ring/being/veil/fore by params.layer; seed ch 280-299
+// OUROBOROS: striped serpent ring round its own cosmos; layers by params.layer; seed ch 280-299, 320-323 (scale-bead gates).
 import { MeshBasicNodeMaterial, AdditiveBlending, DoubleSide } from "builtin/three";
 import { positionGeometry, float, vec2, vec3, smoothstep, step, mix, atan2, fwidth, select } from "builtin/tsl";
 import { tripClock, visionShown, visionU, climb, maskDraw, maskBeads, maskIris, nib, stripes, inv, is, sgn, strokeAA, ioU } from "./lib/trip.js";
@@ -8,12 +8,12 @@ const S = 1.45;
 const R = 13, CIRC = TAU * R, WB = 1.7;
 const NECK = -0.10 * CIRC, HINGE = -0.035 * CIRC, SNOUT = 0.035 * CIRC;
 const ST = -0.02, SPAN = 0.92;
-export function material(ctx) {
+function build(ctx) {
 const layer = ctx.params.layer ?? "being";
 const c = tripClock(ctx);
 const uh = ctx.param("hold", -1);
 const u = select(uh.greaterThanEqual(0), uh, visionU(ctx, c));
-const io = ioU(u);
+const io0 = ioU(u), io = io0;
 const rn = (n) => c.rnd(280 + n), pk = (n, k) => c.pick(280 + n, k);
 const sense = (n) => sgn(rn(n));
 const fam = pk(0, 3), hot = pk(19, 3);
@@ -28,14 +28,16 @@ const q = positionGeometry.xy.mul(74 / D);
 const live = visionShown(ctx, c, 0);
 const kickOn = step(0.001, c.kick);
 const cul = io(0.85, 0.89, 0.93, 0.96).mul(climb(c).mul(0.4).add(0.6));
+const low = ctx.quality === "low";
 const m = new MeshBasicNodeMaterial();
 m.side = DoubleSide;
 m.fog = false;
 if (layer === "world") {
+const io = (a, b) => io0(a, b, 2, 3);
 const aa = fwidth(q.x).mul(1.2).max(0.02);
 const stroke = strokeAA(aa);
 const rr = q.length(), ang = atan2(q.y, q.x);
-const grow = io(0.25, 0.45, 0.955, 0.985), Rg = grow.mul(118);
+const grow = io(0.0, 0.3), Rg = grow.mul(118);
 const sf = ang.div(TAU).mul(28).fract().sub(0.5).mul(2);
 const scallop = inv(sf.mul(sf)).max(0).sqrt().mul(5);
 const cover = step(rr, Rg.sub(5).add(scallop)).mul(step(0.004, grow));
@@ -150,7 +152,7 @@ const sz = mix(0.85, 1.25, rn(7)), arr = pk(7, 2);
 const XS = [-44, -28, 0, 28, 44], YS = [24, 13, -1.0, 13, 24], RS = [2.6, 2.1, 1.3, 2.1, 2.6];
 const pxl = q.x.div(aa).floor().add(q.y.div(aa).floor()).mod(2);
 let col = vec3(0), cover = float(0), shade = float(0);
-for (let j = 0; j < 5; j++) {
+for (let j = 0; j < (low ? 3 : 5); j++) {
 const centre = j === 2;
 const pj = pv.mul(1.7).sub(Math.abs(j - 2) * 0.3 + (centre ? 0.5 : 0)).clamp(0, 1);
 const e = pj.mul(pj).mul(float(3).sub(pj.mul(2)));
@@ -183,7 +185,7 @@ if (layer === "fore") {
 const aa = fwidth(q.x).mul(1.2).max(0.02);
 const ax = q.x.abs(), pin = io(0.64, 0.8, 0.93, 0.945), shape = pk(16, 2);
 let col = vec3(0), cover = float(0);
-for (let j = 0; j < 6; j++) {
+for (let j = 0; j < (low ? 4 : 6); j++) {
 const top = j % 2 ? 1 : -1;
 const xj = c.real.mul(0.018 * (1 + j * 0.27)).mul(sense(15)).add(j * 0.19).fract().mul(36).add(46);
 const yj = xj.mul(0.12).sub(c.real.mul(0.6)).add(j * 2.3).sin().mul(3.5).add(top * (30 + (j % 3) * 4));
@@ -293,5 +295,32 @@ put(W.mul(1.6), step(0.5, nb));
 m.colorNode = col;
 m.opacityNode = cover.mul(visionShown(ctx, c, rr.div(30)));
 m.alphaTest = 0.5;
+return m;
+}
+
+const GL = { world: [6, 85, 0, 0.3], ring: [3.5, 42, 0.3, 0.45, 0.9, 0.98], being: [2.2, 22, -1, 0, 0.92, 0.99], veil: [4, 50, 0.55, 0.7, 0.86, 0.93], fore: [4, 60, 0.68, 0.8, 0.8, 0.88] };
+export function material(ctx) {
+const m = build(ctx), layer = ctx.params.layer ?? "being", L = GL[layer] ?? GL.being;
+const c = tripClock(ctx), uh = ctx.param("hold", -1);
+const u = select(uh.greaterThanEqual(0), uh, visionU(ctx, c));
+const Q = positionGeometry.xy.mul(74 / (DEPTH[layer] ?? 74));
+const v = c.pick(320, 3), shp = c.pick(321, 2), slot = ctx.param("vw1", -1).sub(ctx.param("vw0", -1)).max(1);
+const cells = (cs, p, salt) => {
+const rr = Q.length(), rf = rr.div(cs), ri = rf.floor(), n = ri.add(0.5).mul(TAU).floor().max(1);
+const af = atan2(Q.y, Q.x).div(TAU).add(0.5).add(ri.mul(0.618)).fract().mul(n), ai = af.floor();
+const l = vec2(af.fract().sub(0.5), rf.fract().sub(0.5));
+const h = ri.mul(12.9898).add(ai.mul(78.233)).add(salt).sin().mul(43758.5453).fract();
+const kr = rr.div(L[1]).clamp(0, 1);
+const k = kr.mul(0.85).add(h.mul(0.15)).mul(is(v, 0)).add(h.mul(is(v, 1))).add(ai.div(n).mul(0.75).add(kr.mul(0.25)).mul(is(v, 2)));
+const lp = float(p).sub(k.mul(0.75)).div(0.25).clamp(0, 1), r = mix(0.12, 0.72, lp);
+const bead = step(l.length(), r), scale = step(l.add(vec2(0, 0.25)).length(), r.mul(1.15)).mul(step(r.mul(0.7), l.sub(vec2(0, 0.45)).length()));
+return mix(bead, scale, is(shp, 1)).max(step(0.999, lp)).mul(step(0.001, lp));
+};
+const cs = c.rnd(322).mul(0.45).add(0.8).mul(L[0]);
+const gin = L[2] < 0 ? float(1) : cells(cs, smoothstep(L[2], L[3], u), 1.7);
+const gout = cells(cs.mul(1.2), inv(layer === "world" ? smoothstep(inv(float(0.4).div(slot)), 1, u) : smoothstep(L[4], L[5], u)), 5.3);
+const g = gin.mul(gout);
+m.colorNode = m.colorNode.mul(g);
+m.opacityNode = m.opacityNode.mul(g);
 return m;
 }
