@@ -64,7 +64,9 @@ function holdTest(ctx, vt) {
   for (const o of ctx.query({ tags: ['vision-' + b.id] })) {
     const h = ctx.getObject(o.id); if (!h) continue
     const p = h.material?.params
-    if (p) { p.t0 = (vt.at / 1000) % 3600; p.on = 1; p.seed = vt.seed ?? 23; p.vw0 = 0; p.vw1 = 24; p.k0 = 0; p.k1 = 24 }
+    const t0 = (vt.at / 1000) % 3600
+    // the whole params row is written, and only when it moves: a second bench hold of the same being used to keep the first one's clock
+    if (p && (p.t0 !== t0 || p.on !== 1 || p.vw1 !== 24)) h.material.params = { ...p, t0, on: 1, seed: vt.seed ?? 23, vw0: 0, vw1: 24, k0: 0, k1: 24 }
     h.feetPosition = { x: 0, y: b.centre.y, z: homeZ(o.id) }
     h.visible = true
   }
