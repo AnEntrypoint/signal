@@ -1,26 +1,47 @@
 // THE MOON MOTHER (vision being BEINGS[1]): a crescent bowl cradling two sleeping profiles face to face, whose
 // black between is a chalice (Rubin's vase), under an arc of 13 moons from new through full to new.
-// Three layers at three depths, one script (params.layer, baked):
-//   "ring"  far (z -12): the lunar month, two line rings + 28 day-beads, soft (out of focus), turning slowly
-//   "being" (z 0): the 13 moons fill by PHASE one after another, the profiles draw themselves, the crescent waxes
-//           last; at the culmination (u .7..1, the climbing highs) her eyes open and the chalice fills
-//   "veil"  near (z +10): bead strands hanging into frame as bokeh, dropping in for the culmination, swaying
-// Everything leaves by waning in the last 0.5 s. Light travels through it: a ring leaving the centre on each
-// gated kick (c.kick, zero where the track has no beat) and a slow comet up the crescent's bead row.
-// Seed channels: 11 hue family, 12 profile gap, 13 moon order, 14 chalice content, 15 veil strands,
-// 16 ring speed, 20+ sparkle stars.
+// ONE SCENE, FIVE LAYERS at five depths, one script (params.layer, baked), each on its OWN motion:
+//   "world" z -30  SCROLLS   the tide: bead-row waves that rise and fall with the 13 moon phases, a moon glade,
+//                            and a sky of constellations joined by nib-drawn lines. Opaque black; it grows from her
+//                            centre outward as water ripples and so replaces the running scene ring by ring.
+//   "ring"  z -12  TURNS     the lunar month: two line rings + 28 day-beads one way, 13 little crescents the other (soft, additive)
+//   "being" z   0  BREATHES  a black new moon first, then profiles, 13 phase-moons, the crescent bowl, eyes, stars;
+//                            the Rubin flip: faces lit / chalice lit, the light poured from one into the other
+//   "veil"  z +10  DRIFTS    moths (two mirrored bead wings, solid black) rising from the water
+//   "fore"  z +22  UNDULATES tide eels riding the camera from the corners: black bodies, blue/violet stripes ->
+//                            scales -> beads, a dithered shadow beside them; one goes pure silhouette at the culmination
+// being / veil / fore / world are CUTOUT (alphaTest, depth-writing): a near shape hides what is behind it.
+// THE SCORE (u = 0..1 of the slot): 0 new moon + dotted rim / .08 profiles / .12 moons / .2 crescent / .25 world ripples out /
+// .4 ring, .48 counter ring / .5 eyes, constellations, sparkle stars, profile beads / .6 eels, .62 moths / .7 the flip /
+// .84 eyes open, chalice fills, one eel goes dark / .93.. everything leaves last-in first-out through its own mask.
+// Seed channels 220..239: 0 hue family, 1 profile gap, 2 moon order, 3 chalice content, 4 moth count, 5 ring speed,
+// 6 ring sense, 7 eel count, 8 eel look order, 9 flip variant, 10 sky tilt, 11 sky drift sense, 12 tide scroll sense,
+// 13 which eel goes dark, 14-16 sparkle stars, 17 hot accent, 18 comet speed.
 import { MeshBasicNodeMaterial, AdditiveBlending, DoubleSide } from "builtin/three";
-import { positionGeometry, float, vec2, vec3, smoothstep, step, mix, atan2, length, fwidth, select } from "builtin/tsl";
-import { tripClock, visionShown, visionU, climb, maskDraw, maskBeads, maskIris, nib } from "./lib/trip.js";
+import { positionGeometry, float, vec2, vec3, smoothstep, step, mix, atan2, fwidth, select } from "builtin/tsl";
+import { tripClock, visionShown, visionU, climb, maskDraw, maskBeads, maskIris, nib, stripes } from "./lib/trip.js";
 
-const TAU = 6.28318;
+const TAU = 6.28318, S = 1.5;
+const DEPTH = { world: 104, ring: 86, being: 74, veil: 64, fore: 52 };
 const CY = -3, R = 11, ARC = 15, RM = 1.35, STEP = (210 / 12) * Math.PI / 180;
 // her profile, right half (mirrored at x = 0): hair, forehead, brow, nose, lips, chin, neck
 const FACE = [[10.4, 6.0], [9.2, 8.0], [7.2, 8.7], [5.4, 7.6], [4.2, 6.2], [3.5, 4.4], [3.4, 3.6], [3.8, 2.8], [2.1, 0.6], [2.3, 0.1],
   [3.2, -0.2], [2.9, -1.0], [3.3, -1.5], [2.9, -2.3], [3.5, -3.1], [3.0, -4.3], [3.6, -5.0], [4.8, -5.6], [5.6, -7.4]].map(([x, y]) => [x * 0.9, y * 0.9 + CY]);
 const EYE = [4.9 * 0.9, 2.5 * 0.9 + CY];
+// the sky (world metres, right half, mirrored): three constellations, stars joined in order
+const SKY = [
+  [[50, 44], [60, 52], [72, 47], [81, 56], [94, 51], [101, 40]],
+  [[66, 20], [76, 29], [88, 25], [98, 32], [110, 23], [105, 10]],
+  [[26, 62], [35, 53], [45, 59], [42, 47], [53, 40]],
+];
+// the tide eels (fore metres, right half): base off-frame, heading, length, girth, wave
+const EELS = [
+  { bx: 64, by: -44, dx: -38, dy: 48, L: 62, w0: 4.2, amp: 3.2, k: 0.2, om: 1.6, ph: 0, t1: 0.74, t2: 0.81 },
+  { bx: 66, by: 44, dx: -0.45, dy: -0.89, L: 40, w0: 2.8, amp: 2.4, k: 0.26, om: -1.2, ph: 2.1, t1: 0.78, t2: 0.85 },
+];
 
 const is = (v, i) => step(v.sub(i).abs(), 0.5);
+const inv = (x) => float(1).sub(x);
 function polyline(q, pts) {
   const L = [0];
   for (let i = 1; i < pts.length; i++) L.push(L[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
@@ -42,164 +63,322 @@ export function material(ctx) {
   const layer = ctx.params.layer ?? "being";
   const c = tripClock(ctx);
   const u = visionU(ctx, c);
-  const vw1 = ctx.param("vw1", -1);
-  const keep = float(1).sub(smoothstep(vw1.sub(0.5), vw1, c.sec));            // the wane: last 0.5 s
-  const cul = smoothstep(0.7, 0.95, u).mul(climb(c).mul(0.6).add(0.4)).mul(keep);
-  const fam = c.pick(11, 3);
+  const io = (a, b, x, y) => smoothstep(a, b, u).mul(inv(smoothstep(x, y, u)));   // an element's way in and its way out
+  const rn = (n) => c.rnd(220 + n), pk = (n, k) => c.pick(220 + n, k);
+  const sense = (n) => step(0.5, rn(n)).mul(2).sub(1);
+  const fam = pk(0, 3), hot = pk(17, 3);
   const blue = vec3(0.05, 0.12, 1.0), violet = vec3(0.45, 0.05, 1.0), ice = vec3(0.45, 0.6, 1.0), W = vec3(1, 1, 1);
   const A = blue.mul(is(fam, 0)).add(violet.mul(is(fam, 1))).add(blue.mul(is(fam, 2)));   // body
   const B = violet.mul(is(fam, 0)).add(blue.mul(is(fam, 1))).add(ice.mul(is(fam, 2)));    // accent
-  const p = positionGeometry.xy;
-  const aa = fwidth(p.x).mul(1.2).max(0.01);
-  const q0 = p.sub(vec2(0, CY)), rr = q0.length();
-  // light travelling: a ring leaving her centre on each kick, only where the track has one
-  const front = c.beat.fract().mul(30);
-  const kl = smoothstep(2.2, 0, rr.sub(front).abs()).mul(step(0.001, c.kick)).mul(smoothstep(30, 14, front));
+  const H = vec3(1.0, 0.05, 0.6).mul(is(hot, 0)).add(vec3(1.0, 0.85, 0.05).mul(is(hot, 1))).add(vec3(0.1, 1.0, 0.15).mul(is(hot, 2))); // hot beads
+  const P = positionGeometry.xy;
+  const cyL = CY * S * DEPTH[layer] / 74;                       // her centre, in this layer's metres
+  const live = visionShown(ctx, c, 0);
+  const kickOn = step(0.001, c.kick);
+  // the month's pointer: one moon every two beats, round the 13; the tide is that moon's fullness
+  const mp = c.real.div(9.75).fract().mul(13);
+  const tide = inv(mp.sub(6.5).abs().div(6.5));
+  const cul = io(0.84, 0.9, 0.93, 0.96).mul(climb(c).mul(0.4).add(0.6));
   const m = new MeshBasicNodeMaterial();
   m.side = DoubleSide;
 
-  if (layer === "ring") {
-    const blur = aa.mul(4);                                               // far: soft, out of focus
-    const stroke = (d, w) => float(1).sub(smoothstep(float(w), blur.add(w), d));
-    const k = atan2(q0.x, q0.y).div(TAU).abs().mul(2);                    // 0 top .. 1 bottom, both sides at once
-    const pe = smoothstep(0.0, 0.14, u).mul(keep), pe2 = smoothstep(0.04, 0.18, u).mul(keep), pb = smoothstep(0.02, 0.22, u).mul(keep);
-    const l1 = stroke(rr.sub(22).abs(), 0.05).mul(maskDraw(pe, k));
-    const l2 = stroke(rr.sub(20.6).abs(), 0.04).mul(maskDraw(pe2, k));
-    const rot = c.sec.div(mix(60, 110, c.rnd(16))).mul(c.rnd(17).step(0.5).mul(2).sub(1));   // its own clock and sense
-    const an = atan2(q0.y, q0.x).div(TAU).add(rot).fract().mul(28);
-    const quarter = step(an.floor().mod(7), 0.5);
-    const loc = an.fract().sub(0.5).mul(TAU * 21.3 / 28);
-    const db = loc.mul(loc).add(rr.sub(21.3).mul(rr.sub(21.3))).sqrt();
-    const rad = mix(float(0.24), float(0.42), quarter);
-    const bead = float(1).sub(smoothstep(rad.sub(blur), rad, db)).mul(maskBeads(pb, k));
-    const lit = float(0.35).add(cul.mul(0.45)).add(kl.mul(0.8));
-    const col = A.mul(l1.add(l2).mul(lit)).add(mix(B, W, quarter).mul(bead).mul(lit.add(0.15)));
+  // ------------------------------------------------------------------ WORLD: the tide and the sky (scrolls)
+  if (layer === "world") {
+    const aa = fwidth(P.x).mul(1.2).max(0.02);
+    const stroke = (d, w) => inv(smoothstep(float(w), aa.add(w), d));
+    const q0 = P.sub(vec2(0, cyL)), ax = P.x.abs();
+    const de = vec2(q0.x.div(1.5), q0.y).length();
+    // coverage: black water spreading from her as ripples, the front broken into thinning rings
+    const grow = io(0.25, 0.45, 0.955, 0.995), Rg = grow.mul(118), lead = de.sub(Rg);
+    const rings = step(lead.div(5).fract(), float(0.55).sub(lead.div(15).mul(0.5))).mul(step(lead, 15)).mul(step(0, lead));
+    const cover = step(de, Rg).max(rings).mul(step(0.004, grow));
+    const front = c.beat.fract().mul(110);
+    const kl = smoothstep(5, 0, de.sub(front).abs()).mul(kickOn).mul(smoothstep(110, 50, front));
+    // the tide: rows of beads, nearer rows wider apart, bigger and faster; the whole sea lifts with the moon
+    const yH = float(-18).add(tide.mul(5));
+    const v = yH.sub(P.y).max(0);
+    const ri = v.sqrt().mul(1.6).floor();
+    const vc = ri.add(0.5).div(1.6), yc = yH.sub(vc.mul(vc));
+    const wave = ax.mul(float(0.09).div(ri.mul(0.12).add(1))).add(c.real.mul(1.1)).add(ri.mul(1.3)).sin().mul(ri.mul(0.16).add(0.05)).mul(tide.mul(0.8).add(0.5));
+    const sp = ri.mul(0.55).add(1.3);
+    const cx = ax.sub(c.real.mul(ri.mul(0.5).add(1.5)).mul(sense(12))).div(sp).fract().sub(0.5).mul(sp);
+    const br = ri.mul(0.07).add(0.14);
+    const bead = inv(smoothstep(br.sub(aa), br, vec2(cx, P.y.sub(yc).sub(wave)).length())).mul(step(0.0001, v));
+    const glade = smoothstep(v.mul(0.3).add(5), 0, ax).mul(tide);                       // the moon's path on the water
+    const horizon = stroke(P.y.sub(yH).abs(), 0.07).mul(step(ax.div(3).fract(), 0.6));
+    let col = mix(mix(A, B, ri.mod(2)), W, glade.mul(0.8)).mul(bead).mul(float(0.3).add(tide.mul(0.3)).add(kl.mul(0.7)).add(glade.mul(0.5)));
+    col = col.add(A.mul(horizon).mul(0.5));
+    // the sky: constellations, slowly wheeling about a pole; stars are placed first, then a nib joins them
+    const th = rn(10).sub(0.5).mul(0.8).add(c.real.mul(0.004).mul(sense(11)));
+    const sq = vec2(ax, P.y.sub(10)), cs = th.cos(), sn = th.sin();
+    const sk = vec2(sq.x.mul(cs).sub(sq.y.mul(sn)), sq.x.mul(sn).add(sq.y.mul(cs)).add(10));
+    const pst = io(0.5, 0.62, 0.94, 0.96), pln = io(0.56, 0.7, 0.93, 0.95);
+    const above = step(yH.add(1), P.y);
+    let lines = float(0), nibs = float(0), stars = float(0), n = 0;
+    SKY.forEach((pts, j) => {
+      const pl = polyline(sk, pts), pj = pln.mul(1.5).sub(j * 0.25).clamp(0, 1);
+      lines = lines.max(stroke(pl.d, 0.08).mul(maskDraw(pj, pl.u)));
+      nibs = nibs.max(nib(pj, pl.u, 0.03).mul(stroke(pl.d, 0.35)).mul(step(pj, 0.995)).mul(step(0.005, pj)));
+      for (const [x, y] of pts) {
+        const d = sk.sub(vec2(x, y)).abs(), sz = 1.1 + (n % 3) * 0.45;
+        const s4 = d.x.div(sz).sqrt().add(d.y.div(sz).sqrt());
+        stars = stars.max(inv(smoothstep(0.9, 1, s4)).mul(maskBeads(pst, n / 17)));
+        n++;
+      }
+    });
+    col = col.add(A.mul(lines).mul(0.45).add(W.mul(nibs).mul(1.2)).mul(inv(stars)).add(mix(B, W, 0.7).mul(stars).mul(float(0.8).add(kl))).mul(above));
     m.colorNode = col;
-    m.opacityNode = l1.add(l2).add(bead).min(1).mul(visionShown(ctx, c, rr.div(30)));
+    m.opacityNode = cover.mul(live);
     m.alphaTest = 0.5;
     return m;
   }
 
-  if (layer === "veil") {
-    // near: bead strands as bokeh discs, hanging in from above the frame, outer strands first
-    const x = p.x.abs(), top = 26, nS = c.pick(15, 3).add(4);
-    const pv = smoothstep(0.66, 0.88, u).mul(keep);
-    let glow = float(0);
-    for (let j = 0; j < 6; j++) {
-      const L = 9 + j * 3.2, uu = float(top).sub(p.y).div(L);
-      const sway = c.sec.mul(mix(0.6, 1.4, c.rnd(18)).mul(0.31 + j * 0.07)).add(j * 1.7).sin().mul(0.45).mul(uu);
-      const xj = float(14 + j * 3.4).add(sway);
-      const pj = pv.mul(1.5).sub((5 - j) / 5 * 0.5).clamp(0, 1);
-      const on = step(j + 0.5, nS).mul(step(uu, pj)).mul(step(0, uu));
-      const yb = uu.mul(L / 1.3).fract().sub(0.5).mul(1.3);
-      const d = vec2(x.sub(xj), yb).length();
-      const disc = smoothstep(0.42, 0.34, d).mul(smoothstep(0.1, 0.38, d).mul(0.6).add(0.4));   // bokeh: brighter rim
-      const run = smoothstep(1.4, 0, uu.mul(L).sub(c.beat.fract().mul(L)).abs()).mul(step(0.001, c.kick));
-      glow = glow.add(disc.mul(on).mul(float(0.35).add(run.mul(0.9)).add(cul.mul(0.25))));
-    }
-    m.colorNode = mix(B, W, 0.35).mul(glow);
-    m.opacityNode = visionShown(ctx, c, rr.div(30));
+  // ------------------------------------------------------------------ RING: the lunar month (turns, soft)
+  if (layer === "ring") {
+    const aa = fwidth(P.x).mul(1.2).max(0.02);
+    const q0 = P.sub(vec2(0, cyL)), rr = q0.length();
+    const blur = aa.mul(3.5);
+    const stroke = (d, w) => inv(smoothstep(float(w), blur.add(w), d));
+    const k = atan2(q0.x, q0.y).div(TAU).abs().mul(2);                    // 0 top .. 1 bottom, both sides at once
+    const pe = io(0.4, 0.5, 0.95, 0.975), pe2 = io(0.43, 0.53, 0.95, 0.975), pb = io(0.42, 0.56, 0.95, 0.975), pc = io(0.48, 0.6, 0.945, 0.97);
+    const front = c.beat.fract().mul(50);
+    const kl = smoothstep(3.5, 0, rr.sub(front).abs()).mul(kickOn).mul(smoothstep(50, 24, front));
+    const l1 = stroke(rr.sub(39.6).abs(), 0.08).mul(maskDraw(pe, k));
+    const l2 = stroke(rr.sub(37.4).abs(), 0.06).mul(maskDraw(pe2, k));
+    const rot = c.real.div(mix(60, 110, rn(5))).mul(sense(6));            // its own clock and sense
+    const an = atan2(q0.y, q0.x).div(TAU).add(rot).fract().mul(28);
+    const quarter = step(an.floor().mod(7), 0.5);
+    const loc = an.fract().sub(0.5).mul(TAU * 38.5 / 28);
+    const db = vec2(loc, rr.sub(38.5)).length();
+    const rad = mix(float(0.42), float(0.75), quarter);
+    const bead = inv(smoothstep(rad.sub(blur), rad, db)).mul(maskBeads(pb, k));
+    // the counter ring: 13 small crescents turning the other way, each at its own phase
+    const an2 = atan2(q0.y, q0.x).div(TAU).sub(rot.mul(1.7)).fract().mul(13);
+    const i2 = an2.floor(), lx = an2.fract().sub(0.5).mul(TAU * 32.5 / 13), ly = rr.sub(32.5);
+    const off = i2.div(12).mul(2).sub(1).mul(1.5);
+    const cr = inv(smoothstep(float(1.3).sub(blur), 1.3, vec2(lx, ly).length())).mul(smoothstep(float(1.3).sub(blur), 1.3, vec2(lx.sub(off), ly).length()).max(is(i2, 6))).mul(maskBeads(pc, k));
+    const dash = stroke(rr.sub(32.5).abs(), 0.04).mul(step(vec2(lx, ly).length(), 4.5)).mul(step(1.8, lx.abs())).mul(maskDraw(pc, k));
+    const lit = float(0.4).add(cul.mul(0.45)).add(kl.mul(0.8));
+    m.colorNode = A.mul(l1.add(l2).mul(lit)).add(mix(B, W, quarter).mul(bead).mul(lit.add(0.2))).add(mix(B, W, 0.5).mul(cr).mul(lit.add(0.1))).add(B.mul(dash).mul(0.35));
+    m.opacityNode = live;
     m.transparent = true;
     m.blending = AdditiveBlending;
     m.depthWrite = false;
     return m;
   }
 
-  // ---- THE BEING
-  const stroke = (d, w) => float(1).sub(smoothstep(float(w), aa.add(w), d));
+  // ------------------------------------------------------------------ VEIL: moths rising from the water (drifts)
+  if (layer === "veil") {
+    const aa = fwidth(P.x).mul(1.2).max(0.02);
+    const ax = P.x.abs(), nM = pk(4, 3).add(3);
+    const fold = inv(smoothstep(0.935, 0.96, u));                          // they leave by folding their wings
+    let col = vec3(0), cover = float(0);
+    const LANE = [2, 0, 3, 1, 4];
+    for (let j = 0; j < 5; j++) {
+      const age = u.sub(0.62 + j * 0.04).mul(24);
+      const yj = float(-50).add(age.mul(7 + j * 0.8));
+      const xj = float(27 + LANE[j] * 8.5).add(age.mul(0.7).add(j * 2.1).sin().mul(3));
+      const size = 3.4 + (j % 2) * 0.9;
+      const q = vec2(ax.sub(xj), P.y.sub(yj)).div(size);
+      const flap = c.real.mul(3.1).add(j * 1.7).sin().abs().mul(0.7).add(0.3).mul(fold);
+      const on = step(j + 0.5, nM).mul(step(0, age)).mul(step(0.03, fold)).mul(step(q.length(), 2.2));
+      const mx = q.x.abs().div(flap.max(0.03));
+      const up = vec2(mx.sub(0.85).div(0.85), q.y.sub(0.35).div(0.6)), lo = vec2(mx.sub(0.55).div(0.55), q.y.add(0.45).div(0.42));
+      const dU = up.length(), dL = lo.length();
+      const body = step(q.x.abs(), 0.11).mul(step(q.y.abs(), 0.8));
+      const wing = step(dU, 1).max(step(dL, 1));
+      const e = aa.div(size * 0.6);
+      const bU = step(dU.sub(0.72).abs(), 0.13).mul(step(atan2(up.y, up.x).div(TAU).mul(10).fract(), 0.5)).mul(step(dU, 1));
+      const bL = step(dL.sub(0.66).abs(), 0.15).mul(step(atan2(lo.y, lo.x).div(TAU).mul(7).fract(), 0.5)).mul(step(dL, 1)).mul(inv(step(dU, 1)));
+      const spot = inv(smoothstep(float(0.3).sub(e), 0.3, dU));
+      const rim = step(0.92, dU).mul(step(dU, 1)).max(step(0.9, dL).mul(step(dL, 1)).mul(inv(step(dU, 1))));
+      const cj = mix(B, W, 0.45).mul(bU).add(A.mul(bL)).add(H.mul(spot)).add(A.mul(rim).mul(0.6)).mul(inv(body)).add(mix(B, W, 0.8).mul(body)).mul(float(0.75).add(cul.mul(0.3)));
+      const cv = wing.max(body).mul(on);
+      col = mix(col, cj, cv); cover = cover.max(cv);
+    }
+    m.colorNode = col;
+    m.opacityNode = cover.mul(live);
+    m.alphaTest = 0.5;
+    return m;
+  }
+
+  // ------------------------------------------------------------------ FORE: the tide eels (undulate)
+  if (layer === "fore") {
+    const ax = P.x.abs(), sgn = step(0, P.x).mul(2).sub(1);
+    const swap = step(0.5, rn(8)), four = step(0.45, rn(7)), darkSide = step(0, sgn.mul(sense(13)));
+    const eel = (o, prog, dark) => {
+      const dl = Math.hypot(o.dx, o.dy), Dx = o.dx / dl, Dy = o.dy / dl;
+      const rx = ax.sub(o.bx), ry = P.y.sub(o.by);
+      const s = rx.mul(Dx).add(ry.mul(Dy)), nn = rx.mul(-Dy).add(ry.mul(Dx));
+      const sl = s.add(inv(prog).mul(o.L + 12));                           // it slides in along its own axis
+      const f = sl.div(o.L).clamp(0, 1);
+      const arg = sl.mul(o.k).sub(c.real.mul(o.om)).add(sgn.mul(0.8)).add(o.ph);
+      const sway = c.real.mul(0.23).add(o.ph * 2).add(sgn).sin().mul(o.amp * 1.2);
+      const n0 = f.mul(o.amp).mul(arg.sin()).add(f.mul(f).mul(sway));
+      const slope = f.mul(o.amp * o.k).mul(arg.cos()).add(f.mul(2 / o.L).mul(sway));
+      const dn = nn.sub(n0).div(slope.mul(slope).add(1).sqrt());
+      const w = inv(f).max(0).pow(0.5).mul(o.w0).mul(step(sl, o.L));
+      const vv = dn.div(w.max(0.01));
+      const body = step(dn.abs(), w).mul(step(0.02, w));
+      // three skins, each new one travelling up the body from the base: stripes, then scales and beads
+      const st = stripes(sl, 0.45, 0.04), par = sl.mul(0.45).floor().mod(2);
+      const cStr = mix(A, B, par).mul(st);
+      const cSc = mix(B, W, 0.25).mul(stripes(sl.mul(0.5).add(vv.mul(0.7)), 1, 0.06).mul(stripes(sl.mul(0.5).sub(vv.mul(0.7)), 1, 0.06)));
+      const bc = sl.div(1.7).fract().sub(0.5).mul(1.7), brad = w.mul(0.42).min(0.6);
+      const cBe = mix(A, W, 0.6).mul(inv(smoothstep(brad.sub(0.06), brad, vec2(bc, dn).length())));
+      const g1 = step(sl, smoothstep(o.t1, o.t1 + 0.06, u).mul(o.L)), g2 = step(sl, smoothstep(o.t2, o.t2 + 0.05, u).mul(o.L));
+      let col = mix(mix(cStr, mix(cSc, cBe, swap), g1), mix(cBe, cSc, swap), g2);
+      const run = smoothstep(3, 0, sl.sub(c.beat.fract().mul(o.L)).abs()).mul(kickOn);
+      col = mix(col, mix(A, W, 0.55).mul(run.add(0.85)), smoothstep(0.8, 0.86, vv.abs()));
+      col = mix(col, H, inv(smoothstep(0.45, 0.55, vec2(sl.sub(o.L - 3.2), dn).length())));   // its eye
+      const lit = inv(step(sl, smoothstep(0.86, 0.9, u).mul(o.L + 1)).mul(dark));                // the silhouette climbs it
+      return { body, col: col.mul(lit).mul(0.85), dn, w, sl };
+    };
+    const ea = eel(EELS[0], io(0.6, 0.74, 0.93, 0.955), darkSide);
+    const eb = eel(EELS[1], io(0.66, 0.8, 0.93, 0.95), float(0));
+    const bB = eb.body.mul(four);
+    // the big eel's shadow: a band beside it, black through a 2x2 ordered dither (dense by the body, gone 2.6 m out)
+    const cell = P.div(0.22).add(1000).floor(), bx = cell.x.mod(2), by = cell.y.mod(2);
+    const thr = by.mul(3).add(bx.mul(2)).sub(bx.mul(by).mul(4)).add(0.5).div(4);
+    const gap = ea.dn.sub(ea.w);
+    const shadow = step(thr, inv(gap.div(2.6)).mul(0.75)).mul(step(0, gap)).mul(step(gap, 2.6)).mul(step(ea.sl, EELS[0].L)).mul(step(0.3, ea.w));
+    m.colorNode = mix(eb.col.mul(bB), ea.col, ea.body);
+    m.opacityNode = ea.body.max(bB).max(shadow).mul(live);
+    m.alphaTest = 0.5;
+    return m;
+  }
+
+  // ------------------------------------------------------------------ THE BEING (breathes)
+  const p = P.div(c.real.mul(TAU / 7).sin().mul(0.02).add(1).mul(S));
+  const aa = fwidth(p.x).mul(1.2).max(0.008);
+  const q0 = p.sub(vec2(0, CY)), rr = q0.length();
+  const front = c.beat.fract().mul(30);
+  const kl = smoothstep(2.2, 0, rr.sub(front).abs()).mul(kickOn).mul(smoothstep(30, 14, front));
+  const stroke = (d, w) => inv(smoothstep(float(w), aa.add(w), d));
   let col = vec3(0), cover = float(0);
   const add = (colour, mask) => { col = col.add(colour.mul(mask)); cover = cover.max(mask); };
+  const solid = (mask) => { col = col.mul(inv(mask)); cover = cover.max(mask); };
 
-  // 13 phase-moons on an arc: new (ends) - waxing - FULL (top) - waning - new; each fills by its own phase
+  // first: the NEW MOON, a black disc opening from her centre (it hides the scene), its rim dotted round by a nib
+  const pd = io(0.0, 0.07, 0.975, 1.0), pg = io(0.01, 0.1, 0.97, 0.995);
+  solid(step(rr, pd.mul(R)));
+  const kTop = atan2(q0.x, q0.y).div(TAU).abs().mul(2);
+  const ghost = stroke(rr.sub(R).abs(), 0.05).mul(step(atan2(q0.y, q0.x).div(TAU).mul(90).fract(), 0.4)).mul(maskDraw(pg, kTop));
+  add(W.mul(0.3), ghost);
+  add(W.mul(1.3), nib(pg, kTop, 0.03).mul(stroke(rr.sub(R).abs(), 0.25)).mul(step(pg, 0.99)).mul(step(0.01, pg)));
+
+  // 13 phase-moons on an arc: each a black disc that fills by its own phase; the month's pointer haloes one
   const th = atan2(q0.x, q0.y);
   const idx = th.div(STEP).round().add(6).clamp(0, 12);
   const thi = idx.sub(6).mul(STEP);
   const q = q0.sub(vec2(thi.sin(), thi.cos()).mul(ARC)).div(RM), qr = q.length();
-  const fi = idx.div(12), ord = c.pick(13, 3), off = idx.sub(6).abs().div(6);
-  const ki = float(1).sub(off).mul(is(ord, 0)).add(off.mul(is(ord, 1))).add(fi.mul(is(ord, 2)));
-  const pm = u.sub(0.08).sub(ki.mul(0.32)).div(0.08).clamp(0, 1).mul(keep);
+  const fi = idx.div(12), ord = pk(2, 3), off = idx.sub(6).abs().div(6);
+  const ki = inv(off).mul(is(ord, 0)).add(off.mul(is(ord, 1))).add(fi.mul(is(ord, 2)));
+  const pm = u.sub(0.12).sub(ki.mul(0.14)).div(0.05).clamp(0, 1).mul(inv(smoothstep(0.96, 0.99, u)));
   const wax = fi.lessThanEqual(0.5);
-  const f = select(wax, fi.mul(pm), float(1).sub(float(1).sub(fi).mul(pm)));
-  const ct = f.mul(TAU).cos().mul(float(1).sub(q.y.mul(q.y)).max(0).sqrt());
+  const f = select(wax, fi.mul(pm), inv(inv(fi).mul(pm)));
+  const ct = f.mul(TAU).cos().mul(inv(q.y.mul(q.y)).max(0).sqrt());
   const e = aa.div(RM);
-  const litSide = select(wax, smoothstep(ct.sub(e), ct.add(e), q.x), float(1).sub(smoothstep(ct.negate().sub(e), ct.negate().add(e), q.x)));
+  const litSide = select(wax, smoothstep(ct.sub(e), ct.add(e), q.x), inv(smoothstep(ct.negate().sub(e), ct.negate().add(e), q.x)));
   const started = step(0.001, pm);
-  const disc = float(1).sub(smoothstep(float(1).sub(e), 1, qr));
+  const disc = inv(smoothstep(inv(e), 1, qr));
   const mfill = disc.mul(litSide).mul(started);
   const mrim = stroke(qr.sub(1).abs().mul(RM), 0.05).mul(step(atan2(q.y, q.x).div(TAU).mul(24).fract(), 0.55)).mul(started);
-  const halo = stroke(qr.sub(1.45).abs().mul(RM), 0.05).mul(is(idx, 6)).mul(step(0.15, cul));
-  const mlit = float(0.55).add(kl.mul(0.6)).add(cul.mul(0.45));
+  const here = is(idx, mp.floor()).mul(io(0.3, 0.34, 0.95, 0.96));
+  const halo = stroke(qr.sub(1.5).abs().mul(RM), 0.07).mul(here);
+  const mlit = float(0.55).add(kl.mul(0.6)).add(cul.mul(0.45)).add(here.mul(0.4));
+  solid(disc.mul(started));
   add(mix(B, W, 0.75).mul(mlit), mfill);
-  add(B.mul(0.6).add(kl.mul(0.5)), mrim.mul(float(1).sub(mfill)));
-  add(W.mul(0.8), halo);
+  add(B.mul(0.6).add(kl.mul(0.5)), mrim.mul(inv(mfill)));
+  add(H, halo);
 
-  // the great crescent: an occluding disc slides up off the full disc, the bowl waxes (last)
-  const pc = smoothstep(0.52, 0.7, u).mul(keep);
+  // the great crescent: an occluding disc slides up off the full disc, the bowl waxes
+  const pc = io(0.2, 0.32, 0.96, 0.99);
   const occ = q0.sub(vec2(0, pc.mul(4.2))).length();
-  const inBig = float(1).sub(smoothstep(R - 0.0, R + 0.0, rr).mul(0).add(smoothstep(float(R).sub(aa), R, rr)));
-  const outOcc = smoothstep(float(R).sub(aa), R, occ);
-  const cres = inBig.mul(outOcc);
-  const ghost = stroke(rr.sub(R).abs(), 0.04).mul(step(atan2(q0.y, q0.x).div(TAU).mul(90).fract(), 0.4)).mul(smoothstep(0.4, 0.46, u)).mul(keep);
+  const cres = inv(smoothstep(float(R).sub(aa), R, rr)).mul(smoothstep(float(R).sub(aa), R, occ));
   const edgeOut = stroke(rr.sub(R).abs(), 0.09).mul(smoothstep(float(R).sub(0.3), R, occ));
   const edgeIn = stroke(occ.sub(R).abs(), 0.07).mul(smoothstep(float(R).add(0.3), R, rr)).mul(step(0.002, pc));
   const hatch = step(occ.sub(R).div(0.5).fract(), 0.16).mul(cres);
   const angB = atan2(q0.x, q0.y.negate()).div(TAU).abs().mul(2);       // 0 bottom .. 1 top, both horns
-  const comet = smoothstep(0.08, 0, angB.sub(c.sec.div(mix(4.5, 8, c.rnd(19))).fract()).abs());
+  const comet = smoothstep(0.08, 0, angB.sub(c.real.div(mix(4.5, 8, rn(18))).fract()).abs());
   const bj = atan2(q0.y, q0.x).div(TAU).mul(56).fract().sub(0.5).mul(TAU * (R - 0.8) / 56);
-  const bd = bj.mul(bj).add(rr.sub(R - 0.8).mul(rr.sub(R - 0.8))).sqrt();
-  const cbead = float(1).sub(smoothstep(float(0.2).sub(aa), 0.2, bd)).mul(smoothstep(float(R).add(0.25), R + 0.45, occ));
+  const bd = vec2(bj, rr.sub(R - 0.8)).length();
+  const cbead = inv(smoothstep(float(0.2).sub(aa), 0.2, bd)).mul(smoothstep(float(R).add(0.25), R + 0.45, occ));
   const clit = float(0.5).add(kl.mul(0.7)).add(cul.mul(0.5)).add(comet.mul(0.6));
-  add(W.mul(0.25), ghost);
   add(A.mul(float(0.45).add(kl.mul(0.5)).add(cul.mul(0.3))), hatch);
   add(mix(A, W, 0.6).mul(clit), edgeOut.max(edgeIn));
   add(mix(B, W, comet.add(kl).min(1)).mul(clit.add(0.2)), cbead);
 
   // the two sleeping profiles, face to face: the black between them is the chalice
-  const sh = c.pick(12, 3).sub(1).mul(0.3);
+  const sh = pk(1, 3).sub(1).mul(0.3);
   const fq = vec2(p.x.abs().sub(sh), p.y);
   const pl = polyline(fq, FACE);
-  const pf = smoothstep(0.38, 0.56, u).mul(keep);
+  const pf = io(0.08, 0.24, 0.955, 0.985);
   const fline = stroke(pl.d, 0.07).mul(maskDraw(pf, pl.u));
-  const fnib = nib(pf, pl.u, 0.025).mul(stroke(pl.d, 0.22)).mul(step(pf, 0.995));
-  const fbeads = stroke(pl.d.sub(0.55).abs(), 0.09).mul(step(pl.u.mul(70).fract(), 0.3)).mul(maskBeads(cul.mul(1.3), pl.u));
+  const fnib = nib(pf, pl.u, 0.025).mul(stroke(pl.d, 0.22)).mul(step(pf, 0.995)).mul(step(0.005, pf));
+  const fbeads = stroke(pl.d.sub(0.55).abs(), 0.09).mul(step(pl.u.mul(70).fract(), 0.3)).mul(maskBeads(io(0.6, 0.72, 0.94, 0.96), pl.u));
+
+  // THE RUBIN FLIP: which side is lit decides what you see. The light is poured: it drains from the faces
+  // (horizontal op-art bands) as it rises in the chalice (contour bands off the profiles), and back.
+  let fx = float(FACE[2][0]);
+  for (let i = 2; i < FACE.length - 1; i++) {
+    const [x0, y0] = FACE[i], [x1, y1] = FACE[i + 1];
+    fx = select(p.y.lessThan(y0), mix(float(x1), float(x0), p.y.sub(y1).div(y0 - y1).clamp(0, 1)), fx);
+  }
+  const yT = FACE[3][1], yB = FACE[FACE.length - 1][1];
+  const inBowl = step(q0.sub(vec2(0, 4.2)).length(), R - 0.25).mul(step(rr, R - 0.25));
+  const inChal = step(fq.x, fx.sub(0.22)).mul(step(yB, p.y)).mul(step(p.y, yT)).mul(inBowl);
+  const inFace = step(fx.add(0.22), fq.x).mul(inBowl);
+  const fc = u.sub(0.7).mul(TAU * 6.5).cos(), vB = step(0.5, rn(9)), fg = io(0.7, 0.74, 0.93, 0.95);
+  const g = smoothstep(-0.25, 0.25, fc), x0 = fc.mul(8);
+  const litF = mix(g, smoothstep(5, 2.5, p.x.sign().mul(7).sub(x0).abs()), vB).mul(fg);   // variant B: a light crossing left-chalice-right
+  const litC = mix(inv(g), smoothstep(4.5, 2, x0.abs()), vB).mul(fg);
+  const faceFill = inFace.mul(step(p.y.sub(CY - R).div(2 * R), litF.mul(1.05))).mul(step(0.01, litF)).mul(stripes(p.y, 1.5, 0.05));
+  const chalFill = inChal.mul(step(p.y.sub(yB).div(yT - yB), litC.mul(1.05))).mul(step(0.01, litC)).mul(stripes(pl.d, 1.3, 0.05));
+  add(mix(A, W, 0.3).mul(float(0.75).add(kl.mul(0.4))), faceFill);
+  add(mix(B, W, 0.75).mul(float(0.9).add(kl.mul(0.4))), chalFill);
   add(mix(B, W, 0.7).mul(float(0.7).add(kl.mul(0.4)).add(cul.mul(0.4))), fline);
   add(W.mul(1.4), fnib);
   add(B.mul(0.9).add(kl.mul(0.4)), fbeads);
-  // her eye: one closed lid line with bead lashes; at the culmination the lid lifts
-  const ex = fq.x.sub(EYE[0]), ey = p.y.sub(EYE[1]), dx = ex.div(0.8), base = float(1).sub(dx.mul(dx)), inX = step(dx.abs(), 1);
+
+  // her eye: a closed lid drawn from its middle, bead lashes; at the culmination the lid lifts
+  const ex = fq.x.sub(EYE[0]), ey = p.y.sub(EYE[1]), dx = ex.div(0.8), base = inv(dx.mul(dx)), pe = io(0.5, 0.56, 0.95, 0.97);
+  const inX = step(dx.abs(), pe);
   const open = smoothstep(0.3, 0.8, cul);
   const lowY = base.mul(-0.24), upY = mix(base.mul(-0.24), base.mul(0.38), open);
-  const eyeOn = step(0.62, pf);
-  const lids = stroke(ey.sub(lowY).abs(), 0.05).max(stroke(ey.sub(upY).abs(), 0.05).mul(step(0.02, open))).mul(inX).mul(eyeOn);
+  const lids = stroke(ey.sub(lowY).abs(), 0.05).max(stroke(ey.sub(upY).abs(), 0.05).mul(step(0.02, open))).mul(inX);
   const almond = step(lowY, ey).mul(step(ey, upY)).mul(inX);
-  const pupil = float(1).sub(smoothstep(float(0.2).sub(aa), 0.2, vec2(ex.add(0.12), ey.sub(0.02)).length())).mul(almond).mul(eyeOn);
+  const pupil = inv(smoothstep(float(0.2).sub(aa), 0.2, vec2(ex.add(0.12), ey.sub(0.02)).length())).mul(almond);
   let lash = float(0);
-  for (const lx of [-0.45, 0, 0.45]) lash = lash.max(float(1).sub(smoothstep(0.05, 0.08, vec2(ex.sub(lx * 0.8), ey.add(0.42 - lx * lx * 0.5)).length())));
+  [-0.45, 0, 0.45].forEach((lx, i) => { lash = lash.max(inv(smoothstep(0.05, 0.08, vec2(ex.sub(lx * 0.8), ey.add(0.42 - lx * lx * 0.5)).length())).mul(maskBeads(io(0.54, 0.6, 0.95, 0.97), i / 3))); });
+  solid(almond);
   add(W.mul(0.9), lids);
-  add(W.mul(1.3), pupil);
-  add(B.mul(0.8), lash.mul(eyeOn).mul(float(1).sub(open)));
-  // the chalice fills: a full moon, a four-point star or three beads, in the black between the faces
-  const cv = c.pick(14, 3), cp = smoothstep(0.1, 0.6, cul), vq = p.sub(vec2(0, 1.4 + CY + 3 - 3));
-  const vdisc = float(1).sub(smoothstep(float(1.05).sub(aa), 1.05, vq.length())).mul(maskIris(cp, vq.length().div(1.05)));
+  add(H.mul(1.2), pupil);
+  add(B.mul(0.8), lash.mul(inv(open)));
+  // the chalice's gift, in the black between the faces: a full moon, a four-point star or three beads
+  const cv = pk(3, 3), cp = smoothstep(0.1, 0.6, cul), vq = p.sub(vec2(0, 1.4 + CY));
+  const vdisc = inv(smoothstep(float(1.05).sub(aa), 1.05, vq.length())).mul(maskIris(cp, vq.length().div(1.05)));
   const sa = vq.x.abs().div(1.5).sqrt().add(vq.y.abs().div(1.5).sqrt());
-  const vstar = float(1).sub(smoothstep(float(1).sub(aa), 1, sa.div(cp.add(0.001))));
+  const vstar = inv(smoothstep(inv(aa), 1, sa.div(cp.add(0.001))));
   let vbeads = float(0);
-  for (let i = 0; i < 3; i++) vbeads = vbeads.max(float(1).sub(smoothstep(0.3, 0.34, vq.sub(vec2(0, -1.3 + i * 1.3)).length())).mul(maskBeads(cp, i / 3)));
-  add(mix(B, W, 0.8).mul(float(0.9).add(kl.mul(0.4))), vdisc.mul(is(cv, 0)).add(vstar.mul(is(cv, 1))).add(vbeads.mul(is(cv, 2))));
+  for (let i = 0; i < 3; i++) vbeads = vbeads.max(inv(smoothstep(0.3, 0.34, vq.sub(vec2(0, -1.3 + i * 1.3)).length())).mul(maskBeads(cp, i / 3)));
+  const gift = vdisc.mul(is(cv, 0)).add(vstar.mul(is(cv, 1))).add(vbeads.mul(is(cv, 2))).min(1);
+  solid(gift);
+  add(mix(H, W, 0.35), gift);
 
-  // four-point sparkle stars, mirrored pairs at seeded places, lighting one by one; they flare on the kick
-  const sp = smoothstep(0.6, 0.86, u).mul(keep);
-  for (let i = 0; i < 6; i++) {
-    const sx = c.rnd(20 + i).mul(12).add(17.5), sy = c.rnd(30 + i).mul(30).sub(15);
-    const sz = c.rnd(40 + i).mul(0.7).add(0.5).mul(c.kick.mul(0.35).add(1));
+  // four-point sparkle stars, mirrored pairs at seeded places, lighting one by one; they swell on the kick
+  const sp = io(0.55, 0.68, 0.94, 0.96);
+  for (let i = 0; i < 3; i++) {
+    const r0 = rn(14 + i);
+    const sx = r0.mul(12).add(17.5), sy = r0.mul(7.31).fract().mul(26).sub(13);
+    const sz = r0.mul(3.7).fract().mul(0.7).add(0.6).mul(c.kick.mul(0.35).add(1));
     const d = vec2(p.x.abs().sub(sx), p.y.sub(sy));
     const s4 = d.x.abs().div(sz).sqrt().add(d.y.abs().div(sz).sqrt());
-    const star = float(1).sub(smoothstep(float(1).sub(aa.div(sz)), 1, s4)).mul(maskBeads(sp, i / 6));
-    add(mix(B, W, 0.85), star);
+    add(mix(B, W, 0.85), inv(smoothstep(inv(aa.div(sz)), 1, s4)).mul(maskBeads(sp, i / 3)));
   }
 
   m.colorNode = col;
-  m.opacityNode = cover.mul(visionShown(ctx, c, rr.div(30)));
+  m.opacityNode = cover.mul(live);
   m.alphaTest = 0.5;
   return m;
 }
