@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "basedOnSpecVersion": 314,
-  "updatedAt": "2026-11-11T11:48:13.116Z",
-  "summary": "Signal Stage is a walkable 3D motion-graphics stage with a synchronized seeded cinematic on the measured 160-bpm, 198-second track. A shared director clock and scene-deck drive shader-built stage assemblies and camera-riding celestial visions; the visions are layered canvas scenes, with selected beings also built from depth-winding 3D tubes.",
+  "basedOnSpecVersion": 329,
+  "updatedAt": "2026-11-11T11:51:27.920Z",
+  "summary": "Signal Stage is a walkable 3D motion-graphics stage with a synchronized seeded cinematic on the measured 160-bpm, 198-second track. A shared director clock and scene-deck drive shader-built stage assemblies and camera-riding celestial visions; several beings now combine layered canvas scenes with their own depth-winding 3D worm meshes.",
   "scriptPaths": [],
   "places": [
     "places/main/config.yaml (main, 3D) - black void, spawn, gravity and place-wide scripts/look-trip.js atmosphere look.",
@@ -10,9 +10,9 @@
     "places/main/cells/x0z-1.scene and x0z-3.scene - sun-eye, tunnel along -Z, chamber assembly and tunnel-knot at the far end.",
     "places/main/cells/x0y2z0.scene and x0y3z0.scene - vision-sun-father at y=300 (five canvas layers and three 3D flare tongues) and vision-moon-mother at y=420 (layered canvases and four tide eels).",
     "places/main/cells/x0y4z0.scene - vision-contour-oracle at y=520, five canvases plus four 3D ribbon-worms.",
-    "places/main/cells/x0y5z0.scene - vision-many-armed at y=620 (five canvases and four naga-tail tubes) and vision-ouroboros at y=720.",
+    "places/main/cells/x0y5z0.scene - vision-many-armed at y=620 with four naga-tail tubes, and expanded vision-ouroboros at y=720 with five canvas layers and four hatchling tubes.",
     "places/main/cells/x0y6z0.scene - vision-thunderbird at y=820: five canvas layers and four 3D horned-serpent tubes.",
-    "places/main/cells/x0y7z0.scene through x0y9z0.scene - vision-world-tree at y=920, giving-hands at y=1020, star-jelly at y=1120 and star-child at y=1220; all have layered being scenes."
+    "places/main/cells/x0y7z0.scene through x0y9z0.scene - world-tree at y=920 now has five canvas layers and four vine tubes; giving-hands at y=1020, star-jelly at y=1120 and star-child at y=1220 have layered beings."
   ],
   "roots": [
     "world.config.yaml - multiplayer services, player/camera templates, movement and cine actions, arrival, lighting, HUD and nametag.",
@@ -34,8 +34,9 @@
     "scripts/player.js exports onInput, update; scripts/camera.js exports finiteNumber, update; scripts/stage.js exports update; scripts/look-trip.js exports look; scripts/ui.js exports default.",
     "scripts/lib/cine.js exports CINE, cineTime, sectionAt, rollRnd, cameraAt, beatEnv; scripts/lib/deck.js exports dealDeck, sceneTime.",
     "scripts/lib/visions.js exports BEINGS, dealVisions, visionAt, visionShot, energyAt; scripts/lib/trip.js exports KICK_RUNS, SEC, BPS, tripClock, win, pal, stripes, HUE, shown, lens, bendUv, visionShown.",
-    "scripts/vision-contour-oracle-worm-geo.js exports SPINES, RINGS, geometry, collider; vision-many-armed-worm-geo.js exports spine, geometry, collider.",
-    "scripts/vision-moon-mother-worm-geo.js, vision-sun-father-worm-geo.js and vision-thunderbird-worm-geo.js export geometry, collider; their paired worm materials export material.",
+    "scripts/vision-contour-oracle-worm-geo.js, vision-many-armed-worm-geo.js, vision-moon-mother-worm-geo.js, vision-sun-father-worm-geo.js and vision-thunderbird-worm-geo.js export geometry/collider as defined; paired materials export material.",
+    "scripts/vision-ouroboros-worm-geo.js and vision-world-tree-worm-geo.js export geometry, collider; their paired worm materials export material.",
+    "scripts/vision-giving-hands-worm-geo.js exports geometry, collider; scripts/vision-giving-hands-worm-mat.js exports material (not yet placed in the giving-hands scene).",
     "scripts/tunnel-core.js, tunnel-gates.js and tunnel-ribs.js export material; scripts/tunnel-lib.js exports Z0, FEET, BOUNDS, tun, inside, camDepth, v3, BLUE, base, hot, GRAPH, mirAng.",
     "Field, eye, serpent, tunnel, chamber, sun and vision geometry scripts export geometry/collider where defined; paired shader scripts export material (field-mandala.js also exports material)."
   ],
@@ -69,8 +70,8 @@
     "scripts/tunnel-* - wall, core, dust, gates, ribs and knot share tunnel geometry kinds and tunnel-lib.js spatial/color helpers; materials vary motif and seeded palette.",
     "scripts/chamber-* - room, circuit, hands, hex, Lissajous, solids and bilateral mask share chamber shader helpers and scored cutouts.",
     "scripts/sun-disc.js, sun-drips.js and sun-halo.js - sun-eye layers share sun-lib.js but vary disc, hanging-drip and depth-halo imagery.",
-    "scripts/vision-*-geo.js / -mat.js - ten built beings share vision clocks and staged attachment; sun-father, moon-mother, contour-oracle, many-armed, thunderbird and world-tree now use five depth-layered canvas scenes with their own motifs.",
-    "scripts/vision-{contour-oracle,many-armed,moon-mother,sun-father,thunderbird}-worm-* - per-being 3D tubes add ribbon worms, naga tails, tide eels, flare tongues or horned serpents; each uses its own geometry and shader rather than a common worm implementation."
+    "scripts/vision-*-geo.js / -mat.js - ten beings share vision clocks and staged attachment; canvas layers vary by being, with depth-layered worlds/foregrounds on ouroboros and world-tree.",
+    "scripts/vision-{contour-oracle,many-armed,moon-mother,sun-father,thunderbird,ouroboros,world-tree}-worm-* - per-being unit-tube geometries and shader materials bend/animate depth-winding worms; placements and motifs vary (ribbon worms, naga tails, tide eels, flare tongues, horned serpents, hatchlings, vines)."
   ],
   "probableOrphans": [],
   "migrationNotes": [
@@ -78,7 +79,7 @@
     "stage.js converts c.start to shader t0 seconds modulo 3600 and repeats parameter pushes over several ticks so late-built materials receive the roll; trip-tagged materials need t0/on/seed and kick bounds k0/k1.",
     "Four vision slots in energy.yml are each 24 s and end on their measured drop; dealVisions extends each to b+2.5 s for departure. Only built entries in BEINGS can be selected.",
     "Vision assemblies are housed above the field in +Y; selected objects attach to the camera at depth 74. Canonical layer offsets are world -30, ring -12, being 0, veil +10, fore +22; stage.js derives home z from the tag suffix.",
-    "Thunderbird's four horned-serpent entities share one geometry/material pair and distinguish themselves with material param n=1..4; the worm geometry is a +Y unit tube bent and animated by its own shader, not serpents-curve.js.",
+    "Placed vision worm groups use a shared geometry/material pair per being and distinguish meshes with material param n=1..4; the geometry is a +Y unit tube bent and animated by its own shader, not serpents-curve.js. Giving-hands worm scripts exist but have no placed scene entities yet.",
     "Score is 198 seconds at 160 bpm, first beat 0.35 s; idle shaders free-run the duration loop. Units are metres, +Y up, vision canvases face +Z; main composition runs from field/eye through tunnel to chamber on -Z."
   ]
 }
