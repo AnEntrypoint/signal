@@ -15,7 +15,7 @@ import { positionGeometry, float, vec2, vec3, smoothstep, mix, step, atan2, leng
 import { tripClock, visionShown, visionU, climb, maskEclipse, maskBeads, maskLid, maskDraw, nib, BPS, SCORE } from "./lib/trip.js";
 
 const TAU = 6.28318, PI = 3.14159;
-const R = 8.0; // the disc's radius
+const R = 10.0; // the disc's radius (10: a fifth of the frame read too small on the 48 s slots)
 
 export function material(ctx) {
   const layer = (ctx.params && ctx.params.layer) || "being";
@@ -90,7 +90,7 @@ export function material(ctx) {
   if (layer === "world") {
     // THE WORLD: grows from the sun outward behind a rayed front; where grown it is opaque black ground and sky.
     const hz = -14;
-    const G = P(0.25, 0.45, 0.965, 0.99).mul(215);
+    const G = P(0.12, 0.42, 0.965, 0.99).mul(215); // starts early: on the 48 s slots .25 left 12 s of black
     const NR = c.pick(210, 3).mul(4).add(12);
     const front = r.mul(an.mul(NR).mul(TAU).add(sec.mul(0.2)).cos().mul(0.16).add(1));
     const grown = step(front, G);
