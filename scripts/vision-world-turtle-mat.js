@@ -49,7 +49,7 @@ export function material(ctx) {
   const pIn = ssRaw(G[1], G[2], u), pOut = G[3] < 0 ? ssRaw(uEnd, float(1.0005), u) : ssRaw(G[3], G[4], u);
   const hc = hexCell(P.div(G[0])), plD = hexd(hc.l).mul(2), cid = hc.id.mul(G[0]);
   const hsh = (o) => hc.id.dot(vec2(12.9898 + o, 78.233)).sin().mul(43758.5453).fract();
-  const plR = cid.length().div(layer === "world" ? 150 : 34).clamp(0, 1), ang = atan2(cid.x.abs(), cid.y).div(PI);
+  const plR = cid.length().div(layer === "world" ? 150 : 34).clamp(0, 1), plA = atan2(cid.x.abs(), cid.y).div(PI);
   const plOrder = (v, o) => plR.mul(is(v, 0)).add(hsh(o).mul(is(v, 1))).add(plA.mul(0.6).add(plR.mul(0.4)).mul(is(v, 2)));
   const kIn = plOrder(pk(17, 3), 0), kOut = inv(plOrder(pk(18, 3), 7));
   const feather = layer === "world" ? inv(ssRaw(0.8, 0.97, vec2(P.x.div(152), P.y.div(86)).length())) : float(1);
