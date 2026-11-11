@@ -107,6 +107,13 @@ function pieceLag(name) {
   return r.mul(SCORE.piece ?? 2.25);
 }
 const SCENE_STARTS = new Set(Object.values(SCORE.sections).map(([a]) => a));
+// a ring's own turn, 0..1: the radius d cut into 14 rings, each ring's place in the order hashed by layer and roll,
+// with 20% of the plain outward order kept so a thing still grows from its heart
+function shuffleBand(c, name, d) {
+  const dd = float(d).clamp(0, 1), q = dd.mul(14).floor();
+  const hsh = q.add(salt(name) % 97).add(c.seed.mul(0.618)).mul(12.9898).sin().mul(43758.5453).fract();
+  return hsh.mul(0.8).add(dd.mul(0.2));
+}
 export function shown(c, name, d = 0) {
   // a dealt seam: pieces leave before it and arrive after it, never all at once (40% stand at the seam itself)
   // no piece pops whole: each one closes along its own radius (d), outside in, as the seam nears, and opens the
@@ -120,15 +127,20 @@ export function shown(c, name, d = 0) {
   // the companion worms and the bend carry the eye across that half-second.
   // 2026-11-11 (watched seed 9 at 1:36: the old scene snapped off in ~0.3 s and a worm sat alone on black ~2 s):
   // each piece now fades over ~1.1 s on its own turn, the turns spread over ~2 s, and only the seam instant is fully dark
-  const seamO = pieceLag(name).div(SCORE.piece ?? 2.25).mul(0.25).add(float(d).clamp(0, 1).mul(0.35)).add(turn * 0.45).mul(0.3);
+  // 11-11 14:42 creator: "there are still wipe transitions rather than progressive changes". The old lag ran straight
+  // out along d (the radius), so every layer opened as one travelling iris front. Now d is cut into 14 rings and each
+  // ring draws its own seeded turn (per layer, per roll): rings and pieces light one at a time in a shuffled order,
+  // a faint pull outward kept so it still grows from its heart, and each eases in over ~1.2 s instead of snapping.
+  const band = shuffleBand(c, name, d);
+  const seamO = pieceLag(name).div(SCORE.piece ?? 2.25).mul(0.25).add(band.mul(0.35)).add(turn * 0.45).mul(0.3);
   const seamGate = smoothstep(seamO, seamO.add(0.18), c.seamD.div(SCORE.deck.seam).clamp(0, 1));
-  const lag = float(d).clamp(0, 1).mul(SCORE.wipe).add(pieceLag(name));
+  const lag = band.mul(SCORE.wipe).add(pieceLag(name));
   let v = float(0);
   for (const [a0, b] of SCORE.layers[name]) {
     // a layer that opens its scene is already standing when the scene is dealt in: its own entry wipe would
     // leave every dealt scene black for its first bars. The seam gate above brings it in piece by piece instead.
     const a = SCENE_STARTS.has(a0) ? a0 - SCORE.wipe - (SCORE.piece ?? 2.25) - 0.2 : a0;
-    v = v.add(smoothstep(a, a + 0.2, c.sec.sub(lag)).mul(smoothstep(b + 0.2, b, c.sec.sub(lag))));
+    v = v.add(smoothstep(a, a + 1.2, c.sec.sub(lag)).mul(smoothstep(b + 1.2, b, c.sec.sub(lag))));
   }
   return v.clamp(0, 1).mul(seamGate).mul(drift(c, name, d));
 }
@@ -143,7 +155,7 @@ function drift(c, name, d) {
   const tide = c.sec.mul(6.2831853 / p1).add(ph).sin().mul(0.6)
     .add(c.sec.mul(6.2831853 / p2).sub(ph.mul(1.7)).sin().mul(0.4)).mul(0.5).add(0.5);   // 0..1, unpredictable
   const ebb = smoothstep(0.55, 0.12, tide).mul(0.8);                   // how much of the layer is gone
-  const rank = pieceLag(name).div(SCORE.piece ?? 2.25).mul(0.65).add(float(1).sub(float(d).clamp(0, 1)).mul(0.35));
+  const rank = pieceLag(name).div(SCORE.piece ?? 2.25).mul(0.65).add(float(1).sub(shuffleBand(c, name, d)).mul(0.35));
   return smoothstep(ebb, ebb.add(0.04), rank);
 }
 // A lens number ("bulge" | "swirl" | "fold" | "hyper" | "droste") at this moment. The lens is the scene's own:
