@@ -24,7 +24,7 @@ seed (void, the Eye's lid opens) → pulse (iris rings fire on the kick) → blo
 - one hue family at a time, the whole world swapping together; rainbow only at the peak.
 - colour drifts along strokes; strokes draw themselves on.
 - black is half the frame; seed, deep, reset, return are near-monochrome.
-- mirrored about x = 0; one shared breath per phrase.
+- mirrored about x = 0; each layer breathes on its own clock and they weave through each other (2026-11-11 below).
 - the camera holds on the axis and creeps; the tunnel is the only fast flight.
 
 **Numbers that are my pick:** section names and boundaries (on the measured phrases), camera path, gain 0.8 (was 0.7).
