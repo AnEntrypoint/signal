@@ -178,7 +178,7 @@ col = col.add(mix(C3, W, 0.35).mul(planet).mul(back).mul(step(0.98, po)).mul(lit
 }
 const sh = visionShown(ctx, c, 0);
 m.colorNode = col.mul(gOut).add(W.mul(spark)).mul(sh);
-m.opacityNode = sh;
+m.opacityNode = sh.mul(gOut.max(step(0.5, spark)));
 m.transparent = true;
 m.blending = AdditiveBlending;
 m.depthWrite = false;
