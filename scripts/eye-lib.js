@@ -54,3 +54,13 @@ const max3 = (v) => v.x.max(v.y).max(v.z);
 export const relight = (col, lit) => mix(vec3(0.05, 0.05, 0.068).mul(max3(col).min(1)), col, lit);
 // the Eye only takes colour on the first kick phrase, and everything is lit in peak
 export const gate = (c, lit, peak) => float(lit).max(peak.mul(0.85)).mul(step(12.35, c.sec));
+
+// ---- the trope deck (scripts/lib/data/tropes.yml): 2 of the 4 optional eye tropes show per phrase, dealt by the
+// roll's seed (channel 29) and moving on one each phrase; in peak all show (unless solo).
+// 0 apollonian-eye (pupil), 1 rose-lash (lids), 2 graphite-and-gold (iris), 3 depth-parallax (pupil)
+export const deal = (c, i, solo = false) => {
+  const d = step(c.pick(29, 4).add(c.phrase.floor()).add(i).mod(4), 1.5);
+  return solo ? d.mul(float(1).sub(win(c.sec, SEC.peak))) : d.max(win(c.sec, SEC.peak));
+};
+// symmetry-order: the roll's order 6, 8 or 12, shared by every radial piece (spine channel 8)
+export const symN = (c) => { const k = c.pick(8, 3); return k.mul(2).add(6).add(step(1.5, k).mul(2)); };

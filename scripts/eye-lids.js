@@ -3,7 +3,7 @@
 import { MeshBasicNodeMaterial } from "builtin/three";
 import { positionGeometry, vertexColor, float, vec3, step, mix, smoothstep, varying } from "builtin/tsl";
 import { tripClock, shown } from "./lib/trip.js";
-import { lidOpen, LID, fam, ripple, barStep, relight, gate, breathScale } from "./eye-lib.js";
+import { lidOpen, LID, fam, ripple, barStep, relight, gate, breathScale, deal } from "./eye-lib.js";
 
 export function material(ctx) {
   const c = tripClock(ctx);
@@ -19,7 +19,11 @@ export function material(ctx) {
   const yBody = E.mul(o.add(float(1).sub(o).mul(s)));
   const slope = x.mul((-2 * LID.H) / (LID.W * LID.W)).mul(o);
   const inv = slope.mul(slope).add(1).sqrt().reciprocal();
-  const d = g.y.add(g.y.sub(LID.band).max(0).mul(ripple(c, x.abs().add(8)).mul(0.08)));
+  // lash-crown: lengths alternate long/short along the rim; rose-lash (dealt): lengths follow r = |cos(k theta)|,
+  // theta running a quarter turn from the middle to each corner, k = 2..5 stepping on the bar
+  const kRose = c.bar.floor().mod(4).add(2);
+  const lenF = mix(xn.mul(3.14159 * 14).cos().mul(0.25).add(1), xn.mul(1.5708).mul(kRose).cos().abs().mul(0.9).add(0.45), deal(c, 1));
+  const d = g.y.add(g.y.sub(LID.band).max(0).mul(ripple(c, x.abs().add(8)).mul(0.08).add(lenF).sub(1)));
   const xo = x.sub(slope.mul(inv).mul(d));
   const yo = E.mul(o).add(inv.mul(d));
   const m = new MeshBasicNodeMaterial();

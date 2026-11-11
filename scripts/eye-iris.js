@@ -6,18 +6,18 @@
 import { MeshBasicNodeMaterial } from "builtin/three";
 import { positionGeometry, float, vec2, vec3, smoothstep, mix, step, atan2, length, fwidth } from "builtin/tsl";
 import { tripClock, win, SEC, shown } from "./lib/trip.js";
-import { TAU, fam, sweep, relight, gate, breathScale } from "./eye-lib.js";
+import { TAU, fam, sweep, relight, gate, breathScale, deal, symN } from "./eye-lib.js";
 
 export function material(ctx) {
   const c = tripClock(ctx);
   const F = fam(c);
   const rot = c.phrase.mul(c.dir).mul(mix(0.7, 1.3, c.rnd(21))); // this roll's turning sense and crawl speed
   const is = (v, i) => step(v.sub(i).abs(), 0.5);
-  const nDot = c.pick(22, 3).mul(8).add(32);      // inner target row: 32 / 40 / 48
-  const nDot2 = c.pick(23, 3).mul(6).add(30);     // outer target row: 30 / 36 / 42
-  const nFib = c.pick(24, 3).mul(12).add(48);     // fibres: 48 / 60 / 72
-  const nTooth = c.pick(25, 3).mul(6).add(12);    // outer teeth: 12 / 18 / 24
-  const nCell = c.pick(26, 3).mul(12).add(24);    // split band cells: 24 / 36 / 48
+  const nDot = c.pick(22, 3).add(3).mul(symN(c));      // inner target row: 32 / 40 / 48
+  const nDot2 = c.pick(23, 3).add(3).mul(symN(c));     // outer target row: 30 / 36 / 42
+  const nFib = c.pick(24, 3).add(4).mul(symN(c));     // fibres: 48 / 60 / 72
+  const nTooth = c.pick(25, 2).add(1).mul(symN(c));    // outer teeth: 12 / 18 / 24
+  const nCell = c.pick(26, 3).add(2).mul(symN(c));    // split band cells: 24 / 36 / 48
   const vMath = c.pick(27, 3);                    // section-maths numbers
   const vCut = c.pick(28, 3);                     // which self-cutout
   const p = positionGeometry.xy;
@@ -37,7 +37,7 @@ export function material(ctx) {
   const k = 5 / 3.0;
   const ph = r.sub(5.3).mul(k).add(c.bar.mul(0.5));
   const f = ph.fract();
-  const duty = float(0.5).add(rot.mul(TAU).add(r.mul(0.9)).sin().mul(0.2));
+  const duty = float(0.5).add(c.sec.mul(TAU / 12).add(ph.floor().mul(3.14159)).sin().mul(0.2));
   const w = aa.mul(k);
   const ringM = smoothstep(0, w, f).mul(float(1).sub(smoothstep(duty.sub(w), duty, f)));
   const odd = ph.floor().mul(0.5).fract().mul(2);
@@ -89,8 +89,9 @@ export function material(ctx) {
   const fib = smoothstep(0.44, 0.5, ff).mul(smoothstep(1.0, 0.94, ff));
   col = mix(col, white.mul(0.95).mul(mix(fib, leadM, leadW)), band(10.9, 12.75));
   // white triangle teeth on black, pointing inward, against the fibres
-  const wf = an.add(rot.mul(0.125)).mul(48).fract().sub(0.5).abs().mul(2);
+  const wf = an.add(rot.mul(0.125)).mul(symN(c).mul(4)).fract().sub(0.5).abs().mul(2);
   const wh = float(13.55).sub(r).div(0.65);
+  const wt = smoothstep(0.0, 0.06, float(1).sub(wf).sub(wh)).mul(band(12.9, 13.56));
   col = mix(col, white.mul(smoothstep(0.0, 0.06, float(1).sub(wf).sub(wh))), band(12.9, 13.56));
   // rim line (the green rim of picture 1 in the blue family)
   col = mix(col, F.hot(0.15), band(13.7, 13.97));
@@ -108,7 +109,12 @@ export function material(ctx) {
   const power = c.kick.pow(0.35).mul(win(c.sec, SEC.pulse).mul(0.5).add(0.5)).min(1);
   const heart = float(1).sub(smoothstep(8.2, 8.35, r));
   const lit = gate(c, heart.max(sweep(c, p.x, p.y)).max(kr.mul(power)), F.peak);
+  const base = col;
   col = relight(col, lit);
+  // graphite-and-gold (dealt): everything embossed near-black, only the two tooth rows lit, in gold, by the same hand
+  const gold = vec3(1.0, 0.7, 0.06);
+  const goldCol = vec3(1, 1, 1).mul(base.dot(vec3(0.3, 0.6, 0.1)).mul(0.07)).add(gold.mul(wt.add(tooth.mul(band(14.15, 15.01))).min(1)).mul(lit.mul(0.9).add(0.1)));
+  col = mix(col, goldCol, deal(c, 2, true).mul(step(8.35, r)));
   col = mix(col, white.mul(1.15), line.mul(power).mul(0.85).mul(step(10.85, c.sec)));
 
   const s = breathScale(c.sec);
@@ -120,7 +126,7 @@ export function material(ctx) {
   const hk = r.sub(5.4).div(0.4).floor();
   const bf = c.bar.floor();
   const cutRing = step(hk.add(bf).mod(4), 0.5);                                            // 0: every 4th ring, stepping inward
-  const sect = atan2(p.y, p.x.abs()).div(TAU).add(0.25).mul(24).floor();                   // mirrored sectors
+  const sect = atan2(p.y, p.x.abs()).div(TAU).add(0.25).mul(symN(c).mul(2)).floor();                   // mirrored sectors
   const cutWedge = step(sect.add(bf).mod(4), 0.5);                                         // 1: every 4th wedge, clicking round
   const cutCheck = step(hk.add(sect).add(bf).mod(2), 0.5).mul(step(hk.mod(3), 0.5));       // 2: checker on every 3rd ring
   const cut = cutRing.mul(is(vCut, 0)).add(cutWedge.mul(is(vCut, 1))).add(cutCheck.mul(is(vCut, 2)));
