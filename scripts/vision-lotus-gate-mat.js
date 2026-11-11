@@ -97,7 +97,7 @@ export function material(ctx) {
   // ------------------------------------------------------------------ WORLD: water and sky (scrolls)
   if (layer === "world") {
     // coverage: one giant blossom outline growing from the lotus, its front a scalloped row of beads
-    const grow = io(0.25, 0.45, 0.92, 0.995), Rg = grow.mul(190);
+    const grow = io(0.25, 0.45, 0.88, 0.985), Rg = grow.mul(grow).mul(190); // squared: the blossom spends its exit inside the frame, closing back into the lotus, not popping
     const shape = an.mul(4).cos().abs().mul(0.22).add(0.78);
     const lead = rr.sub(Rg.mul(shape));
     const fb = vec2(an.mul(rr).div(3.2).fract().sub(0.5).mul(3.2), lead.sub(2.2)).length();
