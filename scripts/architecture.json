@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "basedOnSpecVersion": 569,
-  "updatedAt": "2026-11-11T15:23:39.247Z",
+  "basedOnSpecVersion": 572,
+  "updatedAt": "2026-11-11T15:25:59.078Z",
   "summary": "Signal Stage is a walkable 3D motion-graphics stage whose multiplayer roll launches a synchronized, seeded music trip. The shared director, camera, vision slots and shader clock follow a canonical show timeline while the track registry maps each roll's music and beat onto it; players can also upload and purchase a measured song for the room's next roll.",
   "scriptPaths": [],
   "places": [
@@ -17,7 +17,7 @@
     "world.config.yaml - multiplayer services, player/camera templates, movement and cine/ownSong actions, buyables.own-track purchase hook, arrival, lighting, HUD and nametag.",
     "templates/player.js#player composes humanoid-locomotion.js with scripts/player.js; templates/camera.js#camera runs scripts/camera.js.",
     "places/main/cells/x0z0.scene#director - scripts/stage.js synchronizes track/audio and distributes roll/deal parameters.",
-    "scripts/ui.js - viewer-local ROLL/CUT and cinematic status HUD, track name/BPM, and own-song file selection/measurement/upload UI.",
+    "scripts/ui.js - viewer-local ROLL/CUT and cinematic status HUD, track name/BPM, and own-song selection/upload UI; active-roll controls sit top-right and the track line relocates below them on narrow screens.",
     "places/main/config.yaml atmosphere.look - installs scripts/look-trip.js as the full-screen post-processing look.",
     "scripts/buyables/own-track.js - purchase callback turns the buyer's uploaded and measured song into the room's next synchronized roll."
   ],
@@ -50,17 +50,17 @@
   ],
   "flows": [
     "P/Y cine action or HUD sendAction('cine') → scripts/player.js onInput → world.state.cine={start: now+300ms,by,seed} or null; non-buyers cannot cut an active paid-song roll, while its buyer can.",
-    "scripts/ui.js file picker → browser decodes and measures audio (BPM, first beat, per-bar energy and six timeline anchors), uploads it and sends ownSong action data → scripts/player.js validates URL, stores self.state.ownSong and proposes own-track purchase.",
+    "scripts/ui.js file picker → browser decodes and measures audio (BPM, first beat, per-bar energy and six timeline anchors), uploads it and sends ownSong action data → scripts/player.js validates URL, stores self.state.ownSong and proposes o…",
     "world.config.yaml buyables.own-track (50 Spoins) → scripts/buyables/own-track.js onPurchase reads buyer.state.ownSong → shared world.state.cine with track metadata, buyer and 1.5 s scheduled start; room-wide flash/sound are emitted.",
     "world.state.cine → scripts/ui.js render → viewer-local ROLL/CUT and rolling progress/section label plus selected track name/BPM and buyer attribution.",
-    "world.state.cine → scripts/lib/tracks.js trackOf/ownTrack (or seed-based trackFor) → scripts/lib/cine.js maps track time to canonical show seconds; stage.js plays the selected shared audio at c.start and clears/stages the next roll after its duration.",
+    "world.state.cine → scripts/lib/tracks.js trackOf/ownTrack (or seed-based trackFor) → scripts/lib/cine.js maps track time to canonical show seconds; stage.js plays the selected shared audio at c.start and clears/stages the next roll after i…",
     "tracks.js maps track time through its vision-window anchors onto the canonical show clock → cine.js camera/deck timing and trip.js shader scene timing; track-specific beat/BPM remain on the track clock.",
     "track bar-energy data → tracks.js kick runs converted to canonical time → stage.js supplies k0/k1; trackParams supplies tdur, ta1..ta4, fb and bps to trip-tagged materials and look.",
     "stage.js → trip-tagged material/look params t0/on/seed, track clock params, kick bounds k0/k1 and dealt scene mappings ds0..ds3/dr0..dr3; look also receives current vision slot v0/v1 and focus depth vd.",
     "stage.js + vision-<id> tags → selected being layers and worms attach to camera starting 3 s before their slot at depth 74 with layer offsets; others return home unless held by visionTest.",
     "cine.js cameraAt → scripts/camera.js viewer camera; dealt beings and companion worms join the camera view rather than replacing it with separate vision shots; stage computes shot-dependent fit scale for attached layers.",
     "trip.js tripClock/shown/lens/mask helpers → field, eye, serpents, tunnel, chamber, vision assemblies and look-trip shader timing/cutouts; shown() gives each layer's 14 radius bands a seeded shuffled arrival order.",
-    "trip.js supplies scene sec and seamD → field-lib.js seamHold/held → selected far scene layers remain lit as spatially hashed beads near a dealt seam; look-trip.js reads depth and vision v0/v1/vd for near-only subject-aware DOF, trip lens and kick effects."
+    "trip.js supplies scene sec and seamD → field-lib.js seamHold/held → selected far scene layers remain lit as spatially hashed beads near a dealt seam; look-trip.js reads depth and vision v0/v1/vd for near-only subject-aware DOF, trip lens a…"
   ],
   "behaviorFamilies": [
     "scripts/field-* - mandala, stalks, orbs and glyph/cartouche field layers share field-lib.js placement/timing; mandala, disc and stalk motifs vary, with seam holds on the mandala.",
