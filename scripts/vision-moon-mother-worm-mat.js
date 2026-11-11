@@ -2,7 +2,7 @@
 // n 1, 2: rise out of the tide behind the world canvas (z -40) at the bottom corners, pass outside the month ring,
 // cross the being's plane and end 30 m nearer the camera than her. n 3, 4 (dealt by the seed): thinner, from the top corners.
 // The spine and its travelling waves are bent in the VERTEX stage; the skin is opaque black with neon on it, so the
-// body hides whatever is behind it. It grows root to tip (slot u .55-.8), its skin changes from blue/violet op-art
+// body hides whatever is behind it. It grows root to tip (slot u .28-.72), its skin changes from blue/violet op-art
 // stripes to bead rows or diamond scales travelling up the body (.8-.9), one eel goes pure black with a thin rim at
 // the culmination, and all retract tip-first on the exit. Seed channels shared with the scene: 220 hue, 227 count,
 // 228 second skin, 233 which eel goes dark, 237 hot beads.
@@ -25,7 +25,7 @@ export function material(ctx) {
 
   const uu = positionGeometry.y, ca = positionGeometry.x, sa = positionGeometry.z;
   const r0 = pair ? 2.4 : 3.6;
-  const grow = io(0.55 + pair * 0.05, 0.8, 0.93, 0.965 - pair * 0.01);        // root to tip in, tip first out
+  const grow = io(0.28 + pair * 0.07, 0.66 + pair * 0.06, 0.93, 0.965 - pair * 0.01);        // root to tip in, tip first out
   const exists = pair ? step(0.45, rn(7)) : float(1);
   const tip = smoothstep(grow, grow.sub(0.07), uu);                            // the growing end closes to a point
   const rad = inv(uu).max(0).pow(0.5).mul(r0).mul(tip.sqrt()).mul(live).mul(exists).mul(step(0.002, grow));
@@ -33,15 +33,18 @@ export function material(ctx) {
   const ph = pair * 2.1 + (sg > 0 ? 0 : 0.9), env = uu.mul(0.8).add(0.2);
   const w1 = uu.mul(9).sub(c.real.mul(1.3)).add(ph).sin().mul(env).mul(5);
   const w2 = uu.mul(7).sub(c.real.mul(0.9)).add(ph * 1.7).cos().mul(env).mul(4);
+  // depth arc: out of the tide at z -40, gliding BEHIND her (z -8..-12) while the body crosses her silhouette
+  // (x from ~35 to ~5 on its own side), then rising through her plane to +16 in front as the tip passes her centre
+  const zArc = smoothstep(0, 0.5, uu).mul(31).sub(40).add(smoothstep(0.8, 0.98, uu).mul(25)).add(w2.mul(0.25));
   const spine = pair
-    ? vec3(uu.mul(-50).add(102).mul(sg).add(w1), uu.mul(-52).add(68).add(w2.mul(0.6)), uu.mul(62).sub(40).add(w2.mul(0.8)))
-    : vec3(uu.mul(-56).add(96).mul(sg).add(w1), uu.mul(58).sub(62).add(w2.mul(0.6)), uu.mul(70).sub(40).add(w2.mul(0.8)));
+    ? vec3(uu.mul(-110).add(100).mul(sg).add(w1), uu.mul(-60).add(68).add(w2.mul(0.6)), zArc)
+    : vec3(uu.mul(-106).add(96).mul(sg).add(w1), uu.mul(62).sub(62).add(w2.mul(0.6)), zArc);
   const m = new MeshBasicNodeMaterial();
   m.side = DoubleSide;
   m.positionNode = spine.add(vec3(ca.mul(rad), sa.mul(rad).mul(0.8), sa.mul(rad).mul(-0.6)));
   // THE DEPTH WEAVE: the mid-body swings through the canvas planes (ring -12, being 0, veil +10), so one body dips
   // behind the being and comes out in front of it, more than once; the ends stay rooted. Seeded per body: swing, turns, phase.
-  { const S = float(uu).clamp(0, 1), dz = step(0.5, c.rnd(391 + n)).mul(2).sub(1).mul(c.rnd(395 + n).mul(5).add(11));
+  { const S = float(uu).clamp(0, 1), dz = step(0.5, c.rnd(391 + n)).mul(2).sub(1).mul(c.rnd(395 + n).mul(1.5).add(1.5));
     const turns = c.rnd(399 + n).mul(1.6).add(1.4).mul(3.14159);
     const weave = S.mul(turns).add(c.rnd(403 + n).mul(6.283)).add(c.real.mul(0.21 + 0.04 * n)).sin().mul(S.mul(float(1).sub(S)).mul(4)).mul(dz);
     m.positionNode = m.positionNode.add(vec3(0, 0, weave)); }
