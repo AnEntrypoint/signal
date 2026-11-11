@@ -247,13 +247,13 @@ export function material(ctx) {
     const lead = pop.mul(rim.max(step(bd, rs.mul(0.5))));
     let colour;
     if (sgn > 0) {
-      const pat = mix(band(bd.div(r).mul(1.6), aa.mul(2)), band(dp.div(r).mul(1.4), aa.mul(2)), bi.mod(2));
-      colour = W.mul(mix(pat, inv(pat), inverted)).mul(0.9).mul(step(bd, r)).add(W.mul(rim).mul(0.5));
+      const pat = band(arc.div(0.75).add(dp.div(r.max(0.01)).mul(0.35)), aa.mul(2));
+      colour = W.mul(mix(pat, inv(pat), inverted)).mul(0.9).mul(step(bd, r)).add(W.mul(rim).mul(0.2));
     } else {
       const t2 = dp.div(r).mul(1.4);
       const dia = band(arc.div(0.9).add(t2), aa.mul(2)).mul(band(arc.div(0.9).sub(t2), aa.mul(2)));
       const hb = inv(smoothstep(float(0.26).sub(aa), 0.26, bd));
-      colour = mix(N.mul(dia.mul(0.8).add(0.1)).mul(step(bd, r)), H, hb).add(N.mul(rim).mul(0.7));
+      colour = mix(N.mul(dia.mul(0.8).add(0.1)).mul(step(bd, r)), H, hb).add(N.mul(rim).mul(0.3));
     }
     colour = colour.add(mix(A, W, 0.5).mul(rim).mul(run)).add(W.mul(lead).mul(1.4)).mul(cul.mul(0.35).add(1));
     return { body, gap, colour };
