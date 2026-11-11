@@ -1,5 +1,5 @@
 // THE WEAVER's SILK-WORMS: round segmented bodies winding in depth through her web (params.n = 1..4), bent in the
-// vertex stage; opaque black skin with neon, so a body hides what is behind it. Grow root to tip (u .55-.8), retract
+// vertex stage; opaque black skin with neon, so a body hides what is behind it. Grow root to tip (u .64/.70-.8), retract
 // tip-first. Skin motion dealt per worm: 0 rides the body (worm 1 always), 1 pinned to the travelling wave, 2 runs back.
 import { MeshBasicNodeMaterial, DoubleSide } from "builtin/three";
 import { positionGeometry, float, vec2, vec3, smoothstep, step, mix, atan2 } from "builtin/tsl";
@@ -19,7 +19,7 @@ export function material(ctx) {
 
   const uu = positionGeometry.y, ca = positionGeometry.x, sa = positionGeometry.z;
   const r0 = pair ? 2.6 : 3.4;
-  const grow = io(0.55 + pair * 0.06, 0.8, 0.93 + pair * 0.004, 0.962);
+  const grow = io(0.64 + pair * 0.06, 0.8, 0.9 + pair * 0.004, 0.93);
   const exists = n === 4 ? step(0.5, rn(6)) : float(1);
   const tip = inv(smoothstep(grow.sub(0.06), grow, uu));
   const seg = uu.mul(LEN / 4.2).fract().sub(0.5).abs().mul(-0.28).add(1);
@@ -44,7 +44,7 @@ export function material(ctx) {
   // skin 1: op-art segment rings (black / white with the hue between) and a spiracle dot on each segment
   const sgI = s.div(4.2), sf = sgI.fract();
   const ringW = step(sf, 0.18).add(step(0.82, sf));
-  const spir = low ? float(0) : smoothstep(0.55, 0.35, vec2(sf.sub(0.5).mul(4.2), ang.div(TAU).mul(4).fract().sub(0.5).mul(rf.mul(TAU / 4))).length());
+  const spir = low ? float(0) : inv(smoothstep(0.35, 0.55, vec2(sf.sub(0.5).mul(4.2), ang.div(TAU).mul(4).fract().sub(0.5).mul(rf.mul(TAU / 4))).length()));
   const cRing = mix(A.mul(stripes(s, 0.9, 0.05)).mul(0.55), W, ringW).add(H.mul(spir));
   // skin 2a: dew bead rows; 2b: diamond scales
   const row = s.div(2.4).floor();
@@ -56,7 +56,7 @@ export function material(ctx) {
   const swap = pair ? inv(step(0.5, rn(7))) : step(0.5, rn(7));
   const t1 = 0.78 + pair * 0.03;
   const skin = mix(cRing, mix(cBe, cSc, swap), step(uu, smoothstep(t1, t1 + 0.1, u).mul(1.02)));
-  const run = smoothstep(0.05, 0, uu.sub(c.beat.fract()).abs()).mul(step(0.001, c.kick));
+  const run = inv(smoothstep(0, 0.05, uu.sub(c.beat.fract()).abs())).mul(step(0.001, c.kick));
   const edge = ca.abs();
   const lit = skin.mul(sa.abs().mul(0.45).add(0.55)).add(mix(A, W, 0.5).mul(smoothstep(0.86, 1, edge)).mul(run.add(0.5)));
   const dark = is(float(n), pk(8, 3).add(1)).mul(step(uu, smoothstep(0.85, 0.91, u).mul(1.02)));

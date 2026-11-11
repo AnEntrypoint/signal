@@ -1,3 +1,26 @@
+// REVEAL SCHEDULE (u = visionU, one bar ~ .031; one group begins per bar; the web is woven, she is drawn last):
+//   element                                   layer   u in   u whole  u out
+//   first radial thread (top spoke) ALONE      world   .00    .10      .95-.97 (with the spokes)
+//   the other spokes, one by one from the top  world   .155   .28      .95-.97 retract to the hub
+//   loom warp threads, one by one              world   .19    .34      .955-.975; a few stay to .985-.99
+//   loom weft threads, one by one              world   .23    .38      same as warp
+//   capture rings (weft of the web), hub out   world   .27    .44      .945-.965
+//   spider: hub dot, dragline, thorax          being   .30    .36      .93-.965
+//   spider: legs pair by pair                  being   .32    .43      .915-.955
+//   spider: abdomen, head + palps, pattern     being   .35    .43      .915-.945
+//   spider: eight eyes (being WHOLE)           being   .41    .44      .915-.935
+//   ring cords                                 ring    .49    .57      .905-.945
+//   silk skein below her                       being   .52    .56      .91-.93
+//   leg beads, galaxy, eyes wake (details)     being   .55    .64      .905-.925
+//   ring dew beads                             ring    .58    .66      .905-.935
+//   loom crossing beads + loose dew            world   .61    .74      .965-.99
+//   worms, pair 0 / pair 1                     worm    .64/.70 .80     .90-.93
+//   silkworms on silk, one by one              veil    .67    .81      .875-.91
+//   dew on the capture thread                  world   .72    .80      .965-.985
+//   caught glyphs, one by one                  world   .75    .83      .88-.92
+//   near legs / near dew                       fore    .76/.78 .82     .86-.89 (fore leaves first)
+//   culmination (Fraser cords, eyes blaze)     all     .80    .84      .87-.90
+//   last lit: a few loom threads + dew         world                   .99 (slot end)
 // THE WEAVER (vision being BEINGS[13]): a spider grandmother at the hub of her web. One script, five layers
 // (params.layer): world z-30 loom + web, ring z-12 cords + dew, being z0, veil z+10 silkworms, fore z+22 dew + near legs.
 // Every layer enters and leaves by WEB CELLS FILLING (cells()), order and shape dealt by the seed; fore leaves first,
@@ -52,7 +75,7 @@ export function material(ctx) {
   const P = positionGeometry.xy;
   const live = visionShown(ctx, c, 0);
   const kickOn = step(0.001, c.kick);
-  const cul = io(0.85, 0.9, 0.93, 0.955).mul(climb(c).mul(0.4).add(0.6));
+  const cul = io(0.8, 0.84, 0.87, 0.9).mul(climb(c).mul(0.4).add(0.6));
   const m = new MeshBasicNodeMaterial();
   m.side = DoubleSide;
   // her web's own grid in a layer's plane: sector (sec, fr), chord radius rho, ring coordinate rl
@@ -81,10 +104,10 @@ export function material(ctx) {
     const aa = fwidth(P.x).mul(1.2).max(0.03), stroke = strokeAA(aa);
     const g = web(P), { r, a01, sec, fr, N, SP, rl } = g;
     const slot = ctx.param("vw1", -1).sub(ctx.param("vw0", -1)).max(1);
-    const pIn = u.div(0.4).clamp(0, 1), pOut = inv(u).mul(slot).div(0.45).clamp(0, 1);   // out: the slot's last 0.45 s only
+    const pIn = u.sub(0.12).div(0.32).clamp(0, 1), pOut = inv(u).mul(slot).div(0.45).clamp(0, 1);   // out: the slot's last 0.45 s only
     const gate = cells(g, pIn, pOut, 0, 22);
     const kf = c.beat.fract().mul(170);
-    const kl = smoothstep(7, 0, r.sub(kf).abs()).mul(kickOn).mul(smoothstep(170, 70, kf));   // the kick: a tremor running out along the silk
+    const kl = inv(smoothstep(0, 7, r.sub(kf).abs())).mul(kickOn).mul(inv(smoothstep(70, 170, kf)));   // the kick: a tremor running out along the silk
     // the loom: a rigid lattice sliding slowly behind the web (seeded angle, pitch, drift), each thread drawn by its own nib
     const R0 = rot(P, pk(20, 3).mul(0.3927)), pit = rn(21).mul(6).add(9);
     const L = R0.add(vec2(t.mul(0.9).mul(sense(4)), t.mul(0.5).mul(sense(22))));
@@ -94,8 +117,10 @@ export function material(ctx) {
     const odd = (k) => step(0.5, k.mul(0.5).fract().mul(2)), par = odd(ci.add(cj));
     const uW0 = R0.y.div(420).add(0.5).clamp(0, 1), uW = mix(uW0, inv(uW0), odd(ci));
     const uF0 = R0.x.div(420).add(0.5).clamp(0, 1), uF = mix(uF0, inv(uF0), odd(cj));
-    const pW = u.sub(hi.mul(0.3)).div(0.12).clamp(0, 1), pF = u.sub(hj.mul(0.3).add(0.06)).div(0.12).clamp(0, 1);
-    const onW = maskDraw(pW, uW).mul(step(0.002, pW)), onF = maskDraw(pF, uF).mul(step(0.002, pF));
+    const pW = u.sub(hi.mul(0.09).add(0.19)).div(0.06).clamp(0, 1), pF = u.sub(hj.mul(0.09).add(0.23)).div(0.06).clamp(0, 1);
+    const qW = mix(float(0.955), float(0.985), step(hi, 0.22)).add(hi.mul(0.02)).sub(u).div(0.012).clamp(0, 1);   // out: retract; a few stay under the dew
+    const qF = mix(float(0.955), float(0.985), step(hj, 0.22)).add(hj.mul(0.02)).sub(u).div(0.012).clamp(0, 1);
+    const onW = maskDraw(pW, uW).mul(step(0.002, pW)).mul(maskDraw(qW, inv(uW))).mul(step(0.002, qW)), onF = maskDraw(pF, uF).mul(step(0.002, pF)).mul(maskDraw(qF, inv(uF))).mul(step(0.002, qF));
     let warp = stroke(dx, 0.14).mul(onW), weft = stroke(dy, 0.14).mul(onF), cordB = float(0), cordT = float(0);
     if (!low) {   // plain weave: each thread dips under at alternate crossings; every 4th weft is a twisted op-art cord
       warp = warp.mul(inv(inv(par).mul(step(dy, 1.3))));
@@ -105,7 +130,8 @@ export function material(ctx) {
     }
     const nibL = nib(pW, uW, 0.008).mul(stroke(dx, 0.55)).mul(step(pW, 0.995)).mul(step(0.002, pW))
       .add(nib(pF, uF, 0.008).mul(stroke(dy, 0.55)).mul(step(pF, 0.995)).mul(step(0.002, pF)));
-    const br = hx.mul(0.6).add(0.55), bead = inv(smoothstep(br, aa.add(br), bd));
+    const beadOn = maskBeads(lin(0.61, 0.74), hx).mul(maskBeads(inv(lin(0.965, 0.99)), hx));   // crossing beads arrive late, leave last
+    const br = hx.mul(0.6).add(0.55), bead = inv(smoothstep(br, aa.add(br), bd)).mul(beadOn);
     const twk = t.mul(1.3).add(hx.mul(40)).sin().mul(0.5).add(0.5);
     const beadC = mix(mix(B, W, 0.5), H, step(hx, 0.14)).mul(mix(twk.mul(0.3).add(0.22), float(1), onW.mul(onF))).mul(kl.mul(0.6).add(1));
     const hush = mix(float(1), smoothstep(26, 80, r).mul(0.7).add(0.3), smoothstep(0.1, 0.3, u));   // the loom steps back behind her as she builds
@@ -115,13 +141,14 @@ export function material(ctx) {
     const up = (a, b) => smoothstep(a, b, u);
     const kS = sec.round().div(N).sub(0.5).abs().mul(2);
     const dSp = fr.min(inv(fr)).mul(TAU).div(N).mul(r);
-    const pj = up(0.2, 0.4).mul(1.3).sub(kS).div(0.3).clamp(0, 1), uS = r.div(190);
+    const first = step(kS, 0.001), sOut = inv(lin(0.95, 0.97));
+    const pj = mix(lin(0.155, 0.28).mul(1.3).sub(kS).div(0.3).clamp(0, 1).mul(step(0.001, kS)), lin(0, 0.1), first).mul(sOut), uS = r.div(190);
     const spoke = stroke(dSp, 0.2).mul(maskDraw(pj, uS)).mul(step(5, r)).mul(step(0.002, pj));
     const nibS = nib(pj, uS, 0.012).mul(stroke(dSp, 0.6)).mul(step(pj, 0.995)).mul(step(0.002, pj));
     // the capture thread: straight chords between spokes, laid ring by ring from the hub out
     const NR = 21, kr = rl.round(), dR = rl.sub(kr).abs().mul(SP);
     const okR = step(0, kr).mul(step(kr, NR)), kKey = kr.div(NR);
-    const pr = up(0.34, 0.6).sub(kKey.mul(0.8)).div(0.2).clamp(0, 1);
+    const pr = lin(0.27, 0.44).sub(kKey.mul(0.8)).div(0.2).clamp(0, 1).mul(inv(lin(0.945, 0.965)));
     const uR = a01.sub(0.5).abs().mul(2);
     const drawn = maskDraw(pr, uR).mul(okR).mul(step(0.002, pr));
     const ringL = stroke(dR, 0.15).mul(drawn);
@@ -135,14 +162,14 @@ export function material(ctx) {
     if (!low) {   // dew along the capture thread, bead by bead; a counter-spiral of it lights against the cords
       const sb = s.div(3.4), bdd = vec2(sb.fract().sub(0.5).mul(3.4), rl.sub(kr).mul(SP)).length();
       const h = hsh(kr, sb.floor());
-      const dew = inv(smoothstep(0.48, aa.add(0.48), bdd)).mul(drawn).mul(maskBeads(up(0.52, 0.68), h.mul(0.5).add(kKey.mul(0.5))));
-      const spiral = smoothstep(0.22, 0, a01.mul(3).add(r.add(1).log().mul(1.5).mul(tilt)).add(t.mul(0.05)).fract().sub(0.5).abs());
+      const dew = inv(smoothstep(0.48, aa.add(0.48), bdd)).mul(drawn).mul(maskBeads(lin(0.72, 0.8), h.mul(0.5).add(kKey.mul(0.5)))).mul(maskBeads(inv(lin(0.965, 0.985)), h));
+      const spiral = inv(smoothstep(0, 0.22, a01.mul(3).add(r.add(1).log().mul(1.5).mul(tilt)).add(t.mul(0.05)).fract().sub(0.5).abs()));
       col = mix(col, mix(mix(B, W, 0.6), H, step(h, 0.07)).mul(float(0.45).add(spiral.mul(cul.mul(1.2).add(0.25))).add(kl.mul(0.6))), dew);
     }
     // caught glyphs hanging on short threads, swinging: moon (or eye), key (or star), feather
     const mir = sense(3), alt = step(0.5, rn(3).mul(7).fract());
     (low ? GLY.slice(0, 1) : GLY).forEach(([gx, gy], i) => {
-      const pG = up(0.56 + i * 0.04, 0.62 + i * 0.04);
+      const pG = up(0.75 + i * 0.025, 0.79 + i * 0.025).mul(inv(up(0.88 + i * 0.01, 0.9 + i * 0.01)));
       const top = vec2(mir.mul(gx), gy + 11);
       const v = rot(P.sub(top), t.mul(0.8).add(i * 2.1).sin().mul(0.14)).add(vec2(0, 11));
       const thr = stroke(v.x.abs(), 0.12).mul(step(5.5, v.y)).mul(step(v.y, 11)).mul(maskDraw(pG.mul(2).clamp(0, 1), inv(v.y.sub(5.5).div(5.5))));
@@ -164,11 +191,12 @@ export function material(ctx) {
       col = col.mul(inv(reveal.mul(step(v.length(), 6)))).add((i === 1 ? H : mix(B, W, 0.5)).mul(stroke(gd, 0.2)).mul(reveal)).add(A.mul(thr).mul(0.7));
     });
     // cover: filled web cells, plus loose dew glimmering frame-wide from u 0; no quad edge: it thins into crossing dots
-    const seedB = step(bd, br).mul(maskBeads(u.div(0.3).add(0.06).clamp(0, 1), hx)).mul(step(hx, pOut.mul(1.02))).mul(step(0.002, pOut));
+    const seedB = step(bd, br).mul(beadOn).mul(step(hx, pOut.mul(1.02))).mul(step(0.002, pOut));
     const e2 = vec2(P.x.div(154), P.y.div(86)), e4 = e2.mul(e2).mul(e2).mul(e2), eE = e4.x.add(e4.y).max(0.000001).sqrt().sqrt();
     const edge = step(bd, mix(float(0.85), float(0), smoothstep(0.78, 0.99, eE)).mul(pit));
     m.colorNode = col;
-    m.opacityNode = gate.max(seedB).mul(edge).mul(live);
+    const firstOn = stroke(dSp, 0.6).mul(first).mul(step(5, r)).mul(step(0.002, pj));   // the first thread stands alone, ungated
+    m.opacityNode = gate.max(seedB).max(firstOn).mul(edge).mul(live);
     m.alphaTest = 0.5;
     return m;
   }
@@ -180,7 +208,7 @@ export function material(ctx) {
     const r = P.length(), a = atan2(P.x, P.y);
     const R1 = 47, R2 = 54, sn = sense(5);
     const r1 = t.mul(0.045).mul(sn), r2 = t.mul(-0.03).mul(sn);
-    const p1 = io(0.4, 0.5, 0.94, 0.96), p2 = io(0.48, 0.58, 0.935, 0.955);
+    const p1 = io(0.49, 0.57, 0.92, 0.945), p2 = io(0.58, 0.66, 0.905, 0.935);
     const cord = step(a.add(r1).div(TAU).mul(96).add(P.length().sub(R1).mul(0.45).mul(sense(9))).fract(), 0.5);
     const band = stroke(r.sub(R1).abs(), 1.3).mul(maskClock(p1, a));
     const rails = stroke(r.sub(R1 + 1.9).abs(), 0.1).add(stroke(r.sub(R1 - 1.9).abs(), 0.1)).mul(maskClock(p1, a.negate()));
@@ -193,7 +221,7 @@ export function material(ctx) {
     const kl = kickOn.mul(inv(kf)).mul(0.8);
     const col = mix(A.mul(0.25), mix(B, W, cul.mul(0.6).add(0.2)), cord).mul(band).mul(float(0.55).add(kl).add(cul.mul(0.5)))
       .add(A.mul(rails).mul(0.6)).add(mix(mix(B, W, 0.5), H, step(id.mod(4), 0.5)).mul(bead).mul(float(0.6).add(kl))).add(B.mul(silk).mul(0.3));
-    m.colorNode = col.mul(cells(web(P), lin(0.3, 0.55), inv(lin(0.87, 0.93))));
+    m.colorNode = col.mul(cells(web(P), lin(0.47, 0.6), inv(lin(0.905, 0.945))));
     m.opacityNode = live;
     m.transparent = true;
     m.blending = AdditiveBlending;
@@ -211,7 +239,7 @@ export function material(ctx) {
     const third = step(0.5, rn(14));
     XS.forEach((X, i) => {
       const ex = i === 2 ? third : float(1);
-      const dp = io(0.62 + i * 0.04, 0.76 + i * 0.04, 0.93 + (2 - i) * 0.006, 0.95 + (2 - i) * 0.006).mul(ex);
+      const dp = io(0.67 + i * 0.03, 0.75 + i * 0.03, 0.875 + (2 - i) * 0.008, 0.89 + (2 - i) * 0.008).mul(ex);
       const cy = float(52).sub(dp.mul(14 + LN[i])).add(t.mul(1.1).add(i).sin().mul(0.7).mul(dp));
       const sway = t.mul(0.55).add(i * 1.7).sin().mul(1.6);
       const xt = sway.mul(float(52).sub(P.y).div(float(52).sub(cy).max(0.01)).clamp(0, 1)).add(X);
@@ -232,7 +260,7 @@ export function material(ctx) {
       }
     });
     m.colorNode = col;
-    m.opacityNode = cover.mul(cells(web(P), lin(0.55, 0.75), inv(lin(0.84, 0.9)))).mul(live);
+    m.opacityNode = cover.mul(cells(web(P), lin(0.65, 0.76), inv(lin(0.875, 0.91)))).mul(live);
     m.alphaTest = 0.5;
     return m;
   }
@@ -243,7 +271,7 @@ export function material(ctx) {
     const stroke = strokeAA(aa);
     const ax = P.x.abs(), q = vec2(ax, P.y);
     let col = vec3(0), cover = float(0);
-    const pDr = io(0.7, 0.8, 0.925, 0.945);
+    const pDr = io(0.78, 0.82, 0.86, 0.885);
     for (let i = 0; i < (low ? 3 : 6); i++) {
       const x = t.mul(1.6).add(i * 7.3).mod(42).add(32);
       const y = x.mul(0.12).sub(t.mul(0.9)).sin().mul(3).sub(27);
@@ -258,15 +286,15 @@ export function material(ctx) {
     const lift = ph.sin().max(0).mul(4), tx = ph.cos().mul(3).add(46);
     const pts = [vec2(80, 4), vec2(61, 40), vec2(tx.add(5), lift.mul(0.4).add(31)), vec2(tx, lift.add(24))];
     const pl = polyline(q, pts);
-    const pLg = io(0.68, 0.78, 0.925, 0.945), on = maskDraw(pLg, pl.u).mul(step(0.002, pLg));
+    const pLg = io(0.76, 0.8, 0.86, 0.885), on = maskDraw(pLg, pl.u).mul(step(0.002, pLg));
     const w = float(2.4).sub(pl.u.mul(1.4));
     const body = step(pl.d, w).mul(on);
     const joint = step(pl.jd, 3.2).mul(step(pl.jd.mul(1.2).fract(), 0.5)).mul(inv(cul));
-    col = col.mul(inv(body)).add(mix(W, A, 0.3).mul(body).mul(joint).mul(smoothstep(0.9, 0.7, pl.d.div(w))))
+    col = col.mul(inv(body)).add(mix(W, A, 0.3).mul(body).mul(joint).mul(inv(smoothstep(0.7, 0.9, pl.d.div(w)))))
       .add(mix(A, W, 0.3).mul(stroke(pl.d.sub(w).abs(), 0.12)).mul(on));
     cover = cover.max(body);
     m.colorNode = col;
-    m.opacityNode = cover.mul(cells(web(P), lin(0.6, 0.8), inv(lin(0.8, 0.86)))).mul(live);
+    m.opacityNode = cover.mul(cells(web(P), lin(0.75, 0.8), inv(lin(0.86, 0.89)))).mul(live);
     m.alphaTest = 0.5;
     return m;
   }
@@ -277,30 +305,30 @@ export function material(ctx) {
   const stroke = strokeAA(aa);
   const ax = p.x.abs(), pm = vec2(ax, p.y), rr = p.length();
   const kf = c.beat.fract().mul(40);
-  const kl = smoothstep(2.5, 0, rr.sub(kf).abs()).mul(kickOn).mul(smoothstep(40, 18, kf));
+  const kl = inv(smoothstep(0, 2.5, rr.sub(kf).abs())).mul(kickOn).mul(inv(smoothstep(18, 40, kf)));
   const rimC = mix(A, W, kl.mul(0.6).add(cul.mul(0.3)));
   let col = vec3(0), cover = float(0);
   const add = (colour, mask) => { col = col.add(colour.mul(mask)); cover = cover.max(mask); };
   const solid = (mask) => { col = col.mul(inv(mask)); cover = cover.max(mask); };
   // the first stroke: a dot at the hub, her dragline drawn up out of it; later the silk she pays down to the web
-  add(W, step(rr, io(0, 0.025, 0.985, 0.998).mul(1.3)));
-  const pTh = io(0, 0.07, 0.975, 0.995), uTh = p.y.sub(10.7).div(37);
+  add(W, step(rr, io(0.3, 0.315, 0.95, 0.963).mul(1.3)));
+  const pTh = io(0.3, 0.36, 0.94, 0.96), uTh = p.y.sub(10.7).div(37);
   add(mix(B, W, 0.5), stroke(ax, 0.1).mul(step(0, uTh)).mul(maskDraw(pTh, uTh)).mul(step(0.002, pTh)));
   add(W.mul(1.5), nib(pTh, uTh, 0.03).mul(stroke(ax, 0.35)).mul(step(pTh, 0.995)).mul(step(0, uTh)).mul(step(0.002, pTh)));
-  const pSk = io(0.27, 0.36, 0.945, 0.965), uSk = p.y.add(16.8).negate().div(31);
+  const pSk = io(0.52, 0.56, 0.91, 0.93), uSk = p.y.add(16.8).negate().div(31);
   add(mix(B, W, 0.4), stroke(ax, 0.09).mul(step(0, uSk)).mul(maskDraw(pSk, uSk)).mul(step(0.002, pSk)));
   add(W.mul(1.5), nib(pSk, uSk, 0.03).mul(stroke(ax, 0.35)).mul(step(0, uSk)).mul(step(pSk, 0.995)).mul(step(0.002, pSk)));
   // eight legs, pair by pair: black, a neon rim, striped knees, a bead row along each (details)
-  const pDet = io(0.5, 0.64, 0.94, 0.96);
+  const pDet = io(0.55, 0.62, 0.905, 0.925);
   LEGS.forEach((pts, i) => {
     const pl = polyline(pm, pts);
-    const pL = io(0.1 + i * 0.045, 0.17 + i * 0.045, 0.95 + (3 - i) * 0.008, 0.965 + (3 - i) * 0.008);
+    const pL = io(0.32 + i * 0.02, 0.37 + i * 0.02, 0.915 + (3 - i) * 0.008, 0.93 + (3 - i) * 0.008);
     const on = maskDraw(pL, pl.u).mul(step(0.002, pL));
     const w = float(1.0).sub(pl.u.mul(0.55));
     const body = step(pl.d, w).mul(on);
     solid(body);
     const joint = step(pl.jd, 2.0).mul(step(pl.jd.mul(1.7).fract(), 0.5));
-    add(mix(W, B, 0.35).mul(0.8), body.mul(joint).mul(smoothstep(0.85, 0.6, pl.d.div(w))));
+    add(mix(W, B, 0.35).mul(0.8), body.mul(joint).mul(inv(smoothstep(0.6, 0.85, pl.d.div(w)))));
     add(rimC.mul(1.2), stroke(pl.d.sub(w).abs(), 0.12).mul(on));
     const sb = pl.u.mul(pl.total).div(1.6);
     const bd = vec2(sb.fract().sub(0.5).mul(1.6), pl.d).length();
@@ -308,43 +336,43 @@ export function material(ctx) {
     add(W.mul(1.4), nib(pL, pl.u, 0.03).mul(step(pl.d, 1.3)).mul(step(pL, 0.995)));
   });
   // the abdomen: black, an op-art pattern (chevrons or bead rows), a spiral galaxy in its heart
-  const pAb = io(0.2, 0.27, 0.955, 0.975), ap = t.mul(TAU / 3.4).sin().mul(0.035).add(1);
+  const pAb = io(0.35, 0.4, 0.92, 0.94), ap = t.mul(TAU / 3.4).sin().mul(0.035).add(1);
   const qa = p.sub(vec2(0, -8.6)).div(ap), ea = vec2(qa.x.div(6.4), qa.y.div(8.2)).length(), aA = atan2(qa.x, qa.y.negate());
   solid(step(ea, 1).mul(step(0.9, pAb)));
   add(rimC.mul(1.2), stroke(ea.sub(1).abs().mul(7), 0.13).mul(maskClock(pAb, aA)).mul(step(0.002, pAb)));
-  const pPt = io(0.27, 0.36, 0.95, 0.97), ann = step(0.62, ea).mul(step(ea, 0.9)).mul(maskBeads(pPt, inv(ea).div(0.4)));
+  const pPt = io(0.4, 0.43, 0.915, 0.935), ann = step(0.62, ea).mul(step(ea, 0.9)).mul(maskBeads(pPt, inv(ea).div(0.4)));
   const chev = step(ax.mul(0.75).add(qa.y).div(1.5).fract(), 0.5);
   const er = ea.sub(0.62).div(0.07), ek = er.floor(), nbk = ek.mul(6).add(18);
   const eb = vec2(er.fract().sub(0.5), aA.div(TAU).mul(nbk).fract().sub(0.5).mul(2)).length();
   const rowsB = inv(smoothstep(0.32, 0.42, eb));
   const patV = step(0.5, rn(11));
   add(mix(mix(W, B, 0.45).mul(chev).mul(0.75), mix(mix(B, W, 0.4), H, step(ek.mod(3), 0.5)).mul(rowsB), patV), ann);
-  const pGx = io(0.5, 0.6, 0.94, 0.96), rg = vec2(qa.x, qa.y.mul(0.8)).length(), agx = atan2(qa.y, qa.x);
+  const pGx = io(0.56, 0.64, 0.905, 0.925), rg = vec2(qa.x, qa.y.mul(0.8)).length(), agx = atan2(qa.y, qa.x);
   const arms = float(2).add(pk(12, 2));
   const phx = agx.sub(rg.add(0.3).log().mul(2.6)).mul(arms).div(TAU).add(t.mul(0.09).mul(sense(16))).fract();
-  const arm = smoothstep(0.2, 0, phx.min(inv(phx))).mul(inv(smoothstep(2.6, 3.4, rg)));
-  const knot = smoothstep(0.35, 0.05, rg.mul(3.2).sub(t.mul(0.3)).fract().sub(0.5).abs());
-  const gal = mix(B, W, arm.mul(0.6)).mul(arm).mul(knot.mul(0.8).add(0.5)).add(W.mul(smoothstep(1.0, 0, rg))).mul(cul.mul(1.3).add(1));
+  const arm = inv(smoothstep(0, 0.2, phx.min(inv(phx)))).mul(inv(smoothstep(2.6, 3.4, rg)));
+  const knot = inv(smoothstep(0.05, 0.35, rg.mul(3.2).sub(t.mul(0.3)).fract().sub(0.5).abs()));
+  const gal = mix(B, W, arm.mul(0.6)).mul(arm).mul(knot.mul(0.8).add(0.5)).add(W.mul(inv(smoothstep(0, 1.0, rg)))).mul(cul.mul(1.3).add(1));
   const gm = maskIris(pGx, rg.div(3.4)).mul(step(0.002, pGx));
   col = col.add(gal.mul(gm).mul(step(ea, 0.56)));
   add(B.mul(0.9), stroke(ea.sub(0.56).abs().mul(7), 0.08).mul(gm));
   // the thorax: black disc, a neon rim drawn round, an inner ring and eight rays (her legs' roots)
-  const pTx = io(0.04, 0.1, 0.965, 0.985), qt = p.sub(vec2(0, 2)), rt = qt.length(), at = atan2(qt.x, qt.y);
+  const pTx = io(0.3, 0.34, 0.93, 0.95), qt = p.sub(vec2(0, 2)), rt = qt.length(), at = atan2(qt.x, qt.y);
   solid(step(rt, 4.2).mul(step(0.9, pTx)));
   add(rimC.mul(1.2), stroke(rt.sub(4.2).abs(), 0.13).mul(maskClock(pTx, at)).mul(step(0.002, pTx)));
   add(W.mul(1.4), stroke(rt.sub(4.2).abs(), 0.4).mul(nib(pTx, at.div(TAU).add(0.5), 0.02)).mul(step(pTx, 0.995)).mul(step(0.002, pTx)));
-  const pTl = io(0.14, 0.24, 0.955, 0.975);
+  const pTl = io(0.33, 0.37, 0.92, 0.94);
   add(B.mul(0.9), stroke(rt.sub(2.6).abs(), 0.09).mul(maskClock(pTl, at)).mul(step(0.002, pTl)));
   const rayD = at.div(TAU).mul(8).add(0.5).fract().sub(0.5).abs().mul(TAU / 8).mul(rt);
   add(A.mul(0.8), stroke(rayD, 0.08).mul(step(1, rt)).mul(step(rt, 2.5)).mul(maskDraw(pTl, rt.sub(1).div(1.5))));
   // head and palps, then her eight eyes one by one; at .5 they wake
-  const pHd = io(0.24, 0.29, 0.96, 0.98), qh = p.sub(vec2(0, 8.3)), rh = qh.length();
+  const pHd = io(0.38, 0.42, 0.925, 0.945), qh = p.sub(vec2(0, 8.3)), rh = qh.length();
   const palp = polyline(pm, PALP), pon = maskDraw(pHd, palp.u).mul(step(0.002, pHd));
   solid(step(palp.d, 0.45).mul(pon));
   add(rimC, stroke(palp.d.sub(0.45).abs(), 0.1).mul(pon));
   solid(step(rh, 2.4).mul(step(0.9, pHd)));
   add(rimC.mul(1.2), stroke(rh.sub(2.4).abs(), 0.12).mul(maskClock(pHd, atan2(qh.x, qh.y))).mul(step(0.002, pHd)));
-  const pEy = io(0.28, 0.36, 0.95, 0.97), wake = io(0.5, 0.56, 0.95, 0.97).add(cul).clamp(0, 1.5);
+  const pEy = io(0.41, 0.44, 0.915, 0.935), wake = io(0.55, 0.6, 0.915, 0.935).add(cul).clamp(0, 1.5);
   EYES.forEach(([ex, ey, er0], i) => {
     const de = pm.sub(vec2(ex, ey)).length();
     const disc = inv(smoothstep(float(er0).sub(aa), float(er0), de)).mul(maskBeads(pEy, i / 4));
@@ -352,7 +380,7 @@ export function material(ctx) {
     add(W.mul(1.5), inv(smoothstep(er0 * 0.25, er0 * 0.35, pm.sub(vec2(ex - er0 * 0.3, ey + er0 * 0.3)).length())).mul(disc));
   });
   m.colorNode = col;
-  m.opacityNode = cover.mul(cells(web(P), lin(0, 0.22), inv(lin(0.91, 0.985)), 0.6)).mul(live);
+  m.opacityNode = cover.mul(cells(web(P), lin(0.29, 0.4), inv(lin(0.925, 0.965)), 0.6)).mul(live);
   m.alphaTest = 0.5;
   return m;
 }
