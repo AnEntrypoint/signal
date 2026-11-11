@@ -320,6 +320,10 @@ export function look(ctx) {
   const pullOn = step(0.66, phF.add(c.seed).mul(12.9898).sin().mul(43758.5453).fract())
     .mul(smoothstep(0, 0.125, phu)).mul(float(1).sub(smoothstep(0.875, 1, phu)));
   // a mirrored / tiled / keyhole read shows pixels from elsewhere, so its depth is not its own: no lens blur there
-  const dofW = on.mul(pullOn.mul(hasSubject).max(vis)).mul(float(1).sub(kmix));
+  // creator 11-11 (#15279, again 12:59 "a lot of elements still go unnecessarily blurry"): blur only ever as a real lens
+  // racks to a subject: what sits well IN FRONT of it softens (a worm swimming past the glass); the subject and everything
+  // behind it stay sharp, so no layer goes soft just for being far
+  const nearOnly = smoothstep(focusD.mul(0.6), focusD.mul(0.35), dz);
+  const dofW = on.mul(pullOn.mul(hasSubject).max(vis)).mul(float(1).sub(kmix)).mul(nearOnly);
   return vignette(mix(graded, focused, dofW), ctx.param("vignette", 0.35), { color: [0, 0, 0] });
 }
