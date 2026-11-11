@@ -15,7 +15,7 @@ export const BEINGS = [
   { id: 'moon-mother',    name: 'the moon mother', built: true },
   { id: 'contour-oracle', name: 'the contour oracle', built: true },
   { id: 'many-armed',     name: 'the many-armed one', built: true },
-  { id: 'ouroboros',      name: 'the ouroboros' },
+  { id: 'ouroboros',      name: 'the ouroboros', built: true },
   { id: 'thunderbird',    name: 'the winged eye', built: true },
   { id: 'world-tree',     name: 'the world tree', built: true },
   { id: 'giving-hands',   name: 'the giving hands', built: true },
