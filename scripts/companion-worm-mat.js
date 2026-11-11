@@ -8,7 +8,7 @@
 // - each one grows out of the dark head first and draws its tail in after it, on its own slow tide;
 //   around every scene change they all come in, so they carry the eye across it
 // - opaque black body with neon skin: it hides what is behind it (occlusion, not only light)
-import { MeshBasicNodeMaterial, DoubleSide } from "builtin/three";
+import { MeshBasicNodeMaterial, FrontSide } from "builtin/three";
 import { positionGeometry, float, vec2, vec3, smoothstep, step, mix, atan2, cross, normalize } from "builtin/tsl";
 import { tripClock, stripes } from "./lib/trip.js";
 
@@ -32,7 +32,7 @@ export function material(ctx) {
   const head = (tt) => vec3(
     tt.mul(fq(1, 0.07, 0.14)).add(ph(2)).sin().mul(30).add(tt.mul(fq(3, 0.21, 0.37)).add(ph(4)).sin().mul(12)).mul(sx),
     tt.mul(fq(5, 0.09, 0.19)).add(ph(6)).sin().mul(13).add(tt.mul(fq(7, 0.27, 0.43)).sin().mul(5)),
-    tt.mul(fq(8, 0.05, 0.11)).add(ph(10)).sin().mul(48).sub(68));     // -20 .. -116: through the being's plane at -74
+    tt.mul(fq(8, 0.05, 0.11)).add(ph(10)).sin().mul(30).sub(30 + n * 22));   // own depth lane per worm: 1 near, 3 far     // -20 .. -116: through the being's plane at -74
   const LAG = 8 + n * 1.5;                                    // seconds of the head's past the body is made of
   const s = positionGeometry.y, ca = positionGeometry.x, sa = positionGeometry.z;
   const body = (ss) => {
@@ -57,12 +57,17 @@ export function material(ctx) {
   const r = float(2.2).add(rn(13).mul(1.6)).mul(inv(s).pow(0.4).mul(0.85).add(0.15)).mul(s.mul(40).min(1).sqrt())
     .mul(swell).mul(kickRun.mul(0.35).add(1)).mul(len);
   const m = new MeshBasicNodeMaterial();
-  m.side = DoubleSide;
+  m.side = FrontSide;   // one skin: inner faces no longer show through where the body pinches
   m.fog = false;
   m.positionNode = P.add(nrm.mul(r));
 
   // skin: op-art stripes, diamond scales or bead rows, dealt per worm; black between, so the body occludes
-  const ang = atan2(sa, ca), sl = s.mul(LAG * 9);
+  // skin motion, dealt per worm (lanmower: lock some to world space, reverse others): 0 rides the body;
+  // 1 pinned to the path: each stripe stays where the head laid it, the body slides through its own skin;
+  // 2 reversed: the skin runs back up the body as it swims forward
+  const mode = c.pick(K + 15, 3);
+  const sl = mix(mix(s.mul(LAG * 9), t.sub(s.mul(LAG)).mul(9), is(mode, 1)), s.mul(LAG * 9).add(t.mul(14)), is(mode, 2));
+  const ang = atan2(sa, ca);
   const skinPick = c.pick(K + 14, 3);
   const cStr = mix(W, A, stripes(sl.mul(0.5).floor(), 2, 0.5)).mul(stripes(sl.add(ang.mul(0.5)), 0.6, 0.05));
   const t3 = ang.div(TAU).mul(8);
