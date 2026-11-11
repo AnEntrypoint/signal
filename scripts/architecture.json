@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "basedOnSpecVersion": 565,
-  "updatedAt": "2026-11-11T15:17:02.928Z",
-  "summary": "Signal Stage is a walkable 3D motion-graphics stage whose multiplayer roll launches a synchronized, seeded music trip. A four-track registry deals the audio per roll and maps each track onto the canonical show clock, which the director, camera, vision slots and shared shader clock use to keep the scene in time.",
+  "basedOnSpecVersion": 569,
+  "updatedAt": "2026-11-11T15:23:39.247Z",
+  "summary": "Signal Stage is a walkable 3D motion-graphics stage whose multiplayer roll launches a synchronized, seeded music trip. The shared director, camera, vision slots and shader clock follow a canonical show timeline while the track registry maps each roll's music and beat onto it; players can also upload and purchase a measured song for the room's next roll.",
   "scriptPaths": [],
   "places": [
     "places/main/config.yaml (main, 3D) - black-void stage configuration, spawn/environment and place-wide scripts/look-trip.js post-processing.",
@@ -14,50 +14,53 @@
     "places/main/cells/ - 23 scene cells and 180 placed objects; stage and outlying cells extend around the main composition."
   ],
   "roots": [
-    "world.config.yaml - multiplayer services, player/camera templates, movement and cine actions (P/Y), jump (Space/A), arrival, lighting, HUD and nametag.",
+    "world.config.yaml - multiplayer services, player/camera templates, movement and cine/ownSong actions, buyables.own-track purchase hook, arrival, lighting, HUD and nametag.",
     "templates/player.js#player composes humanoid-locomotion.js with scripts/player.js; templates/camera.js#camera runs scripts/camera.js.",
     "places/main/cells/x0z0.scene#director - scripts/stage.js synchronizes track/audio and distributes roll/deal parameters.",
-    "scripts/ui.js - viewer-local ROLL/CUT actions and cinematic status HUD, including the dealt track and BPM.",
-    "places/main/config.yaml atmosphere.look - installs scripts/look-trip.js as the full-screen post-processing look."
+    "scripts/ui.js - viewer-local ROLL/CUT and cinematic status HUD, track name/BPM, and own-song file selection/measurement/upload UI.",
+    "places/main/config.yaml atmosphere.look - installs scripts/look-trip.js as the full-screen post-processing look.",
+    "scripts/buyables/own-track.js - purchase callback turns the buyer's uploaded and measured song into the room's next synchronized roll."
   ],
   "shared": [
     "scripts/lib/cine.js - CPU score clock, track-time lookup, section lookup and seeded camera path; used by player, camera, HUD and stage.",
     "scripts/lib/deck.js - cached deterministic per-seed scene-deck deal and track-to-scene-time mapping; used by cine.js and stage.js.",
     "scripts/lib/visions.js - 16-being registry, cached seeded slot deal, vision timing/shots and measured-energy lookup; used by cine.js and stage.js.",
-    "scripts/lib/tracks.js - four-track registry and seed selection, piecewise track/canonical clock mapping, shader params and track energy; used by cine.js, stage.js and ui.js.",
+    "scripts/lib/tracks.js - four built-in tracks plus normalized paid own-track, seed selection, piecewise track/canonical clock mapping, shader params and track energy; used by cine.js, stage.js and ui.js.",
     "scripts/lib/data/score.yml and shots.yml - canonical sections, layers, lens, maths, deck and authored camera keys; energy.yml holds canonical track data and vision slots.",
     "scripts/lib/data/tracks/{where-the-sun-dont-shine,can-you-hear-it,metamoist}.yml - measured audio timing, bars, drops and vision windows for the three moonshine tracks; score.yml supplies fromage.",
     "scripts/lib/trip.js - shared shader clocks, track-aware beat/palette/random choices, scene/layer visibility, lens mapping, vision clocks and reusable vision-shader primitives; imported by scripted materials, sky and look.",
     "scripts/field-lib.js, eye-lib.js, tunnel-lib.js, chamber-lib.js, chamber-fx.js, sun-lib.js and serpents-data.js/serpents-curve.js - family placement, spatial, timing, color and geometry helpers."
   ],
   "notableExports": [
-    "scripts/player.js exports onInput, update; scripts/camera.js exports finiteNumber, update; scripts/stage.js exports update; scripts/look-trip.js exports look; scripts/ui.js exports default.",
+    "scripts/player.js exports onInput, update; scripts/camera.js exports finiteNumber, update; scripts/stage.js exports update; scripts/look-trip.js exports look; scripts/ui.js exports default, pickSong.",
+    "scripts/buyables/own-track.js exports onPurchase.",
     "scripts/lib/cine.js exports CINE, cineTime, trackTime, sectionAt, rollRnd, cameraAt, beatEnv; scripts/lib/deck.js exports dealDeck, sceneTime.",
-    "scripts/lib/tracks.js exports TRACKS, trackFor, toCanon, trackParams, IDENTITY, trackEnergyAt; scripts/lib/visions.js exports BEINGS, dealVisions, visionAt, visionShot, energyAt.",
+    "scripts/lib/tracks.js exports TRACKS, trackFor, toCanon, trackParams, IDENTITY, trackEnergyAt, ownTrack, trackOf, CANON; scripts/lib/visions.js exports BEINGS, dealVisions, visionAt, visionShot, energyAt.",
     "scripts/lib/trip.js exports KICK_RUNS, SEC, BPS, tripClock, win, pal, stripes, HUE, shown, lens, bendUv, visionShown and shared vision-shader primitives.",
     "scripts/field-lib.js exports RADIUS, growR, riseR, resetR, endFade, backOut, base, hot, FAMILY, family, colours, breath, seamHold, held.",
     "Vision *-geo modules export geometry/collider (some also spine/ring constants); *-mat modules export material. Worm geo/material pairs provide animated depth-winding bodies.",
     "scripts/tunnel-lib.js exports Z0, FEET, BOUNDS, tun, inside, camDepth, v3, BLUE, base, hot, GRAPH, mirAng; tunnel-core.js, tunnel-gates.js and tunnel-ribs.js export material."
   ],
   "ownership": [
-    "scripts/player.js - local movement intent/velocity and shared world.state.cine={start,by,seed} or null from cine input.",
+    "scripts/player.js - local movement intent/velocity, viewer body's state.ownSong upload metadata, and shared world.state.cine for ordinary cine input.",
+    "scripts/buyables/own-track.js - on successful purchase writes shared world.state.cine={start,by,seed,track,who}; it emits room-wide purchase flash and sound.",
     "scripts/stage.js on #director - shared audio session, roll parameter propagation to trip-tagged materials/look, vision visibility/camera attachment and bench visionTest hold.",
     "scripts/camera.js / templates/camera.js - viewer-local camera pose/FOV and seeded authored shot path/move.",
-    "scripts/humanoid-locomotion.js owns avatar gait/sit state; scripts/ui.js and ui/nametag.js own viewer-local presentation; place/world configs own environment and services."
+    "scripts/humanoid-locomotion.js owns avatar gait/sit state; scripts/ui.js owns viewer-local HUD/song-selection status; ui/nametag.js owns viewer-local name presentation; place/world configs own environment and services."
   ],
   "flows": [
-    "P/Y cine action or HUD sendAction('cine') → scripts/player.js onInput → world.state.cine={start: now+300ms,by,seed} or null.",
-    "world.state.cine → scripts/ui.js render → viewer-local ROLL/CUT and rolling progress/section label plus selected track name/BPM.",
-    "world.state.cine seed → scripts/lib/tracks.js trackFor → scripts/stage.js starts that track's shared audio at c.start and clears/stages the next roll after its duration.",
-    "tracks.js maps track time through its vision-window anchors to the canonical show clock → cine.js camera/deck timing and trip.js shader scene timing; track-specific beat/BPM remain on the track clock.",
+    "P/Y cine action or HUD sendAction('cine') → scripts/player.js onInput → world.state.cine={start: now+300ms,by,seed} or null; non-buyers cannot cut an active paid-song roll, while its buyer can.",
+    "scripts/ui.js file picker → browser decodes and measures audio (BPM, first beat, per-bar energy and six timeline anchors), uploads it and sends ownSong action data → scripts/player.js validates URL, stores self.state.ownSong and proposes own-track purchase.",
+    "world.config.yaml buyables.own-track (50 Spoins) → scripts/buyables/own-track.js onPurchase reads buyer.state.ownSong → shared world.state.cine with track metadata, buyer and 1.5 s scheduled start; room-wide flash/sound are emitted.",
+    "world.state.cine → scripts/ui.js render → viewer-local ROLL/CUT and rolling progress/section label plus selected track name/BPM and buyer attribution.",
+    "world.state.cine → scripts/lib/tracks.js trackOf/ownTrack (or seed-based trackFor) → scripts/lib/cine.js maps track time to canonical show seconds; stage.js plays the selected shared audio at c.start and clears/stages the next roll after its duration.",
+    "tracks.js maps track time through its vision-window anchors onto the canonical show clock → cine.js camera/deck timing and trip.js shader scene timing; track-specific beat/BPM remain on the track clock.",
     "track bar-energy data → tracks.js kick runs converted to canonical time → stage.js supplies k0/k1; trackParams supplies tdur, ta1..ta4, fb and bps to trip-tagged materials and look.",
     "stage.js → trip-tagged material/look params t0/on/seed, track clock params, kick bounds k0/k1 and dealt scene mappings ds0..ds3/dr0..dr3; look also receives current vision slot v0/v1 and focus depth vd.",
     "stage.js + vision-<id> tags → selected being layers and worms attach to camera starting 3 s before their slot at depth 74 with layer offsets; others return home unless held by visionTest.",
-    "cine.js cameraAt → scripts/camera.js viewer camera; dealt beings and companion worms join the camera view rather than replacing it with separate vision shots.",
-    "stage.js computes camera-shot-dependent fit scale for camera-attached vision layers so the whole being stays in front of the viewed subject; applies same factor to depth and scale.",
+    "cine.js cameraAt → scripts/camera.js viewer camera; dealt beings and companion worms join the camera view rather than replacing it with separate vision shots; stage computes shot-dependent fit scale for attached layers.",
     "trip.js tripClock/shown/lens/mask helpers → field, eye, serpents, tunnel, chamber, vision assemblies and look-trip shader timing/cutouts; shown() gives each layer's 14 radius bands a seeded shuffled arrival order.",
-    "trip.js supplies scene sec and seamD → field-lib.js seamHold/held → selected far scene layers remain lit as spatially hashed beads near a dealt seam, combined with their normal shown opacity.",
-    "look-trip.js reads scene depth and vision v0/v1/vd → near-only subject-aware depth of field (stage supplies vision focus depth because additive vision layers write no depth), plus trip lens mapping and kick effects."
+    "trip.js supplies scene sec and seamD → field-lib.js seamHold/held → selected far scene layers remain lit as spatially hashed beads near a dealt seam; look-trip.js reads depth and vision v0/v1/vd for near-only subject-aware DOF, trip lens and kick effects."
   ],
   "behaviorFamilies": [
     "scripts/field-* - mandala, stalks, orbs and glyph/cartouche field layers share field-lib.js placement/timing; mandala, disc and stalk motifs vary, with seam holds on the mandala.",
@@ -71,11 +74,11 @@
   ],
   "probableOrphans": [],
   "migrationNotes": [
-    "world.state.cine is the synchronized start/cut source; starts are scheduled 300 ms ahead. cineTime() is canonical show seconds; trackTime() is seconds on the selected audio track.",
-    "tracks.js deals by seed modulo four (zero/missing uses fromage); preserve the distinction between source-track time and the canonical scene clock.",
-    "Non-fromage tracks map piecewise through their two selected vision windows onto the canonical anchors; shader params ta1..ta4 and tdur must match tracks.js, with fb/bps retaining the track's own beat.",
-    "Track kicks are detected from each track's measured bar-energy rows and converted to canonical seconds before stage.js supplies k0/k1; audio itself starts at the shared c.start.",
-    "stage.js converts c.start to shader t0 seconds modulo 3600 and repeats parameter pushes over several ticks so late-built materials receive the roll; trip-tagged materials need t0/on/seed, track clock params and kick bounds.",
-    "score.yml remains the canonical show/deck and vision-slot timeline even when the chosen audio has another duration or BPM; idle materials receive tracks.js IDENTITY params."
+    "world.state.cine is the synchronized start/cut source; ordinary starts are scheduled 300 ms ahead and paid-song starts 1.5 s ahead. cineTime() is canonical show seconds; trackTime() is seconds on the selected audio track.",
+    "tracks.js deals built-ins by seed modulo four (zero/missing uses fromage); trackOf(c) prefers c.track when it has music. Preserve the distinction between source-track time and the canonical scene clock.",
+    "Paid own-track metadata is carried in shared c.track from the buyer's body state; anchors map its start, two measured drop/vision windows and end onto canonical time, while BPM, firstBeat and bars remain source-track values.",
+    "Non-fromage and paid tracks map piecewise through their selected anchors onto canonical anchors; shader params ta1..ta4 and tdur must match tracks.js, with fb/bps retaining the track's own beat.",
+    "Track kicks are detected from measured bar-energy rows and converted to canonical seconds before stage.js supplies k0/k1; audio itself starts at shared c.start. stage.js repeats parameter pushes for late-built materials.",
+    "score.yml remains the canonical show/deck and vision-slot timeline regardless of selected audio duration or BPM; idle materials receive tracks.js IDENTITY params."
   ]
 }
