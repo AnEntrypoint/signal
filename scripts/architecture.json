@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "basedOnSpecVersion": 490,
-  "updatedAt": "2026-11-11T13:07:14.848Z",
+  "basedOnSpecVersion": 492,
+  "updatedAt": "2026-11-11T13:11:07.492Z",
   "summary": "Signal Stage is a walkable 3D motion-graphics stage with a synchronized, seeded 198-second cinematic on the measured 160-bpm track. A shared director, score/deck clocks and shader helpers drive the stage assemblies, one long scene-deck segment per roll, two long vision slots, and camera-riding beings and worms.",
   "scriptPaths": [],
   "places": [
@@ -63,7 +63,7 @@
     "scripts/tunnel-* - wall, core, dust, gates, ribs and knot share tunnel geometry kinds and tunnel-lib.js spatial/color helpers; materials vary motif and seeded palette.",
     "scripts/chamber-* - room, circuit, hands, hex, Lissajous, solids and bilateral mask share chamber shader helpers and scored cutouts.",
     "scripts/sun-disc.js, sun-drips.js and sun-halo.js - sun-eye layers share sun-lib.js but vary disc, hanging-drip and depth-halo imagery.",
-    "scripts/vision-*-geo.js / -mat.js - all 16 beings share trip clocks and staged attachment; canvas planes/motifs vary, and worm-enabled beings add four unit-tube depth-winding meshes; owl-mask layers use seeded entry/exit masks for their staged leave.",
+    "scripts/vision-*-geo.js / -mat.js - all 16 beings share trip clocks and staged attachment; canvas planes/motifs vary, worm-enabled beings add four unit-tube depth-winding meshes; giving-hands uses seeded symbol masks for contour/finger entrance and folding/palm-eye exit, plus simpler loops at low quality.",
     "scripts/companion-worm-geo.js and companion-worm-mat.js - three camera-attached swimmers share one animated shader/geometry pair, varied by material param n."
   ],
   "probableOrphans": [],
@@ -73,6 +73,6 @@
     "energy.yml defines vision slots [48.35,96.35] and [132.35,180.35]; only built entries in BEINGS can be dealt. Vision layers attach 3 s before a slot; vision houses are above the field in +Y and selected layers ride the camera at depth 74.",
     "score.yml deck has one segment [12.35,180.35] per roll; preserve the distinction between deck source time and the full trip clock, plus the fixed 12 s seed/return sections.",
     "Canonical vision layer offsets are world -30, ring -12, being 0, veil +10, fore +22; stage.js derives home z from tag suffix. Worm meshes use material param n for distinct paths; they are not serpents-curve.js meshes.",
-    "Camera attachment fit scales both depth and object scale together based on cameraAt(t,seed); preserve that coupling. look-trip.js's peak mirror is an opaque symbol-mask window (not tiled/translucent), and its DOF softens only geometry in front of the subject."
+    "Camera attachment fit scales both depth and object scale together based on cameraAt(t,seed). In vision-giving-hands-mat.js, seeded trip channels 358/359 choose entrance/exit masks; keep the world and hands' complementary masks aligned so the vision does not black out at its seam."
   ]
 }
