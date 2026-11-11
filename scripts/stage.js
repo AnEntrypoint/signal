@@ -32,10 +32,29 @@ function push(ctx, t0, on, seed, k, vs) {
       if (h?.material?.params) { h.material.params.vw0 = w[0]; h.material.params.vw1 = w[1] }
     }
   }
+  stageBeing(ctx, vs, on ? seed : 0)
   const a = ctx.place.atmosphere
   if (a.look) { a.look.params ??= {}; setAll(a.look.params, t0, on, seed, k, deal); a.look.params.v0 = vs[0]; a.look.params.v1 = vs[1] }
 }
 
+// THE BEING ON STAGE: the dealt being of the slot now playing (or next) rides the camera's view at depth, so it
+// draws itself in among the running scene; the scene keeps moving round and through it. Every other being goes
+// home to its black above the field and stops drawing.
+const DEPTH = 74
+function homeZ(id) { return id.endsWith('-ring') ? -12 : id.endsWith('-veil') ? 10 : 0 }
+function stageBeing(ctx, vs, seed) {
+  const cur = seed ? dealVisions(seed).find((v) => v.slot[0] === vs[0]) : null
+  for (const b of BEINGS) {
+    const here = cur && cur.being.id === b.id
+    for (const o of ctx.query({ tags: ['vision-' + b.id] })) {
+      const h = ctx.getObject(o.id); if (!h) continue
+      const z = homeZ(o.id)
+      if (here) h.feetPosition = { attach: 'camera', x: 0, y: 0, depth: DEPTH - z }
+      else if (h.feetPosition?.attach || h.visible !== false) h.feetPosition = { x: 0, y: b.centre.y, z }
+      h.visible = !!here
+    }
+  }
+}
 export function update(ctx, dt) {
   const t = cineTime(ctx)
   const c = ctx.world.state.cine

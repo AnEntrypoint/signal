@@ -35,8 +35,7 @@ export function rollRnd(seed, n) { const x = Math.sin((seed + 1) * (n * 12.9898 
 // The roll's seed varies the flight without leaving the axis: which side the orbits pass, the roll's sense and
 // size, how high the rises go, how wide the lens opens. Seed 0 (idle, old rolls) is the path as written.
 export function cameraAt(t, seed = 0) {
-  const v = visionAt(t, seed)
-  if (v) return visionShot(v, t, seed) // a vision: hard cut to the dealt being on the phrase line, back on the next
+  // a vision being joins the scene (stage.js brings it into view): the camera never cuts away to it
   const c = cameraRaw(sceneTime(t, dealDeck(seed))) // the dealt scene's own shot, cut on the drop
   if (!seed) return c
   const side = rollRnd(seed, 1) < 0.5 ? -1 : 1, rs = (rollRnd(seed, 2) < 0.5 ? -1 : 1) * (0.6 + rollRnd(seed, 3) * 0.9)

@@ -21,7 +21,8 @@ export function look(ctx) {
   // a celestial vision plays straight: no lens, no treatment, while the track is inside its slot (v0/v1, the director's)
   const v0 = ctx.param("v0", -1), v1 = ctx.param("v1", -1);
   const vis = step(v0, c.real).mul(step(c.real, v1)).mul(step(0, v0));
-  const on = c.on.clamp(0, 1).mul(float(1).sub(vis));
+  const on = c.on.clamp(0, 1);
+  const onLens = on.mul(float(1).sub(vis.mul(0.8))); // the being stands in the scene: the bend eases off it, the scene's treatment stays
   const sec = c.sec;
   const aspect = screenSize.x.div(screenSize.y);
   const asp = vec2(aspect, 1);
@@ -99,7 +100,7 @@ export function look(ctx) {
   const domeMask = float(1);
 
   const uW = p.div(asp).add(0.5);
-  const ub = mix(uW, bendUv(c, uW, aspect), on); // the bent camera (gated: idle stays straight)
+  const ub = mix(uW, bendUv(c, uW, aspect), onLens); // the bent camera (gated: idle stays straight)
 
   // kaleidoscope / tile / keyhole: a second read of the frame, mixed over the first
   const kal = (u, n, a0) => {
