@@ -56,8 +56,8 @@ export function look(ctx) {
   const turbOn = float(1);                           // fluid-turbulence: always in deep (breakdown), hex by seed
   const hexTurb = is(79, 2, 1, 3);
 
-  const wGod = wBloom.mul(on1(bt.lessThan(0.5))).add(wHex.mul(on1(hexX.lessThan(0.5)))).add(wPeak).clamp(0, 1);
-  const wDust = wBloom.mul(on1(bt.sub(1).abs().lessThan(0.5))).add(wAsc.mul(on1(at.sub(2).abs().lessThan(0.5)))).add(wSeed.mul(float(1).sub(seedGG))).add(wPeak).clamp(0, 1);
+  const wGod = wBloom.mul(on1(bt.lessThan(0.5))).add(wHex.mul(on1(hexX.lessThan(0.5)))).add(wPeak.mul(0.35)).clamp(0, 1);
+  const wDust = wBloom.mul(on1(bt.sub(1).abs().lessThan(0.5))).add(wAsc.mul(on1(at.sub(2).abs().lessThan(0.5)))).add(wSeed.mul(float(1).sub(seedGG))).add(wPeak.mul(0.5)).clamp(0, 1);
   const wCB = wBloom.mul(on1(bt.greaterThan(1.5))).add(wAsc.mul(on1(at.sub(1).abs().lessThan(0.5)))).add(wPeak.mul(0.5)).clamp(0, 1);
   const wRip = wPulse.add(wAsc.mul(on1(at.lessThan(0.5)))).add(wPeak).add(wBloom.mul(0.6)).clamp(0, 1);
   const wLat = wHex.mul(on1(hexX.sub(1).abs().lessThan(0.5))).add(wPeak.mul(0.6)).add(wAsc.mul(0.5)).clamp(0, 1);
