@@ -1,17 +1,17 @@
 {
   "schemaVersion": 1,
-  "basedOnSpecVersion": 533,
-  "updatedAt": "2026-11-11T13:34:17.160Z",
-  "summary": "Signal Stage is a walkable 3D motion-graphics stage with a synchronized, seeded 198-second cinematic on the measured 160-bpm track. A shared director, score/deck clocks and shader helpers drive the stage assemblies and two long vision slots; vision shaders now reveal and withdraw their motifs in seeded, layer-specific sequences.",
+  "basedOnSpecVersion": 541,
+  "updatedAt": "2026-11-11T13:35:53.316Z",
+  "summary": "Signal Stage is a walkable 3D motion-graphics stage with a synchronized, seeded 198-second cinematic on a measured 160-bpm track. A shared director, score/deck clocks and shader helpers drive the stage assemblies and two long vision slots; vision layers and worms use shader-timed, seeded entrances while worm geometry scales with level of detail.",
   "scriptPaths": [],
   "places": [
     "places/main/config.yaml (main, 3D) - black-void stage configuration, spawn/environment and place-wide scripts/look-trip.js post-processing.",
-    "places/main/cells/x0z0.scene - field/eye/serpents composition and #director (scripts/stage.js); field origin and portal at (0,15,-34).",
+    "places/main/cells/x0z0.scene#director - field/eye/serpents composition and scripts/stage.js; field origin and portal at (0,15,-34).",
     "places/main/cells/x0z-1.scene and x0z-3.scene - sun-eye, tunnel along -Z, chamber and far tunnel-knot stage pieces.",
-    "places/main/cells/x0y2z0.scene through x0y9z0.scene - celestial vision houses above stage; x0y4 has contour oracle with 480x270 world canvas, x0y8 giving-hands, x0y9 star-jelly and star-child.",
-    "places/main/cells/x0y10z0.scene through x0y14z0.scene - circuit-oracle, lotus-gate, twin-serpents, weaver, owl-mask and world-turtle vision assemblies at increasing +Y.",
+    "places/main/cells/x0y2z0.scene through x0y9z0.scene - celestial vision houses above stage; contour oracle, giving-hands, star-jelly and star-child among them.",
+    "places/main/cells/x0y10z0.scene through x0y14z0.scene - circuit-oracle, lotus-gate, twin-serpents, weaver, owl-mask and world-turtle vision assemblies.",
     "places/main/cells/objects.scene - three companion-worm meshes attached to the camera for the shared cinematic view.",
-    "places/main/cells/ - 23 scene cells and 180 placed objects; x±3/y±2 and x±5 cells extend the cell layout around the stage."
+    "places/main/cells/ - 23 scene cells and 180 placed objects; stage and outlying cells extend around the main composition."
   ],
   "roots": [
     "world.config.yaml - multiplayer services, player/camera templates, movement and cine actions, arrival, lighting, HUD and nametag.",
@@ -32,8 +32,8 @@
   "notableExports": [
     "scripts/player.js exports onInput, update; scripts/camera.js exports finiteNumber, update; scripts/stage.js exports update; scripts/look-trip.js exports look; scripts/ui.js exports default.",
     "scripts/lib/cine.js exports CINE, cineTime, sectionAt, rollRnd, cameraAt, beatEnv; scripts/lib/deck.js exports dealDeck, sceneTime.",
-    "scripts/lib/visions.js exports BEINGS, dealVisions, visionAt, visionShot, energyAt; scripts/lib/trip.js exports KICK_RUNS, SEC, BPS, tripClock, win, pal, stripes, HUE, shown, lens, bendUv, visionShown, inv, is, sgn, ang2, smin, segH, capsule, strokeAA, ioU and vision mask helpers.",
-    "Vision *-geo modules export geometry/collider and *-mat modules export material; vision worm pairs and companion-worm-geo.js / companion-worm-mat.js provide animated depth-winding meshes/materials.",
+    "scripts/lib/visions.js exports BEINGS, dealVisions, visionAt, visionShot, energyAt; scripts/lib/trip.js exports KICK_RUNS, SEC, BPS, tripClock, win, pal, stripes, HUE, shown, lens, bendUv, visionShown and shared vision-shader primitives.",
+    "Vision *-geo modules export geometry/collider (some also spine/ring constants); *-mat modules export material. Worm geo/material pairs provide animated depth-winding bodies.",
     "scripts/tunnel-lib.js exports Z0, FEET, BOUNDS, tun, inside, camDepth, v3, BLUE, base, hot, GRAPH, mirAng; tunnel-core.js, tunnel-gates.js and tunnel-ribs.js export material."
   ],
   "ownership": [
@@ -46,15 +46,15 @@
     "P/cine action or HUD sendAction('cine') → scripts/player.js onInput → world.state.cine={start: now+300ms,by,seed} or null.",
     "world.state.cine → scripts/ui.js render → viewer-local ROLL/CUT and rolling progress/section label.",
     "world.state.cine + score track → #director scripts/stage.js → shared audio at c.start; director stops audio and clears/renews ended cine.",
-    "energy.yml → trip.js KICK_RUNS and visions.js slot timing → stage.js seeded choice from the built BEINGS registry; vision materials receive vw0/vw1 or -1/-1.",
+    "energy.yml → trip.js KICK_RUNS and visions.js slot timing → stage.js seeded choice from built BEINGS; vision materials receive vw0/vw1 or -1/-1.",
     "stage.js → trip-tagged material/look params t0/on/seed, kick bounds k0/k1 and dealt scene mappings ds0..ds3/dr0..dr3; look also receives current vision slot v0/v1.",
-    "stage.js + vision-<id> tags → selected being layers and worms attach to camera starting 3 s before their slot, at depth 74 with layer offsets; others return home unless held by visionTest.",
-    "score.yml + deck.js → one seeded scene across [12.35,180.35] per roll → cine.js cameraAt and trip.js shader scene clock share the assigned source section/rate.",
+    "stage.js + vision-<id> tags → selected being layers and worms attach to camera starting 3 s before their slot at depth 74 with layer offsets; others return home unless held by visionTest.",
+    "score.yml + deck.js → one seeded scene across [12.35,180.35] per roll → cine.js cameraAt and trip.js shader scene clock share assigned source section/rate.",
     "cine.js cameraAt → scripts/camera.js viewer camera; dealt beings and companion worms join the camera view rather than replacing it with separate vision shots.",
-    "stage.js computes camera-shot-dependent fit scale for camera-attached vision layers so the whole being stays in front of the viewed subject; applies the same factor to depth and scale.",
+    "stage.js computes camera-shot-dependent fit scale for camera-attached vision layers so the whole being stays in front of the viewed subject; applies same factor to depth and scale.",
     "score.yml + trip.js tripClock/shown/lens/mask helpers → field, eye, serpents, tunnel, chamber, vision assemblies and look-trip shader timing/cutouts.",
-    "trip.js shown() → staged layer opacity/cutouts at dealt scene seams; layers thin out in name/distance order and the seam is a brief handover, not a sustained black scene.",
-    "look-trip.js reads scene depth and vision v0/v1 → subject-aware near-only depth of field and seeded kick jobs; peak mirror imagery appears opaquely through one dealt symbol window, with occasional clean phrases."
+    "trip.js shown() → staged layer opacity/cutouts at dealt scene seams; layers thin out in name/distance order and the seam is a brief handover.",
+    "look-trip.js reads scene depth and vision v0/v1 → subject-aware near-only depth of field and seeded kick jobs; peak mirror imagery appears opaquely through one dealt symbol window."
   ],
   "behaviorFamilies": [
     "scripts/field-* - mandala, stalks, orbs and glyph/cartouche field layers share field-lib.js placement/timing while geometry and materials vary motifs.",
@@ -63,16 +63,16 @@
     "scripts/tunnel-* - wall, core, dust, gates, ribs and knot share tunnel geometry kinds and tunnel-lib.js spatial/color helpers; materials vary motif and seeded palette.",
     "scripts/chamber-* - room, circuit, hands, hex, Lissajous, solids and bilateral mask share chamber shader helpers and scored cutouts.",
     "scripts/sun-disc.js, sun-drips.js and sun-halo.js - sun-eye layers share sun-lib.js but vary disc, hanging-drip and depth-halo imagery.",
-    "scripts/vision-*-geo.js / -mat.js - 16 staged beings share trip clocks and layer offsets; individual shader motifs and seeded per-layer entrance/exit masks vary. Circuit traces, contour lines, star fields, symbol sequences and authored part schedules stage their reveals; low quality simplifies some detail.",
-    "scripts/companion-worm-geo.js and companion-worm-mat.js - three camera-attached swimmers share one animated shader/geometry pair, varied by material param n."
+    "scripts/vision-*-geo.js / -mat.js - 16 staged beings share trip clocks and layer offsets; motifs and seeded entrance/exit masks vary by being. Twin Serpents reveal/withdraw body links in seeded order; Night Owl has a sequenced five-layer build and exit.",
+    "scripts/companion-worm-geo.js, vision-*-worm-geo.js and corresponding worm materials - camera-attached and vision-being worms share unit-tube geometry bent by shader paths; geo resolution scales by ctx.lod."
   ],
   "probableOrphans": [],
   "migrationNotes": [
     "world.state.cine is the synchronized start/cut source; starts are scheduled 300 ms ahead. cine.js uses milliseconds for start/ctx.now() and seconds for score/shot keys.",
     "stage.js converts c.start to shader t0 seconds modulo 3600 and repeats parameter pushes over several ticks so late-built materials receive the roll; trip-tagged materials need t0/on/seed and kick bounds k0/k1.",
     "energy.yml defines vision slots [48.35,96.35] and [132.35,180.35]; only built entries in BEINGS can be dealt. Vision layers attach 3 s before a slot; vision houses are above the field in +Y and selected layers ride the camera at depth 74.",
-    "score.yml deck has one segment [12.35,180.35] per roll; preserve the distinction between deck source time and the full trip clock, plus the fixed 12 s seed/return sections.",
-    "Canonical vision layer offsets are world -30, ring -12, being 0, veil +10, fore +22; stage.js derives home z from tag suffix and fit scales depth and object scale together. Worm meshes use material param n for distinct paths and per-worm skins.",
-    "Vision entrances/exits are shader-motif masks, not just whole-layer fades: seeded line/circuit/starlight orders, Weaver's delayed spider-after-web, and staged Thunderbird groups are authored per material. World Tree's far plane holds until the last ~0.4 s of its slot; Lotus Gate holds to its last 1.2 s. Keep these slot-scaled endings, symbol ordering, and Ouroboros/Lotus scalloped world edges intact."
+    "score.yml deck has one segment [12.35,180.35] per roll; preserve distinction between deck source time and full trip clock, plus fixed 12 s seed/return sections.",
+    "Canonical vision layer offsets are world -30, ring -12, being 0, veil +10, fore +22; stage.js derives home z from tag suffix and fit scales depth and object scale together.",
+    "Worm geometry uses ctx.lod levels 1..4 with segment/side density factors 1, 2/3, 1/2, 1/4 (minimum ring/side counts apply); keep the +Y unit-tube/UV contract for shader-bent worms. Owl and Twin Serpents entrance/exit timing is authored in shader progress u, with Twin Serpents links seeded individually."
   ]
 }
