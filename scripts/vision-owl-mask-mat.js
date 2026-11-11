@@ -282,7 +282,7 @@ export function material(ctx) {
   put(W.mul(1.3), stroke(pc.sub(vec2(-0.7, 0.8)).length(), 0.5).mul(eon));
   // the illusion: the eyes turn to op-art spirals of opposite hand (variant 0) or the face's figure and ground flip (1)
   const ill = pk(6, 2);
-  const hyp = stroke(float(0), 1).mul(step(er, 8.0)).mul(cul).mul(is(ill, 0));
+  const hyp = step(er, 8.0).mul(cul).mul(is(ill, 0));
   const spiral = pr.mul(0.55).add(pa.div(TAU).mul(3)).sub(c.real.mul(0.9)).fract();
   col = mix(col, mix(K, mix(W, H, step(pr, 3)).mul(1.2), step(spiral, 0.5)), step(0.5, hyp));
   // brows: arcs over the eyes, drawn from the beak outward
@@ -328,7 +328,7 @@ export function material(ctx) {
   const inA = step(fa.abs(), A0), fanG = maskIris(pFan, fr.div(Re));
   const fan = inA.mul(step(fr, Re)).mul(step(3, fr)).mul(fanG);
   const off = fl.abs().mul(cell).mul(fr);
-  put(A, stroke(fl.abs().sub(0.5).abs().mul(cell).mul(fr), 0.14).mul(fan).mul(step(24, fr.add(ax.sub(20).mul(0)))));
+  put(A, stroke(fl.abs().sub(0.5).abs().mul(cell).mul(fr), 0.14).mul(fan).mul(step(6, fr)));
   put(A.mul(1.1), stroke(fr.sub(Re).abs(), 0.24).mul(inA).mul(fanG));
   put(mix(H, H2, fk.floor().mod(2)).mul(0.8), stroke(off, 0.12).mul(fan).mul(step(9, fr)).mul(step(fr, Re.sub(7))));
   const fbk = fr.div(3);
@@ -341,7 +341,7 @@ export function material(ctx) {
   const oc = vec2(fr.sub(Re.sub(4.5)), off).length();
   put(mix(W, H, arcSq), stroke(oc.sub(2.0).abs(), 0.2).max(stroke(oc, 0.8)).mul(fan).mul(maskBeads(pOc, fk.div(nf))));
   // the flip (variant 1): the face's black becomes a lit field and its lines go black
-  const flip = cul.mul(is(ill, 1)).mul(face).step(0.5);
+  const flip = step(0.5, cul.mul(is(ill, 1)).mul(face));
   col = mix(col, mix(A.mul(0.6).add(H.mul(0.08)), K, lines), flip);
   const cover = face.max(tuft).max(fan).max(beard).max(lines.mul(step(0.5, lines)));
   m.colorNode = col;
