@@ -12,9 +12,12 @@ export function geometry(ctx) {
   // three counter-turning rings: [radius, count, turns per phrase]
   const rings = [[21, 10, 0.25], [42, 14, -0.125], [62, 16, 0.0833333]];
   let seed = 0;
-  for (const [rad, n, rate] of rings) for (let k = 0; k < n; k++, seed++) {
-    const size = 0.8 + 1.4 * ctx.random(), height = 3 + 6 * ctx.random();
-    ctx.instance([rad + (ctx.random() - 0.5) * 5, ((k + ctx.random() * 0.4) / n) * 6.2831853, size, height + size], [rate, seed]);
+  // exact mirror pairs about x=0: the twin sits at the reflected angle and turns the other way
+  for (const [rad, n, rate] of rings) for (let k = 0; k < n / 2; k++, seed++) {
+    const size = 0.8 + 1.4 * ctx.random(), height = 3 + 6 * ctx.random(), rr = rad + (ctx.random() - 0.5) * 5;
+    const a0 = -1.5707963 + ((k + 0.5 + (ctx.random() - 0.5) * 0.4) / (n / 2)) * 3.1415927;
+    ctx.instance([rr, a0, size, height + size], [rate, seed]);
+    ctx.instance([rr, 3.1415927 - a0, size, height + size], [-rate, seed]);
   }
   return { normals };
 }

@@ -37,3 +37,51 @@ export function hot(i) {
   return select(k.lessThan(0.5), vec3(1.0, 0.72, 0.0), select(k.lessThan(1.5), vec3(1.0, 0.0, 0.5),
     select(k.lessThan(2.5), vec3(0.03, 0.95, 0.06), select(k.lessThan(3.5), vec3(1.0, 0.3, 0.0), vec3(1.0, 0.02, 0.02)))));
 }
+
+// ---- how the field moves and is lit (TAS rules): the structure holds, the light travels ----
+import { atan2 } from "builtin/tsl";
+import { SCORE } from "./lib/trip.js";
+const TAU = 6.2831853;
+const BL = [0.015, 0.05, 0.9], VI = [0.3, 0.0, 0.85], MG = [1.0, 0.0, 0.5], GR = [0.03, 0.95, 0.06], YE = [1.0, 0.72, 0.0],
+  OR = [1.0, 0.3, 0.0], CY = [0.0, 0.8, 0.9];
+// One hue family per 12 s phrase: [body A, body B, accent]. Phrases 11..14 (peak) are the full rainbow.
+export const FAMILY = [[BL, BL, BL], [BL, VI, MG], [VI, BL, GR], [BL, VI, OR], [VI, VI, VI], [MG, VI, YE], [VI, MG, YE], [GR, GR, GR],
+  [GR, CY, GR], [BL, VI, OR], [VI, MG, YE], [BL, VI, YE], [BL, VI, YE], [BL, VI, YE], [BL, VI, YE], [BL, BL, BL], [BL, BL, BL]];
+const rowOf = (ph, col) => { let n = V(FAMILY[FAMILY.length - 1][col]); for (let k = FAMILY.length - 2; k >= 0; k--) n = select(ph.lessThan(k + 0.5), V(FAMILY[k][col]), n); return n; };
+export function family(sec) {
+  const ph = sec.sub(SCORE.firstBeat).div(12).floor();
+  return { A: rowOf(ph, 0), B: rowOf(ph, 1), H: rowOf(ph, 2), full: ph.greaterThan(10.5).and(ph.lessThan(14.5)) };
+}
+// The four colours an element of index i wears right now: two bodies, accent, inner contrast.
+export function colours(sec, i) {
+  const f = family(sec), even = float(i).mod(2).lessThan(0.5);
+  return {
+    A: select(f.full, base(i), select(even, f.A, f.B)), B: select(f.full, base(float(i).add(1)), select(even, f.B, f.A)),
+    H: select(f.full, hot(i), f.H), H2: select(f.full, hot(float(i).add(2)), select(even, f.B, f.A)), fam: f,
+  };
+}
+// The shared breath: one swell per phrase, 3 %.
+export function breath(sec) { return sec.mul(TAU / 12).sin().mul(0.5).add(0.5).mul(0.03).add(1); }
+// Mirrored angle (turns, -0.25..0.25): the left half of the field is the right half's reflection in x=0.
+export function mirrorTurn(x, z) { return atan2(z, x.abs()).div(TAU); }
+// The kick as a ripple: 1 as the ring from the centre passes radius r, settling before the next.
+export function kickAt(c, r) {
+  const live = smoothstep(SCORE.kickFrom - 0.05, SCORE.kickFrom, c.sec).mul(smoothstep(SCORE.kickTo + 0.05, SCORE.kickTo, c.sec));
+  return c.beat.sub(r.div(90)).fract().mul(-5).exp().mul(live);
+}
+// The travelling light: a mirrored hand that steps round on each bar (a turn of the half-field per 16 bars,
+// spiralled by band), a slow front running outward once a phrase, and the kick ripple. 1 everywhere in peak.
+export function lit(c, r, am, i) {
+  const sweep = c.bar.floor().add(smoothstep(0, 0.25, c.bar.fract())).div(16);
+  const w = am.mul(2).add(0.5).sub(sweep).add(float(i).mul(0.045)).fract();
+  const hand = smoothstep(0, 0.012, w).mul(smoothstep(0.36, 0.348, w));
+  const fr = r.div(90).sub(c.phrase).fract();
+  const front = smoothstep(0.78, 0.8, fr);
+  const full = family(c.sec).full.select(1, 0);
+  return hand.max(front).add(kickAt(c, r).mul(0.4)).max(full).clamp(0, 1);
+}
+// Unlit = dim graphite that still reads as form.
+export function shade(col, L) {
+  const lum = col.x.mul(0.3).add(col.y.mul(0.6)).add(col.z.mul(0.1)).min(1);
+  return mix(vec3(0.75, 0.82, 1.0).mul(lum.mul(0.06).add(0.004)), col, L);
+}

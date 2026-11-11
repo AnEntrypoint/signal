@@ -1,17 +1,17 @@
 // The mandala field: 28 concentric bands painted in polar space from (0,0,0), six kinds in a repeating order,
 // neighbours counter-rotating, a kick ripple running outward, growing in bloom, line-art in reset.
-import { positionWorld, float, vec2, vec3, length, atan2, fwidth, smoothstep, select, mix, min, max } from "builtin/tsl";
+import { positionWorld, float, vec2, vec3, length, fwidth, smoothstep, select, mix, min, max } from "builtin/tsl";
 import { MeshBasicNodeMaterial } from "builtin/three";
 import { tripClock, SEC, stripes, HUE } from "./lib/trip.js";
-import { BW, growR, resetR, endFade, base, hot } from "./field-lib.js";
+import { BW, growR, resetR, endFade, colours, breath, mirrorTurn, kickAt, lit, shade } from "./field-lib.js";
 
 const TAU = 6.2831853;
 
 export function material(ctx) {
   const c = tripClock(ctx);
-  const p = positionWorld.xz;
+  const p = positionWorld.xz.div(breath(c.sec));
   const r = length(p);
-  const a = atan2(p.y, p.x).div(TAU);
+  const a = mirrorTurn(p.x, p.y);
   const aa = length(fwidth(p)).mul(0.7).clamp(0.004, 0.6);
   const fill = (d) => smoothstep(aa, aa.negate(), d);
   const line = (d, w) => smoothstep(aa.add(w), float(w).mul(0.5), d.abs());
@@ -27,7 +27,7 @@ export function material(ctx) {
     const cw = r.mul(TAU).div(n);
     return { tc, cw, x: tc.mul(cw) };
   };
-  const A = base(i), B = base(i.add(1)), H = hot(i), H2 = hot(i.add(2));
+  const K = colours(c.sec, i), A = K.A, B = K.B, H = K.H, H2 = K.H2;
   const W = vec3(0.95, 0.95, 0.95);
   const inset = (m) => f.sub(0.5).abs().sub(m).mul(BW);
 
@@ -47,7 +47,7 @@ export function material(ctx) {
   const c2 = cell(3.0);
   const l2 = length(vec2(c2.x, y.sub(0.2)));
   const d2 = max(l2.sub(c2.cw.mul(0.47)), float(0.2).sub(y));
-  const con2 = stripes(l2.mul(1.7).sub(c.beat.mul(0.25)), 1, 0.12);
+  const con2 = stripes(l2.mul(1.7).sub(c.bar.mul(0.25)), 1, 0.12);
   const col2 = mix(mix(A, B, con2).mul(fill(d2)).mul(line(d2.add(0.14), 0.07).oneMinus()), target(l2, 0.55, H, H2), fill(l2.sub(0.62)));
 
   // 3: white triangle teeth, a body dot in each tooth, a hot bead in each gap
@@ -84,9 +84,12 @@ export function material(ctx) {
   // reset: neon line-art outside the refilling radius
   const Rf = resetR(c.sec);
   const la = fill(Rf.sub(r));
-  const lineCol = mix(hot(i.add(1)), vec3(HUE.cyan[0], HUE.cyan[1], HUE.cyan[2]), k.mod(2)).mul(1.15);
-  let body = mix(col, lineCol.mul(line(d, 0.05)), la);
-  body = body.mul(c.barHit.mul(i.mod(4).lessThan(0.5).select(0.9, 0)).add(1));
+  // strokes draw themselves on round the band, and their hue drifts along their length
+  const drawn = fill(a.mul(2).add(0.5).add(i.mul(0.19)).fract().sub(c.sec.sub(SEC.reset[0]).div(3)));
+  const lineCol = mix(K.fam.A, K.fam.B, u.mul(3).add(c.sec.div(24)).mul(TAU).sin().mul(0.5).add(0.5)).mul(1.2);
+  const kl = kickAt(c, r);
+  const lam = lit(c, r, a, i);
+  const body = mix(shade(col, lam).mul(kl.mul(lam).mul(0.3).add(1)), lineCol.mul(line(d, 0.05)).mul(drawn), la);
 
   // bloom: the hard growing edge with its white rim
   const R = growR(c.sec);
@@ -94,10 +97,10 @@ export function material(ctx) {
   const rim = line(r.sub(R), 0.14).mul(rimOn).mul(1.6).add(line(r.sub(Rf), 0.14).mul(Rf.lessThan(95).and(Rf.greaterThan(0.5)).select(1.6, 0)));
   const seed = fill(r.sub(0.45)).mul(smoothstep(SEC.pulse[0] + 0.5, SEC.pulse[0], c.sec)).mul(0.5);
   // the kick ripple: one thin ring a beat, running the whole radius
-  const ripple = line(r.sub(c.beat.fract().mul(90)), 0.22).mul(c.kick.pow(0.3)).mul(1.5);
+  const ripple = line(r.sub(c.beat.fract().mul(90)), 0.16).mul(c.kick.pow(0.3)).mul(0.9);
 
   const m = new MeshBasicNodeMaterial();
-  m.colorNode = body.mul(fill(r.sub(R))).add(vec3(1, 1, 1).mul(rim)).add(vec3(0.5, 0.8, 1.0).mul(ripple)).add(vec3(0.3, 0.4, 1).mul(seed)).mul(endFade(c.sec));
+  m.colorNode = body.mul(fill(r.sub(R))).add(vec3(1, 1, 1).mul(rim)).add(K.fam.H.mul(ripple)).add(vec3(0.3, 0.4, 1).mul(seed)).mul(endFade(c.sec));
   m.fog = false;
   return m;
 }
