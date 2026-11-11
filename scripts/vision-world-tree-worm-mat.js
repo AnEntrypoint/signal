@@ -52,12 +52,12 @@ export function material(ctx) {
   const cStr = mix(W.mul(0.85), A, s.mul(0.4).floor().mod(3).mul(0.5)).mul(stripes(s, 0.4, 0.04));
   const t = ang.div(TAU).mul(4);
   // scales as LINE-ART diamonds (outlines only), never filled blocks
-  const lat = (x) => smoothstep(0.1, 0.04, x.fract().sub(0.5).abs());
+  const lat = (x) => inv(smoothstep(0.04, 0.1, x.fract().sub(0.5).abs()));
   const cSc = low ? cStr : mix(G, W, 0.3).mul(lat(s.mul(0.28).add(t)).max(lat(s.mul(0.28).sub(t))));
   const swap = pair ? inv(step(0.5, rn(8))) : step(0.5, rn(8));
   const t1 = 0.7 + pair * 0.02;
   const skin = mix(cBe, mix(cStr, cSc, swap), step(uu, smoothstep(t1, t1 + 0.08, u).mul(1.02)));
-  const run = smoothstep(0.05, 0, uu.sub(c.beat.fract()).abs()).mul(step(0.001, c.kick));
+  const run = inv(smoothstep(0, 0.05, uu.sub(c.beat.fract()).abs())).mul(step(0.001, c.kick));
   const edge = ca.abs();
   const rim = mix(G, W, 0.5).mul(smoothstep(0.86, 1, edge));
   const lit = skin.mul(sa.abs().mul(0.45).add(0.55)).add(rim.mul(run.add(0.45)));
