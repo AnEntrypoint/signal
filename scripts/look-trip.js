@@ -88,15 +88,18 @@ export function look(ctx) {
   // inversion-return: the frame through one circle, then shrunk back to its point
   const wInv = smoothstep(181, 186, sec).mul(wRet);
   const pinv = p.mul(float(0.09).div(p.dot(p).max(0.004)));
-  p = mix(p, pinv, wInv.mul(0.85)).mul(float(1).add(smoothstep(185.5, 191.5, sec).mul(wRet).mul(3)));
+  // (retired: the inversion smear read as a stretch, not a handover; the return closes through its layers' own masks)
+  void pinv;
   // flight: 2-fold mirror (left = right) folding in on the last 4 bars
   const wMir = smoothstep(78.35, 79.85, sec).mul(wFlight);
-  p = vec2(mix(p.x, p.x.abs().negate(), wMir), p.y);
+  // (retired: the end-of-flight mirror fold smeared the frame into a stretch)
+  void wMir;
   // fisheye-dome in flight (by seed): wrapped on a sphere, black outside the dome
   const wDome = wFlight.mul(domeOn);
   // the bend carries out to the screen edge (capped short of the pole): no circle cut onto black
   const rd = p.length().div(0.5), th = rd.mul(0.62).min(1.35);
-  p = mix(p, p.div(rd.max(0.001)).mul(th.tan().div(float(0.62).tan()).mul(0.5)), wDome);
+  // (retired: the dome's tan stretch pulled the edges like taffy)
+  void th; void wDome;
   const domeMask = float(1);
 
   const uW = p.div(asp).add(0.5);
