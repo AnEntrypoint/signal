@@ -1,10 +1,30 @@
 // THE THUNDERBIRD: the winged eye in its storm. One script, five canvases (params.layer), drawn in being metres q = P * 74 / depth.
-// u 0-.35 entrance (line, lids, iris, wings, tail; the storm glimmers from 0), .35-.78 the storm fills, .78-.93 BUILD: parts
-// light one by one to the all-lit culmination, .93-1 exit feather stroke by stroke: fore, veil, ring, being, world last (u 1).
+// One new element group begins per bar (~.031 u); the lid line stands ALONE u 0-.15; nothing is a second copy of the bird.
+// SCHEDULE (u in / u whole / u out)          layer
+//   lid line + running nib    .000 / .060 / .962-.969   being  (the first stroke, alone to .15; last of the being out)
+//   lids part (black eye)     .150 / .210 / .958-.966   being
+//   iris rows + pupil         .185 / .270 / .955-.965   being
+//   wings, feather by feather .220 / .400 / .950-.963   being
+//   tail fan                  .255 / .400 / .948-.960   being  -> the bird whole at u .40
+//   storm bead mandala        .290 / .440 / .982-.998   world  (far layer: lit through .98 on every seed, last out)
+//   thunder crown rays        .325 / .450 / .945-.958   ring
+//   rain strands              .360 / .520 / with world  world
+//   mountains (chevrons)      .400 / .540 / with world  world
+//   crown inner bead ring     .435 / .530 / with ring   ring
+//   cloud scrolls, row 1      .470 / .600 / with world  world
+//   lightning bolt (on kick)  .500 / .530 / with world  world  (+ fore flash)
+//   falling feathers          .535 / .680 / .938-.955   veil   (three, .04 apart)
+//   brow + corner beads       .600 / .680 / .945-.955   being
+//   wing/tail tip dots        .630 / .700 / .945-.955   being
+//   black storm scrolls       .660 / .760 / .930-.950   fore   (first out)
+//   horned serpents n1,2      .690 / .800 / .940-.960   worms  (n3,4 .750 / .820)
+//   gust sparks               .720 / .800 / .930-.950   fore
+//   BUILD: barbs, tiers, rays, outer beads, fine rings, 2nd cloud row, 2nd bolt  .780 / .910   culmination .80-.94 (all lit .87-.94)
+//   exit: fore, veil, ring, details, tail, wings, iris, lids, line (.969), then the world alone .97-.998
 // Seed channels 300-319 (halves .5 / 1.5 pick the entrance / exit feather-stroke mask).
 import { MeshBasicNodeMaterial, AdditiveBlending, DoubleSide } from "builtin/three";
 import { positionGeometry, float, vec2, vec3, smoothstep, step, mix, atan2, fwidth } from "builtin/tsl";
-import { tripClock, visionShown, visionU, climb, maskLid, maskIris, maskBeads, maskDraw, nib, inv, is, sgn, ioU, strokeAA, famPick, NEON } from "./lib/trip.js";
+import { tripClock, visionShown, visionU, climb, maskLid, maskIris, maskBeads, maskDraw, inv, is, sgn, ioU, strokeAA, famPick, NEON } from "./lib/trip.js";
 
 const TAU = 6.28318, PI = 3.14159;
 const DEPTH = { world: 104, ring: 86, being: 74, veil: 64, fore: 52 };
@@ -20,6 +40,7 @@ export function material(ctx) {
   const rn = (n) => c.rnd(300 + n), pk = (n, k) => c.pick(300 + n, k), sense = (n) => sgn(rn(n));
   const live = visionShown(ctx, c, 0);
   const kickOn = step(0.001, c.kick);
+  const B0 = (p) => step(0.001, float(p));                                  // a mask at p 0 shows nothing, not its first bead
   const build = S(0.78, 0.91);                                             // 0 the standing storm .. 1 everything lit
   const cul = io(0.8, 0.9, 0.94, 0.97).mul(climb(c).mul(0.4).add(0.6));
   const fam = pk(0, 3), hot = pk(19, 3), { BLU, VIO, PNK, ORA, YEL, GRN, W } = NEON;
@@ -61,13 +82,13 @@ export function material(ctx) {
     const ba = atan2(e.y, e.x.add(0.0001)).div(TAU).add(0.5).mul(nB);
     const bd = vec2(ba.fract().sub(0.5).mul(rI).mul(TAU * 2.4).div(nB), ri.fract().sub(0.5).mul(2.4)).length();
     const fall = inv(smoothstep(30, 57, vec2(q.x.mul(0.56), q.y).length()));
-    const cover = fm(S(-0.1, 0.28), kE, 9).mul(fm(inv(S(0.984, 0.999)), kX, 9)).mul(step(bd, fall.mul(1.75))).mul(step(0.01, fall));
+    const cover = fm(S(0.29, 0.44), kE, 9).mul(B0(S(0.29, 0.44))).mul(fm(inv(S(0.982, 0.998)), kX, 9)).mul(step(bd, fall.mul(1.75))).mul(step(0.01, fall));
     const tw = step(0.93, hash(ba.floor().add(rI.mul(17.3)).add(c.beat.floor().mul(0.37))));
     const mand = dot(bd, 0.5).mul(step(8, rI)).mul(odd(rI.sub(0.5)));
     let col = mix(C, D, odd(rI.sub(0.5).mul(0.5).floor())).mul(mand)
       .mul(float(0.14).add(tw.mul(0.5)).add(step(rI.div(26), build.mul(1.05)).mul(0.55)).add(kl.mul(0.4)));
     // the bolt of this beat: from a wing tip out to the frame, zigzag, forking; a second one joins in the build
-    const lOn = S(0.38, 0.42).mul(c.kick), s = ax.sub(24).div(60), bdr = c.beat.fract().mul(6).min(1);
+    const lOn = S(0.5, 0.53).mul(c.kick), s = ax.sub(24).div(60), bdr = c.beat.fract().mul(6).min(1);
     const zig = (x, ph, amp) => x.div(7).add(ph).fract().mul(2).sub(1).abs().sub(0.5).mul(amp);
     const boltAt = (k) => {
       const bi = c.beat.floor().add(k), h1 = hash(bi.add(c.seed.mul(7.1))), h2 = hash(bi.mul(1.7).add(3.3).add(c.seed));
@@ -83,7 +104,7 @@ export function material(ctx) {
     let bolt = b1.b, nearB = b1.near.mul(lOn);
     if (!low) { const b2 = boltAt(11.5), on2 = step(0.5, build); bolt = bolt.max(b2.b.mul(on2)); nearB = nearB.max(b2.near.mul(lOn).mul(on2)); }
     // cloud scrolls: spiral glyphs in rows drifting apart, placed in turn outward; the second row lights in the build
-    const pc = S(0.4, 0.55), rows2 = step(0.5, rn(9)).max(step(0.35, build));
+    const pc = S(0.47, 0.6), rows2 = step(0.5, rn(9)).max(step(0.35, build));
     let clouds = float(0);
     for (let j = 0; j < (low ? 1 : 2); j++) {
       const yr = j === 0 ? 36 : 24, sp = j === 0 ? 15 : 13;
@@ -99,22 +120,22 @@ export function material(ctx) {
     }
     col = mix(col, mix(C.mul(build.mul(0.6).add(0.55)), mix(H, W, 0.5), nearB.add(lOn.mul(0.3)).clamp(0, 1)), clouds);
     // rain: bead strands dropping in from u 0, more strands as the build climbs
-    const pr = S(0, 0.22);
+    const pr = S(0.36, 0.52);
     const rcx = ax.div(5.5), rci = rcx.floor(), rh = hash(rci.add(c.seed.mul(3.1)));
     const fy = q.y.add(c.real.mul(rh.mul(4).add(6))).div(2.2);
     const rb = vec2(rcx.fract().sub(0.5).mul(5.5), fy.fract().sub(0.5).mul(2.2)).length();
     const rain = dot(rb, 0.24).mul(step(mix(float(0.5), float(0.08), build), rh)).mul(step(-26, q.y)).mul(step(q.y, 19)).mul(step(9, ax))
-      .mul(maskDraw(pr.mul(1.6).sub(rci.div(16).mul(0.6)), float(19).sub(q.y).div(45)));
+      .mul(maskDraw(pr.mul(1.6).sub(rci.div(16).mul(0.6)), float(19).sub(q.y).div(45))).mul(B0(pr));
     col = mix(col, mix(C, D, rh).mul(build.mul(0.5).add(0.6)), rain);
     // mountains: stacked chevrons drawn outward from under the eye
-    const pm = S(0.2, 0.4);
+    const pm = S(0.4, 0.54);
     const pw = mix(18, 26, rn(11)), mx = ax.div(pw), mi = mx.floor(), lx = mx.fract().sub(0.5).mul(pw);
     const v = float(-48).add(hash(mi.add(c.seed)).mul(9).add(12)).sub(lx.abs().mul(0.95)).sub(q.y).div(2.3);
     const ch = v.fract(), inM = step(0, v).mul(step(v, 6));
-    const chev = stroke(ch.min(inv(ch)).mul(1.67), 0.12).mul(inM).mul(maskDraw(pm, ax.div(90)));
+    const chev = stroke(ch.min(inv(ch)).mul(1.67), 0.12).mul(inM).mul(maskDraw(pm, ax.div(90))).mul(B0(pm));
     const tier = step(v.floor().div(6), build.mul(1.1));                                // tiers light bottom-up in the build
     col = mix(col, mix(C, D, odd(v.floor())).mul(tier.mul(0.6).add(0.5)), chev);
-    col = col.add(W.mul(nib(pm, ax.div(90), 0.012).mul(inM).mul(step(pm, 0.99)))).add(mix(H, W, 0.4).mul(bolt).mul(lOn).mul(1.6));
+    col = col.add(W.mul(inv(smoothstep(0, 0.012, ax.div(90).sub(pm).abs())).mul(inM).mul(B0(pm)).mul(step(pm, 0.99)))).add(mix(H, W, 0.4).mul(bolt).mul(lOn).mul(1.6));
     m.colorNode = col;
     m.opacityNode = cover.mul(live);
     m.alphaTest = 0.5;
@@ -123,21 +144,21 @@ export function material(ctx) {
 
   // ------------------------------------------------------------------ RING: the thunder crown (turns, additive)
   if (layer === "ring") {
-    const pe = S(0.36, 0.5), out = fm(inv(S(0.945, 0.972)), kX, 3);
+    const pe = S(0.325, 0.45), out = fm(inv(S(0.945, 0.958)), kX, 3);
     const rot = c.real.div(mix(50, 95, rn(5))).mul(sense(6));
     const ea = atan2(e.y, e.x.add(0.0001)).div(TAU);
     const an = ea.add(rot).fract().mul(24), idx = an.floor(), long = inv(odd(idx));
     const g = pe.mul(1.5).sub(idx.div(24).mul(0.5)).clamp(0, 1);
     const t = rr.sub(9.2).div(mix(float(5.0), float(9.6), long));
     const lat = an.fract().sub(0.5).mul(TAU / 24).mul(rr).abs(), hw = inv(t).mul(0.8);
-    const tri = inv(smoothstep(hw.sub(0.22), hw.add(0.05), lat)).mul(step(0, t)).mul(maskIris(g, t));
+    const tri = inv(smoothstep(hw.sub(0.22), hw.add(0.05), lat)).mul(step(0, t)).mul(maskIris(g, t)).mul(B0(pe));
     const rayLit = step(idx.div(24), build.mul(1.04));                                  // rays light round the dial in the build
     // inner bead ring turning the other way; fine rings and an outer bead ring join one by one in the build
     const bead = (r, n, turn) => { const a = ea.add(turn).add(1).fract().mul(n);
       return { d: vec2(a.fract().sub(0.5).mul(TAU * r / n), rr.sub(r)).length(), k: a.floor().div(n) }; };
     const bi = bead(8.3, 36, rot.mul(-2)), bo = bead(19.4, 60, rot.mul(3));
-    const beads = dot(bi.d, 0.3).mul(maskBeads(S(0.42, 0.53), bi.k));
-    const outer = dot(bo.d, 0.26).mul(maskBeads(build.mul(1.1), bo.k));
+    const beads = dot(bi.d, 0.3).mul(maskBeads(S(0.435, 0.53), bi.k)).mul(B0(S(0.435, 0.53)));
+    const outer = dot(bo.d, 0.26).mul(maskBeads(build.mul(1.1), bo.k)).mul(B0(build));
     let fine = float(0);
     [11.6, 14.2, 16.8].forEach((r, i) => { fine = fine.max(stroke(rr.sub(r).abs(), 0.05).mul(step((i + 1) / 4, build))); });
     m.colorNode = mix(C, D, long.mul(0.5)).mul(tri).mul(float(0.26).add(rayLit.mul(0.6)).add(cul.mul(0.3)).add(kl.mul(0.6)))
@@ -150,16 +171,15 @@ export function material(ctx) {
 
   // ------------------------------------------------------------------ VEIL: falling feathers (drift, occlude); leave barb by barb
   if (layer === "veil") {
-    let col = vec3(0), cover = float(0), shade = float(0);
-    const dq = P.div(fwidth(P.x).max(0.0001)).floor(), dith = odd(dq.x.add(dq.y));
-    const pv = inv(S(0.938, 0.96));
+    let col = vec3(0), cover = float(0);
+    const pv = inv(S(0.938, 0.955));
     for (let j = 0; j < (low ? 2 : 3); j++) {
       const x0 = rn(16).mul(5).add(17 + j * 9);
       const yT = 16 - j * 11 + (j === 2 ? -4 : 0);
-      const y0 = mix(float(yT + 13), float(yT), S(0.55 + j * 0.05, 0.72 + j * 0.03)).add(c.real.mul(0.4 + j * 0.11).add(j * 1.7).sin().mul(1.5));
+      const y0 = mix(float(yT + 13), float(yT), S(0.535 + j * 0.04, 0.6 + j * 0.04)).add(c.real.mul(0.4 + j * 0.11).add(j * 1.7).sin().mul(1.5));
       const ph = c.real.mul(0.35 + j * 0.1).add(j * 2.1);
       const tilt = ph.sin().mul(0.35).add(rn(16).sub(0.5).mul(0.8)).add(0.5 - j * 0.35);
-      const L = io(0.55 + j * 0.05, 0.6 + j * 0.05, 0.955, 0.968).mul(12);
+      const L = io(0.535 + j * 0.04, 0.6 + j * 0.04, 0.942, 0.955).mul(12);
       const feather = (ox, oy) => {
         const d = vec2(ax.sub(x0).sub(ph.cos().mul(1.4)).sub(ox), q.y.sub(y0).sub(oy));
         const lx = d.x.mul(tilt.cos()).sub(d.y.mul(tilt.sin())), ly = d.x.mul(tilt.sin()).add(d.y.mul(tilt.cos()));
@@ -168,7 +188,7 @@ export function material(ctx) {
         const inT = step(0, t).mul(step(t, 1)).mul(step(0.01, L));
         return { lx, t, hw, inT, body: step(lx.abs(), hw).mul(inT) };
       };
-      const f = feather(0, 0), sh = feather(-1.6, -2.2);
+      const f = feather(0, 0);
       const bc = f.t.mul(10).sub(f.lx.abs().mul(0.45));
       const keep = step(hash(bc.floor().add(j * 7.7).add(step(0, f.lx).mul(31))), pv.mul(1.02)).mul(step(0.001, pv));   // each barb leaves on its own
       const barbs = stroke(bc.fract().sub(0.5).abs(), 0.14).mul(smoothstep(0.25, 0.6, f.lx.abs())).mul(f.body);
@@ -179,18 +199,17 @@ export function material(ctx) {
       const cv = vane.max(edgeL).max(quill);
       col = mix(col, neon.mul(k), cv);
       cover = cover.max(cv);
-      shade = shade.max(sh.body.mul(pv));
     }
     m.colorNode = col;
-    m.opacityNode = cover.max(shade.mul(dith)).mul(live);
+    m.opacityNode = cover.mul(live);
     m.alphaTest = 0.5;
     return m;
   }
 
   // ------------------------------------------------------------------ FORE: black storm scrolls (gust); first out
   if (layer === "fore") {
-    const mask = fm(S(0.6, 0.74), kE, 6).mul(fm(inv(S(0.93, 0.95)), kX, 6));
-    const flash = c.kick.mul(S(0.38, 0.42)).add(build.mul(0.45));
+    const mask = fm(S(0.66, 0.76), kE, 6).mul(B0(S(0.66, 0.76))).mul(fm(inv(S(0.93, 0.95)), kX, 6));
+    const flash = c.kick.mul(S(0.5, 0.53)).add(build.mul(0.45));
     let col = vec3(0), cover = float(0);
     for (let j = 0; j < 3; j++) {
       const roll = c.real.mul(0.5 + j * 0.15).mul(sense(18));
@@ -205,14 +224,14 @@ export function material(ctx) {
       cover = cover.max(puff);
     }
     // near sparks: small bolt glyphs or rain beads blown sideways in gusts across the lower sides
-    const ps = S(0.64, 0.78), sparks = step(0.5, rn(17));
+    const ps = S(0.72, 0.8), sparks = step(0.5, rn(17));
     for (let j = 0; j < (low ? 3 : 5); j++) {
       const gust = c.real.mul(0.9 + j * 0.13).add(j * 2.3).sin().mul(0.5).add(c.real.mul(0.18 + j * 0.03));
       const xj = gust.mul(9).mul(sense(18)).add(j * 3.7).fract().mul(48).add(34);
       const yj = float(-38 + j * 7).add(c.real.mul(0.7).add(j).sin().mul(2));
       const g = vec2(ax.sub(xj), q.y.sub(yj));
       const zz = stroke(g.y.sub(g.x.mul(0.5).add(0.6).fract().sub(0.5).abs().mul(2.4)).abs(), 0.16).mul(step(g.x.abs(), 1.6)).mul(step(g.y.abs(), 1.8));
-      const sh = mix(dot(g.length(), 0.75), zz, sparks).mul(step(j / 5, ps.mul(1.05)));
+      const sh = mix(dot(g.length(), 0.75), zz, sparks).mul(step(j / 5, ps.mul(1.05))).mul(B0(ps));
       col = mix(col, mix(B, W, 0.5).mul(sh), sh);
       cover = cover.max(sh);
     }
@@ -228,12 +247,12 @@ export function material(ctx) {
   const body = (mask) => { cover = cover.max(mask); };
 
   // first stroke: the lid line drawn out from the centre, its nib running ahead; it retracts last of the being, before the storm
-  const pline = io(0.0, 0.04, 0.972, 0.984);
+  const pline = io(0.0, 0.06, 0.962, 0.969);
   const xn = e.x.div(EW), inX = step(xn.abs(), 1);
-  add(mix(B, W, 0.7), stroke(e.y.abs(), 0.1).mul(maskDraw(pline, xn.abs())).mul(inX));
+  add(mix(B, W, 0.7), stroke(e.y.abs(), 0.1).mul(maskDraw(pline, xn.abs())).mul(inX).mul(B0(pline)));
   add(W.mul(1.3), dot(vec2(ax.sub(pline.mul(EW)), e.y).length(), 0.3).mul(step(0.01, pline)).mul(step(pline, 0.99)));
   // the eye: two lids parting from that line
-  const pl = io(0.04, 0.1, 0.966, 0.98);
+  const pl = io(0.15, 0.21, 0.958, 0.966);
   const lidY = inv(xn.mul(xn)).mul(EH).mul(pl);
   const slope = e.x.mul(2 * EH / (EW * EW)).mul(pl);
   const lids = stroke(e.y.abs().sub(lidY).abs().div(slope.mul(slope).add(1).sqrt()), 0.12).mul(inX).mul(step(0.001, pl));
@@ -241,7 +260,7 @@ export function material(ctx) {
   body(inside);
   add(mix(B, W, 0.7).mul(float(0.8).add(kl.mul(0.5)).add(cul.mul(0.3))), lids);
   // details: corner beads where the lids meet, and a brow of 7 beads above the upper lid, placed centre out
-  const pdet = io(0.45, 0.58, 0.945, 0.958);
+  const pdet = io(0.6, 0.68, 0.945, 0.955);
   add(W, dot(vec2(ax.sub(EW + 0.55), e.y).length(), 0.3).mul(step(0.05, pdet)));
   const bx = e.x.div(1.9).add(0.5).floor().clamp(-3, 3), bxc = bx.mul(1.9);
   const byc = inv(bxc.div(EW).mul(bxc.div(EW))).mul(EH).add(1.1);
@@ -249,7 +268,7 @@ export function material(ctx) {
 
   // the iris: an outline and three bead rows opening outward, neighbours counter-rotating; in the culmination light
   // swells out through the rows (or spirals in) and fine rings stream from the fixed pupil
-  const pi = io(0.08, 0.18, 0.975, 0.99);
+  const pi = io(0.185, 0.27, 0.955, 0.965);
   const isense = sense(8), ill = step(0.5, rn(15));
   const spin = c.real.mul(float(0.05).add(cul.mul(0.25))).mul(isense);
   const ang = atan2(e.y, e.x.add(0.0001)).div(TAU);
@@ -263,9 +282,9 @@ export function material(ctx) {
     const loc = ang.add(spin.mul(sR)).mul(n).fract().sub(0.5).mul(TAU * r).div(n);
     const colk = k === 0 ? mix(C, W, 0.55) : k === 1 ? D : C;
     const rk = mix(float(rad), wave.mul(rad * 1.3).add(rad * 0.4), cul);
-    add(colk.mul(float(0.85).add(kl.mul(0.6)).add(cul.mul(wave).mul(0.8))), dot(vec2(loc, rr.sub(r)).length(), rk).mul(inside).mul(iOpen));
+    add(colk.mul(float(0.85).add(kl.mul(0.6)).add(cul.mul(wave).mul(0.8))), dot(vec2(loc, rr.sub(r)).length(), rk).mul(inside).mul(iOpen).mul(B0(pi)));
   });
-  add(mix(C, W, 0.25).mul(float(0.8).add(kl.mul(0.5))), stroke(rr.sub(RI).abs(), 0.08).mul(inside).mul(iOpen));
+  add(mix(C, W, 0.25).mul(float(0.8).add(kl.mul(0.5))), stroke(rr.sub(RI).abs(), 0.08).mul(inside).mul(iOpen).mul(B0(pi)));
   const stream = rr.sub(0.8).sub(c.real.mul(0.9)).div(0.32).fract();
   add(mix(C, W, 0.5).mul(cul), stroke(stream.sub(0.5).abs().mul(0.32), 0.03).mul(step(0.85, rr)).mul(step(rr, 1.12)).mul(inside).mul(step(0.05, cul)));
   // the pupil: disc, slit or diamond; it swells a little on the kick
@@ -291,12 +310,12 @@ export function material(ctx) {
       tip: dot(vec2(lat, dr).length(), 0.36).mul(step(0.98, g)).mul(inFan).mul(maskBeads(pDots, fi.div(n))),
     };
   };
-  const pDots = io(0.48, 0.58, 0.945, 0.955);
+  const pDots = io(0.63, 0.7, 0.945, 0.955);
   // a feather's turn in the fan, by mask kind: body outward, tips inward, or odd then even
   const turn = (fi, k) => fi.div(NF).mul(is(k, 0)).add(float(NF - 1).sub(fi).div(NF).mul(is(k, 1))).add(odd(fi).mul(0.5).add(fi.div(NF).mul(0.45)).mul(is(k, 2)));
   const gro = (p, o) => smoothstep(0, 1, float(p).mul(1.45).sub(o).div(0.45).clamp(0, 1));
-  const xo = inv(S(0.955, 0.985));                                         // wings and tail leave, feather stroke by stroke
-  const barbsOn = (fi, n) => step(fi.add(0.5).div(n), build.mul(1.08)).mul(gro(inv(S(0.94, 0.962)), turn(fi, kX)));
+  const xo = inv(S(0.95, 0.963));                                         // wings and tail leave, feather stroke by stroke
+  const barbsOn = (fi, n) => step(fi.add(0.5).div(n), build.mul(1.08)).mul(gro(inv(S(0.94, 0.955)), turn(fi, kX)));
 
   // the wings: 9 feathers a side unfolding in their seeded turn; a slow breath of a wave runs root to tip
   const qw = vec2(ax.sub(RX), e.y), wr = qw.length();
@@ -305,7 +324,7 @@ export function material(ctx) {
   const wf = atan2(qw.x, qw.y.add(0.0001)).sub(wwave).sub(A0).div(A1.sub(A0));
   const wv = pk(2, 2);
   const Lw = (fi) => { const t = fi.div(NF - 1); return mix(t.mul(0.8).add(0.1).mul(PI).sin().mul(8).add(10.5), float(19.5).sub(t.mul(10)), wv); };
-  const wing = fan(wr, wf, NF, A1.sub(A0).div(NF), Lw, (fi) => gro(S(0.12, 0.3), turn(fi, kE)).mul(gro(xo, turn(fi, kX))), pDots);
+  const wing = fan(wr, wf, NF, A1.sub(A0).div(NF), Lw, (fi) => gro(S(0.22, 0.4), turn(fi, kE)).mul(gro(xo, turn(fi, kX))), pDots);
   const band = inv(smoothstep(0, 0.16, wing.t.sub(c.real.div(2.6).sub(wing.fi.mul(0.07)).fract().mul(1.3)).abs()));
   const wcol = mix(A, B, wing.t.clamp(0, 1)), wb = barbsOn(wing.fi, NF);
   body(wing.inside);
@@ -316,13 +335,13 @@ export function material(ctx) {
   add(W.mul(c.kick.mul(0.4).add(1)), wing.tip);
 
   // the tail: a fan of 3 or 5 below the eye, drawing downward, centre feather first
-  const pt = S(0.22, 0.33).mul(inv(S(0.965, 0.985)));
+  const pt = S(0.255, 0.4).mul(inv(S(0.948, 0.96)));
   const nT = pk(1, 2).mul(2).add(3), half = nT.sub(1).div(2), SP = 0.56;
   const tq = vec2(e.x, e.y.add(EH + 0.3).negate()), tr = tq.length();
   const tf = atan2(tq.x, tq.y.add(0.0001)).add(SP).div(2 * SP);
   const off = (fi) => fi.sub(half).abs().div(half.max(0.5));
   const tail = fan(tr, tf, nT, float(2 * SP).div(nT), (fi) => float(10).sub(off(fi).mul(3.5)), (fi) => pt.mul(1.6).sub(off(fi).mul(0.6)).clamp(0, 1), pDots);
-  const tcol = mix(C, D, tail.t.clamp(0, 1)), tb = step(0.75, build).mul(inv(S(0.94, 0.96)));
+  const tcol = mix(C, D, tail.t.clamp(0, 1)), tb = step(0.75, build).mul(inv(S(0.94, 0.952)));
   body(tail.inside);
   add(tcol.mul(float(0.8).add(tb.mul(0.4)).add(kl.mul(0.5)).add(cul.mul(0.3))), tail.outline);
   add(mix(tcol, W, 0.6).mul(0.7), tail.quill);

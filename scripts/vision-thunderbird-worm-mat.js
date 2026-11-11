@@ -1,7 +1,7 @@
 // THE THUNDERBIRD's HORNED SERPENTS (params.n 1..4): round bodies winding in depth through the storm. n 1, 2 rise from
 // behind the world canvas past the wing tips to the upper sides; n 3, 4 (seed 312/313) thinner, from the top corners.
 // Skin: each body wears one of four seeded modes (op-art rings, bead rows, diamond scales, feather barbs) and trades it
-// for another climbing root to tip in the build (u .78-.9); one goes silhouette with a rim; the kick runs a light up it.
+// for another climbing root to tip in the build (u .78-.9); arrive u .69 / .75, gone by u .96; one goes silhouette with a rim; the kick runs a light up it.
 import { MeshBasicNodeMaterial, DoubleSide } from "builtin/three";
 import { positionGeometry, float, vec2, vec3, smoothstep, step, mix, atan2 } from "builtin/tsl";
 import { tripClock, visionShown, visionU, stripes, inv, is, ioU, famPick, NEON } from "./lib/trip.js";
@@ -18,7 +18,7 @@ export function material(ctx) {
 
   const uu = positionGeometry.y, ca = positionGeometry.x, sa = positionGeometry.z;
   const r0 = pair ? 2.4 : 3.6;
-  const grow = io(0.5 + pair * 0.04, 0.75, 0.95, 0.98 - pair * 0.01);
+  const grow = io(0.69 + pair * 0.06, 0.8 + pair * 0.02, 0.942 - pair * 0.002, 0.96 - pair * 0.002);   // arrive u .69 (n3,4 .75) after the fore, out before the world
   const exists = pair ? step(0.45, rn(n === 3 ? 12 : 13)) : float(1);
   const tip = inv(smoothstep(grow.sub(0.07), grow, uu));
   const rad = inv(uu).max(0).pow(0.5).mul(r0).mul(tip.sqrt()).mul(live).mul(exists).mul(step(0.002, grow));
