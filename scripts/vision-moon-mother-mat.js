@@ -36,7 +36,7 @@ function polyline(q, pts) {
 export function material(ctx) {
   const layer = ctx.params.layer ?? "being";
   const c = tripClock(ctx);
-  const u = visionU(ctx, c);
+  const hold = ctx.param("hold", -1), u = select(hold.greaterThan(-0.5), hold, visionU(ctx, c));
   const io = (a, b, x, y) => smoothstep(a, b, u).mul(inv(smoothstep(x, y, u)));   // an element's way in and its way out
   const rn = (n) => c.rnd(220 + n), pk = (n, k) => c.pick(220 + n, k);
   const sense = (n) => step(0.5, rn(n)).mul(2).sub(1);
