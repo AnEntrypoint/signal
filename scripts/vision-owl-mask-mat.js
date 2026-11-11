@@ -1,10 +1,31 @@
-// THE NIGHT OWL: mirrored neon owl mask on five canvases (params.layer: world z-30 scrolls, ring z-12 turns, being breathes,
-// veil z+10 sways, fore z+22 undulates). Everything enters and leaves through one of three OWL masks dealt by seed
-// (feather strokes / iris dots / plumage scale rows), exit never the entrance's; parts leave one by one over u .8..1,
-// the world plumage last (lit to u .98). Seed channels 480..501.
+// THE NIGHT OWL: one neon owl mask, bilateral, on five canvases at five depths (params.layer: world z-30 plumage scrolls,
+// ring z-12 turns, being breathes, veil z+10 sways, fore z+22 undulates). Every piece enters and leaves through one of
+// three OWL masks dealt by seed (feather strokes / iris dots / plumage scale rows), exit never the entrance's. Seed 480..501.
+// REVEAL SCHEDULE (u = visionU; one new group per bar = .031 u; in -> whole / out start -> gone):
+//  face outline line   .000 -> .14  (ALONE to .155)   out .900 -> .930
+//  beak                .155 -> .21                    out .930 -> .960
+//  face shield (black) .185 -> .26                    out .945 -> .968
+//  eyes (+tears)       .215 -> .29                    out .915 -> .945
+//  brows               .245 -> .31                    out .880 -> .910
+//  ear tufts           .275 -> .34                    out .890 -> .920
+//  feather fans        .305 -> .40                    out .865 -> .900
+//  face bead row       .335 -> .40  (owl whole ~.41)  out .895 -> .925
+//  RING bead ring+halo .365 -> .44                    out .875 -> .905
+//  WORLD plumage grow  .395 -> .55                    out .982 -> .999 (last lit)
+//  forehead diamonds   .430 -> .48                    out .845 -> .880
+//  RING sparkles       .460 -> .53                    out .855 -> .885
+//  whiskers            .490 -> .56                    out .825 -> .860
+//  beard (beads|chev.) .520 -> .59                    out .815 -> .850
+//  RING ocelli         .550 -> .61                    out .840 -> .875
+//  WORLD glyphs        .580 -> .66 stars, cartouches, crosses, feathers one by one; out .850 -> .915 piece by piece
+//  glints: fan + iris beads, fan squiggle, fan ocelli .610 -> .70   out .805 -> .870
+//  worm 1 / 2 / 3      .640 / .700 / .760 -> +.08 (worm-mat)    out .860 .. .935
+//  VEIL feather charms .670 -> .76                    out .820 -> .860
+//  FORE petals, sparks .730 -> .79                    out .800 -> .840
+//  culmination (eye spiral or figure/ground flip, ring brightens) .80 -> .86
 import { MeshBasicNodeMaterial, AdditiveBlending, DoubleSide } from "builtin/three";
 import { positionGeometry, float, vec2, vec3, smoothstep, step, mix, atan2, fwidth, select } from "builtin/tsl";
-import { tripClock, visionShown, visionU, climb, maskDraw, maskBeads, maskIris, inv, is } from "./lib/trip.js";
+import { tripClock, visionShown, visionU, climb, maskDraw, maskBeads, maskIris, inv, is, sgn, strokeAA } from "./lib/trip.js";
 
 const TAU = 6.28318, PI = 3.14159;
 const DEPTH = { world: 104, ring: 86, being: 74, veil: 64, fore: 52 };
@@ -29,20 +50,19 @@ export function material(ctx) {
   const c = tripClock(ctx), u = visionU(ctx, c), live = visionShown(ctx, c, 0);
   const low = ctx.quality === "low";
   const rn = (n) => c.rnd(480 + n), pk = (n, k) => c.pick(480 + n, k);
-  const sense = (n) => step(0.5, rn(n)).mul(2).sub(1);
+  const sense = (n) => sgn(rn(n));
   const fam = pk(0, 3), h1 = pk(1, 4), h2 = h1.add(1).add(pk(2, 3)).mod(4);
   const blue = vec3(0.05, 0.12, 1.0), violet = vec3(0.45, 0.05, 1.0), W = vec3(1, 1, 1), K = vec3(0, 0, 0);
   const M = vec3(1.0, 0.05, 0.55), Y = vec3(1.0, 0.85, 0.05), G = vec3(0.1, 1.0, 0.15), O = vec3(1.0, 0.3, 0.02);
-  const A = blue.mul(is(fam, 0)).add(violet.mul(is(fam, 1))).add(blue.mul(is(fam, 2)));
-  const B = violet.mul(is(fam, 0)).add(blue.mul(is(fam, 1))).add(violet.mul(is(fam, 2)));
+  const A = mix(blue, violet, is(fam, 1)), B = mix(violet, blue, is(fam, 1));
   const hot = (i) => M.mul(is(i, 0)).add(Y.mul(is(i, 1))).add(G.mul(is(i, 2))).add(O.mul(is(i, 3)));
   const H = hot(h1), H2 = hot(h2);
   const kickOn = step(0.001, c.kick);
   const sc = DEPTH[layer] / 74;                                  // this layer's metres per being metre
   const P = positionGeometry.xy;
   const aa = fwidth(P.x).mul(1.2).max(0.02);
-  const stroke = (d, w) => inv(smoothstep(float(w), aa.add(w), d));
-  const cul = smoothstep(0.7, 0.73, u).mul(inv(smoothstep(0.8, 0.84, u))).mul(climb(c).mul(0.4).add(0.6));
+  const stroke = strokeAA(aa);
+  const cul = smoothstep(0.8, 0.82, u).mul(inv(smoothstep(0.86, 0.88, u))).mul(climb(c).mul(0.4).add(0.6));
   // THE OWL MASKS: per fragment an order o (0 first .. 1 last) and a shape key k; a piece shows where k < its own progress
   const gq = P.div(sc).sub(vec2(0, CY)), gx = gq.x.abs(), gr = gq.length();
   const gf = atan2(gq.y, gx).div(PI).add(0.5).mul(9), gw = gf.fract().sub(0.5).mul(2), gfo = gf.floor().div(9);
@@ -66,7 +86,7 @@ export function material(ctx) {
   if (layer === "world") {
     const q = P.sub(vec2(0, CY * sc)), ax = q.x.abs();
     const de = vec2(q.x.div(1.78), q.y).length(), ang = atan2(q.y, q.x);
-    const grow = smoothstep(0, 0.4, u), Rg = grow.max(0.0001).pow(0.6).mul(74);
+    const grow = smoothstep(0.395, 0.55, u), Rg = grow.max(0.0001).pow(0.6).mul(74);
     const wg = gate(1, inv(smoothstep(0.982, 0.999, u))), wl = smoothstep(0.8, 0.95, u).mul(1.6).add(1);
     // the grown edge is three rows of feather scales, each row smaller: plumage spreading from the owl
     const lead = de.sub(Rg), ri = lead.div(5).floor(), rc = Rg.add(ri.add(0.5).mul(5));
@@ -89,7 +109,7 @@ export function material(ctx) {
       const bd = vec2(k.fract().sub(0.5).mul(R * TAU / n), de.sub(R)).length();
       col = col.add(mix(B, H, kl).mul(stroke(bd, 0.45)).mul(float(0.35).add(kl)).mul(maskBeads(grow.mul(1.6).sub(0.6 + j * 0.15).clamp(0, 1), k.fract())));
     });
-    const sw = sense(12), pst = io(0.5, 0.62, 0.86, 0.9), pca = io(0.53, 0.65, 0.88, 0.92), pcr = io(0.56, 0.66, 0.9, 0.94), pfe = io(0.6, 0.7, 0.84, 0.88);
+    const sw = sense(12), pst = io(0.58, 0.63, 0.85, 0.88), pca = io(0.6, 0.65, 0.87, 0.9), pcr = io(0.62, 0.66, 0.885, 0.915), pfe = io(0.63, 0.66, 0.86, 0.89);
     const gly = pk(11, 3);
     (low ? STARS.slice(0, 4) : STARS).forEach(([x, y, s], i) => {
       const tw = c.real.mul(1.3).add(i * 2.1).sin().mul(0.25).add(0.75);
@@ -103,7 +123,7 @@ export function material(ctx) {
       const qq = vert ? vec2(cq.y, cq.x) : cq;
       const sd = vec2(qq.x.abs().sub(5.5).max(0), qq.y).length().sub(2.6);
       const on = maskBeads(pca, i / 5);
-      const inner = qq.sub(vec2(0, 0));
+      const inner = qq;
       const g0 = stroke(vec2(inner.x.abs().sub(3).abs(), inner.y).length(), 0.7).max(stroke(inner.length(), 0.7));
       const g1 = stroke(inner.x.abs().add(inner.y.abs()).sub(1.6).abs(), 0.15).max(stroke(inner.length(), 0.45));
       const g2 = stroke(vec2(inner.x.div(2.4), inner.y.div(1.2)).length().sub(1).abs(), 0.12).max(stroke(inner.length(), 0.6));
@@ -140,7 +160,7 @@ export function material(ctx) {
   if (layer === "ring") {
     const q = P.div(sc).sub(vec2(0, CY)), r = q.length(), a = atan2(q.y, q.x);
     const s14 = sense(14), w1 = c.real.mul(TAU / 70).mul(s14), w2 = c.real.mul(TAU / 46).mul(s14).negate();
-    const p1 = io(0.4, 0.48, 0.88, 0.94), p2 = io(0.48, 0.56, 0.86, 0.92), p3 = io(0.52, 0.6, 0.84, 0.9);
+    const p1 = io(0.365, 0.44, 0.875, 0.905), p2 = io(0.46, 0.53, 0.855, 0.885), p3 = io(0.55, 0.61, 0.84, 0.875);
     const nb = pk(13, 3).mul(8).add(28);
     const ka = a.add(w1).div(TAU).add(0.5);
     const k1 = ka.mul(nb);
@@ -166,7 +186,7 @@ export function material(ctx) {
   // ---- VEIL: feather charms on bead strings (sways)
   if (layer === "veil") {
     const q = P.div(sc).sub(vec2(0, CY)), ax = q.x.abs();
-    const pv = io(0.62, 0.74, 0.82, 0.89), nch = pk(15, 2).add(2);
+    const pv = io(0.67, 0.76, 0.82, 0.86), nch = pk(15, 2).add(2);
     const drift = c.real.mul(0.13).sin().mul(4);
     let col = K, cover = float(0);
     [[52, 10, 0], [66, -6, 1], [40, 24, 2]].forEach(([x, yEnd, i]) => {
@@ -202,7 +222,7 @@ export function material(ctx) {
   // ---- FORE: petal-feathers and sparks on a swell (undulates)
   if (layer === "fore") {
     const q = P.div(sc), ax = q.x.abs();
-    const pf = io(0.66, 0.78, 0.8, 0.86);
+    const pf = io(0.73, 0.79, 0.8, 0.84);
     let col = K, cover = float(0);
     for (let i = 0; i < (low ? 4 : 6); i++) {
       const lo = i < 3, s = c.real.mul(0.022).add(i / 3).fract();
@@ -232,11 +252,11 @@ export function material(ctx) {
   // ---- BEING: the owl mask (breathes)
   const br = c.real.mul(0.45).sin().mul(0.022).add(1);
   const q = P.sub(vec2(0, CY)).div(br), ax = q.x.abs(), sx = select(q.x.lessThan(0), float(-1), float(1));
-  const pBeak = io(0.0, 0.08, 0.94, 0.98), pBody = io(0.06, 0.16, 0.95, 0.985), pLine = io(0.1, 0.2, 0.92, 0.96);
-  const pEye = io(0.13, 0.22, 0.93, 0.975), pTuft = io(0.18, 0.26, 0.9, 0.95), pBrow = io(0.2, 0.27, 0.89, 0.94);
-  const pFan = io(0.24, 0.34, 0.87, 0.93), pDia = io(0.5, 0.55, 0.86, 0.91), pIb = io(0.52, 0.58, 0.85, 0.9);
-  const pFb = io(0.55, 0.66, 0.84, 0.89), pWh = io(0.58, 0.68, 0.83, 0.88), pBe = io(0.58, 0.7, 0.82, 0.87);
-  const pSq = io(0.6, 0.68, 0.81, 0.86), pOc = io(0.64, 0.72, 0.8, 0.85);
+  const pLine = io(0.0, 0.14, 0.9, 0.93), pBeak = io(0.155, 0.21, 0.93, 0.96), pBody = io(0.185, 0.26, 0.945, 0.968);
+  const pEye = io(0.215, 0.29, 0.915, 0.945), pBrow = io(0.245, 0.31, 0.88, 0.91), pTuft = io(0.275, 0.34, 0.89, 0.92);
+  const pFan = io(0.305, 0.4, 0.865, 0.9), pLb = io(0.335, 0.4, 0.895, 0.925), pDia = io(0.43, 0.48, 0.845, 0.88);
+  const pWh = io(0.49, 0.56, 0.825, 0.86), pBe = io(0.52, 0.59, 0.815, 0.85), pFb = io(0.61, 0.66, 0.83, 0.865);
+  const pIb = io(0.62, 0.67, 0.835, 0.87), pSq = io(0.63, 0.68, 0.81, 0.845), pOc = io(0.65, 0.7, 0.805, 0.84);
   let col = K, lines = float(0);
   const put = (colour, mask) => { col = mix(col, colour, mask); lines = lines.max(mask); };
 
@@ -246,7 +266,7 @@ export function material(ctx) {
   const face = step(sdH, 0).mul(maskIris(pBody, q.length().div(26)));
   put(A.mul(1.1), stroke(sdH.abs(), 0.3).mul(maskDraw(pLine, ah)));
   const hk = ah.mul(PI * 21 / 2.4);
-  put(mix(H2, W, 0.2), stroke(vec2(hk.fract().sub(0.5).mul(2.4), sdH.add(2.2)).length(), 0.55).mul(maskBeads(pLine.mul(1.2).sub(0.2), ah)).mul(step(0.08, ah)));
+  put(mix(H2, W, 0.2), stroke(vec2(hk.fract().sub(0.5).mul(2.4), sdH.add(2.2)).length(), 0.55).mul(maskBeads(pLb, ah)).mul(step(0.08, ah)));
   // ear tufts: nested teardrops leaning outward, drawn from the head up
   const tq0 = vec2(ax.sub(13), q.y.sub(17)), Dx = 0.47, Dy = 0.88;
   const tl = vec2(tq0.x.mul(-Dy).add(tq0.y.mul(Dx)), tq0.x.mul(Dx).add(tq0.y.mul(Dy)).negate());
