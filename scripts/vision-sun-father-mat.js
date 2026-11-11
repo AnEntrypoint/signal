@@ -85,7 +85,8 @@ export function material(ctx) {
     const bp = q.sub(rc.mul(0.55).add(h.mul(0.45)).mul(0.6)).div(0.4).clamp(0, 1);
     const bead = step(bd, bp.mul(0.8));
     const isB = is(v, 1);
-    return { m: mix(spike, bead, isB), fresh: mix(lp, bp, isB).mul(inv(mix(lp, bp, isB))).mul(4).clamp(0, 1) };
+    const fS = lp.mul(inv(lp)).mul(4).mul(inv(smoothstep(0, 0.05, rn.sub(lp).abs()))), fB = bp.mul(inv(bp)).mul(4).mul(inv(smoothstep(0, 0.06, bd.sub(bp.mul(0.8)).abs())));
+    return { m: mix(spike, bead, isB), fresh: mix(fS, fB, isB).clamp(0, 1) };
   };
   const gate = (a, b, x, y, Rl) => { const gi = sym(vIn, smoothstep(a, b, u), Rl), go = sym(vOut, inv(smoothstep(x, y, u)), Rl); return { m: gi.m.mul(go.m), fresh: gi.fresh.max(go.fresh) }; };
 
