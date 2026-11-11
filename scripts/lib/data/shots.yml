@@ -17,12 +17,10 @@ keys:
   - { t: 66.35,  eye: [0, 15, -104],  aim: [0, 15, -160], fov: 78, roll: 22, ease: linear }
   - { t: 72.35,  eye: [0, 15, -176],  aim: [0, 15, -230], fov: 82, roll: 45, ease: linear }
   - { t: 78.35,  eye: [0, 15, -250],  aim: [0, 15, -300], fov: 82, roll: 68, ease: linear }
-  - { t: 84.35,  eye: [0, 15, -334],  aim: [0, 15, -362], fov: 66, roll: 90 }
-  # hex: stopped. on the axis, a 12 s creep toward the hands
-  - { t: 84.36,  eye: [0, 15, -340],  aim: [0, 15, -366], fov: 58 }   # was cut: true; 2026-11-11 no hard cuts
-  - { t: 96.35,  eye: [0, 15, -346],  aim: [0, 15, -366], fov: 50 }
-  # reset: cut to straight overhead of the field, one eighth turn in 12 s
-  - { t: 96.36,  eye: [0, 120, 1],    aim: [0, 0, 0],     fov: 40 }   # was cut: true; 2026-11-11 no hard cuts
+  # hex: the flight slows into the room on the axis and creeps toward the hands (2026-11-11: no hard cuts)
+  - { t: 84.35,  eye: [0, 15, -338],  aim: [0, 15, -364], fov: 62, roll: 90 }
+  - { t: 93.35,  eye: [0, 15, -346],  aim: [0, 15, -366], fov: 50, roll: 30 }
+  # reset: on the fill the camera pulls back out through the eye and rises until it hangs over the field
   - { t: 108.35, eye: [0, 96, 1],     aim: [0, 0, 0],     fov: 42, roll: 45 }
   # ascent: one unbroken spiral down and in
   - { t: 120.35, eye: [36, 44, 30],   aim: [0, 8, -12],   fov: 46, roll: 20 }
