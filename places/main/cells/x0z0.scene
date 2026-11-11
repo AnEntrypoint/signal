@@ -97,13 +97,75 @@ field-stalks:
   receiveShadow: false
   tags: [trip, field]
 serpents:
+  castShadow: false
   feetPosition: {x: 0, y: 0, z: 0}
   id: serpents
-  material: {kind: scripted, script: engine/blueprint}
+  material: {kind: scripted, params: {"on": 0, t0: 0}, script: scripts/serpents-mat.js}
   physics: none
-  primitive: {depth: 170, height: 60, kind: box, width: 170}
-  tags: [blueprint]
-  visible: false
+  primitive: {kind: scripted, params: {}, script: scripts/serpents-geo.js}
+  receiveShadow: false
+  tags: [trip, serpents]
+  visible: true
+serpents-arches:
+  castShadow: false
+  feetPosition: {x: 0, y: 0, z: 0}
+  id: serpents-arches
+  material: {kind: scripted, params: {"on": 0, t0: 0}, script: scripts/serpents-arches-mat.js}
+  physics: none
+  primitive: {kind: scripted, params: {}, script: scripts/serpents-arches-geo.js}
+  receiveShadow: false
+  tags: [trip, serpents]
+  visible: true
+serpents-beads:
+  castShadow: false
+  feetPosition: {x: 0, y: 0, z: 0}
+  id: serpents-beads
+  material: {kind: scripted, params: {"on": 0, t0: 0}, script: scripts/serpents-beads-mat.js}
+  physics: none
+  primitive: {kind: scripted, params: {}, script: scripts/serpents-beads-geo.js}
+  receiveShadow: false
+  tags: [trip, serpents]
+  visible: true
+serpents-cones:
+  castShadow: false
+  feetPosition: {x: 0, y: 0, z: 0}
+  id: serpents-cones
+  material: {kind: scripted, params: {"on": 0, t0: 0}, script: scripts/serpents-cones-mat.js}
+  physics: none
+  primitive: {kind: scripted, params: {}, script: scripts/serpents-cones-geo.js}
+  receiveShadow: false
+  tags: [trip, serpents]
+  visible: true
+serpents-knot:
+  castShadow: false
+  feetPosition: {x: 0, y: 0, z: 0}
+  id: serpents-knot
+  material: {kind: scripted, params: {"on": 0, t0: 0}, script: scripts/serpents-knot-mat.js}
+  physics: none
+  primitive: {kind: scripted, params: {}, script: scripts/serpents-knot-geo.js}
+  receiveShadow: false
+  tags: [trip, serpents]
+  visible: true
+serpents-rose:
+  castShadow: false
+  feetPosition: {x: 0, y: 0, z: 0}
+  id: serpents-rose
+  material: {kind: scripted, params: {"on": 0, t0: 0}, script: scripts/serpents-rose-mat.js}
+  physics: none
+  primitive: {kind: scripted, params: {count: 420}, script: scripts/serpents-ball-geo.js}
+  receiveShadow: false
+  tags: [trip, serpents]
+  visible: true
+serpents-totem:
+  castShadow: false
+  feetPosition: {x: 0, y: 0, z: 0}
+  id: serpents-totem
+  material: {kind: scripted, params: {"on": 0, t0: 0}, script: scripts/serpents-totem-mat.js}
+  physics: none
+  primitive: {kind: scripted, params: {}, script: scripts/serpents-totem-geo.js}
+  receiveShadow: false
+  tags: [trip, serpents]
+  visible: true
 stage-floor:
   feetPosition: {x: 0, y: -0.3, z: 0}
   id: stage-floor
