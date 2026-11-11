@@ -1,4 +1,34 @@
 # spawn-scene v2 yaml x0z-1
+sun-eye:
+  castShadow: false
+  feetPosition: {x: 0, y: 62, z: -90}
+  id: sun-eye
+  material: {kind: scripted, params: {"on": 0, t0: 0}, script: scripts/sun-disc.js}
+  physics: none
+  primitive: {kind: scripted, params: {h: 27, w: 27, z: 0}, script: scripts/sun-quad-geo.js}
+  receiveShadow: false
+  rotation: {include: [yaw, pitch], lookAt: {x: 0, y: 15, z: 20}}
+  tags: [trip, sun]
+sun-eye-drips:
+  castShadow: false
+  feetPosition: {x: 0, y: 62, z: -90}
+  id: sun-eye-drips
+  material: {kind: scripted, params: {"on": 0, t0: 0}, script: scripts/sun-drips.js}
+  physics: none
+  primitive: {kind: scripted, script: scripts/sun-drips-geo.js}
+  receiveShadow: false
+  rotation: {include: [yaw, pitch], lookAt: {x: 0, y: 15, z: 20}}
+  tags: [trip, sun]
+sun-eye-halo:
+  castShadow: false
+  feetPosition: {x: 0, y: 62, z: -90}
+  id: sun-eye-halo
+  material: {kind: scripted, params: {"on": 0, t0: 0}, script: scripts/sun-halo.js}
+  physics: none
+  primitive: {kind: scripted, params: {h: 59, w: 59, z: -3}, script: scripts/sun-quad-geo.js}
+  receiveShadow: false
+  rotation: {include: [yaw, pitch], lookAt: {x: 0, y: 15, z: 20}}
+  tags: [trip, sun]
 tunnel:
   audience: all
   castShadow: false
