@@ -122,7 +122,6 @@ export function shown(c, name, d = 0) {
   // each piece now fades over ~1.1 s on its own turn, the turns spread over ~2 s, and only the seam instant is fully dark
   const seamO = pieceLag(name).div(SCORE.piece ?? 2.25).mul(0.25).add(float(d).clamp(0, 1).mul(0.35)).add(turn * 0.45).mul(0.3);
   const seamGate = smoothstep(seamO, seamO.add(0.18), c.seamD.div(SCORE.deck.seam).clamp(0, 1));
-    .sub(pieceLag(name).div(SCORE.piece ?? 2.25).mul(0.25).add(float(d).clamp(0, 1).mul(0.35)).add(turn * 0.45).mul(0.38))); // 2026-11-11: the seam watched went black for ~10 s; now pieces thin out over ~6 s and the full dark is under 1 s // the heart of every layer stands through the drop: never an empty frame
   const lag = float(d).clamp(0, 1).mul(SCORE.wipe).add(pieceLag(name));
   let v = float(0);
   for (const [a0, b] of SCORE.layers[name]) {
