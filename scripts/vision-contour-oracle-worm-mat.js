@@ -31,7 +31,9 @@ export function material(ctx) {
     const j = float(1).sub(s), q0 = j.mul(j), q1 = j.mul(s).mul(2), q2 = s.mul(s);
     const x = q0.mul(PTS[0][0]).add(q1.mul(PTS[1][0])).add(q2.mul(PTS[2][0])).mul(flip);
     const y = q0.mul(PTS[0][1]).add(q1.mul(PTS[1][1])).add(q2.mul(PTS[2][1]));
-    const z = s.mul(46).sub(22).mul(dir).add(s.mul(7.85).add(t.mul(0.31 + 0.05 * n)).add(zph).sin().mul(s.mul(3.1416).sin().mul(7)));
+    // depth follows the screen x: one side of the bust the body is behind it, the other side in front (past the veil);
+    // the crossing line drifts slowly sideways, so which part hides which keeps changing
+    const z = x.mul(dir).add(t.mul(0.23 + 0.04 * n).add(zph).sin().mul(13)).mul(0.62).add(3).clamp(-24, 26);
     return vec3(x, y, z);
   };
   const C0 = spine(al), dT = spine(al.add(0.004)).sub(C0);
