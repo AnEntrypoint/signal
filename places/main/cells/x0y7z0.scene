@@ -5,7 +5,7 @@ vision-world-tree:
   id: vision-world-tree
   material: {kind: scripted, params: {k0: -1, k1: -1, layer: being, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-world-tree-mat.js}
   physics: none
-  primitive: {kind: scripted, params: {h: 40, w: 64}, script: scripts/vision-world-tree-geo.js}
+  primitive: {kind: scripted, params: {h: 72, w: 110}, script: scripts/vision-world-tree-geo.js}
   receiveShadow: false
   tags: [trip, vision-world-tree]
 vision-world-tree-fore:
