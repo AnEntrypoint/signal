@@ -27,7 +27,7 @@ const BY = 1.5, SY = 2.6;  // bell rim line, crown star above it
 const R0 = 5.4, DR = 2.35, HW = 0.72, THMAX = 1.7;
 const ROUT = R0 + 4 * DR + HW;
 const COL = { blue: [0.02, 0.05, 1], violet: [0.24, 0.02, 1], pink: [1, 0.02, 0.33], orange: [1, 0.17, 0.01], yellow: [1, 0.72, 0.02], green: [0.03, 1, 0.06], white: [1, 1, 1] };
-const FAMS = [["blue", "violet", "yellow"], ["violet", "pink", "white"], ["pink", "orange", "yellow"], ["green", "blue", "white"]];
+const FAMS = [["blue", "violet", "yellow", "pink"], ["violet", "pink", "white", "green"], ["pink", "orange", "yellow", "blue"], ["green", "blue", "white", "orange"]];   // 4th: the counter-accent, so every seed reaches the far side of the palette
 const is = (v, i) => step(v.sub(i).abs(), 0.5);
 const inv = (x) => float(1).sub(x);
 
@@ -41,7 +41,7 @@ export function material(ctx) {
   const io = (a, b, x, y) => smoothstep(a, b, u).mul(inv(smoothstep(x, y, u)));
   const fam = pk(0, 4);
   const famCol = (slot) => { let v = vec3(0); FAMS.forEach((f, i) => { v = v.add(vec3(...COL[f[slot]]).mul(is(fam, i))); }); return v; };
-  const A = famCol(0), B = famCol(1), H = famCol(2), W = vec3(1, 1, 1);
+  const A = famCol(0), B = famCol(1), H = famCol(2), H2 = famCol(3), W = vec3(1, 1, 1);
   const cul = smoothstep(0.85, 0.9, u).mul(climb(c).mul(0.6).add(0.4)).mul(inv(smoothstep(0.93, 0.95, u)));
   const m = new MeshBasicNodeMaterial();
   m.side = DoubleSide;
@@ -78,7 +78,7 @@ export function material(ctx) {
       const d = vec2(qx.sub(bx), p.y.sub(by)).length();
       const pc = smoothstep(0.36 + i * 0.025, 0.42 + i * 0.025, u).mul(step(by, 40));
       const dot = step(d, zf.mul(0.45).add(0.35)).mul(pc).mul(cover);
-      col = col.add(mix(B, H, i % 2).mul(zf.mul(0.45).add(0.18)).mul(dot));
+      col = col.add(mix(B, i % 3 === 2 ? H2 : H, i % 2).mul(zf.mul(0.45).add(0.18)).mul(dot));
     }
     // small medusae in the distance, each pulsing at its own tempo, arriving one by one
     const nM = pk(11, 3).add(3);
@@ -231,7 +231,7 @@ export function material(ctx) {
     const stripe = step(coord.fract(), 0.5);
     const wave = c.real.mul(-2.6).add(i * 1.25).sin().mul(0.5).add(0.5).mul(barber);  // light runs outward across the arcs
     const lit = float(0.7).add(kl.mul(0.7)).add(cul.mul(0.3)).add(wave.mul(0.6));
-    add((i % 2 ? W.mul(0.85) : A).mul(lit).mul(stripe), inBand);
+    add([A, W.mul(0.85), H2, W.mul(0.85), B][i].mul(lit).mul(stripe), inBand);
     add(mix(A, W, 0.5).mul(0.9), stroke(rb.sub(Ri + HW).abs(), 0.05).mul(inBand.max(step(rb.sub(Ri + HW).abs(), 0.2).mul(step(th, float(THMAX).mul(pi))))));
   }
   add(mix(A, W, 0.5).mul(0.8), stroke(rb.sub(ROUT + 0.45).abs(), 0.06).mul(step(th, float(THMAX).mul(fillP))));
@@ -308,7 +308,7 @@ export function material(ctx) {
     const blit = float(0.75).add(run.mul(0.8)).add(cul.mul(w).mul(0.7));
     add(B.mul(0.55), line);
     add(W.mul(1.3), nb);
-    add(mix(B, W, w.mul(cul).mul(0.6)).mul(blit), bead);
+    add(mix(j % 2 ? H2 : B, W, w.mul(cul).mul(0.6)).mul(blit), bead);
     add(vec3(0.0), step(d, rad.mul(0.55)).mul(shown).mul(maskBeads(pupils, k)));
     add(H.mul(1.1), eye.mul(step(d, rad.mul(0.34))));
   }

@@ -11,7 +11,7 @@ import { tripClock, visionShown, visionU, stripes } from "./lib/trip.js";
 
 const TAU = 6.28318, LEN = 120;
 const COL = { blue: [0.02, 0.05, 1], violet: [0.24, 0.02, 1], pink: [1, 0.02, 0.33], orange: [1, 0.17, 0.01], yellow: [1, 0.72, 0.02], green: [0.03, 1, 0.06], white: [1, 1, 1] };
-const FAMS = [["blue", "violet", "yellow"], ["violet", "pink", "white"], ["pink", "orange", "yellow"], ["green", "blue", "white"]];
+const FAMS = [["blue", "violet", "yellow", "pink"], ["violet", "pink", "white", "green"], ["pink", "orange", "yellow", "blue"], ["green", "blue", "white", "orange"]];   // 4th: the counter-accent, so every seed reaches the far side of the palette
 // spines (being metres, +z toward the camera): root, the point it passes at its middle, tip; x mirrored by side
 const PATHS = { low: [[100, -70, -50], [32, 2, -10], [22, -18, 28]], high: [[92, 72, -50], [40, 28, -8], [30, -4, 26]] };
 
@@ -26,7 +26,7 @@ export function material(ctx) {
   const rn = (k) => c.rnd(360 + k), pk = (k, m) => c.pick(360 + k, m);
   const fam = pk(0, 4);
   const famCol = (slot) => { let v = vec3(0); FAMS.forEach((f, i) => { v = v.add(vec3(...COL[f[slot]]).mul(is(fam, i))); }); return v; };
-  const A = famCol(0), B = famCol(1), H = famCol(2), W = vec3(1, 1, 1);
+  const A = famCol(0), B = famCol(1), H = famCol(2), H2 = famCol(3), W = vec3(1, 1, 1);
   const cnt = pk(12, 3).add(2);
   const exists = step(float(n), cnt.add(0.5));
 
@@ -56,11 +56,12 @@ export function material(ctx) {
 
   // the skin by along-length s (metres) and around-angle
   const ang = atan2(sa, ca), s = uu.mul(LEN), rf = inv(uu).max(0).pow(0.55).mul(r0).add(0.15);
-  const cStr = mix(A, W, s.mul(0.4).floor().mod(2).mul(0.7)).mul(stripes(s.add(ang.mul(0.6)), 0.4, 0.04));
+  const sk = s.mul(0.4).floor().mod(3);
+  const cStr = A.mul(is(sk, 0)).add(mix(A, W, 0.7).mul(is(sk, 1))).add(H2.mul(0.9).mul(is(sk, 2))).mul(stripes(s.add(ang.mul(0.6)), 0.4, 0.04));
   const row = s.div(2.2).floor();
   const bd = vec2(s.div(2.2).fract().sub(0.5).mul(2.2), ang.div(TAU).mul(6).add(row.mul(0.5)).fract().sub(0.5).mul(rf.mul(TAU / 6))).length();
   const brad = rf.mul(0.38).min(0.75);
-  const cBe = mix(mix(B, W, 0.5), H, step(row.mod(3), 0.5)).mul(inv(smoothstep(brad.sub(0.08), brad, bd))).mul(step(brad.mul(0.35), bd).mul(0.7).add(0.3));
+  const cBe = mix(mix(B, W, 0.5), H, step(row.mod(3), 0.5)).mul(inv(is(row.mod(3), 2))).add(H2.mul(is(row.mod(3), 2))).mul(inv(smoothstep(brad.sub(0.08), brad, bd))).mul(step(brad.mul(0.35), bd).mul(0.7).add(0.3));
   const t3 = ang.div(TAU).mul(4);
   const cSc = mix(B, W, 0.25).mul(stripes(s.mul(0.3).add(t3), 1, 0.06).mul(stripes(s.mul(0.3).sub(t3), 1, 0.06)));
   const swap = pair ? inv(step(0.5, rn(13))) : step(0.5, rn(13));
