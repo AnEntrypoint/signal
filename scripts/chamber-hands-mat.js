@@ -30,7 +30,7 @@ export function material(ctx) {
   const along = pxLine(v.mul(n));
   const crease = max(pxEdge(t.sub(1)), pxEdge(t.sub(2))).mul(isF);
   const armRings = pxLine(t.mul(7)).mul(isArm);
-  const moire = pxLine(dist.mul(2.2).sub(c.sec.mul(0.25)));
+  const moire = pxLine(dist.mul(c.pick(48, 3).mul(0.7).add(1.6)).sub(c.sec.mul(0.25).mul(c.dir))); // 1.6, 2.3 or 3 contours a metre
   const circ = (cu, cv, su, sv, r) => { const dd = length(vec2(t.sub(cu).mul(su), v.sub(cv).mul(sv))); return { ring: pxEdge(dd.sub(r), 1.3), disc: float(1).sub(smoothstep(r * 0.38, fwidth(dd).mul(1.5).add(r * 0.38), dd)) }; };
   const tip = circ(2.55, 0.25, 1.25, 2.7, 0.3), palm = circ(1.75, 0.25, 1.85, 11, 0.95), palm2 = circ(1.75, 0.25, 1.85, 11, 0.6);
   const hollow = max(tip.ring.mul(isF), max(palm.ring, palm2.ring).mul(isPalm));

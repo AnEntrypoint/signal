@@ -12,7 +12,7 @@ export function material(ctx) {
   const m = new MeshBasicNodeMaterial();
   const id = floor(uv().x.add(0.5)), isBead = step(1.5, uv().y), v = uv().y.sub(isBead.mul(2));
   const frame = step(id, 8.5), glyph = step(8.5, id).mul(step(id, 9.5));
-  const dir = id.mod(2).mul(2).sub(1);
+  const dir = id.mod(2).mul(2).sub(1).mul(c.dir);
   const snap = (x, w) => floor(x).add(smoothstep(0, w, x.fract()));
   const fill = smoothstep(93.35, 93.95, c.sec).mul(step(c.sec, 96.35));
   const stepRad = select(id.mod(3).lessThan(0.5), 0.1309, 0.06545); // 7.5 or 3.75 degrees a bar: the D6 alignment recurs
@@ -24,7 +24,7 @@ export function material(ctx) {
   const x = p.x.mul(ca).sub(p.y.mul(sa)).mul(sc), y = p.x.mul(sa).add(p.y.mul(ca)).mul(sc);
   const z = p.z.add(id.sub(4).mul(2.3).mul(fill).mul(frame));
   m.positionNode = vec3(x, y, z).mul(alive(g));
-  const w = v.mul(3).sub(dir.mul(c.sec).div(12)).fract();
+  const w = v.mul(c.pick(46, 3).add(2)).sub(dir.mul(c.sec).div(12).mul(mix(0.7, 1.3, c.rnd(47)))).fract(); // 2, 3 or 4 lit windows a frame
   const lit = max(smoothstep(0, 0.06, w).mul(float(1).sub(smoothstep(0.22, 0.42, w))), e);
   const stroke = mix(F.hot, F.hot2, sin(v.mul(12.566).add(c.sec.mul(0.35)).add(id)).mul(0.5).add(0.5));
   const line = stroke.mul(lit.mul(2.6).add(0.16));

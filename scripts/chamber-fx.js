@@ -24,7 +24,14 @@ export const ripple = (c, dist) => {
 // The shared breath: one swell per phrase, 0..1.
 export const breath = (c) => sin(c.sec.mul(6.28318 / 12)).mul(0.5).add(0.5);
 // One hue family per phrase: two neighbouring cool hues for the structure, one hot accent pair.
+// Three families; the roll's seed (channel 40) picks where the cycle starts, each phrase steps to the next.
 export const family = (c) => {
-  const odd = floor(c.phrase.add(64)).mod(2), mx = (p, q) => mix(vec3(...p), vec3(...q), odd);
-  return { a: mx(HUE.blue, HUE.green), b: mx(HUE.violet, [0.02, 0.9, 0.55]), hot: mx(HUE.magenta, HUE.orange), hot2: mx([1, 0.05, 0.3], HUE.red) };
+  const i = floor(c.phrase.add(64)).add(c.pick(40, 3)).mod(3);
+  const mx = (p, q, r) => mix(mix(vec3(...p), vec3(...q), step(0.5, i)), vec3(...r), step(1.5, i));
+  return {
+    a: mx(HUE.green, HUE.blue, HUE.violet), b: mx([0.02, 0.9, 0.55], HUE.violet, HUE.magenta),
+    hot: mx(HUE.orange, HUE.magenta, [1, 0.8, 0.04]), hot2: mx(HUE.red, [1, 0.05, 0.3], HUE.orange),
+  };
 };
+// this roll's speed for channel n: 0.7 .. 1.3 of the written crawl, signed by the roll's turning sense
+export const pace = (c, n) => mix(0.7, 1.3, c.rnd(n)).mul(c.dir);

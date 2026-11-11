@@ -3,7 +3,7 @@
 import { MeshBasicNodeMaterial } from "builtin/three";
 import { positionLocal, positionWorld, length, instanceIndex, vec3, float, sin, cos, select, smoothstep, max } from "builtin/tsl";
 import { tripClock, shown } from "./lib/trip.js";
-import { near, alive, ripple, breath, family } from "./chamber-fx.js";
+import { near, alive, ripple, breath, family, pace } from "./chamber-fx.js";
 
 export function material(ctx) {
   const c = tripClock(ctx), g = near(), F = family(c);
@@ -13,7 +13,7 @@ export function material(ctx) {
   const cx = sx.mul(j.mul(4).add(13)), cy = pick(-9.5, -11.5, 13.5), cz = pick(-8, 2, -12);
   const row = cz.mul(0.1);
   const e = ripple(c, float(24));
-  const a1 = c.sec.mul(6.28318 / 12).add(row), a2 = c.sec.mul(6.28318 / 24).add(row.mul(2));
+  const sp = pace(c, 49), a1 = c.sec.mul(6.28318 / 12).mul(sp).add(row), a2 = c.sec.mul(6.28318 / 24).mul(sp).add(row.mul(2));
   const p = positionLocal.mul(breath(c).mul(0.03).add(1).add(e.mul(0.06)));
   const x1 = p.x.mul(cos(a1)).add(p.z.mul(sin(a1))), z1 = p.z.mul(cos(a1)).sub(p.x.mul(sin(a1)));
   const y2 = p.y.mul(cos(a2)).sub(z1.mul(sin(a2))), z2 = p.y.mul(sin(a2)).add(z1.mul(cos(a2)));
