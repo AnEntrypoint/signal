@@ -51,7 +51,7 @@ export function material(ctx) {
   const cOp = W.mul(band(s.div(1.6).add(ang.div(TAU).mul(sg)), 0.04)).mul(0.9);
   const t = ang.div(TAU).mul(4);
   const dia = band(s.div(2.2).add(t), 0.06).mul(band(s.div(2.2).sub(t), 0.06));
-  const cSc = mix(N.mul(0.25), N, dia).mul(inv(dia).mul(0.4).add(0.6)).mul(step(0.02, inv(dia).add(0.5).fract().add(dia)));
+  const cSc = mix(N.mul(0.25), N, dia).mul(inv(dia).mul(0.4).add(0.6));
   const first = n % 2 ? cOp : cSc;
   // second skin: bead rows (hot every third row), the change climbing from root to tip
   const row = s.div(2.4).floor();
