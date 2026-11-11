@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "basedOnSpecVersion": 504,
-  "updatedAt": "2026-11-11T13:17:47.765Z",
+  "basedOnSpecVersion": 519,
+  "updatedAt": "2026-11-11T13:25:25.428Z",
   "summary": "Signal Stage is a walkable 3D motion-graphics stage with a synchronized, seeded 198-second cinematic on the measured 160-bpm track. A shared director, score/deck clocks and shader helpers drive the stage assemblies, one long scene-deck segment per roll, two long vision slots, and camera-riding beings and worms.",
   "scriptPaths": [],
   "places": [
@@ -63,7 +63,7 @@
     "scripts/tunnel-* - wall, core, dust, gates, ribs and knot share tunnel geometry kinds and tunnel-lib.js spatial/color helpers; materials vary motif and seeded palette.",
     "scripts/chamber-* - room, circuit, hands, hex, Lissajous, solids and bilateral mask share chamber shader helpers and scored cutouts.",
     "scripts/sun-disc.js, sun-drips.js and sun-halo.js - sun-eye layers share sun-lib.js but vary disc, hanging-drip and depth-halo imagery.",
-    "scripts/vision-*-geo.js / -mat.js - 16 staged beings share trip clocks and layer offsets; canvases/motifs and slot pacing vary, while worm-enabled beings add four unit-tube depth-winding meshes. Worm skins now vary UV motion per n; world-tree vines also use world-height mode and turn near-camera stretches into neon-edged silhouettes; star-jelly sea uses a starting halftone pulse and palette-pure pink/violet bands.",
+    "scripts/vision-*-geo.js / -mat.js - 16 staged beings share trip clocks and layer offsets; canvases/motifs and slot pacing vary. Worm-enabled beings add four unit-tube depth-winding meshes; per-worm skin UV motion and seeded symbol/reveal masks vary.",
     "scripts/companion-worm-geo.js and companion-worm-mat.js - three camera-attached swimmers share one animated shader/geometry pair, varied by material param n."
   ],
   "probableOrphans": [],
@@ -72,7 +72,7 @@
     "stage.js converts c.start to shader t0 seconds modulo 3600 and repeats parameter pushes over several ticks so late-built materials receive the roll; trip-tagged materials need t0/on/seed and kick bounds k0/k1.",
     "energy.yml defines vision slots [48.35,96.35] and [132.35,180.35]; only built entries in BEINGS can be dealt. Vision layers attach 3 s before a slot; vision houses are above the field in +Y and selected layers ride the camera at depth 74.",
     "score.yml deck has one segment [12.35,180.35] per roll; preserve the distinction between deck source time and the full trip clock, plus the fixed 12 s seed/return sections.",
-    "Canonical vision layer offsets are world -30, ring -12, being 0, veil +10, fore +22; stage.js derives home z from tag suffix and fit scales depth and object scale together. Worm meshes use material param n for distinct paths, with per-worm body-ridden/path-pinned/reversed skin modes (world-tree adds world-locked); they are not serpents-curve.js meshes.",
-    "Giving-hands seeded trip channels 358/359 choose entrance/exit symbol masks; preserve complementary world/hands masks and paced reveal (drop by .15, hands by .40, late detail .60-.80, LIFO exit .80-1). Star-jelly's world halftone starts glimmering at u=0 and remains lit until its masked exit; keep wave bands palette-pure pink or violet."
+    "Canonical vision layer offsets are world -30, ring -12, being 0, veil +10, fore +22; stage.js derives home z from tag suffix and fit scales depth and object scale together. Worm meshes use material param n for distinct paths and per-worm skin motion.",
+    "Seeded symbol entrances/exits now pace several beings (moon crescents, lotus petals, ouroboros scales, turtle shell plates; Weaver web threads); preserve the authored low-to-high fade/mask ordering in these shaders and their worm tip/kick masks. Giving-hands channels 358/359 still choose complementary world/hands masks and paced LIFO exit."
   ]
 }
