@@ -77,7 +77,7 @@ export function material(ctx) {
   const skin = cStr.mul(is(skinPick, 0)).add(cSc.mul(is(skinPick, 1))).add(cBe.mul(is(skinPick, 2)));
   const facing = nrm.z.abs();                                 // camera space: +z faces the eye
   const rim = smoothstep(0.25, 0.0, facing);
-  const glow = mix(B, W, 0.4).mul(kickRun.mul(1.8)).add(H.mul(rim).mul(0.6));
+  const glow = mix(B, W, 0.25).mul(kickRun.mul(0.8)).add(H.mul(rim).mul(0.6));
   const shade = facing.mul(0.6).add(0.4).mul(smoothstep(1, 0.6, s).mul(0.6).add(0.4));
   m.colorNode = skin.mul(shade).add(glow);
   return m;
