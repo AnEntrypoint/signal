@@ -31,3 +31,37 @@ export function hot(idx) {
   HOT.forEach((h, i) => { c = c.add(vec3(h[0], h[1], h[2]).mul(step(abs(k.sub(i)), 0.5))); });
   return c;
 }
+// ---- The TAS rules, shared by every tunnel piece --------------------------------------------------------------
+import { smoothstep, fract, mix, max } from "builtin/tsl";
+// Rest colour: graphite, still readable as form.
+export const GRAPH = vec3(0.04, 0.04, 0.062);
+// Left-right mirrored angle (turns, -0.25..0.25): the composition is symmetric about x = 0.
+export const mirAng = (p = positionWorld) => atan2(p.y.sub(AXY), abs(p.x)).div(6.2831853);
+// One shared breath a phrase, 0..1.
+export const breath = (c) => c.sec.mul(6.2831853 / 12).sin().mul(0.5).add(0.5);
+// One hue family per phrase (two neighbours + one accent), swapped on the phrase line; deep and return are mono.
+const FA = [[0.02, 0.07, 1], [0.38, 0, 1], [0.02, 0.07, 1], [1, 0, 0.55]];
+const FB = [[0.38, 0, 1], [1, 0, 0.55], [0.03, 0.8, 1], [1, 0.03, 0.03]];
+const FC = [[1, 0.8, 0.02], [0.05, 1, 0.1], [1, 0.3, 0], [1, 0.8, 0.02]];
+export function fam(c) {
+  const k = mod(floor(c.phrase), 4);
+  const pick = (rows) => { let o = vec3(0, 0, 0); rows.forEach((h, i) => { o = o.add(vec3(h[0], h[1], h[2]).mul(step(abs(k.sub(i)), 0.5))); }); return o; };
+  const mono = max(step(c.sec, 60.35), step(180.35, c.sec));
+  const mc = mix(vec3(0.02, 0.07, 1), vec3(0.38, 0, 1), step(180.35, c.sec));
+  const a = mix(pick(FA), mc, mono), b = mix(pick(FB), mc, mono), acc = mix(pick(FC), mc, mono);
+  return { a, b, acc,
+    base: (idx) => mix(a, b, mod(floor(float(idx)), 2)),
+    hot: (idx) => mix(acc, b, step(1.5, mod(floor(float(idx)), 3))) };
+}
+// THE LIGHT TRAVELS: how lit a thing at depth d is. A window of light 36 m long every 72 m slides down-tunnel
+// (slow in deep, 18 m/s in flight, entering as a front from the eye at 60.35), and each kick is a thin ring
+// leaving the eye, reaching depth late by distance. Returns { L: 0..1 lit, ring: 0..1 the ripple passing }.
+export function light(c, d) {
+  const f = step(60.35, c.sec), rel = float(d).sub(camDepth());
+  const ph = float(d).div(72).sub(mix(c.sec.div(24), c.sec.div(4), f));
+  const sweep = smoothstep(0.5, 0.58, abs(fract(ph).sub(0.5)).mul(2));
+  const front = step(rel, c.sec.sub(60.35).mul(150));
+  const ring = smoothstep(2.2, 0.8, abs(rel.sub(fract(c.beat).mul(110)).sub(2))).mul(c.kick.mul(1.6).min(1));
+  const L = max(sweep.mul(mix(c.bass.min(1).mul(0.65).add(0.35), front, f)), ring.mul(mix(0.5, 1, f)));
+  return { L, ring };
+}

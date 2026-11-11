@@ -4,16 +4,18 @@
 import { float, vec2, vec3, floor, fract, abs, max, mod, step, smoothstep, select, mix, length, dot, positionWorld, cameraPosition } from "builtin/tsl";
 import { MeshBasicNodeMaterial, BackSide } from "builtin/three";
 import { tripClock, pal, stripes, HUE } from "./lib/trip.js";
-import { tun, inside, camDepth, v3, BLUE, VIOLET, base, hot } from "./tunnel-lib.js";
+import { tun, inside, GRAPH, mirAng, fam, light } from "./tunnel-lib.js";
 
 export function material(ctx) {
   const m = new MeshBasicNodeMaterial();
   const c = tripClock(ctx), T = tun();
   const flight = step(60.35, c.sec);
-  const cellF = T.d.add(c.bar.mul(12)).div(12);
+  const F = fam(c), BLUE = F.a, VIOLET = F.b, base = F.base, hot = F.hot;
+  // the pattern crawls toward the eye one cell a phrase; the flight itself is the one fast thing
+  const cellF = T.d.add(c.phrase.mul(12)).div(12);
   const cell = floor(cellF), v = fract(cellF), type = mod(cell, 8);
   const dir = mod(cell, 2).mul(2).sub(1);
-  const A = fract(T.ang.add(dir.mul(c.bar).div(4)));
+  const A = fract(mirAng().add(dir.mul(c.phrase).mul(mod(floor(cell.div(2)), 2).mul(0.125).add(0.125))));
   const W = vec3(1, 1, 1);
   // 0 rings, 1 long stripes, 2 twisting checker
   const p0 = stripes(v, 6, 0.04);
@@ -46,19 +48,12 @@ export function material(ctx) {
   const w = (i) => step(abs(type.sub(i)), 0.5);
   let col = W.mul(p0.mul(w(0)).add(p1.mul(w(1))).add(p2.mul(w(2))))
     .add(c3.mul(w(3))).add(c4.mul(w(4))).add(c5.mul(w(5))).add(c6.mul(w(6))).add(c7.mul(w(7)));
-  // the snare's 60 ms black/white inversion, flight only
-  const inv = step(0.62, c.half).mul(flight).mul(step(c.sec, 84.35));
-  col = mix(col, W.sub(col.min(1)), inv);
-  // the burst at 60.35
-  col = col.mul(float(1).add(c.sec.sub(60.35).max(0).mul(-3).exp().mul(1.5)));
-  // deep: slow dark rings on the sub-bass
+  // deep: rings only, crawling
   const ud = T.d.div(12).add(c.sec.mul(0.06));
-  const deep = mix(v3(HUE.blue), v3(HUE.violet), step(0.5, fract(ud.mul(0.5))))
-    .mul(stripes(ud, 2, 0.03)).mul(float(0.1).add(c.bass.mul(0.7)).add(c.barHit.mul(0.12)));
-  col = mix(deep, col, flight);
-  // the kick's ring, racing away from the eye
-  const ring = smoothstep(1.4, 0.9, abs(T.d.sub(camDepth()).sub(fract(c.beat).mul(110)).sub(4))).mul(c.kick);
-  col = col.add(mix(v3(HUE.blue).mul(0.6), W.mul(1.6), flight).mul(ring));
+  col = mix(BLUE.mul(stripes(ud, 2, 0.03)), col, flight);
+  // graphite at rest; the travelling light brings the colour through
+  const Lt = light(c, T.d);
+  col = mix(GRAPH.mul(max(col.x, max(col.y, col.z)).min(1)), col, Lt.L);
   // far wall steps back so the gates and the core read; dark by 192
   const far = mix(1, 0.3, smoothstep(50, 200, length(positionWorld.sub(cameraPosition))));
   m.colorNode = col.mul(far).mul(smoothstep(192, 186, c.sec));
