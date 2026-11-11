@@ -60,8 +60,8 @@ export function look(ctx) {
   const wDust = wBloom.mul(on1(bt.sub(1).abs().lessThan(0.5))).mul(0.5).add(wSeed.mul(float(1).sub(seedGG))).clamp(0, 1); // dust: seed and (by seed) bloom only
   const wCB = wBloom.mul(on1(bt.greaterThan(1.5))).add(wAsc.mul(on1(at.sub(1).abs().lessThan(0.5)))).add(wPeak.mul(0.5)).clamp(0, 1);
   const wRip = wPulse.add(wAsc.mul(on1(at.lessThan(0.5)))).add(wPeak).add(wBloom.mul(0.6)).clamp(0, 1);
-  const wLat = wHex.mul(on1(hexX.sub(1).abs().lessThan(0.5))).mul(0.5).clamp(0, 1); // hex only now: the flat ring grid read as noise over bloom/ascent/peak
-  const wSpark = wHex.mul(on1(hexX.greaterThan(1.5))).mul(0.4).clamp(0, 1); // sparkle crosses: hex only, faint
+  const wLat = float(0); // hex only now: the flat ring grid read as noise over bloom/ascent/peak
+  const wSpark = float(0); // sparkle crosses: hex only, faint
   const wSlice = wBloom.mul(sliceOn).add(wReset.mul(float(1).sub(sliceOn))).add(wPeak.mul(0.25)).clamp(0, 1);
   const wGG = wSeed.mul(seedGG).add(wRet.mul(retGG)).clamp(0, 1);
   const wTurb = wDeep.mul(turbOn).add(wHex.mul(hexTurb).mul(0.6)).add(wRet.mul(0.5)).clamp(0, 1);
