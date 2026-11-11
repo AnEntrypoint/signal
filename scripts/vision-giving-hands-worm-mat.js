@@ -42,12 +42,10 @@ export function material(ctx) {
   m.side = DoubleSide;
   m.positionNode = pos;
 
-  // THE RIM: the round body's normal (taken off the spine's run) against the eye; 1 at the silhouette
-  const T = pair ? [-34 * sg, 112, 70] : [-66 * sg, -112, 78], tl = Math.hypot(T[0], T[1], T[2]);
-  const tv = vec3(T[0] / tl, T[1] / tl, T[2] / tl);
-  const nO = nrm.sub(tv.mul(nrm.dot(tv)));
-  const nW = varying(modelWorldMatrix.mul(vec4(nO, 0)).xyz), vW = varying(cameraPosition.sub(modelWorldMatrix.mul(vec4(pos, 1)).xyz));
-  const facing = nW.dot(vW).div(nW.length().mul(vW.length()).max(0.0001)).abs();
+  // THE RIM: the ring's own angle against the eye, measured inside the ring's plane; 1 on the centre line, 0 at the silhouette
+  const M3 = (v) => modelWorldMatrix.mul(vec4(v, 0)).xyz;
+  const nW = varying(M3(nrm)), vW = varying(cameraPosition.sub(modelWorldMatrix.mul(vec4(pos, 1)).xyz));
+  const facing = nW.dot(vW).abs().div(vec2(M3(vec3(1, 0, 0)).dot(vW), M3(vec3(0, 0.8, -0.6)).dot(vW)).length().max(0.0001)).clamp(0, 1);
   const rim = inv(smoothstep(0.34, 0.6, facing));
 
   const ang = atan2(sa, ca.add(0.0001)).div(TAU), s = uu.mul(LEN), face = smoothstep(0.55, 0.75, facing);
