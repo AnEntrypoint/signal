@@ -302,8 +302,9 @@ export function material(ctx) {
   cover = cover.max(doorIn);
   const outl = stroke(ar.sd.abs(), 0.24).mul(maskDraw(pA, ar.ua));
   const anib = nib(pA, ar.ua, 0.03).mul(stroke(ar.sd.abs(), 0.6)).mul(step(pA, 0.99));
-  const lin = stroke(vec2(ar.sd.sub(1.05), ar.ua.mul(16).fract().sub(0.5).mul((APEX - YL) / 16 * 1.6)).length(), 0.36).mul(maskBeads(pLn, ar.ua));
-  const pod = stroke(vec2(ar.sd.sub(2.4), ar.ua.mul(11).add(0.5).fract().sub(0.5).mul((APEX - YL) / 11 * 1.8)).length(), 0.62).mul(maskBeads(pPod, ar.ua));
+  const sides = smoothstep(YL + 0.6, YL + 1.6, q.y);
+  const lin = sides.mul(1).mul(stroke(vec2(ar.sd.sub(1.05), ar.ua.mul(16).fract().sub(0.5).mul((APEX - YL) / 16 * 1.6)).length(), 0.36).mul(maskBeads(pLn, ar.ua)));
+  const pod = stroke(vec2(ar.sd.sub(2.4), ar.ua.mul(11).add(0.5).fract().sub(0.5).mul((APEX - YL) / 11 * 1.8)).length(), 0.62).mul(maskBeads(pPod, ar.ua)).mul(sides);
   const podCore = stroke(vec2(ar.sd.sub(2.4), ar.ua.mul(11).add(0.5).fract().sub(0.5).mul((APEX - YL) / 11 * 1.8)).length(), 0.25).mul(pod);
   const bindu = stroke(q.sub(vec2(0, CY)).length(), pB.mul(0.9)).mul(step(0.01, pB)).mul(inv(pA.mul(step(0.99, pA))));
   const bs = q.sub(vec2(0, APEX + 2.4)).abs();
