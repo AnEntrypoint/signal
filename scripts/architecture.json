@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "basedOnSpecVersion": 272,
-  "updatedAt": "2026-11-11T11:24:48.201Z",
-  "summary": "Signal Stage is a walkable 3D motion-graphics stage with a synchronized seeded cinematic on the measured 160-bpm, 198-second track. A shared director clock/deck drives shader-built stage assemblies, ten camera-riding celestial beings, the camera and full-screen look; player input and HUD operate the shared roll.",
+  "basedOnSpecVersion": 289,
+  "updatedAt": "2026-11-11T11:38:45.365Z",
+  "summary": "Signal Stage is a walkable 3D motion-graphics stage with a synchronized seeded cinematic on the measured 160-bpm, 198-second track. A shared director clock/deck drives shader-built stage assemblies, camera-riding celestial visions, the camera and full-screen look; player input and HUD operate the shared roll.",
   "scriptPaths": [],
   "places": [
     "places/main/config.yaml (main, 3D) - black void, spawn near (0, 0.1, 16), gravity, and place-wide scripts/look-trip.js atmosphere look.",
@@ -24,8 +24,8 @@
   "shared": [
     "scripts/lib/cine.js - CPU score clock, section lookup and seeded camera path/moves; used by player, camera, HUD and stage.",
     "scripts/lib/deck.js - deterministic per-seed scene-deck deal and track-to-scene-time mapping; used by cine.js and stage.js.",
-    "scripts/lib/visions.js - ten-being registry, seeded slot deal, vision timing/shots and measured-energy lookup; used by cine.js and stage.js.",
-    "scripts/lib/data/score.yml and shots.yml - musical sections, layers, lens, scene-deck choices and authored camera keys; energy.yml holds measured track data and vision slots.",
+    "scripts/lib/visions.js - being registry (built and unbuilt entries), seeded slot deal, vision timing/shots and measured-energy lookup; used by cine.js and stage.js.",
+    "scripts/lib/data/score.yml and shots.yml - musical sections, layers, lens, scene-deck choices and authored camera keys; energy.yml holds measured track data, drops and four 24-second vision slots.",
     "scripts/lib/trip.js - shared shader clocks, kick runs, seeded palette/random choices, scene/layer visibility, lens bending and vision visibility/clocks.",
     "scripts/field-lib.js, eye-lib.js, tunnel-lib.js, chamber-lib.js and chamber-fx.js - family-specific spatial, timing and shader helpers.",
     "scripts/sun-lib.js - sun-eye shader helpers; scripts/serpents-data.js and serpents-curve.js - shared serpent records, spine and frame math."
@@ -40,7 +40,7 @@
   "ownership": [
     "scripts/player.js - local movement intent/velocity and shared world.state.cine = {start, by, seed} or null from cine input.",
     "scripts/stage.js on #director - shared audio session; trip materials/look receive t0/on/seed/kick and scene-deal params, look receives v0/v1, and vision-tagged materials receive vw0/vw1.",
-    "scripts/stage.js - per-being visibility and feetPosition: selected dealt being attaches to camera at depth; all others return to their elevated home positions.",
+    "scripts/stage.js - per-being visibility and camera attachment at 74 m; homes layer canvases by tag suffix (-world, -ring, -veil, -fore) at their depth offsets.",
     "scripts/camera.js / templates/camera.js - viewer-local camera pose/FOV and seeded authored shot path/move.",
     "scripts/humanoid-locomotion.js - avatar gait/sit state; scripts/ui.js and ui/nametag.js - viewer-local presentation only.",
     "places/main/config.yaml owns atmosphere, spawn, gravity, terrain mode and look params; world.config.yaml owns world services, inputs and templates."
@@ -50,11 +50,12 @@
     "world.state.cine → scripts/ui.js render → viewer-local ROLL/CUT and rolling progress/section label.",
     "world.state.cine + score track → #director scripts/stage.js → shared audio at c.start; director stops audio and clears/renews ended cine.",
     "stage.js → trip-tagged materials/look params: t0, on, seed, kick bounds k0/k1 and dealt scene mappings ds0..ds3/dr0..dr3; look also gets current vision slot v0/v1.",
-    "stage.js + visions.js → objects tagged vision-<id> receive vw0/vw1 slot seconds or -1/-1 and are moved/hidden as the current being or returned home.",
-    "energy.yml → trip.js KICK_RUNS and visions.js measured vision slots → director supplies kick runs and seeded vision-slot assignment.",
+    "energy.yml → trip.js KICK_RUNS and visions.js slots → director supplies kick runs and seeded assignment of built beings to four 24-second slots; vision objects receive vw0/vw1 seconds or -1/-1.",
+    "stage.js + vision-<id> tags → selected being's canvases attach to the camera at 74 m with world/ring/being/veil/fore depth offsets; other beings return home.",
     "score.yml + deck.js → seeded scene per drop stretch → cine.js scene clock/cameraAt and trip.js shader scene clock use the same assigned source section/rate.",
     "cine.js cameraAt → scripts/camera.js viewer camera; dealt beings join the camera view at depth rather than cutting the camera away to a separate vision shot.",
     "score.yml + trip.js tripClock/shown/lens/mask helpers → field, eye, serpents, tunnel, chamber, vision assemblies and look-trip shader timing and cutouts.",
+    "look-trip.js reads scene depth and vision v0/v1 → subject-aware depth of field, plus seed-dealt kick jobs for centre pulse or near/far occlusion; no subject means no blur.",
     "scripts/sun-lib.js → sun-eye disc/drips/halo shaders; tunnel-geo.js kind-selected geometry → tunnel wall/core/dust/gates/ribs and knot layers.",
     "places/main/config.yaml atmosphere.look params → scripts/look-trip.js; world.config.yaml movement actions → scripts/player.js velocity, while templates/player.js also runs avatar locomotion."
   ],
@@ -65,16 +66,16 @@
     "scripts/tunnel-* - wall, core, dust, gates, ribs and knot share tunnel geometry kinds and tunnel-lib.js spatial/color helpers; materials vary motif and seeded palette.",
     "scripts/chamber-* - room, circuit, hands, hex, Lissajous, solids and bilateral mask share chamber shader helpers and scored cutouts.",
     "scripts/sun-disc.js, sun-drips.js and sun-halo.js - sun-eye layers share sun-lib.js but vary disc, hanging-drip and depth-halo imagery.",
-    "scripts/vision-*-geo.js and vision-*-mat.js - ten beings share trip/vision shader timing and staged visibility; multi-layer assemblies vary geometry/material motif, with star-jelly and star-child each using one shader/material across being, ring and veil layers.",
-    "scripts/look-trip.js and scripts/lib/trip.js - full-screen post-processing and scene shaders share score clock, seeded scene deal, visibility and lens math; templates/player.js composes gait with input/movement."
+    "scripts/vision-*-geo.js and vision-*-mat.js - ten built beings share vision clocks and staged camera attachment; per-being layered canvases/materials vary their symbolic imagery (moon mother now uses world/ring/being/veil/fore).",
+    "scripts/look-trip.js and scripts/lib/trip.js - full-screen post-processing and scene shaders share score clock, seeded scene deal, piecewise radial layer handovers, visibility and lens math; templates/player.js composes gait with input/movement."
   ],
   "probableOrphans": [],
   "migrationNotes": [
     "world.state.cine is the synchronized start/cut source; starts are scheduled 300 ms ahead. cine.js uses milliseconds for start/ctx.now() and seconds for score/shot keys.",
     "stage.js converts c.start to shader t0 seconds modulo 3600 and repeats parameter pushes over several ticks so late-built materials receive the roll; tagged trip materials need t0/on/seed and kick bounds k0/k1.",
-    "Trip shaders normally use dealt scene time; vision-tagged materials with vw0 switch to real track seconds. A dealt being enters before its drop and remains briefly beyond it; its matching vision-<id> tags let stage.js stage all of its layers together.",
-    "Vision assemblies are housed above the field in +Y but the selected being is camera-attached at 74 m; layer IDs ending -ring and -veil get home-Z offsets (-12/+10) that stage.js subtracts from attachment depth.",
+    "Four vision slots in energy.yml are each 24 s and end on their measured drop; dealVisions extends each to b+2.5 s for piecewise departure. The 16 registered beings include built:false entries, which are not selected.",
+    "Vision assemblies are housed above the field in +Y but the selected being is camera-attached at 74 m; stage.js derives home-Z offsets from -world/-ring/-veil/-fore tag suffixes.",
     "Score is 198 seconds at 160 bpm, first beat 0.35 s; idle shaders free-run the duration loop. Units are metres, +Y up, vision canvases face +Z; main composition runs from field/eye through tunnel to chamber on -Z.",
-    "Layer visibility is shader cutout via shown()/masks, not a fade to black; vision materials use visionShown/visionU and stage.js visibility, so scene objects must retain matching vision-<id> tags."
+    "Layer visibility is shader cutout via shown()/masks, not a fade to black; shown() hands layers over one by one at scene seams and cuts each piece radially. Vision world/being canvases use depth-writing alpha cutouts, so stage tag/depth conventions and visibility masks must agree."
   ]
 }
