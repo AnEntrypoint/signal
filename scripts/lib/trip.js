@@ -169,9 +169,14 @@ export function bendUv(c, uv, aspect = 1.78) {
   // the lens keeps only what a real lens does: fisheye bulge and the hyperbolic (Poincare) slide.
   void a; const p1 = p0;
   // 2026-11-11 (lanmower: pixelated after stretching): the centre may be magnified at most 1.35x
-  const p2 = p1.div(float(1).add(k.min(0.45).mul(r.mul(r)).mul(1.6)).max(0.74));
+  const p2 = p1.div(float(1).add(k.min(0.45).mul(r.mul(r)).mul(1.6)).max(0.83)); // centre magnified at most 1.2x (was 1.35x)
   // hyperbolic: Mobius slide of the Poincare disc, w = (z + a) / (1 + conj(a) z), centre held
-  const h = lens(c, "hyper").mul(mix(0.7, 1.3, c.rnd(5))), th = c.sec.mul(6.28318 / 24).mul(c.dir).add(c.rnd(6).mul(6.28318));
+  // 11-11 14:42 creator: "we must fix the pixelation issues". The slide magnifies one side of the frame by (1+h)/(1-h):
+  // the score asked h up to ~1.07 (peak 0.68 + floor 0.14, x1.3 seed), i.e. 10x-to-infinite blow-up of 75%-res pixels.
+  // Now h eases toward 0.2 at most (<= 1.5x on its strongest side) and the bulge holds the centre <= 1.2x, so the frame
+  // is never stretched past what its pixels carry; the score's bigger numbers still read as a stronger, slower slide.
+  const hRaw = lens(c, "hyper").mul(mix(0.7, 1.3, c.rnd(5)));
+  const h = hRaw.div(hRaw.add(0.6)).mul(0.34).min(0.2), th = c.sec.mul(6.28318 / 24).mul(c.dir).add(c.rnd(6).mul(6.28318));
   const ax = h.mul(th.cos()), ay = h.mul(th.sin());
   const zx = p2.x.mul(1.6), zy = p2.y.mul(1.6);
   const nx = zx.add(ax), ny = zy.add(ay);
