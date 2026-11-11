@@ -111,7 +111,12 @@ export function shown(c, name, d = 0) {
   // a dealt seam: pieces leave before it and arrive after it, never all at once (40% stand at the seam itself)
   // no piece pops whole: each one closes along its own radius (d), outside in, as the seam nears, and opens the
   // same way after it, so a sector or ring is seen shrinking away, never cut out of the picture in one frame
-  const seamGate = step(pieceLag(name).div(SCORE.piece ?? 2.25).add(float(d).clamp(0, 1).mul(0.3)), mix(float(0.4), float(1.3), c.seamD.div(SCORE.deck.seam).clamp(0, 1)));
+  // ONE BY ONE: every layer has its own turn in the handover (its place in the order comes from its name), and
+  // within its turn each piece closes along its own radius, outside in. Before the drop the layers leave in order,
+  // after it the next scene's layers arrive in order; about a third of them stand through the drop itself.
+  const turn = ((String(name).split("").reduce((q, ch) => q * 31 + ch.charCodeAt(0), 7) % 997) / 997);
+  const seamGate = smoothstep(0, 0.06, mix(float(0.3), float(1.5), c.seamD.div(SCORE.deck.seam).clamp(0, 1))
+    .sub(pieceLag(name).div(SCORE.piece ?? 2.25).mul(0.25).add(float(d).clamp(0, 1).mul(0.3)).add(turn * 0.9)));
   const lag = float(d).clamp(0, 1).mul(SCORE.wipe).add(pieceLag(name));
   let v = float(0);
   for (const [a0, b] of SCORE.layers[name]) {
