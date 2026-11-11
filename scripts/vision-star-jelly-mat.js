@@ -48,7 +48,7 @@ export function material(ctx) {
     const sense = c.rnd(106).step(0.5).mul(2).sub(1);
     const rot = c.real.div(mix(70, 120, c.rnd(106).mul(2).fract())).mul(sense).mul(TAU);
     const mm = c.pick(108, 2).add(2);                                    // {8/2} two squares or {8/3} star
-    const R = 19, h = mm.mul(Math.PI / 8).cos().mul(R), half = mm.mul(Math.PI / 8).sin().mul(R);
+    const R = 23, h = mm.mul(Math.PI / 8).cos().mul(R), half = mm.mul(Math.PI / 8).sin().mul(R);
     const blur = aa.mul(5).add(0.12);
     let line = float(0), tips = float(0);
     for (let k = 0; k < 8; k++) {
@@ -62,7 +62,7 @@ export function material(ctx) {
     }
     const pr = smoothstep(0.0, 0.3, u).mul(float(1).sub(ex));
     const draw = maskClock(pr, atan2(p.x, p.y));
-    const lit = float(0.22).add(cul.mul(0.25)).add(c.kick.mul(0.12));
+    const lit = float(0.09).add(cul.mul(0.1)).add(c.kick.mul(0.06));
     m.colorNode = mix(A, W, 0.2).mul(line).mul(lit).add(mix(B, W, 0.5).mul(tips).mul(lit.add(0.15)));
     m.opacityNode = draw.mul(visionShown(ctx, c, rr.div(30)));
     m.transparent = true;
@@ -123,7 +123,6 @@ export function material(ctx) {
   const slit = float(0.9).add(cul.mul(0.6)).add(kl.mul(0.4));
   add(mix(S, W, 0.25).mul(slit), sfill);
   add(S.mul(0.8).add(W.mul(0.2)), sline);
-  add(vec3(0), score.mul(0));
   col = col.mul(float(1).sub(score)).add(W.mul(1.6).mul(score));
 
   // the bell: 5 striped arcs, opening out and down from the crown star
