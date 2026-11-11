@@ -1,32 +1,24 @@
-// THE THUNDERBIRD's HORNED SERPENTS, its old foe from the water: real round bodies winding in depth through the
-// storm (params.n = 1..4). n 1, 2: rise from below the frame behind the world canvas (z -40), swing in close past
-// the wing tips (behind the being's plane at first, then in front of the outer feathers) and end 30 m nearer the
-// camera at the upper sides. n 3, 4 (seed 312/313): thinner, dropping from the top corners. The spine is laid out in
-// SCREEN metres and scaled by depth, so the bend reads true; travelling waves undulate it in the vertex stage.
-// Skin: black body; black/white op-art rings first, then (u .78-.86, climbing the body) diamond scales or hot bead
-// rows (seed 314); one serpent goes pure silhouette with a thin rim at the culmination; the kick runs a light up
-// the body. Grows root to tip u .55-.8, retracts tip first .93-.965.
+// THE THUNDERBIRD's HORNED SERPENTS (params.n 1..4): round bodies winding in depth through the storm. n 1, 2 rise from
+// behind the world canvas past the wing tips to the upper sides; n 3, 4 (seed 312/313) thinner, from the top corners.
+// Skin: each body wears one of four seeded modes (op-art rings, bead rows, diamond scales, feather barbs) and trades it
+// for another climbing root to tip in the build (u .78-.9); one goes silhouette with a rim; the kick runs a light up it.
 import { MeshBasicNodeMaterial, DoubleSide } from "builtin/three";
 import { positionGeometry, float, vec2, vec3, smoothstep, step, mix, atan2 } from "builtin/tsl";
-import { tripClock, visionShown, visionU, stripes } from "./lib/trip.js";
+import { tripClock, visionShown, visionU, stripes, inv, is, ioU, famPick, NEON } from "./lib/trip.js";
 
 const TAU = 6.28318, LEN = 120;
 export function material(ctx) {
   const n = Math.max(1, Math.round(ctx.params.n ?? 1)), sg = n % 2 ? 1 : -1, pair = n > 2 ? 1 : 0;
   const c = tripClock(ctx), u = visionU(ctx, c), live = visionShown(ctx, c, 0);
-  const inv = (x) => float(1).sub(x), is = (v, i) => step(v.sub(i).abs(), 0.5);
-  const io = (a, b, x, y) => smoothstep(a, b, u).mul(inv(smoothstep(x, y, u)));
+  const io = ioU(u), low = ctx.quality === "low";
   const rn = (k) => c.rnd(300 + k), pk = (k, m) => c.pick(300 + k, m);
-  const fam = pk(0, 3), hot = pk(19, 3);
-  const blue = vec3(0.05, 0.12, 1.0), violet = vec3(0.45, 0.05, 1.0), pink = vec3(1.0, 0.05, 0.6), W = vec3(1, 1, 1);
-  const yellow = vec3(1.0, 0.85, 0.05), green = vec3(0.1, 1.0, 0.15), orange = vec3(1.0, 0.38, 0.02);
-  const C = blue.mul(is(fam, 0)).add(violet.mul(is(fam, 1))).add(blue.mul(is(fam, 2)));
-  const D = violet.mul(is(fam, 0)).add(pink.mul(is(fam, 1))).add(pink.mul(is(fam, 2)));
-  const Hh = yellow.mul(is(hot, 0)).add(orange.mul(is(hot, 1))).add(green.mul(is(hot, 2)));
+  const fam = pk(0, 3), hot = pk(19, 3), { BLU, VIO, PNK, ORA, YEL, GRN, W } = NEON;
+  const C = famPick([[BLU], [VIO], [BLU]], fam, 0), D = famPick([[VIO], [PNK], [PNK]], fam, 0), Hh = famPick([[YEL], [ORA], [GRN]], hot, 0);
+  const build = smoothstep(0.78, 0.91, u);
 
   const uu = positionGeometry.y, ca = positionGeometry.x, sa = positionGeometry.z;
   const r0 = pair ? 2.4 : 3.6;
-  const grow = io(0.55 + pair * 0.04, 0.8, 0.93, 0.965 - pair * 0.01);
+  const grow = io(0.5 + pair * 0.04, 0.75, 0.95, 0.98 - pair * 0.01);
   const exists = pair ? step(0.45, rn(n === 3 ? 12 : 13)) : float(1);
   const tip = smoothstep(grow, grow.sub(0.07), uu);
   const rad = inv(uu).max(0).pow(0.5).mul(r0).mul(tip.sqrt()).mul(live).mul(exists).mul(step(0.002, grow));
@@ -43,8 +35,7 @@ export function material(ctx) {
   m.side = DoubleSide;
   m.fog = false;
   m.positionNode = spine.add(vec3(ca.mul(rad), sa.mul(rad).mul(0.7), sa.mul(rad).mul(0.7)));
-  // THE DEPTH WEAVE: the mid-body swings through the canvas planes (ring -12, being 0, veil +10), so one body dips
-  // behind the being and comes out in front of it, more than once; the ends stay rooted. Seeded per body: swing, turns, phase.
+  // the depth weave: the mid-body swings through the canvas planes, behind the being and out in front; seeded per body
   { const S = float(uu).clamp(0, 1), dz = step(0.5, c.rnd(391 + n)).mul(2).sub(1).mul(c.rnd(395 + n).mul(5).add(11));
     const turns = c.rnd(399 + n).mul(1.6).add(1.4).mul(3.14159);
     const weave = S.mul(turns).add(c.rnd(403 + n).mul(6.283)).add(c.real.mul(0.21 + 0.04 * n)).sin().mul(S.mul(float(1).sub(S)).mul(4)).mul(dz);
@@ -61,12 +52,15 @@ export function material(ctx) {
   const cBe = mix(mix(D, W, 0.4), Hh, step(row.mod(3), 0.5)).mul(inv(smoothstep(brad.sub(0.08), brad, bd)));
   const t = ang.div(TAU).mul(4);
   const cSc = mix(C, D, s.mul(0.3).add(t).floor().mod(2)).mul(stripes(s.mul(0.3).add(t), 1, 0.07).max(stripes(s.mul(0.3).sub(t), 1, 0.07)));
-  const swap = pair ? inv(step(0.5, rn(14))) : step(0.5, rn(14));
-  const t1 = 0.78 + pair * 0.03;
-  const skin = mix(cStr, mix(cBe, cSc, swap), step(uu, smoothstep(t1, t1 + 0.08, u).mul(1.02)));
+  // feather barbs: herringbone chevrons pointing up the body
+  const fe = s.mul(0.35).add(ang.abs().div(3.14159).mul(1.2));
+  const cFe = low ? cStr : mix(Hh, mix(D, W, 0.3), fe.floor().mul(0.5).fract().mul(2)).mul(stripes(fe, 1, 0.07)).add(W.mul(0.6).mul(smoothstep(0.12, 0.04, ang.abs())));
+  const skins = [cStr, cBe, cSc, cFe], wear = (k) => skins.reduce((acc, sk, i) => acc.add(sk.mul(is(k, i))), vec3(0));
+  const sA = pk(14 + n * 0.1, 4), sB0 = sA.add(1).add(pk(14.5 + n * 0.1, 3)), sB = sB0.sub(step(3.5, sB0).mul(4));
+  const skin = mix(wear(sA), wear(sB).mul(build.mul(0.5).add(1)), step(uu, build.mul(1.02)));
   const run = float(1).sub(smoothstep(0, 0.05, uu.sub(c.beat.fract()).abs())).mul(step(0.001, c.kick));   // the kick's light climbs the body
   const edge = ca.abs();
-  const lit = skin.mul(sa.abs().mul(0.5).add(0.35)).add(mix(C, W, 0.5).mul(smoothstep(0.86, 1, edge)).mul(run.add(0.4)));
+  const lit = skin.mul(sa.abs().mul(0.5).add(0.35).add(build.mul(0.25))).add(mix(C, W, 0.5).mul(smoothstep(0.86, 1, edge)).mul(run.add(0.4)));
   const dark = is(float(n), step(0.5, rn(14).mul(2).fract()).add(1)).mul(step(uu, smoothstep(0.85, 0.9, u).mul(1.02)));
   m.colorNode = mix(lit, mix(C, W, 0.5).mul(smoothstep(0.95, 1, edge)).mul(0.8).add(Hh.mul(run).mul(smoothstep(0.9, 1, edge))), dark);
   return m;
