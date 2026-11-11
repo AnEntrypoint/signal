@@ -8,7 +8,7 @@ const STYLE = `<style>
 @keyframes cine-bar { from { height: 0 } to { height: 9vh } }
 .cine-top { position:absolute; right:calc(var(--spawn-chrome-reservation-right-inset,50px) + 24px); top:3vh; display:flex; gap:8px; align-items:flex-start; flex-wrap:wrap; justify-content:flex-end }
 .cine-line { position:absolute; left:24px; bottom:3vh }
-@media (max-width: 640px) { .cine-top { left:12px; right:12px; top:8px; justify-content:flex-start } .cine-line { top:64px; bottom:auto; left:12px; right:12px } }
+@media (max-width: 640px) { .cine-top { left:12px; right:12px; top:8px; justify-content:flex-start } .cine-line { top:100px; bottom:auto; left:12px; right:12px } }
 </style>`
 
 export default function render(ctx, player) {
