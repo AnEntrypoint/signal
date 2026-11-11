@@ -45,7 +45,7 @@ export function material(ctx) {
   const trav = grow.mul(LEN).add(c.real.mul(c.rnd(763 + n).mul(3).add(4)));
   const ang = atan2(sa, ca), s = uu.mul(LEN).sub(trav.mul(is(mode, 0))).add(trav.mul(is(mode, 2))), rf = inv(uu).max(0).sqrt().mul(r0);
   const band = (v, w) => smoothstep(0.25 - w, 0.25 + w, v.fract().sub(0.5).abs());
-  const cOp = W.mul(band(s.div(1.6).add(ang.div(TAU).mul(sg)), 0.04)).mul(0.9);
+  const cOp = mix(W, B, 0.4).mul(smoothstep(0.34, 0.4, s.div(1.6).add(ang.div(TAU).mul(sg)).fract().sub(0.5).abs())).mul(0.8); // thin tinted stripes on black: reads dark, blurs dark
   const t = ang.div(TAU).mul(4);
   const dia = band(s.div(2.2).add(t), 0.06).mul(band(s.div(2.2).sub(t), 0.06));
   const cSc = mix(N.mul(0.25), N, dia).mul(inv(dia).mul(0.4).add(0.6));
