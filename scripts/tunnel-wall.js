@@ -1,10 +1,10 @@
 // The tunnel wall: an op-art flight in (angle, depth). 12 m depth cells, 8 patterns in a fixed order, scrolling
 // toward the eye one cell a bar, alternate cells spinning opposite ways, a white ring fired down-tunnel on every kick.
 // Before 60.35 s (deep) it is slow blue/violet rings on the sub-bass; at 60.35 it bursts into full colour.
-import { float, vec2, vec3, floor, fract, abs, max, mod, step, smoothstep, select, mix, length, dot, positionWorld, cameraPosition } from "builtin/tsl";
+import { log, float, vec2, vec3, floor, fract, abs, max, mod, step, smoothstep, select, mix, length, dot, positionWorld, cameraPosition } from "builtin/tsl";
 import { MeshBasicNodeMaterial, BackSide } from "builtin/three";
 import { tripClock, pal, stripes, HUE } from "./lib/trip.js";
-import { tun, inside, GRAPH, mirAng, fam, light , cut, panels } from "./tunnel-lib.js";
+import { camDepth, tun, inside, GRAPH, mirAng, fam, light , cut, panels } from "./tunnel-lib.js";
 
 export function material(ctx) {
   const m = new MeshBasicNodeMaterial();
@@ -19,8 +19,9 @@ export function material(ctx) {
   const W = vec3(1, 1, 1);
   // 0 rings, 1 long stripes, 2 twisting checker
   const p0 = stripes(v, 6, 0.04);
-  const p1 = stripes(A, 16, 0.04);
-  const p2 = abs(stripes(A.add(v.mul(0.25)), 12, 0.04).sub(stripes(v, 4, 0.03)));
+  const p1 = stripes(A.mul(8).add(v.mul(3)), 1, 0.06);
+  const k1 = abs(fract(A.mul(8).add(v.mul(3))).sub(0.5)).mul(2), k2 = abs(fract(A.mul(8).sub(v.mul(3))).sub(0.5)).mul(2), km = max(k1, k2);
+  const c2 = mix(BLUE, VIOLET, step(k1, k2)).mul(smoothstep(0.88, 0.84, km)).mul(smoothstep(0.3, 0.34, km)).add(hot(cell).mul(smoothstep(0.16, 0.12, km)));
   // 3 rows of targets: hot outer, black ring, blue pupil, thin violet lines between the rows
   const gy3 = v.mul(8), row3 = floor(gy3), gx3 = A.mul(24).add(mod(row3, 2).mul(0.5));
   const d3 = length(vec2(fract(gx3).sub(0.5).mul(1.57), fract(gy3).sub(0.5).mul(1.5)));
@@ -46,11 +47,13 @@ export function material(ctx) {
   const f7 = vec2(fract(gx7).sub(0.5).mul(0.785), fract(gy7).sub(0.5)), l7 = length(f7);
   const c7 = mix(mix(BLUE, hot(row7.mul(0.5).add(cell)), mod(row7, 2)).mul(smoothstep(0.36, 0.32, l7)).mul(smoothstep(0.1, 0.14, l7)), W, smoothstep(0.07, 0.05, l7));
   const w = (i) => step(abs(type.sub(i)), 0.5);
-  let col = W.mul(p0.mul(w(0)).add(p1.mul(w(1))).add(p2.mul(w(2))))
+  let col = W.mul(p0.mul(w(0)).add(p1.mul(w(1)))).add(c2.mul(w(2)))
     .add(c3.mul(w(3))).add(c4.mul(w(4))).add(c5.mul(w(5))).add(c6.mul(w(6))).add(c7.mul(w(7)));
   // deep: rings only, crawling
-  const ud = T.d.div(12).add(c.sec.mul(0.06));
-  col = mix(BLUE.mul(stripes(ud, 6, 0.03)), col, flight);
+  const sLog = log(T.d.sub(camDepth()).add(1).max(0.5)).div(1.3862944);
+  const arms = stripes(mirAng().add(sLog.div(5)).sub(c.sec.div(240)), 5, 0.05);
+  const dro = stripes(sLog.sub(c.sec.div(48)), 3, 0.05);
+  col = mix(BLUE.mul(abs(arms.sub(dro))), col, flight);
   // graphite at rest; the travelling light brings the colour through
   const Lt = light(c, T.d);
   col = mix(GRAPH.mul(max(col.x, max(col.y, col.z)).min(1)), col, Lt.L);
