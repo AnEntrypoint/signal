@@ -55,7 +55,7 @@ field:
   castShadow: false
   feetPosition: {x: 0, y: 0.02, z: 0}
   id: field
-  material: {kind: scripted, params: {"on": 1, t0: 1595.5983333333334}, script: scripts/field-mandala.js}
+  material: {kind: scripted, params: {"on": 0, t0: 0}, script: scripts/field-mandala.js}
   physics: none
   primitive: {kind: scripted, script: scripts/field-disc.js}
   receiveShadow: false
@@ -64,7 +64,7 @@ field-orbs:
   castShadow: false
   feetPosition: {x: 0, y: 0, z: 0}
   id: field-orbs
-  material: {kind: scripted, params: {"on": 1, t0: 1595.5983333333334}, script: scripts/field-orbs-mat.js}
+  material: {kind: scripted, params: {"on": 0, t0: 0}, script: scripts/field-orbs-mat.js}
   physics: none
   primitive: {kind: scripted, script: scripts/field-orbs.js}
   receiveShadow: false
@@ -73,7 +73,7 @@ field-stalks:
   castShadow: false
   feetPosition: {x: 0, y: 0.02, z: 0}
   id: field-stalks
-  material: {kind: scripted, params: {"on": 1, t0: 1595.5983333333334}, script: scripts/field-stalks-mat.js}
+  material: {kind: scripted, params: {"on": 0, t0: 0}, script: scripts/field-stalks-mat.js}
   physics: none
   primitive: {kind: scripted, script: scripts/field-stalks.js}
   receiveShadow: false
