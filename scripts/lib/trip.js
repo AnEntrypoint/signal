@@ -10,7 +10,7 @@
 //   win(c.sec, SEC.flight)  -> 0..1 window, 1 inside that section, 1.5 s soft edges (or win(sec,[a,b],fade))
 // A param write is how the roll starts: the director writes params.t0 (seconds on the shader `time` clock)
 // and params.on (1 rolling, 0 idle) to every object tagged "trip", to look.params and to sky.params.
-import { time, float, vec2, vec3, smoothstep, step, audioSpectrum, select, mix, positionWorld, atan } from "builtin/tsl";
+import { time, float, vec2, vec3, smoothstep, step, audioSpectrum, select, mix, positionWorld, atan, atan2 } from "builtin/tsl";
 import SCORE from "./data/score.yml";
 import ENERGY from "./data/energy.yml"; // the track measured bar by bar (tools/analyse-track.py)
 // KICK RUNS: the stretches of bars where the measured bass really carries a kick (bass >= 0.6),
@@ -220,3 +220,16 @@ export const maskDraw = (p, u) => step(float(u), float(p).mul(1.01));
 export const nib = (p, u, w = 0.02) => smoothstep(w, 0, float(u).sub(float(p)).abs());
 // what the track gives right now, live on every listener: the overtones climbing = culmination
 export const climb = (c) => c.high.mul(1.6).clamp(0, 1);
+// shared vision helpers: guards, SDF bits, the neon palette (linear), stroke and window makers
+export const inv = (x) => float(1).sub(x);
+export const is = (v, i) => step(v.sub(i).abs(), 0.5);
+export const sgn = (r) => step(0.5, r).mul(2).sub(1);
+export const ang2 = (x, y) => atan2(x, y.add(0.0001));
+export const smin = (a, b, k) => { const h = b.sub(a).div(2 * k).add(0.5).clamp(0, 1); return mix(b, a, h).sub(h.mul(inv(h)).mul(k)); };
+export const segH = (q, A, B) => { const BA = B.sub(A), pa = q.sub(A); const h = pa.dot(BA).div(BA.dot(BA).max(0.0001)).clamp(0, 1); return { d: pa.sub(BA.mul(h)).length(), h }; };
+export const capsule = (q, a, b, r) => segH(q, Array.isArray(a) ? vec2(a[0], a[1]) : a, Array.isArray(b) ? vec2(b[0], b[1]) : b).d.sub(r);
+export const rbox = (q, c, hx, hy, r) => { const d = q.sub(vec2(c[0], c[1])).abs().sub(vec2(hx - r, hy - r)); return d.max(0).length().add(d.x.max(d.y).min(0)).sub(r); };
+export const strokeAA = (aa) => (d, w) => inv(smoothstep(float(w), aa.add(w), d));
+export const ioU = (u) => (a, b, x, y) => smoothstep(a, b, u).mul(inv(smoothstep(x, y, u)));
+export const famPick = (fams, fam, j) => fams.reduce((acc, f, i) => acc.add(f[j].mul(is(fam, i))), vec3(0));
+export const NEON = { BLU: vec3(0.007, 0.014, 1.0), VIO: vec3(0.195, 0.007, 1.0), PNK: vec3(1.0, 0.005, 0.318), ORA: vec3(1.0, 0.144, 0.0015), YEL: vec3(1.0, 0.693, 0.004), GRN: vec3(0.01, 1.0, 0.019), W: vec3(1, 1, 1), BG: vec3(0.0025, 0.002, 0.009) };
