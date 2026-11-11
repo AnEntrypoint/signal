@@ -1,6 +1,6 @@
 // Five arches over the field, parallel to x, each a half-ellipse from radius 80 to radius 80, high enough to
 // clear the Eye's axis cylinder. uv = (s along, arch index + angle round).
-export const ARCHES = [[36, 44], [8, 50], [-22, 56], [-56, 60], [-92, 66]]; // [z, apex height]
+export const ARCHES = [[36, 44], [8, 50], [-22, 56], [-56, 60], [-74, 62]]; // [z, apex height]
 export function geometry(ctx) {
   const far = ctx.lod >= 3, RN = far ? 60 : 150, SN = far ? 6 : 12, R = 1.2, uvs = [], normals = [];
   ARCHES.forEach(([z, H], ai) => {
