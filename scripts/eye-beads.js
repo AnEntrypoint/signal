@@ -13,18 +13,31 @@ export function material(ctx) {
   const r1 = step(24, i), r2 = step(60, i);
   const ring = r1.add(r2);
   const j = i.sub(r1.mul(24)).sub(r2.mul(36));
-  const n = r1.mul(12).add(r2.mul(12)).add(24);
+  // bead counts dealt (channels 42-44): ring 1 of 12/18/24 slots, ring 2 24/30/36, ring 3 32/40/48; spare slots cut out
+  const cap = r1.mul(12).add(r2.mul(12)).add(24);
+  const n = cap.sub(mix(mix(c.pick(42, 3).mul(6), c.pick(43, 3).mul(6), r1), c.pick(44, 3).mul(8), r2));
+  const used = step(j, n.sub(0.5));
   const R = r1.mul(3.3).add(r2.mul(3.7)).add(6.2);
   const dir = r2.mul(2).sub(r1.mul(2)).add(1);
-  const rate = float(0.25).sub(r1.mul(0.25 + 1 / 6)).add(r2.mul(1 / 6 + 0.125)); // +1/4, -1/6, +1/8 turn a phrase
+  // each ring its own clock (channels 45-47): a seeded 48-96 s turn, alternate directions, its own phase; one ring a
+  // roll (channel 48) is locked to the bars instead, clicking one bead a bar
+  const per = mix(mix(48, 96, c.rnd(45)), mix(48, 96, c.rnd(46)), r1);
+  const per2 = mix(per, mix(48, 96, c.rnd(47)), r2);
+  const lockR = c.pick(48, 3);
+  const locked = step(ring.sub(lockR).abs(), 0.5);
+  const turns = mix(c.sec.div(per2), barStep(c).div(n), locked);
   const fr = j.div(n);
-  const ang = fr.add(rate.mul(c.phrase).mul(c.dir).mul(mix(0.7, 1.3, c.rnd(21)))).mul(TAU);
+  const ang = fr.add(turns.mul(dir).mul(c.dir)).add(c.rnd(49).add(ring.mul(0.37))).mul(TAU);
+  // interleave (channel 50): in 2 rolls of 3, one ring weaves through the iris face, bead over, bead under
   const rip = ripple(c, R);
   const chase = smoothstep(0.36, 0.3, fr.mul(2).sub(dir.mul(c.dir).mul(barStep(c)).div(8)).fract());
   const lit = gate(c, chase.max(rip.mul(0.8)), F.peak);
   const bs = breathScale(c.sec);
   const size = ring.mul(0.06).add(0.34).mul(rip.mul(0.08).add(1)).mul(bs);
-  const centre = vec3(ang.cos().mul(R).mul(bs), ang.sin().mul(R).mul(bs), ring.mul(0.35).add(0.45));
+  const weave = step(ring.sub(c.pick(50, 3)).abs(), 0.5).mul(step(0.5, c.pick(51, 3)));
+  const under = j.mod(2).mul(weave);
+  const zb = ring.mul(0.35).add(0.45).sub(under.mul(ring.mul(0.35).add(0.68)));
+  const centre = vec3(ang.cos().mul(R).mul(bs), ang.sin().mul(R).mul(bs), zb);
   const wc = modelWorldMatrix.mul(vec4(centre, 1)).xyz;
   const gaze = normalize(normalize(cameraPosition.sub(wc)).add(vec3(0, 0, 0.3)));
   const dv = varying(dot(normalize(positionGeometry), gaze));
@@ -39,7 +52,7 @@ export function material(ctx) {
   const m = new MeshBasicNodeMaterial();
   m.positionNode = positionGeometry.mul(size).add(centre);
   m.colorNode = col;
-  m.opacityNode = shown(c, "eye", varying(R.div(15)));
+  m.opacityNode = shown(c, "eye", varying(R.div(15))).mul(varying(used));
   m.alphaTest = 0.5;
   return m;
 }
