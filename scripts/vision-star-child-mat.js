@@ -17,8 +17,8 @@ import { tripClock, visionShown, visionU, climb, maskDraw, maskBeads, maskIris, 
 
 const TAU = 6.28318, PI = 3.14159;
 const HY = 1.6;                      // the heart
-const HEAD = [0, 8.7], HR = 3.0;     // the head
-const SP = 0.62;                     // contour step inward
+const HEAD = [0, 8.6], HR = 1.7;     // the head
+const SP = 0.7;                      // contour step (outward from the slim body)
 const is = (v, i) => step(v.sub(i).abs(), 0.5);
 const V = (a) => (Array.isArray(a) ? vec2(a[0], a[1]) : a);
 const smin = (a, b, k) => { const h = b.sub(a).div(2 * k).add(0.5).clamp(0, 1); return mix(b, a, h).sub(h.mul(float(1).sub(h)).mul(k)); };
@@ -107,14 +107,15 @@ export function material(ctx) {
   // ---- THE BEING: one signed distance of the seated figure, its five iso-lines are the contours
   const q = vec2(p.x.abs(), p.y);
   const mudra = c.pick(108, 2);                                          // 0 hands on knees, 1 hands in the lap
-  const hand = mix(vec2(9.6, -6.0), vec2(2.4, -5.0), mudra);
+  const hand = mix(vec2(8.6, -5.2), vec2(1.8, -3.4), mudra);
+  // a slim seated body: the five contours step OUTWARD from it, so every limb survives as a relief
   let sd = q.sub(vec2(HEAD[0], HEAD[1])).length().sub(HR);
-  sd = smin(sd, capsule(q, [0, 5.0], [0, 7.0], 1.25), 0.6);
-  sd = smin(sd, capsule(q, [0, 4.3], [5.0, 4.3], 1.45), 1.0);
-  sd = smin(sd, rbox(q, [0, 0.4], 3.9, 3.9, 1.8), 1.2);
-  sd = smin(sd, capsule(q, [5.0, 4.1], [7.4, -1.3], 1.15), 0.6);
-  sd = smin(sd, capsule(q, [7.4, -1.3], hand, 1.0), 0.5);
-  sd = smin(sd, capsule(q, [11.0, -7.2], [-5.5, -10.6], 2.2), 1.0);      // the crossed shins (mirrored: an X)
+  sd = smin(sd, capsule(q, [0, 5.4], [0, 7.2], 0.5), 0.4);
+  sd = smin(sd, capsule(q, [0, 4.6], [4.2, 4.4], 0.7), 0.6);
+  sd = smin(sd, rbox(q, [0, 1.3], 2.3, 3.1, 1.4), 0.8);
+  sd = smin(sd, capsule(q, [4.2, 4.4], [6.2, -0.8], 0.55), 0.4);
+  sd = smin(sd, capsule(q, [6.2, -0.8], hand, 0.5), 0.3);
+  sd = smin(sd, capsule(q, [9.6, -6.8], [-5.0, -9.6], 1.0), 0.8);     // the crossed shins (mirrored: an X)
   const hq = p.sub(vec2(0, HY)), rh = hq.length();
   const k = atan2(hq.x, hq.y).abs().div(PI);                            // 0 straight up from the heart .. 1 down, both sides
   const flip = c.pick(103, 2), style = c.pick(102, 3);
@@ -126,7 +127,7 @@ export function material(ctx) {
   const front = c.real.mul(0.6).fract().mul(18);
   const band = smoothstep(1.6, 0, rh.sub(front).abs()).mul(cul);
   for (let j = 0; j < 5; j++) {
-    const off = float(-j * SP).add(cul.mul(0.2).mul(c.real.mul(3.2).sub(j * 1.1).sin()));   // the ripple, inner leads
+    const off = float((4 - j) * SP).add(cul.mul(0.2).mul(c.real.mul(3.2).sub(j * 1.1).sin()));   // the ripple, inner leads
     const dj = sd.sub(off).abs();
     const line = stroke(dj, 0.13);
     const pj = u.sub(0.07 + (4 - j) * 0.1).div(0.13).clamp(0, 1);
@@ -146,7 +147,7 @@ export function material(ctx) {
   }
 
   // the aura: a bead row just outside the outline, lit around from the top at the culmination
-  const aq = sd.sub(0.85).abs();
+  const aq = sd.sub(4 * SP + 0.85).abs();
   const abead = stroke(aq, 0.16).mul(step(k.mul(70).fract().sub(0.5).abs(), 0.18)).mul(maskBeads(cul.mul(1.6), k)).mul(step(out, 0.001));
   add(mix(C3, W, 0.3).mul(0.9), abead);
 
