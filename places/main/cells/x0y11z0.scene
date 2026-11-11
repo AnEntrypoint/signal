@@ -2,9 +2,7 @@
 vision-lotus-gate:
   castShadow: false
   feetPosition: {x: 0, y: 1420, z: 0}
-  id: vision-lotus-gate
   material: {kind: scripted, params: {k0: -1, k1: -1, layer: being, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-lotus-gate-mat.js}
-  physics: none
   primitive: {kind: scripted, params: {h: 110, w: 110}, script: scripts/vision-lotus-gate-geo.js}
   receiveShadow: false
   tags: [trip, vision-lotus-gate]
@@ -12,9 +10,7 @@ vision-lotus-gate:
 vision-lotus-gate-fore:
   castShadow: false
   feetPosition: {x: 0, y: 1420, z: 22}
-  id: vision-lotus-gate-fore
   material: {kind: scripted, params: {k0: -1, k1: -1, layer: fore, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-lotus-gate-mat.js}
-  physics: none
   primitive: {kind: scripted, params: {h: 85, w: 150}, script: scripts/vision-lotus-gate-geo.js}
   receiveShadow: false
   tags: [trip, vision-lotus-gate]
@@ -22,9 +18,7 @@ vision-lotus-gate-fore:
 vision-lotus-gate-ring:
   castShadow: false
   feetPosition: {x: 0, y: 1420, z: -12}
-  id: vision-lotus-gate-ring
   material: {kind: scripted, params: {k0: -1, k1: -1, layer: ring, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-lotus-gate-mat.js}
-  physics: none
   primitive: {kind: scripted, params: {h: 130, w: 130}, script: scripts/vision-lotus-gate-geo.js}
   receiveShadow: false
   tags: [trip, vision-lotus-gate]
@@ -32,9 +26,7 @@ vision-lotus-gate-ring:
 vision-lotus-gate-veil:
   castShadow: false
   feetPosition: {x: 0, y: 1420, z: 10}
-  id: vision-lotus-gate-veil
   material: {kind: scripted, params: {k0: -1, k1: -1, layer: veil, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-lotus-gate-mat.js}
-  physics: none
   primitive: {kind: scripted, params: {h: 96, w: 130}, script: scripts/vision-lotus-gate-geo.js}
   receiveShadow: false
   tags: [trip, vision-lotus-gate]
@@ -42,9 +34,7 @@ vision-lotus-gate-veil:
 vision-lotus-gate-world:
   castShadow: false
   feetPosition: {x: 0, y: 1420, z: -30}
-  id: vision-lotus-gate-world
   material: {kind: scripted, params: {k0: -1, k1: -1, layer: world, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-lotus-gate-mat.js}
-  physics: none
   primitive: {kind: scripted, params: {h: 180, w: 320}, script: scripts/vision-lotus-gate-geo.js}
   receiveShadow: false
   tags: [trip, vision-lotus-gate]
@@ -52,9 +42,7 @@ vision-lotus-gate-world:
 vision-lotus-gate-worm-1:
   castShadow: false
   feetPosition: {x: 0, y: 1420, z: 0}
-  id: vision-lotus-gate-worm-1
   material: {kind: scripted, params: {k0: -1, k1: -1, n: 1, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-lotus-gate-worm-mat.js}
-  physics: none
   primitive: {kind: scripted, params: {}, script: scripts/vision-lotus-gate-worm-geo.js}
   receiveShadow: false
   tags: [trip, vision-lotus-gate]
@@ -62,9 +50,7 @@ vision-lotus-gate-worm-1:
 vision-lotus-gate-worm-2:
   castShadow: false
   feetPosition: {x: 0, y: 1420, z: 0}
-  id: vision-lotus-gate-worm-2
   material: {kind: scripted, params: {k0: -1, k1: -1, n: 2, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-lotus-gate-worm-mat.js}
-  physics: none
   primitive: {kind: scripted, params: {}, script: scripts/vision-lotus-gate-worm-geo.js}
   receiveShadow: false
   tags: [trip, vision-lotus-gate]
@@ -72,9 +58,7 @@ vision-lotus-gate-worm-2:
 vision-lotus-gate-worm-3:
   castShadow: false
   feetPosition: {x: 0, y: 1420, z: 0}
-  id: vision-lotus-gate-worm-3
   material: {kind: scripted, params: {k0: -1, k1: -1, n: 3, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-lotus-gate-worm-mat.js}
-  physics: none
   primitive: {kind: scripted, params: {}, script: scripts/vision-lotus-gate-worm-geo.js}
   receiveShadow: false
   tags: [trip, vision-lotus-gate]
@@ -82,9 +66,7 @@ vision-lotus-gate-worm-3:
 vision-lotus-gate-worm-4:
   castShadow: false
   feetPosition: {x: 0, y: 1420, z: 0}
-  id: vision-lotus-gate-worm-4
   material: {kind: scripted, params: {k0: -1, k1: -1, n: 4, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-lotus-gate-worm-mat.js}
-  physics: none
   primitive: {kind: scripted, params: {}, script: scripts/vision-lotus-gate-worm-geo.js}
   receiveShadow: false
   tags: [trip, vision-lotus-gate]

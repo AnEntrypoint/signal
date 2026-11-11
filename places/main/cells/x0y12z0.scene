@@ -2,162 +2,126 @@
 vision-twin-serpents:
   castShadow: false
   feetPosition: {x: 0, y: 1520, z: 0}
-  id: vision-twin-serpents
   material: {kind: scripted, params: {k0: -1, k1: -1, layer: being, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-twin-serpents-mat.js}
-  physics: none
   primitive: {kind: scripted, params: {h: 100, layer: being, w: 72}, script: scripts/vision-twin-serpents-geo.js}
   receiveShadow: false
   tags: [trip, vision-twin-serpents]
 vision-twin-serpents-fore:
   castShadow: false
   feetPosition: {x: 0, y: 1520, z: 22}
-  id: vision-twin-serpents-fore
   material: {kind: scripted, params: {k0: -1, k1: -1, layer: fore, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-twin-serpents-mat.js}
-  physics: none
   primitive: {kind: scripted, params: {h: 85, layer: fore, w: 150}, script: scripts/vision-twin-serpents-geo.js}
   receiveShadow: false
   tags: [trip, vision-twin-serpents]
 vision-twin-serpents-ring:
   castShadow: false
   feetPosition: {x: 0, y: 1520, z: -12}
-  id: vision-twin-serpents-ring
   material: {kind: scripted, params: {k0: -1, k1: -1, layer: ring, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-twin-serpents-mat.js}
-  physics: none
   primitive: {kind: scripted, params: {h: 96, layer: ring, w: 96}, script: scripts/vision-twin-serpents-geo.js}
   receiveShadow: false
   tags: [trip, vision-twin-serpents]
 vision-twin-serpents-veil:
   castShadow: false
   feetPosition: {x: 0, y: 1520, z: 10}
-  id: vision-twin-serpents-veil
   material: {kind: scripted, params: {k0: -1, k1: -1, layer: veil, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-twin-serpents-mat.js}
-  physics: none
   primitive: {kind: scripted, params: {h: 95, layer: veil, w: 140}, script: scripts/vision-twin-serpents-geo.js}
   receiveShadow: false
   tags: [trip, vision-twin-serpents]
 vision-twin-serpents-world:
   castShadow: false
   feetPosition: {x: 0, y: 1520, z: -30}
-  id: vision-twin-serpents-world
   material: {kind: scripted, params: {k0: -1, k1: -1, layer: world, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-twin-serpents-mat.js}
-  physics: none
   primitive: {kind: scripted, params: {h: 180, layer: world, w: 320}, script: scripts/vision-twin-serpents-geo.js}
   receiveShadow: false
   tags: [trip, vision-twin-serpents]
 vision-twin-serpents-worm-1:
   castShadow: false
   feetPosition: {x: 0, y: 1520, z: 0}
-  id: vision-twin-serpents-worm-1
   material: {kind: scripted, params: {k0: -1, k1: -1, n: 1, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-twin-serpents-worm-mat.js}
-  physics: none
   primitive: {kind: scripted, params: {n: 1}, script: scripts/vision-twin-serpents-worm-geo.js}
   receiveShadow: false
   tags: [trip, vision-twin-serpents]
 vision-twin-serpents-worm-2:
   castShadow: false
   feetPosition: {x: 0, y: 1520, z: 0}
-  id: vision-twin-serpents-worm-2
   material: {kind: scripted, params: {k0: -1, k1: -1, n: 2, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-twin-serpents-worm-mat.js}
-  physics: none
   primitive: {kind: scripted, params: {n: 2}, script: scripts/vision-twin-serpents-worm-geo.js}
   receiveShadow: false
   tags: [trip, vision-twin-serpents]
 vision-twin-serpents-worm-3:
   castShadow: false
   feetPosition: {x: 0, y: 1520, z: 0}
-  id: vision-twin-serpents-worm-3
   material: {kind: scripted, params: {k0: -1, k1: -1, n: 3, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-twin-serpents-worm-mat.js}
-  physics: none
   primitive: {kind: scripted, params: {n: 3}, script: scripts/vision-twin-serpents-worm-geo.js}
   receiveShadow: false
   tags: [trip, vision-twin-serpents]
 vision-twin-serpents-worm-4:
   castShadow: false
   feetPosition: {x: 0, y: 1520, z: 0}
-  id: vision-twin-serpents-worm-4
   material: {kind: scripted, params: {k0: -1, k1: -1, n: 4, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-twin-serpents-worm-mat.js}
-  physics: none
   primitive: {kind: scripted, params: {n: 4}, script: scripts/vision-twin-serpents-worm-geo.js}
   receiveShadow: false
   tags: [trip, vision-twin-serpents]
 vision-weaver:
   castShadow: false
   feetPosition: {x: 0, y: 1620, z: 0}
-  id: vision-weaver
   material: {kind: scripted, params: {k0: -1, k1: -1, layer: being, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-weaver-mat.js}
-  physics: none
   primitive: {kind: scripted, params: {h: 70, w: 90}, script: scripts/vision-weaver-geo.js}
   receiveShadow: false
   tags: [trip, vision-weaver]
 vision-weaver-fore:
   castShadow: false
   feetPosition: {x: 0, y: 1620, z: 22}
-  id: vision-weaver-fore
   material: {kind: scripted, params: {k0: -1, k1: -1, layer: fore, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-weaver-mat.js}
-  physics: none
   primitive: {kind: scripted, params: {h: 85, w: 150}, script: scripts/vision-weaver-geo.js}
   receiveShadow: false
   tags: [trip, vision-weaver]
 vision-weaver-ring:
   castShadow: false
   feetPosition: {x: 0, y: 1620, z: -12}
-  id: vision-weaver-ring
   material: {kind: scripted, params: {k0: -1, k1: -1, layer: ring, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-weaver-mat.js}
-  physics: none
   primitive: {kind: scripted, params: {h: 112, w: 120}, script: scripts/vision-weaver-geo.js}
   receiveShadow: false
   tags: [trip, vision-weaver]
 vision-weaver-veil:
   castShadow: false
   feetPosition: {x: 0, y: 1620, z: 10}
-  id: vision-weaver-veil
   material: {kind: scripted, params: {k0: -1, k1: -1, layer: veil, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-weaver-mat.js}
-  physics: none
   primitive: {kind: scripted, params: {h: 84, w: 150}, script: scripts/vision-weaver-geo.js}
   receiveShadow: false
   tags: [trip, vision-weaver]
 vision-weaver-world:
   castShadow: false
   feetPosition: {x: 0, y: 1620, z: -30}
-  id: vision-weaver-world
   material: {kind: scripted, params: {k0: -1, k1: -1, layer: world, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-weaver-mat.js}
-  physics: none
   primitive: {kind: scripted, params: {h: 180, w: 320}, script: scripts/vision-weaver-geo.js}
   receiveShadow: false
   tags: [trip, vision-weaver]
 vision-weaver-worm-1:
   castShadow: false
   feetPosition: {x: 0, y: 1620, z: 0}
-  id: vision-weaver-worm-1
   material: {kind: scripted, params: {k0: -1, k1: -1, n: 1, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-weaver-worm-mat.js}
-  physics: none
   primitive: {kind: scripted, params: {n: 1}, script: scripts/vision-weaver-worm-geo.js}
   receiveShadow: false
   tags: [trip, vision-weaver]
 vision-weaver-worm-2:
   castShadow: false
   feetPosition: {x: 0, y: 1620, z: 0}
-  id: vision-weaver-worm-2
   material: {kind: scripted, params: {k0: -1, k1: -1, n: 2, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-weaver-worm-mat.js}
-  physics: none
   primitive: {kind: scripted, params: {n: 2}, script: scripts/vision-weaver-worm-geo.js}
   receiveShadow: false
   tags: [trip, vision-weaver]
 vision-weaver-worm-3:
   castShadow: false
   feetPosition: {x: 0, y: 1620, z: 0}
-  id: vision-weaver-worm-3
   material: {kind: scripted, params: {k0: -1, k1: -1, n: 3, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-weaver-worm-mat.js}
-  physics: none
   primitive: {kind: scripted, params: {n: 3}, script: scripts/vision-weaver-worm-geo.js}
   receiveShadow: false
   tags: [trip, vision-weaver]
 vision-weaver-worm-4:
   castShadow: false
   feetPosition: {x: 0, y: 1620, z: 0}
-  id: vision-weaver-worm-4
   material: {kind: scripted, params: {k0: -1, k1: -1, n: 4, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-weaver-worm-mat.js}
-  physics: none
   primitive: {kind: scripted, params: {n: 4}, script: scripts/vision-weaver-worm-geo.js}
   receiveShadow: false
   tags: [trip, vision-weaver]

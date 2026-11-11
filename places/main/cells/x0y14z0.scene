@@ -2,81 +2,63 @@
 vision-world-turtle:
   castShadow: false
   feetPosition: {x: 0, y: 1820, z: 0}
-  id: vision-world-turtle
   material: {kind: scripted, params: {k0: -1, k1: -1, layer: being, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-world-turtle-mat.js}
-  physics: none
   primitive: {kind: scripted, params: {h: 50, layer: being, w: 70}, script: scripts/vision-world-turtle-geo.js}
   receiveShadow: false
   tags: [trip, vision-world-turtle]
 vision-world-turtle-fore:
   castShadow: false
   feetPosition: {x: 0, y: 1820, z: 22}
-  id: vision-world-turtle-fore
   material: {kind: scripted, params: {k0: -1, k1: -1, layer: fore, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-world-turtle-mat.js}
-  physics: none
   primitive: {kind: scripted, params: {h: 85, layer: fore, w: 150}, script: scripts/vision-world-turtle-geo.js}
   receiveShadow: false
   tags: [trip, vision-world-turtle]
 vision-world-turtle-ring:
   castShadow: false
   feetPosition: {x: 0, y: 1820, z: -12}
-  id: vision-world-turtle-ring
   material: {kind: scripted, params: {k0: -1, k1: -1, layer: ring, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-world-turtle-mat.js}
-  physics: none
   primitive: {kind: scripted, params: {h: 80, layer: ring, w: 80}, script: scripts/vision-world-turtle-geo.js}
   receiveShadow: false
   tags: [trip, vision-world-turtle]
 vision-world-turtle-veil:
   castShadow: false
   feetPosition: {x: 0, y: 1820, z: 10}
-  id: vision-world-turtle-veil
   material: {kind: scripted, params: {k0: -1, k1: -1, layer: veil, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-world-turtle-mat.js}
-  physics: none
   primitive: {kind: scripted, params: {h: 84, layer: veil, w: 120}, script: scripts/vision-world-turtle-geo.js}
   receiveShadow: false
   tags: [trip, vision-world-turtle]
 vision-world-turtle-world:
   castShadow: false
   feetPosition: {x: 0, y: 1820, z: -30}
-  id: vision-world-turtle-world
   material: {kind: scripted, params: {k0: -1, k1: -1, layer: world, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-world-turtle-mat.js}
-  physics: none
   primitive: {kind: scripted, params: {h: 180, layer: world, w: 320}, script: scripts/vision-world-turtle-geo.js}
   receiveShadow: false
   tags: [trip, vision-world-turtle]
 vision-world-turtle-worm-1:
   castShadow: false
   feetPosition: {x: 0, y: 1820, z: 0}
-  id: vision-world-turtle-worm-1
   material: {kind: scripted, params: {k0: -1, k1: -1, n: 1, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-world-turtle-worm-mat.js}
-  physics: none
   primitive: {kind: scripted, params: {}, script: scripts/vision-world-turtle-worm-geo.js}
   receiveShadow: false
   tags: [trip, vision-world-turtle]
 vision-world-turtle-worm-2:
   castShadow: false
   feetPosition: {x: 0, y: 1820, z: 0}
-  id: vision-world-turtle-worm-2
   material: {kind: scripted, params: {k0: -1, k1: -1, n: 2, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-world-turtle-worm-mat.js}
-  physics: none
   primitive: {kind: scripted, params: {}, script: scripts/vision-world-turtle-worm-geo.js}
   receiveShadow: false
   tags: [trip, vision-world-turtle]
 vision-world-turtle-worm-3:
   castShadow: false
   feetPosition: {x: 0, y: 1820, z: 0}
-  id: vision-world-turtle-worm-3
   material: {kind: scripted, params: {k0: -1, k1: -1, n: 3, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-world-turtle-worm-mat.js}
-  physics: none
   primitive: {kind: scripted, params: {}, script: scripts/vision-world-turtle-worm-geo.js}
   receiveShadow: false
   tags: [trip, vision-world-turtle]
 vision-world-turtle-worm-4:
   castShadow: false
   feetPosition: {x: 0, y: 1820, z: 0}
-  id: vision-world-turtle-worm-4
   material: {kind: scripted, params: {k0: -1, k1: -1, n: 4, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-world-turtle-worm-mat.js}
-  physics: none
   primitive: {kind: scripted, params: {}, script: scripts/vision-world-turtle-worm-geo.js}
   receiveShadow: false
   tags: [trip, vision-world-turtle]
