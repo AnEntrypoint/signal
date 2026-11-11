@@ -24,6 +24,15 @@ eye-beads:
   primitive: {kind: scripted, params: {}, script: scripts/eye-beads-geo.js}
   receiveShadow: false
   tags: [trip, eye]
+eye-knot:
+  castShadow: false
+  feetPosition: {x: 0, y: 15, z: -34}
+  id: eye-knot
+  material: {kind: scripted, params: {"on": 0, seed: 0, t0: 0}, script: scripts/eye-knot.js}
+  physics: none
+  primitive: {kind: scripted, script: scripts/eye-knot-geo.js}
+  receiveShadow: false
+  tags: [trip, eye]
 eye-lids:
   castShadow: false
   feetPosition: {x: 0, y: 15, z: -34}
