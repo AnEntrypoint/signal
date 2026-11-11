@@ -19,7 +19,7 @@
 // Seed channels 320..339: 0 hue family, 1 trunk stripes, 2 fruit shape, 3 crown habit, 4 crown spread, 5 ring sense,
 // 6 ring speed, 7 vine count, 8 vine skin order, 9 swap variant (canopy / roots / alternating), 10 world lobes,
 // 11 strata scroll sense, 12 bird count, 13 which vine goes dark, 14 leaf columns, 15 heart variant, 16 hot accent,
-// 17 world limb spread.
+// 17 world limb spread, 18 wood/fruit swap within the family.
 import { MeshBasicNodeMaterial, AdditiveBlending, DoubleSide } from "builtin/three";
 import { positionGeometry, float, vec2, vec3, smoothstep, step, mix, atan2, fwidth, select } from "builtin/tsl";
 import { tripClock, visionShown, visionU, climb, maskDraw, maskBeads, maskIris, maskLid, nib } from "./lib/trip.js";
@@ -74,12 +74,16 @@ export function material(ctx) {
   const lin = (a, b) => u.sub(a).div(b - a).clamp(0, 1);
   const rn = (n) => c.rnd(320 + n), pk = (n, k) => c.pick(320 + n, k);
   const sense = (n) => step(0.5, rn(n)).mul(2).sub(1);
-  const fam = pk(0, 5), hot = pk(16, 3);
+  // hue family crosses the palette: 0 blue/violet, 1 magenta/orange, 2 green/yellow, 3 white-led op-art (white wood,
+  // one hot accent fruit); channel 18 swaps which colour is wood and which is fruit inside the family
+  const fam = pk(0, 4), hot = pk(16, 3), swp = pk(18, 2);
   const blue = vec3(0.05, 0.12, 1.0), violet = vec3(0.45, 0.05, 1.0), pink = vec3(1.0, 0.05, 0.6), orange = vec3(1.0, 0.38, 0.02);
   const yellow = vec3(1.0, 0.85, 0.05), green = vec3(0.1, 1.0, 0.15), W = vec3(1, 1, 1);
-  const A = green.mul(is(fam, 0)).add(violet.mul(is(fam, 1))).add(blue.mul(is(fam, 2))).add(orange.mul(is(fam, 3))).add(pink.mul(is(fam, 4)));    // wood
-  const B = yellow.mul(is(fam, 0)).add(pink.mul(is(fam, 1))).add(orange.mul(is(fam, 2))).add(blue.mul(is(fam, 3))).add(green.mul(is(fam, 4)));   // fruit
   const H = pink.mul(is(hot, 0)).add(orange.mul(is(hot, 1))).add(yellow.mul(is(hot, 2)));   // hot accent
+  const A0 = blue.mul(is(fam, 0)).add(pink.mul(is(fam, 1))).add(green.mul(is(fam, 2))).add(vec3(0.92, 0.92, 0.95).mul(is(fam, 3)));
+  const B0 = violet.mul(is(fam, 0)).add(orange.mul(is(fam, 1))).add(yellow.mul(is(fam, 2))).add(H.mul(is(fam, 3)));
+  const sw = swp.mul(step(fam, 2.5));                                                       // op-art keeps white wood
+  const A = mix(A0, B0, sw), B = mix(B0, A0, sw);                                           // wood, fruit
   const P = positionGeometry.xy;
   const live = visionShown(ctx, c, 0);
   const kon = step(0.001, c.kick);
@@ -277,21 +281,25 @@ export function material(ctx) {
   const fp = io(0.87, 0.885, 0.928, 0.94);
   const fd0 = vec2(q.x, q.y.sub(T)).length().div(17);
   const flip = maskIris(fp, fd0).mul(step(er, 1)).mul(half);
-  const G = mix(A, W, 0.12).mul(0.85);
+  // the swapped half goes SILHOUETTE: black ground, its growing front and its seam a neon line, wood an outline only
+  const flipIn = maskIris(fp, fd0.add(0.03)).mul(step(er, 0.985)).mul(half).mul(step(0.12, p.y.abs()));
+  const G = vec3(0);
   add(G, flip);
+  add(mix(A, W, 0.35).mul(1.3), flip.mul(inv(flipIn)).mul(step(0.01, fp)));
   const ea = at2(ey, ex);
   add(W, stroke2(er.sub(1).abs().mul(8), 0.1).mul(step(ea.div(TAU).mul(40).fract(), 0.5)).mul(maskIris(fp, fd0)).mul(half).mul(step(0.01, fp)));
   function stroke2(dd, w) { return inv(smoothstep(float(w), aa.add(w), dd)); }
 
   const branch = inv(smoothstep(aa.negate(), 0, d));
   const wood = mix(A, W, sap.mul(0.8).add(fill.mul(0.45)).add(0.18)).mul(float(0.8).add(sap.mul(0.6)).add(fill.mul(0.5)).add(front.mul(1.5)));
-  add(mix(wood, vec3(0), flip), branch);
+  const rimW = inv(smoothstep(float(-0.07).sub(aa), -0.07, d));                    // the branch's outer edge band
+  add(mix(wood, A.mul(1.4), flip), branch.mul(inv(flip).max(inv(rimW))));
   add(W.mul(1.5), nib(P4.div(4), s, 0.012).mul(inv(smoothstep(0.1, 0.18, d))).mul(step(P4, 3.99)).mul(step(0.001, P4)).mul(inv(inT)));
   const nS = pk(1, 4).add(4);
   const chev = step(q.y.sub(ax.mul(0.9)).mul(nS).div(T).fract(), 0.5);
   add(mix(vec3(0), G, flip), inT);
   add(mix(W.mul(float(0.8).add(sap.mul(0.7)).add(fill.mul(0.3))), vec3(0), flip), inT.mul(chev));
-  add(mix(wood, vec3(0), flip), inT.mul(smoothstep(tw.sub(0.17).sub(aa), tw.sub(0.17), ax)));
+  add(mix(wood, A.mul(1.4), flip), inT.mul(smoothstep(tw.sub(0.17).sub(aa), tw.sub(0.17), ax)));
   add(W.mul(1.5), inT.mul(nib(P4.clamp(0, 1), q.y.div(T), 0.04)).mul(step(P4, 0.995)));
 
   // the fruit: a bead on every tip, lighting from the trunk outward; halos join them later
