@@ -1,0 +1,8 @@
+# spawn-scene v2 yaml x0y2z0
+vision-sun-father:
+  feetPosition: {x: 0, y: 300, z: 0}
+  id: vision-sun-father
+  material: {kind: scripted, script: engine/blueprint}
+  physics: none
+  primitive: {depth: 10, height: 40, kind: box, width: 70}
+  tags: [blueprint]
