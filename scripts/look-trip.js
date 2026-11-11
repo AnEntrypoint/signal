@@ -152,6 +152,7 @@ export function look(ctx) {
   // chromatic aberration: R and B pushed radially, growing toward the edge
   const ab = float(0.0015).add(c.kick.mul(0.006).mul(on).mul(job(0)));
   const rgb = (u) => {
+    if (low) return S(u); // low tier: one tap, no aberration split
     const d = u.sub(0.5).mul(ab.mul(2));
     return vec3(S(u.add(d)).x, S(u).y, S(u.sub(d)).z);
   };
@@ -273,7 +274,7 @@ export function look(ctx) {
   // (the nearest of five taps round it), so that thing is crisp and only the layers before and behind it soften.
   // Nothing there (open black) = no blur at all. Some phrases the roll deals an extreme, razor-thin plane.
   let zC = float(999);
-  for (const [ox, oy] of [[0, 0], [0.05, 0], [-0.05, 0], [0, 0.07], [0, -0.07], [0.12, 0.1], [-0.12, 0.1], [0.12, -0.1], [-0.12, -0.1]]) {
+  for (const [ox, oy] of (low ? [[0, 0], [0.12, 0.1], [-0.12, -0.1]] : [[0, 0], [0.05, 0], [-0.05, 0], [0, 0.07], [0, -0.07], [0.12, 0.1], [-0.12, 0.1], [0.12, -0.1], [-0.12, -0.1]])) {
     const z = ctx.viewZAt(vec2(0.5 + ox, 0.5 + oy)).negate();
     zC = zC.min(select(z.greaterThan(1.5).and(z.lessThan(300)), z, float(999))); // the nearest thing round the middle is the subject
   }

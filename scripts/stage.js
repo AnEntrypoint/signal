@@ -32,7 +32,7 @@ function push(ctx, t0, on, seed, k, vs) {
       if (h?.material?.params) { h.material.params.vw0 = w[0]; h.material.params.vw1 = w[1] }
     }
   }
-  stageBeing(ctx, vs, on ? seed : 0)
+  stageBeing(ctx, vs, on ? seed : 0, t)
   const a = ctx.place.atmosphere
   if (a.look) { a.look.params ??= {}; setAll(a.look.params, t0, on, seed, k, deal); a.look.params.v0 = vs[0]; a.look.params.v1 = vs[1] }
 }
@@ -43,8 +43,9 @@ function push(ctx, t0, on, seed, k, vs) {
 const DEPTH = 74
 // a being's scene, far to near: -world (its ground and sky, fills the frame) / -ring / the being / -veil / -fore
 function homeZ(id) { return id.endsWith('-world') ? -30 : id.endsWith('-ring') ? -12 : id.endsWith('-veil') ? 10 : id.endsWith('-fore') ? 22 : 0 }
-function stageBeing(ctx, vs, seed) {
-  const cur = seed ? dealVisions(seed).find((v) => v.slot[0] === vs[0]) : null
+function stageBeing(ctx, vs, seed, t) {
+  // only from 3 s before its slot: earlier, the next being hung cropped over black ~30 s ahead (review, seed 23)
+  const cur = seed && t != null && t >= vs[0] - 3 ? dealVisions(seed).find((v) => v.slot[0] === vs[0]) : null
   for (const b of BEINGS) {
     const here = cur && cur.being.id === b.id
     for (const o of ctx.query({ tags: ['vision-' + b.id] })) {
@@ -105,7 +106,7 @@ export function update(ctx, dt) {
     const cam = cameraAt(t, c.seed ?? 0)
     const d = Math.hypot(cam.aim.x - cam.eye.x, cam.aim.y - cam.eye.y, cam.aim.z - cam.eye.z)
     const fit = Math.round(Math.max(0.15, Math.min(1, (0.9 * d) / (DEPTH + 30))) * 100) / 100
-    if (fit !== ctx.self.session.fit) { ctx.self.session.fit = fit; stageBeing(ctx, vs, c.seed ?? 0) }
+    if (fit !== ctx.self.session.fit) { ctx.self.session.fit = fit; stageBeing(ctx, vs, c.seed ?? 0, t) }
   }
   ctx.sleep(0.25)
 }

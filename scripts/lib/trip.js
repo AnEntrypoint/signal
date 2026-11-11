@@ -40,7 +40,7 @@ export function tripClock(ctx) {
   // the kick only where the measured track has one: the director (stage.js) hands the current/next kick run
   // as params k0 / k1 (seconds, from KICK_RUNS); idle or none: no kick at all
   const k0 = ctx.param("k0", -1), k1 = ctx.param("k1", -1);
-  const live = smoothstep(k0.sub(0.05), k0, real).mul(smoothstep(k1.add(0.05), k1, real));
+  const live = smoothstep(k0.sub(0.05), k0, real).mul(float(1).sub(smoothstep(k1, k1.add(0.05), real)));
   const env = (b, k) => b.fract().mul(k).negate().exp().mul(live);
   // THE ROLL'S SEED: a new integer every roll (0 idle), the same on every machine in the room.
   // c.rnd(n): 0..1, fixed for this roll, different per channel n. Channels 1-9 are the spine's; a piece uses 10+.
@@ -189,7 +189,7 @@ export function bendUv(c, uv, aspect = 1.78) {
 export function visionShown(ctx, c, d = 0) {
   const a = ctx.param("vw0", -1), b = ctx.param("vw1", -1);
   const s = c.sec.sub(float(d).clamp(0, 1).mul(1.5));
-  return smoothstep(a, a.add(0.2), s).mul(smoothstep(b.add(0.2), b, s)).mul(b.greaterThan(0).select(float(1), float(0))).mul(c.on);
+  return smoothstep(a, a.add(0.2), s).mul(float(1).sub(smoothstep(b, b.add(0.2), s))  /* edges low→high: reversed edges are undefined on GPUs (the turtle's NaN) */).mul(b.greaterThan(0).select(float(1), float(0))).mul(c.on);
 }
 // how far into its slot the being is, 0..1 (its own clock for drawing itself in)
 export function visionU(ctx, c) {
