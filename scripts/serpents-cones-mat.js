@@ -4,7 +4,7 @@ import { positionLocal, uv, attribute, float, vec3, select, varying, step, smoot
 import { MeshBasicNodeMaterial } from "builtin/three";
 import { tripClock } from "./lib/trip.js";
 import { finish, colours, shown, kickAt, win, SEC, TAU } from "./serpents-lib.js";
-import { choose, held } from "./field-lib.js";
+import { choose, held } from "./field-lib.js"; // held: the far layer's seam hold
 
 export function material(ctx) {
   const c = tripClock(ctx);
