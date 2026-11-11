@@ -43,6 +43,16 @@ function arch(q) {
   const below = step(y, YS);
   return { sd: mix(sdt, sdb, below), ua: y.sub(YL).div(APEX - YL).clamp(0, 1) };
 }
+// metric position along the arch at offset `off` outside its line, as a cell coordinate: n round beads laid
+// evenly from the foot over the apex (straight side, then the arc measured by its own angle)
+const TH = Math.atan2(APEX - YS, -AXC);
+function archCell(q, off, n) {
+  const x = q.x.abs(), y = q.y, Ltot = (YS - YL) + (RA + off) * TH;
+  const th = atan2(y.sub(YS), x.sub(AXC).max(0.001)).clamp(0, TH);
+  const s = mix(float(YS - YL).add(th.mul(RA + off)), y.sub(YL).max(0), step(y, YS));
+  const cell = s.div(Ltot).mul(n);
+  return { cell, along: cell.fract().sub(0.5).mul(Ltot / n), ua: s.div(Ltot).clamp(0, 1) };
+}
 // one ring of N petals: ap across (-.5..5 of a petal's slot), t along (0 base .. 1 tip), ex metres inside the edge
 function petals(rr, an, N, r0, Lo, rot) {
   const f = an.div(TAU).mul(N).add(rot);
@@ -87,7 +97,7 @@ export function material(ctx) {
   // ------------------------------------------------------------------ WORLD: water and sky (scrolls)
   if (layer === "world") {
     // coverage: one giant blossom outline growing from the lotus, its front a scalloped row of beads
-    const grow = io(0.25, 0.45, 0.955, 0.995), Rg = grow.mul(190);
+    const grow = io(0.25, 0.45, 0.92, 0.995), Rg = grow.mul(190);
     const shape = an.mul(4).cos().abs().mul(0.22).add(0.78);
     const lead = rr.sub(Rg.mul(shape));
     const fb = vec2(an.mul(rr).div(3.2).fract().sub(0.5).mul(3.2), lead.sub(2.2)).length();
@@ -107,13 +117,13 @@ export function material(ctx) {
     const pa = atan2(ly, lx), adot = pa.div(TAU).mul(cnt).fract().sub(0.5).mul(rho).mul(TAU).div(cnt);
     const dot = inv(smoothstep(rs.mul(0.28), rs.mul(0.34), vec2(adot, rho.div(rs).fract().sub(0.5).mul(rs)).length()));
     const pad = step(rho, pr).mul(inv(notch)).mul(has).mul(step(0.0001, v));
-    const padP = io(0.3, 0.5, 0.95, 0.97);
+    const padP = io(0.3, 0.5, 0.88, 0.93);
     const padOn = pad.mul(maskBeads(padP, hash(cid.add(ri.mul(5))).mul(0.6).add(rr.div(200))));
     let col = mix(A, B, rj.mod(2)).mul(dot).mul(0.55).add(A.mul(stroke(rho.sub(pr).abs(), 0.08)).mul(0.5)).mul(padOn);
     col = col.add(B.mul(kl).mul(padOn).mul(0.4));
     // the water line: a dashed bead row
     const wl = stroke(vec2(q.x.div(2.4).fract().sub(0.5).mul(2.4), q.y.sub(Wy)).length(), 0.28);
-    col = col.add(mix(A, W, 0.3).mul(wl).mul(0.7).mul(step(rr.div(170), io(0.3, 0.42, 0.95, 0.97))));
+    col = col.add(mix(A, W, 0.3).mul(wl).mul(0.7).mul(step(rr.div(170), io(0.3, 0.42, 0.88, 0.93))));
     // the sky: petals drifting up (placed in lanes, mirrored), dragonflies hovering
     const above = step(Wy + 1, q.y);
     let sky = vec3(0, 0, 0);
@@ -122,7 +132,7 @@ export function material(ctx) {
       const px = ax.sub(x0).sub(c.real.mul(0.5).add(j).sin().mul(3)), py = q.y.sub(rise.add(Wy - 4));
       const tl = c.real.mul(0.5).add(j * 1.7).sin().mul(0.35), cs = tl.cos(), sn = tl.sin();
       const lf = leaf(px.mul(cs).sub(py.mul(sn)), px.mul(sn).add(py.mul(cs)), 4.6, 1.5);
-      const pj = io(0.62 + j * 0.018, 0.66 + j * 0.018, 0.945, 0.958);
+      const pj = io(0.62 + j * 0.018, 0.66 + j * 0.018, 0.82 + j * 0.012, 0.85 + j * 0.012);
       sky = sky.add(mix(B, H, j % 2).mul(stroke(lf.ex.abs(), 0.1).mul(step(0, lf.t)).mul(step(lf.t, 1))).mul(step(0.01, pj)).mul(step(j / 5, pj.mul(1.02))));
     }
     const nfly = pk(4, 3).add(2);
@@ -131,7 +141,7 @@ export function material(ctx) {
       const hov = vec2(c.real.mul(0.37).add(i * 2.1).sin().mul(5), c.real.mul(0.61).add(i).sin().mul(2.5));
       const fp = vec2(ax.sub(fx), q.y.sub(fy)).sub(hov);
       const fl = c.real.mul(11).add(i).sin().mul(0.35);
-      const pf = io(0.6 + i * 0.025, 0.66 + i * 0.025, 0.945, 0.96).mul(step(i, nfly.sub(0.5)));
+      const pf = io(0.6 + i * 0.025, 0.66 + i * 0.025, 0.82 + i * 0.012, 0.86 + i * 0.012).mul(step(i, nfly.sub(0.5)));
       const s1 = stroke(seg(fp, [0, 2.6], [0, -6.5]), 0.12).mul(maskBeads(pf, 0.05));
       const s2 = stroke(seg(fp.sub(vec2(0, fl)), [-6.5, 1.9], [6.5, 1.9]), 0.1).mul(maskBeads(pf, 0.3));
       const s3 = stroke(seg(fp.add(vec2(0, fl)), [-5, -0.2], [5, -0.2]), 0.1).mul(maskBeads(pf, 0.55));
@@ -148,16 +158,16 @@ export function material(ctx) {
   // ------------------------------------------------------------------ RING: the halo (turns, additive)
   if (layer === "ring") {
     const ringL = (r, w) => inv(smoothstep(w, aa.add(w), rr.sub(r).abs()));
-    const pL = io(0.4, 0.46, 0.955, 0.97);
+    const pL = io(0.4, 0.46, 0.89, 0.92);
     const l1 = ringL(44, 0.12).mul(maskClock(pL, an)), l2 = ringL(55, 0.1).mul(maskClock(pL, an.negate()));
     const rot = c.real.mul(rn(5).mul(0.012).add(0.006)).mul(sense(2));
     const f1 = an.div(TAU).add(rot).mul(72), f2 = an.div(TAU).sub(rot.mul(1.7)).mul(96);
     const b1 = inv(smoothstep(0.62, 0.62 + 0.1, vec2(f1.fract().sub(0.5).mul(rr).mul(TAU / 72), rr.sub(47.6)).length()));
     const b2 = inv(smoothstep(0.42, 0.42 + 0.1, vec2(f2.fract().sub(0.5).mul(rr).mul(TAU / 96), rr.sub(51.4)).length()));
-    const p1 = io(0.44, 0.52, 0.95, 0.965), p2 = io(0.48, 0.56, 0.95, 0.965);
+    const p1 = io(0.44, 0.52, 0.86, 0.89), p2 = io(0.48, 0.56, 0.85, 0.88);
     const k1 = maskBeads(p1, f1.floor().div(72).fract()), k2 = maskBeads(p2, f2.floor().div(96).fract());
     // aura: twelve great petal outlines turning slowly the other way, drawn from base to tip
-    const pa = io(0.52, 0.6, 0.945, 0.96);
+    const pa = io(0.52, 0.6, 0.83, 0.87);
     const au = petals(rr, an, 12, float(36), float(24).mul(pa), rot.mul(-0.6).add(0.5));
     const aur = stroke(au.ex.abs(), 0.12).mul(step(0, au.t)).mul(step(au.t, 1));
     const glow = smoothstep(9, 0, rr.sub(44).abs()).mul(0.12).mul(pL);
@@ -182,7 +192,7 @@ export function material(ctx) {
       const px = ax.sub(x0), py = q.y.sub(y0), cs = th.cos(), sn = th.sin();
       const lx = px.mul(cs).sub(py.mul(sn)), ly = px.mul(sn).add(py.mul(cs));
       const lf = leaf(lx, ly, len, wid);
-      const pj = io(0.62 + j * 0.03, 0.68 + j * 0.03, 0.93 + j * 0.005, 0.945 + j * 0.005);
+      const pj = io(0.62 + j * 0.03, 0.68 + j * 0.03, 0.81 + j * 0.015, 0.85 + j * 0.015);
       const on = lf.inside.mul(maskDraw(pj, lf.t));
       const edge = stroke(lf.ex, 0.18);
       const cont = stroke(lf.ex.div(1.1).fract().sub(0.5).abs().mul(1.1), 0.06).mul(step(0.6, lf.ex));
@@ -200,12 +210,12 @@ export function material(ctx) {
 
   // ------------------------------------------------------------------ FORE: the near water and its buds (undulates)
   if (layer === "fore") {
-    const pW = io(0.66, 0.72, 0.93, 0.95);
+    const pW = io(0.66, 0.72, 0.84, 0.88);
     const swell = (x) => float(x).mul(0.07).sub(c.real.mul(1.1)).sin().mul(2.2).add(float(x).mul(0.15).add(c.real.mul(0.7)).sin().mul(1.1));
     const yw = swell(q.x).add(-52).add(pW.mul(9));
     let col = vec3(0, 0, 0), cover = float(0);
     for (let j = 0; j < 4; j++) {
-      const xb = 30 + j * 20, pb = io(0.68 + j * 0.025, 0.74 + j * 0.025, 0.93, 0.945);
+      const xb = 30 + j * 20, pb = io(0.68 + j * 0.025, 0.74 + j * 0.025, 0.80 + j * 0.012, 0.83 + j * 0.012);
       const bx = ax.sub(xb).sub(c.real.mul(0.9).add(j).sin().mul(0.8));
       const by = q.y.sub(swell(q.x.sign().mul(xb)).add(-52).add(pW.mul(9)).sub(2).add(inv(pb).mul(12)));
       const lf = leaf(bx, by, 8 + j, 2.0 + j * 0.25);
@@ -237,15 +247,20 @@ export function material(ctx) {
   const lock = inv(cul.mul(inv(flipV)));             // variant A: every ring's turn eases to zero (one star)
   const flip = cul.mul(flipV);                       // variant B: bodies lit, lines black
   let col = vec3(0, 0, 0), cover = float(0);
-  const pDew = io(0.5, 0.58, 0.945, 0.958);
+  const pDew = io(0.5, 0.58, 0.80, 0.84);
   for (let k = NR - 1; k >= 0; k--) {
     const N = N0.mul(1 + 0.5 * k), r0 = 4 + 5.4 * k, L = 10 + 1.6 * k;
     const sgn = sense(2).mul(k % 2 ? -1 : 1);
-    const op = io(0.1 + 0.045 * k, 0.15 + 0.045 * k, 0.958 + 0.007 * (NR - 1 - k), 0.97 + 0.007 * (NR - 1 - k)).mul(k === NR - 1 ? step(0.35, rn(10)) : float(1));
+    // a ring opens over .06 of u, k by k across .09..35; leaves outer ring first from .80, the heart's last by .985
+    const op = io(0.09 + 0.05 * k, 0.15 + 0.05 * k, 0.80 + 0.035 * (NR - 1 - k), 0.845 + 0.035 * (NR - 1 - k)).mul(k === NR - 1 ? step(0.35, rn(10)) : float(1));
     const breathe = c.real.mul(0.55 + 0.08 * k).add(k * 1.3).sin().mul(0.035).mul(k % 2 ? -1 : 1).add(1);
     const rk = rr.div(breathe);
     const rot = c.real.mul(0.008 + 0.003 * k).add(inv(op).mul(0.5)).mul(sgn).mul(lock).add((k % 2) * 0.5);
-    const Lo = op.mul(L);
+    // each petal its own turn round the ring: arrives in order, leaves last-in first-out, lit up out of dark
+    const idf = an.div(TAU).mul(N).add(rot).floor().div(N.max(1)).fract();
+    const opi = op.mul(1.8).sub(idf.mul(0.8)).clamp(0, 1);
+    const dim = smoothstep(0, 0.7, opi);
+    const Lo = opi.mul(L);
     const pt = petals(rk, an, N, r0, Lo, rot);
     const lc = k % 2 ? B : A;
     const edge = stroke(pt.ex, 0.22).mul(smoothstep(0.04, 0.16, pt.t));
@@ -255,11 +270,17 @@ export function material(ctx) {
       const vein = stroke(pt.ap.mul(pt.arc).abs(), 0.07).mul(step(0.08, pt.t)).mul(step(pt.t, 0.8));
       det = lc.mul(cont.mul(0.55).add(vein.mul(0.7)));
     } else {
-      const bd = vec2(pt.ap.mul(pt.arc), pt.t.mul(5).fract().sub(0.5).mul(Lo).div(5)).length();
-      const rb = inv(pt.t.mul(0.5)).mul(0.55);
-      det = mix(H, W, pt.t.mul(5).floor().mod(2).mul(0.5)).mul(inv(smoothstep(rb.sub(0.08), rb, bd))).mul(step(pt.t, 0.92));
+      // round beads in concentric rows: a circular SDF per cell, rows on circles round the bindu, every other row
+      // shifted half a cell, each row's cells measured on its own centre radius so dots stay round, not squares
+      const S = 1.5, row = rk.sub(r0).div(S).floor(), rc = row.add(0.5).mul(S).add(r0);
+      const cx = pt.ap.mul(rc.mul(TAU).div(N.max(1))).div(S).add(0.5).add(row.mod(2).mul(0.5)).fract().sub(0.5);
+      const cy = rk.sub(r0).div(S).fract().sub(0.5);
+      const bd = vec2(cx, cy).length();
+      const rb = inv(pt.t.clamp(0, 1).mul(0.45)).mul(0.3);
+      const fits = step(rb.mul(S).add(0.2), pt.ex);
+      det = mix(H, W, row.mod(2).mul(0.5)).mul(inv(smoothstep(rb.sub(0.05), rb, bd))).mul(fits).mul(step(pt.t, 0.95));
     }
-    const lit = lc.mul(edge).mul(float(0.85).add(kl.mul(0.8))).add(det);
+    const lit = lc.mul(edge).mul(float(0.85).add(kl.mul(0.8))).add(det).mul(dim);
     const body = mix(vec3(0, 0, 0), lc.mul(0.5).add(det.mul(0.3)), flip);
     const pc = mix(body.add(lit.mul(inv(flip))), vec3(0, 0, 0), edge.mul(flip));
     col = mix(col, pc, pt.inside);
@@ -272,8 +293,8 @@ export function material(ctx) {
   }
   // THE GATE: bindu, then the arch drawing itself up both sides with a nib, its lining beads, the seed-pod crown
   const ar = arch(q);
-  const pB = io(0.0, 0.025, 0.992, 1.0), pA = io(0.02, 0.08, 0.985, 0.998), pLn = io(0.08, 0.12, 0.975, 0.985);
-  const pPod = io(0.58, 0.64, 0.945, 0.958), pDoor = io(0.55, 0.62, 0.95, 0.965), pStar = io(0.65, 0.69, 0.945, 0.955);
+  const pB = io(0.0, 0.025, 0.99, 1.0), pA = io(0.02, 0.08, 0.97, 0.995), pLn = io(0.08, 0.12, 0.95, 0.975);
+  const pPod = io(0.58, 0.64, 0.82, 0.86), pDoor = io(0.55, 0.62, 0.85, 0.89), pStar = io(0.65, 0.69, 0.81, 0.84);
   const doorIn = step(ar.sd, 0).mul(step(ar.ua, pA.mul(1.02)));
   const door = vec2(0, CY - 1.5);
   const qd = q.sub(door), rd = qd.length();
@@ -296,16 +317,18 @@ export function material(ctx) {
   }
   const ar2 = arch(q2.add(vec2(0, CY)));
   dl = dl.max(stroke(ar2.sd.abs(), 0.35));
-  const pDr = io(0.56, 0.64, 0.95, 0.965);
+  const pDr = io(0.56, 0.64, 0.85, 0.89);
   dc = dc.mul(inv(dl)).add(mix(B, A, 0.4).mul(dl).mul(smoothstep(pDr.mul(7.5), pDr.mul(7.5).sub(0.6), rd)).mul(0.9));
   col = mix(col, dc, doorIn);
   cover = cover.max(doorIn);
   const outl = stroke(ar.sd.abs(), 0.24).mul(maskDraw(pA, ar.ua));
   const anib = nib(pA, ar.ua, 0.03).mul(stroke(ar.sd.abs(), 0.6)).mul(step(pA, 0.99));
   const sides = smoothstep(YL + 0.6, YL + 1.6, q.y);
-  const lin = sides.mul(1).mul(stroke(vec2(ar.sd.sub(1.05), ar.ua.mul(16).fract().sub(0.5).mul((APEX - YL) / 16 * 1.6)).length(), 0.36).mul(maskBeads(pLn, ar.ua)));
-  const pod = stroke(vec2(ar.sd.sub(2.4), ar.ua.mul(11).add(0.5).fract().sub(0.5).mul((APEX - YL) / 11 * 1.8)).length(), 0.62).mul(maskBeads(pPod, ar.ua)).mul(sides);
-  const podCore = stroke(vec2(ar.sd.sub(2.4), ar.ua.mul(11).add(0.5).fract().sub(0.5).mul((APEX - YL) / 11 * 1.8)).length(), 0.25).mul(pod);
+  const cl = archCell(q, 1.05, 16), cp = archCell(q, 2.4, 11);
+  const lin = sides.mul(stroke(vec2(ar.sd.sub(1.05), cl.along).length(), 0.3).mul(maskBeads(pLn, cl.ua)));
+  const podD = vec2(ar.sd.sub(2.4), cp.along).length();
+  const pod = stroke(podD, 0.55).mul(maskBeads(pPod, cp.ua)).mul(sides);
+  const podCore = stroke(podD, 0.22).mul(pod);
   const bindu = stroke(q.sub(vec2(0, CY)).length(), pB.mul(0.9)).mul(step(0.01, pB)).mul(inv(pA.mul(step(0.99, pA))));
   const bs = q.sub(vec2(0, APEX + 2.4)).abs();
   const star = inv(smoothstep(0.85, 1, bs.x.div(1.4).sqrt().add(bs.y.div(2.2).sqrt()))).mul(step(0.01, pStar)).mul(step(bs.y, pStar.mul(2.3)));
