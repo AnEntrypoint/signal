@@ -1,28 +1,10 @@
-// THE WORLD TURTLE (vision being): seen from above, mirrored, swimming up the frame. Its shell is seven hexagon
-// scutes, each holding a different small mandala (eye, sun, wave, spiral, tree, star, moon); four flippers of bead
-// rows paddle slowly; a head on an op-art striped neck. At the culmination the scutes shade as cubes that flip
-// between popping out and caving in on the bar (tumbling blocks), the mandala light turning to black ink on them.
-// ONE SCENE, FIVE LAYERS, one script (params.layer), each on its OWN motion:
-//   "world" z -30  SCROLLS    the sea: long wave lines bending round the turtle (flow round a body), travelling
-//                             ripples down them, an op-art swell near the shell, bubbles on the wake lines,
-//                             two mirrored schools of two-stroke fish circling. Opaque black; it grows from the
-//                             turtle outward as fingers combed along the stream lines.
-//   "ring"  z -12  TURNS      the turtle calendar: 28 day-beads one way, 13 moon-scutes (hexagons) the other (additive)
-//   "being" z   0  BREATHES   the turtle (cutout, occluding black body, neon on it)
-//   "veil"  z +10  DRIFTS     hatchlings: little black turtles drifting up the sides
-//   "fore"  z +22  UNDULATES  near bubbles riding a travelling swell up the sides
-//   the SEA EELS are real 3D tubes winding in depth: scripts/vision-world-turtle-worm-geo.js / -worm-mat.js
-// THE SCORE (u): 0 black shell grows from the centre, rim drawn from the head round both sides / .1 scute outlines one by
-// one / .13 striped neck and head / .17 flippers bead row by row / .25 the sea combs outward / .35 op-art swell /
-// .4 ring lines, .45 day beads, .5 moon scutes counter-turning / .5 mandalas draw round each scute, bubbles /
-// .55 fish schools, eyes / .6 rim beads / .6 eels, .62 hatchlings, .66 near bubbles / .7 cube shading creeps in /
-// .85 tumbling blocks flip on the bar, one eel dark / .93.. everything leaves last-in first-out.
-// Seed channels 500..515: 0 hue family, 1 hot accent, 2 mandala order, 3 sea scroll sense, 4 ring sense, 5 bead count,
-// 6 fish count, 7 eel count, 8 eel skin order, 9 illusion variant, 10 which eel dark, 11 wave spacing,
-// 12 hatchling count, 13 fore drift sense, 14 paddle phase, 15 op-art swell width.
+// THE WORLD TURTLE: seen from above, seven hex scutes each holding a mandala, bead flippers, striped neck.
+// Layers (params.layer): world z-30 sea stream lines (scrolls) / ring z-12 turtle calendar (turns) / being z0 the turtle /
+// veil z+10 hatchlings (drift) / fore z+22 near bubbles. Entrance and exit: HEX SHELL PLATES (seeded order, ch 517/518).
+// Pacing: shell alone u0-.15, whole by .40, late detail .6-.8, LIFO exit .8-1 (fore first); the sea stays lit to the seam.
 import { MeshBasicNodeMaterial, AdditiveBlending, DoubleSide } from "builtin/three";
-import { positionGeometry, float, vec2, vec3, smoothstep, step, mix, atan2 as atan2raw, fwidth, select } from "builtin/tsl";
-import { tripClock, visionShown, visionU, climb, maskDraw, maskBeads, maskIris, maskClock, nib, stripes } from "./lib/trip.js";
+import { positionGeometry, float, vec2, vec3, smoothstep as ssRaw, step, mix, atan2 as atan2raw, fwidth, select } from "builtin/tsl";
+import { tripClock, visionShown, visionU, climb, maskDraw, maskBeads, maskIris, maskClock, inv, is } from "./lib/trip.js";
 
 const TAU = 6.28318, PI = 3.14159;
 const DEPTH = { world: 104, ring: 86, being: 74, veil: 64, fore: 52 };
@@ -31,15 +13,23 @@ const SCUTE = [[0, 0], [7.8, 0], [-7.8, 0], [3.9, 6.755], [-3.9, 6.755], [3.9, -
 const SY = -1;                                                      // shell centre y
 // atan2 is undefined at (0, 0) on some GPUs (NaN through every mask that reads it): never ask it there
 const atan2 = (y, x) => atan2raw(y, x.add(1e-5));
-const is = (v, i) => step(v.sub(i).abs(), 0.5);
-const inv = (x) => float(1).sub(x);
+// smoothstep edges always low->high on the GPU: numeric reversed edges flip into inv()
+const smoothstep = (a, b, x) => (typeof a === "number" && typeof b === "number" && a > b) ? inv(ssRaw(b, a, x)) : ssRaw(a, b, x);
+const stripes = (x, n, w = 0.02) => { const f = float(x).mul(n).fract(); return ssRaw(0.5 - w, 0.5, f).mul(inv(ssRaw(1 - w, 1, f))); };
+const nib = (p, u, w = 0.02) => inv(ssRaw(0, w, float(u).sub(p).abs()));
+const lerpPts = (pts) => (x) => { if (x <= pts[0][0]) return pts[0][1]; for (let i = 1; i < pts.length; i++) if (x <= pts[i][0]) { const [a, A] = pts[i - 1], [b, B] = pts[i]; return A + (B - A) * (x - a) / (b - a); } return pts[pts.length - 1][1]; };
+const R_IN = lerpPts([[0, 0], [0.1, 0.15], [0.3, 0.4], [0.6, 0.62], [0.7, 0.74], [0.85, 0.79], [1, 0.8]]);
+const E_OUT = (x) => x >= 0.93 ? 0.8 + (x - 0.93) / 0.07 * 0.2 : x * 0.8 / 0.93;
+// hex shell plates: nearest of two offset lattices, cell id + local, normalised hex distance 0 centre .. 1 edge
+const hexCell = (q) => { const r = vec2(1, 1.732), a = q.div(r).fract().sub(0.5).mul(r), b = q.sub(r.mul(0.5)).div(r).fract().sub(0.5).mul(r); const l = select(a.dot(a).lessThan(b.dot(b)), a, b); return { l, id: q.sub(l) }; };
 const hexd = (q) => q.x.abs().max(q.x.abs().mul(0.5).add(q.y.abs().mul(0.866)));   // pointy-top hexagon, inradius metric
 
 export function material(ctx) {
   const layer = ctx.params.layer ?? "being";
   const c = tripClock(ctx);
   const u = visionU(ctx, c);
-  const io = (a, b, x, y) => smoothstep(a, b, u).mul(inv(smoothstep(x, y, u)));
+  const low = ctx.quality === "low";
+  const io = layer === "world" ? (a, b) => ssRaw(R_IN(a), R_IN(b) + 0.001, u) : (a, b, x, y) => ssRaw(R_IN(a), R_IN(b) + 0.001, u).mul(inv(ssRaw(E_OUT(x), E_OUT(y) + 0.001, u)));
   const rn = (n) => c.rnd(500 + n), pk = (n, k) => c.pick(500 + n, k);
   const sense = (n) => step(0.5, rn(n)).mul(2).sub(1);
   const fam = pk(0, 3), hot = pk(1, 3);
@@ -53,10 +43,22 @@ export function material(ctx) {
   const P = positionGeometry.xy;
   const live = visionShown(ctx, c, 0);
   const kickOn = step(0.001, c.kick);
-  const cul = io(0.84, 0.9, 0.93, 0.96).mul(climb(c).mul(0.4).add(0.6));
+  const cul = ssRaw(0.7, 0.8, u).mul(inv(ssRaw(0.86, 0.92, u))).mul(climb(c).mul(0.4).add(0.6));
+  const G = { world: [9, 0, 0.45, -1, 0], ring: [3, 0.45, 0.6, 0.86, 0.93], being: [2.2, 0, 0.38, 0.89, 0.985], veil: [5, 0.6, 0.72, 0.83, 0.89], fore: [6, 0.66, 0.78, 0.8, 0.86] }[layer] ?? [2.2, 0, 0.38, 0.89, 0.985];
+  const uEnd = inv(float(0.4).div(ctx.param("vw1", -1).sub(ctx.param("vw0", -1)).max(1))).min(0.999);
+  const pIn = ssRaw(G[1], G[2], u), pOut = G[3] < 0 ? ssRaw(uEnd, float(1.0005), u) : ssRaw(G[3], G[4], u);
+  const hc = hexCell(P.div(G[0])), plD = hexd(hc.l).mul(2), cid = hc.id.mul(G[0]);
+  const hsh = (o) => hc.id.dot(vec2(12.9898 + o, 78.233)).sin().mul(43758.5453).fract();
+  const plR = cid.length().div(layer === "world" ? 150 : 34).clamp(0, 1), ang = atan2(cid.x.abs(), cid.y).div(PI);
+  const plOrder = (v, o) => plR.mul(is(v, 0)).add(hsh(o).mul(is(v, 1))).add(plA.mul(0.6).add(plR.mul(0.4)).mul(is(v, 2)));
+  const kIn = plOrder(pk(17, 3), 0), kOut = inv(plOrder(pk(18, 3), 7));
+  const feather = layer === "world" ? inv(ssRaw(0.8, 0.97, vec2(P.x.div(152), P.y.div(86)).length())) : float(1);
+  const tPl = pIn.mul(1.6).sub(kIn.mul(0.6)).min(inv(pOut).mul(1.6).sub(kOut.mul(0.6))).clamp(0, 1).mul(feather);
+  const plate = step(plD, tPl.mul(1.05).sub(0.01));
+  const plateRim = plate.mul(ssRaw(tPl.sub(0.12), tPl, plD)).mul(step(tPl, 0.99));
   const m = new MeshBasicNodeMaterial();
   m.side = DoubleSide;
-  const cutout = (col, cover) => { m.colorNode = col; m.opacityNode = cover.mul(live).clamp(0, 1); m.alphaTest = 0.5; return m; };
+  const cutout = (col, cover) => { m.colorNode = col.add(mix(B, W, 0.4).mul(plateRim).mul(0.8)); m.opacityNode = cover.mul(plate).mul(live).clamp(0, 1); m.alphaTest = 0.5; return m; };
 
   // ------------------------------------------------------------------ WORLD: the sea (scrolls)
   if (layer === "world") {
@@ -71,16 +73,16 @@ export function material(ctx) {
     const out = step(Rc + 1, r);
     // coverage: the sea combs outward from the turtle, alternate stream lines reaching further
     const de = vec2(P.x.div(1.6), P.y).length();
-    const grow = io(0.25, 0.45, 0.955, 0.995), Rg = grow.mul(150);
+    const grow = io(0.25, 0.45), Rg = grow.mul(150);
     const finger = stripes(psi.div(sp.mul(2)), 1, 0.05).mul(22);
-    const cover = step(de, Rg.add(finger)).mul(step(0.004, grow));
+    const comb = step(de, Rg.add(finger)).mul(step(0.004, grow));
     const front = c.beat.fract().mul(130);
     const kl = float(1).sub(smoothstep(0, 6, r.sub(front).abs())).mul(kickOn).mul(float(1).sub(smoothstep(60, 130, front)));
     const f = psw.div(sp).add(0.5).fract().sub(0.5).abs().mul(sp);
     const lines = stroke(f.div(fwidth(psw).max(0.02).mul(1.2).div(aa)), 0.22).mul(out);
     // op-art swell: the bands near the shell widen into black/white stripes
     const pOp = io(0.35, 0.5, 0.95, 0.97);
-    const zone = smoothstep(rn(15).mul(30).add(55), Rc + 4, r).mul(pOp);
+    const zone = inv(ssRaw(float(Rc + 4), rn(15).mul(30).add(55), r)).mul(pOp);
     const band = step(psw.div(sp).fract(), zone.mul(0.5)).mul(out);
     const lk = psw.div(sp).floor().mod(3);
     let col = A.mul(is(lk, 0)).add(B.mul(is(lk, 1))).add(H2.mul(0.8).mul(is(lk, 2))).mul(lines).mul(float(0.45).add(kl.mul(0.8)));
@@ -100,7 +102,7 @@ export function material(ctx) {
     const ax = P.x.abs(), th = atan2(P.y, ax);
     const N = pk(6, 3).mul(3).add(8);
     let fish = float(0);
-    [[62, 0.035, 1], [80, 0.024, -1]].forEach(([R, w, s], j) => {
+    [[62, 0.035, 1], [80, 0.024, -1]].slice(0, low ? 1 : 2).forEach(([R, w, s], j) => {
       const thm = th.sub(c.real.mul(w * s)).mul(sense(13));
       const k = thm.div(TAU).mul(N).fract().sub(0.5), kIdx = thm.div(TAU).mul(N).floor();
       const xt = k.mul(TAU).div(N).mul(R).mul(s);
@@ -113,7 +115,7 @@ export function material(ctx) {
       fish = fish.max(g.mul(arc).mul(maskBeads(pF, order)));
     });
     col = mix(col, mix(W, H2, 0.75), fish);
-    return cutout(col, cover);
+    return cutout(col.mul(mix(float(0.3), float(1), comb)), float(1));
   }
 
   // ------------------------------------------------------------------ RING: the turtle calendar (turns, soft)
@@ -144,7 +146,8 @@ export function material(ctx) {
     const moon = hx.mul(maskBeads(pM, km.div(13).fract()));
     const dash = stroke(r.sub(37).abs(), 0.06).mul(step(a.mul(40 / TAU).fract(), 0.5)).mul(pM);
     m.colorNode = A.mul(l).mul(lit).add(mix(B, H, step(kd.mod(7), 0.5)).mul(bead).mul(lit.add(kl.mul(0.8)))).add(mix(H2, W, 0.2).mul(moon).mul(lit)).add(H2.mul(dash).mul(0.35));
-    m.opacityNode = live.clamp(0, 1);
+    m.colorNode = m.colorNode.add(mix(B, W, 0.4).mul(plateRim).mul(0.5));
+    m.opacityNode = live.mul(plate).clamp(0, 1);
     m.transparent = true;
     m.blending = AdditiveBlending;
     m.depthWrite = false;
@@ -157,7 +160,7 @@ export function material(ctx) {
     const ax = P.x.abs(), pin = io(0.62, 0.8, 0.93, 0.95);
     const nH = pk(12, 3).add(3);
     let col = vec3(0), cover = float(0);
-    for (let j = 0; j < 5; j++) {
+    for (let j = 0; j < (low ? 3 : 5); j++) {
       const sz = 1.7 + (j % 3) * 0.35;
       const yj = c.real.mul(0.016 * (1 + j * 0.15)).add(j * 0.29 + 0.1).fract().mul(96).sub(48);
       const xj = c.real.mul(0.3).add(j * 1.3).sin().mul(3).add(30 + j * 6.5);
@@ -185,7 +188,7 @@ export function material(ctx) {
     const aa = fwidth(P.x).mul(1.2).max(0.01);
     const ax = P.x.abs(), pin = io(0.66, 0.82, 0.93, 0.945);
     let col = vec3(0), cover = float(0);
-    for (let j = 0; j < 6; j++) {
+    for (let j = 0; j < (low ? 4 : 6); j++) {
       const rad = 1.1 + (j % 3) * 0.6;
       const yj = c.real.mul(0.022 * (1 + j * 0.2)).add(j * 0.37).fract().mul(96).sub(48);
       const xj = yj.mul(0.09).sub(c.real.mul(0.8).mul(sense(13))).add(j * 1.7).sin().mul(5).add(44 + (j % 3) * 5);
@@ -302,7 +305,7 @@ export function material(ctx) {
   const lumI = is(face, 0).mul(0.5).add(is(face, 1)).add(is(face, 2).mul(0.18));
   const lum = mix(lumO, lumI, flip);
   const fe = fsel.fract(), edgeY = sk(fe.min(inv(fe)).mul(TAU / 3).mul(ru), 0.035).mul(step(hexd(qu), 0.9));
-  const shade = io(0.7, 0.86, 0.93, 0.945).mul(cul.mul(0.75).add(0.25)).mul(step(hexd(qu), 0.9));
+  const shade = ssRaw(0.62, 0.78, u).mul(inv(ssRaw(0.84, 0.9, u))).mul(cul.mul(0.75).add(0.25)).mul(step(hexd(qu), 0.9));
   const faceCol = mix(A, mix(B, W, 0.55), lum.mul(lum)).mul(lum).mul(shade).mul(1.1);
   const km3 = kind.mod(3), inkC = H.mul(is(km3, 0)).add(H2.mul(is(km3, 1))).add(mix(W, B, 0.25).mul(is(km3, 2)));
   const ink = mix(inkC.mul(0.95), vec3(0), cul);
