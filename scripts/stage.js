@@ -50,10 +50,9 @@ function stageBeing(ctx, vs, seed) {
     for (const o of ctx.query({ tags: ['vision-' + b.id] })) {
       const h = ctx.getObject(o.id); if (!h) continue
       const z = homeZ(o.id)
-      if (ctx.world.state.visionTest?.being === b.id && !here) continue
+      if (ctx.world.state.visionTest?.being === b.id) continue
       if (here) h.feetPosition = { attach: 'camera', x: 0, y: 0, depth: DEPTH - z }
       else if (h.feetPosition?.attach || h.visible !== false) h.feetPosition = { x: 0, y: b.centre.y, z }
-      if (ctx.world.state.visionTest?.being === b.id) continue
       h.visible = !!here
     }
   }
