@@ -1,6 +1,6 @@
 // The director: starts the track on the shared clock and hands every trip shader the roll's start.
 // Nothing here moves per tick: the motion lives in the shaders (scripts/lib/trip.js).
-import { SCORE, cineTime } from './lib/cine.js'
+import { SCORE, cineTime, cameraAt } from './lib/cine.js'
 import { BEINGS, dealVisions } from './lib/visions.js'
 import { KICK_RUNS } from './lib/trip.js'
 import { dealDeck } from './lib/deck.js'
@@ -51,8 +51,8 @@ function stageBeing(ctx, vs, seed) {
       const h = ctx.getObject(o.id); if (!h) continue
       const z = homeZ(o.id)
       if (ctx.world.state.visionTest?.being === b.id) continue
-      if (here) h.feetPosition = { attach: 'camera', x: 0, y: 0, depth: DEPTH - z }
-      else if (h.feetPosition?.attach || h.visible !== false) h.feetPosition = { x: 0, y: b.centre.y, z }
+      if (here) { const f = ctx.self.session.fit ?? 1; h.feetPosition = { attach: 'camera', x: 0, y: 0, depth: (DEPTH - z) * f }; h.scale = f }
+      else if (h.feetPosition?.attach || h.visible !== false) { h.feetPosition = { x: 0, y: b.centre.y, z }; h.scale = 1 }
       h.visible = !!here
     }
   }
@@ -95,6 +95,15 @@ export function update(ctx, dt) {
   // the trip always plays: no roll standing (or the last one over) -> deal the next, 2 s out so every machine starts together
   if (t == null && (!c || ctx.now() - c.start > SCORE.duration * 1000)) {
     ctx.world.state.cine = { start: ctx.now() + 2000, by: 'stage', seed: Math.floor(ctx.random() * 9973) + 1 }
+  }
+  // the being's whole scene stands in front of what the camera looks at: when the shot's subject comes nearer than
+  // the being's far layer, every layer comes in by the same factor and grows by it, so it reads the same size on
+  // screen and nothing on the stage (the central eye) ever slices through it
+  if (t != null && vs[0] >= 0 && t >= vs[0] - 1) {
+    const cam = cameraAt(t, c.seed ?? 0)
+    const d = Math.hypot(cam.aim.x - cam.eye.x, cam.aim.y - cam.eye.y, cam.aim.z - cam.eye.z)
+    const fit = Math.round(Math.max(0.15, Math.min(1, (0.9 * d) / (DEPTH + 30))) * 100) / 100
+    if (fit !== ctx.self.session.fit) { ctx.self.session.fit = fit; stageBeing(ctx, vs, c.seed ?? 0) }
   }
   ctx.sleep(0.25)
 }
