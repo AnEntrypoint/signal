@@ -73,11 +73,11 @@ export function material(ctx) {
   const lin = (a, b) => u.sub(a).div(b - a).clamp(0, 1);
   const rn = (n) => c.rnd(320 + n), pk = (n, k) => c.pick(320 + n, k);
   const sense = (n) => step(0.5, rn(n)).mul(2).sub(1);
-  const fam = pk(0, 3), hot = pk(16, 3);
+  const fam = pk(0, 5), hot = pk(16, 3);
   const blue = vec3(0.05, 0.12, 1.0), violet = vec3(0.45, 0.05, 1.0), pink = vec3(1.0, 0.05, 0.6), orange = vec3(1.0, 0.38, 0.02);
   const yellow = vec3(1.0, 0.85, 0.05), green = vec3(0.1, 1.0, 0.15), W = vec3(1, 1, 1);
-  const A = green.mul(is(fam, 0)).add(violet.mul(is(fam, 1))).add(blue.mul(is(fam, 2)));    // wood
-  const B = yellow.mul(is(fam, 0)).add(pink.mul(is(fam, 1))).add(orange.mul(is(fam, 2)));   // fruit
+  const A = green.mul(is(fam, 0)).add(violet.mul(is(fam, 1))).add(blue.mul(is(fam, 2))).add(orange.mul(is(fam, 3))).add(pink.mul(is(fam, 4)));    // wood
+  const B = yellow.mul(is(fam, 0)).add(pink.mul(is(fam, 1))).add(orange.mul(is(fam, 2))).add(blue.mul(is(fam, 3))).add(green.mul(is(fam, 4)));   // fruit
   const H = pink.mul(is(hot, 0)).add(orange.mul(is(hot, 1))).add(yellow.mul(is(hot, 2)));   // hot accent
   const P = positionGeometry.xy;
   const live = visionShown(ctx, c, 0);
