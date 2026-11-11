@@ -68,7 +68,7 @@ export function material(ctx) {
     // 3 mirrored pairs of big soft feathers falling in from above the frame for the culmination, each at its own
     // speed, tilt and sway; they shed length at the exit
     const span = vw1.sub(vw0).max(0.01), ts = u.mul(span);
-    let glow = float(0);
+    let glow = float(0), tint = vec3(0);
     for (let j = 0; j < 3; j++) {
       const x0 = c.rnd(110 + j).mul(9).add(11 + j * 10);
       const sp = c.rnd(113 + j).mul(2.5).add(4.5), start = span.mul(0.5 + j * 0.07);
@@ -82,9 +82,13 @@ export function material(ctx) {
       const body = smoothstep(hw, hw.sub(0.7), lx.abs()).mul(step(0, t)).mul(step(t, 1));
       const rim = smoothstep(0.0, 0.5, lx.abs()).mul(0.75).add(0.25);                     // dark quill, brighter vane
       const barbs = step(t.mul(9).sub(lx.abs().mul(0.5)).fract(), 0.6).mul(0.5).add(0.5);
-      glow = glow.add(body.mul(rim).mul(barbs).mul(float(0.3).add(cul.mul(0.2))));
+      // neon line-art, not a dim fill: bright vane edge and barbs, the colour running root (A) to tip (B)
+      const edge = smoothstep(0.35, 0.0, lx.abs().sub(hw.sub(0.25)).abs()).mul(step(0, t)).mul(step(t, 1));
+      const k = body.mul(barbs).mul(rim).mul(0.35).add(edge).mul(float(0.8).add(cul.mul(0.6)));
+      tint = tint.add(mix(A, B, t.clamp(0, 1)).mul(k));
+      glow = glow.add(k);
     }
-    m.colorNode = mix(B, W, 0.3).mul(glow);
+    m.colorNode = tint;
     m.opacityNode = visionShown(ctx, c, rr.div(30));
     m.transparent = true; m.blending = AdditiveBlending; m.depthWrite = false;
     return m;
