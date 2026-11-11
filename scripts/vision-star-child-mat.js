@@ -172,7 +172,7 @@ export function material(ctx) {
     let col = C1.mul(circ).mul(lit).add(mix(C2, W, 0.4).mul(tick).mul(lit)).add(C2.mul(sq).mul(lit.mul(0.7)));
     // the mobile: a thread from the top, three tilted orbits round it, planets turning opposite ways
     const MY = 36, K = 0.27, np = pk(12, 2).add(2);
-    const thread = soft(p.x.abs(), 0.05).mul(step(MY, p.y)).mul(maskDraw(smoothstep(0.47, 0.50, u).mul(xo), p.y.sub(MY).div(30).oneMinus()));
+    const thread = soft(p.x.abs(), 0.05).mul(step(MY, p.y)).mul(maskDraw(smoothstep(0.47, 0.50, u).mul(xo), inv(p.y.sub(MY).div(30))));
     col = col.add(mix(C2, W, 0.3).mul(0.5).mul(thread));
     for (let o = 0; o < 3; o++) {
       const Ro = 15 + o * 11, q = p.sub(vec2(0, MY - o * 1.5));
