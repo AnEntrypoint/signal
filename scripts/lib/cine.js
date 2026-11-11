@@ -52,7 +52,9 @@ function shotMove(c, t, deal, seed) {
   const gi = deal.findIndex((g) => t >= g.a && t < g.b)
   if (gi < 0) return c
   const g = deal[gi], u = (t - g.a) / (g.b - g.a), e = u * u * (3 - 2 * u)
-  const kind = Math.floor(rollRnd(seed, 30 + gi) * 5)
+  // inside the tunnel, the pupil and the chamber the eye must stay on the axis: only push, pull or as written
+  const inside = g.name === 'flight' || g.name === 'deep' || g.name === 'hex'
+  const kind = inside ? [0, 2, 3][Math.floor(rollRnd(seed, 30 + gi) * 3)] : Math.floor(rollRnd(seed, 30 + gi) * 5)
   const d = { x: c.eye.x - c.aim.x, y: c.eye.y - c.aim.y, z: c.eye.z - c.aim.z }
   let eye = c.eye, fov = c.fov
   if (kind === 1) {
