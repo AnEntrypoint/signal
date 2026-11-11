@@ -1,67 +1,71 @@
 {
   "schemaVersion": 1,
-  "basedOnSpecVersion": 8,
-  "updatedAt": "2026-11-11T09:42:01.683Z",
-  "summary": "Signal Stage is a multiplayer 3D motion-graphics stage: press P or ROLL to send every viewer through one synchronized camera shot list with kinetic titles and music. A player behavior starts/cuts the shared roll; cameras, the HUD and one placed stage director consume its shared clock, while the director animates tagged scene shapes and drives the soundtrack.",
+  "basedOnSpecVersion": 19,
+  "updatedAt": "2026-11-11T09:56:53.022Z",
+  "summary": "Signal Stage is a multiplayer 3D motion-graphics stage whose shared 3:18 track and camera flight start or cut from P/ROLL. The active structure is a single place with a small set of blueprint placeholder objects, a shared score/shot clock consumed by camera, HUD and director, and ordinary player movement between rolls.",
   "scriptPaths": [],
   "places": [
-    "places/main/config.yaml (default place, no title) - 3D stage with terrain off, dark fog/sky and spawn at (0, 0.1, 16); stage objects are in cells x0z0 and x0z-1."
+    "places/main/config.yaml (main place) - 3D, terrain off, black linear fog, default look, spawn at (0, 0.1, 16), gravity -24Y; stage floor and blueprint field/eye objects are in x0z0.",
+    "places/main/cells/x0z0.scene - placed director, field, eye and static stage-floor; field and eye are generic blueprint boxes, director runs scripts/stage.js.",
+    "places/main/cells/x0z-1.scene - placed tunnel blueprint box centered at (0, 9, -186), 300 m long.",
+    "places/main/cells/x0z-3.scene - placed chamber blueprint box at (0, -9, -362), 50×48×50 m."
   ],
   "roots": [
-    "world.config.yaml - world wiring: multiplayer, main place, player/camera templates, arrival hook, lighting, HUD/nametag and cine/jump/movement inputs.",
-    "places/main/cells/x0z0.scene - the 76-object stage: director, title, lights, tagged motion-graphics shapes and effects.",
-    "places/main/cells/x0z-1.scene - three additional placed stage objects (gz-10, gz-8, gz-9).",
-    "templates/player.js#player - character body with humanoid locomotion and player movement/input behaviors.",
-    "templates/camera.js#camera - custom look-orientation camera; scripts/camera.js switches to the shared cinematic view during a roll.",
-    "scripts/ui.js - viewer HUD for starting/cutting a roll and showing its letterbox, word and progress."
+    "world.config.yaml - multiplayer world entry: main place, player/camera templates, P/jump/movement inputs, arrival, lighting, HUD and nametag.",
+    "templates/player.js#player - character root composing humanoid locomotion and player movement/input.",
+    "templates/camera.js#camera - custom first-person look camera with scripts/camera.js cinematic override.",
+    "places/main/cells/x0z0.scene#director - all-audience director behavior; controls shared track and trip start parameters.",
+    "scripts/ui.js - per-viewer idle ROLL or rolling progress/cut HUD."
   ],
   "shared": [
-    "scripts/lib/cine.js - common cinematic clock, shot/camera/title lookup and beat envelope used by camera, stage and HUD.",
-    "scripts/lib/data/cinematic.yml - editable duration, bpm, music, idle title, camera/word keys and title schedule for the whole roll.",
-    "scripts/lighting.js - world-configured lighting function for lit surfaces; scripts/look-default.js is the place's screen-look pass.",
-    "scripts/lib/data/player.yml and scripts/lib/data/camera.yml - movement tuning and first-person eye-height data for player/camera behavior."
+    "scripts/lib/cine.js - CPU clock, score/shot access, section lookup and camera interpolation used by player, camera, director and HUD.",
+    "scripts/lib/data/score.yml and scripts/lib/data/shots.yml - shared track timing/sections/layout and camera keyframes consumed via cine.js.",
+    "scripts/lib/trip.js - shader-node clock/palette helpers and score data; no active scripted-material, sky or look consumer is present in the current tree.",
+    "scripts/lighting.js and scripts/look-default.js - world lighting function and main-place screen look.",
+    "scripts/lib/data/player.yml and scripts/lib/data/camera.yml - movement tuning and first-person eye height."
   ],
   "notableExports": [
-    "scripts/player.js - exports onInput, update.",
-    "scripts/camera.js - exports finiteNumber, update; scripts/stage.js - exports update.",
-    "scripts/lib/cine.js - exports CINE, cineTime, shotAt, cameraAt, titleAt, beatEnv.",
+    "scripts/player.js - exports onInput, update; scripts/camera.js - exports finiteNumber, update.",
+    "scripts/stage.js - exports update; scripts/lib/cine.js - exports SCORE, SHOTS, CINE, cineTime, sectionAt, cameraAt, beatEnv.",
+    "scripts/lib/trip.js - exports SCORE, SEC, BPS, tripClock, win, pal, stripes, HUE.",
     "scripts/ui.js - exports default; scripts/arrival.js - exports onArrive, onLeave; ui/nametag.js - exports default.",
     "scripts/humanoid-locomotion.js - exports sit, onInput, update; sim.js - exports cadence, tick.",
     "scripts/lighting.js - exports lighting; scripts/look-default.js - exports look."
   ],
   "ownership": [
-    "scripts/player.js - handles player movement and writes world.state.cine on cine input (start timestamp and initiator, or null to cut).",
-    "scripts/stage.js on the placed director - owns director session rate, its state.track/audio playback, and title.state.line; writes motion transforms for tagged stage objects.",
-    "scripts/camera.js / templates/camera.js - camera-local rolling session and look orientation; camera reads world.state.cine for the shared shot, then returns control to look input.",
-    "scripts/humanoid-locomotion.js - avatar sitting, turning and movement-driven animation; local gait scratch is in its namespaced session entry.",
-    "places/main/config.yaml - place atmosphere, spawn, gravity and terrain mode; world.config.yaml - world-level inputs and service/template wiring.",
-    "scripts/ui.js and ui/nametag.js - presentation only: per-viewer cinematic HUD and player tags, not shared cinematic state."
+    "scripts/player.js - owns player movement intent in its namespaced local session and writes world.state.cine = {start, by} or null on cine input.",
+    "scripts/stage.js on #director - owns director session key/count and state.track/audio; writes t0/on to materials tagged trip and to place look/sky params.",
+    "scripts/camera.js / templates/camera.js - owns camera-local rolling session and camera pose/FOV; follows shared shot then returns to look orientation.",
+    "scripts/humanoid-locomotion.js - owns avatar locomotion/sit animation and its local gait scratch; scripts/player.js owns movement velocity and input intent.",
+    "places/main/config.yaml - owns place atmosphere, spawn, gravity and terrain mode; world.config.yaml owns world services, inputs and templates.",
+    "scripts/ui.js and ui/nametag.js - viewer-local presentation only; neither owns shared cinematic state."
   ],
   "flows": [
-    "world.config.yaml cine action (P) → scripts/player.js onInput → world.state.cine = {start, by} or null; start is scheduled 300 ms ahead for room-wide synchronization.",
-    "world.state.cine + scripts/lib/data/cinematic.yml → scripts/lib/cine.js cineTime/cameraAt → each scripts/camera.js update flies its viewer through the same shot list, then restores look control.",
-    "world.state.cine → scripts/ui.js render → idle ROLL button or rolling letterbox, current shot word, progress and CUT button; both buttons send cine action.",
-    "world.state.cine + cinematic bpm/music → placed director scripts/stage.js → synchronized stage rate/beat motion and non-spatial audio with shared timeAt playhead.",
-    "scripts/stage.js → title object state.line; scripts/stage.js queries tag mg → reads each shape's state.motion and writes its rotation, scale and/or position.",
-    "world.config.yaml inputs (WASD axes, space jump) → scripts/player.js onInput/update → character feetPosition/velocity; player template also runs humanoid locomotion.",
-    "templates/camera.js orientation.source look → scripts/camera.js update for ordinary first-person look; world.config.yaml arrival behavior → scripts/arrival.js onArrive/onLeave.",
-    "world.config.yaml lighting / ui.render / nametag → scripts/lighting.js, scripts/ui.js / ui/nametag.js for shading, viewer HUD / changed player tags."
+    "world.config.yaml cine action (P) or HUD sendAction('cine') → scripts/player.js onInput → world.state.cine = {start: now + 300 ms, by} or null.",
+    "scripts/lib/data/score.yml + shots.yml → scripts/lib/cine.js cineTime/cameraAt → each scripts/camera.js update flies its viewer through the shared keyframes.",
+    "world.state.cine → scripts/ui.js render → idle ROLL button, or letterbox/progress/section label and CUT button.",
+    "world.state.cine + score music → placed scripts/stage.js director → non-spatial audio with timeAt=c.start; director clears track/audio when the roll ends or is cut.",
+    "scripts/stage.js → objects tagged trip material.params.t0/on and place atmosphere look/sky params; current three blueprint stage objects are not tagged trip, and the active look/sky do not provide trip shader consumers.",
+    "scripts/lib/data/score.yml → scripts/lib/trip.js tripClock/palette helpers; intended shared shader clock, but no current scene material imports it.",
+    "world.config.yaml moveX/moveZ/jump → scripts/player.js onInput/update → character velocity; templates/player.js also runs humanoid locomotion.",
+    "templates/camera.js orientation.source=look → scripts/camera.js ordinary first-person pose; world.config.yaml arrival behavior → scripts/arrival.js.",
+    "world.config.yaml lighting/ui.render/nametag → scripts/lighting.js, scripts/ui.js and ui/nametag.js."
   ],
   "behaviorFamilies": [
-    "The mg-tagged shapes in places/main/cells/x0z0.scene are driven by one scripts/stage.js director; state.motion varies spin, beat pulse/phase and orbit per shape, with base pose/size where specified.",
-    "templates/player.js composes scripts/humanoid-locomotion.js and scripts/player.js on the character; locomotion owns gait/animation while player.js owns movement input and body motion."
+    "templates/player.js composes scripts/humanoid-locomotion.js and scripts/player.js on each character: locomotion owns gait/animation; player behavior owns movement input and body velocity."
   ],
   "probableOrphans": [
-    "scripts/flat-starter-terrain.js - old heightmap generator; main terrain is now explicitly off.",
-    "scripts/flower.js, scripts/grass.js, scripts/grass-look.js and scripts/pebble.js - old meadow decoration geometry/material; no decoration layers are configured in the current place.",
-    "scripts/lib/data/world.yml - terrain baseHeight data with no active terrain consumer apparent in the current tree."
+    "scripts/lib/trip.js - shader clock/palette helpers have no active material, sky or look imports in the current tree.",
+    "scripts/flat-starter-terrain.js - old terrain generator; main terrain is explicitly off.",
+    "scripts/flower.js, scripts/grass.js, scripts/grass-look.js and scripts/pebble.js - meadow decoration geometry/material with no current place consumer.",
+    "scripts/lib/data/world.yml - terrain baseHeight data with no active terrain consumer apparent."
   ],
   "migrationNotes": [
-    "world.state.cine is the shared cinematic clock; keep it as the single start/cut source so each camera, HUD and stage director stays synchronized. The 300 ms lead is intentional.",
-    "scripts/lib/cine.js interprets start and ctx.now() in milliseconds, while cinematic keys/duration and camera motion use seconds; bpm drives beats via seconds * bpm / 60.",
-    "scripts/stage.js expects the placed director and title objects by id, and animates only shapes tagged mg with their motion parameters in scene state.",
-    "The stage audio is non-spatial and is played by the one director from world.state.cine.start; avoid adding per-camera music playback.",
-    "Player movement and world heights use metres; the player template default feetPosition y=2 differs from main place spawn (0, 0.1, 16), with gravity y=-24 and +Y up.",
-    "The camera template's orientation.source is look; cinematic flight temporarily authors yaw/pitch and scripts/camera.js restores look orientation at the end or cut."
+    "world.state.cine remains the shared start/cut source; starts are scheduled 300 ms ahead for room-wide synchronization.",
+    "scripts/lib/cine.js uses milliseconds for c.start/ctx.now() and seconds for score and camera keys; scripts/stage.js converts start to shader time seconds modulo 3600.",
+    "scripts/stage.js requires the placed #director and currently propagates shader params only to objects tagged trip; don't assume blueprint-tagged field/eye/tunnel/chamber boxes are animated geometry.",
+    "The director alone plays the non-spatial music at gain 0.8 using timeAt=c.start; camera/HUD derive time from the same world.state.cine.",
+    "Player/world coordinates are metres, +Y up; main spawn is (0, 0.1, 16), gravity is -24Y, and player template default feetPosition y=2 is separate.",
+    "design.md describes proposed field/eye/tunnel/chamber/serpent shader pieces and scripts/sky.js/look-trip.js, but those files and corresponding trip-tagged scene objects are absent; current place uses look-default and realistic sky."
   ]
 }
