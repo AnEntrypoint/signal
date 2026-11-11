@@ -63,7 +63,8 @@ export function material(ctx) {
     // growth: an arch-shaped doorway opening outward, its frontier a row of lotus petals
     const grow = sm(0.25, 0.47).mul(out(0.955, 0.992)).mul(215);
     const scal = t.div(7).mul(3.14159).sin().abs().mul(3.2);
-    const edge = s.add(scal).sub(grow);
+    // below the arch's spring line the doorway's sides splay like a lotus base, so the dark never reads as a column
+    const edge = s.sub(float(Y0).sub(p.y).max(0).mul(0.85)).add(scal).sub(grow);
     // the doorway's dark never shows the canvas's rectangle: it thins through the dither toward the edges
     const rim = float(1).sub(smoothstep(0.45, 0.9, p.x.abs().div(160).max(p.y.abs().div(90))));
     paint(K, step(edge, 0).mul(dith(rim)));
