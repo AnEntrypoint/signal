@@ -66,7 +66,7 @@ function build(ctx) {
   const m = new MeshBasicNodeMaterial();
   m.side = DoubleSide;
   if (layer === "world") {
-    const cv = pk(23, 3), close = smoothstep(inv(float(6).div(slot)), 1, u);
+    const cv = pk(23, 3), close = smoothstep(inv(float(1.2).div(slot)), 1, u);   // the far world holds whole to the slot's last 1.2 s, then folds shut along its own lobes
     const grow = smoothstep(0, 0.32, u), Rg = grow.mul(grow).mul(84).mul(inv(close.mul(close).mul(0.86)));
     const lobes = float(4).add(is(cv, 1).mul(2)), tw = an.add(close.mul(close).mul(is(cv, 2)).mul(2.4));
     const shape = tw.mul(lobes).cos().abs().mul(float(0.22).add(close.mul(0.25).mul(is(cv, 1)))).add(0.78);
