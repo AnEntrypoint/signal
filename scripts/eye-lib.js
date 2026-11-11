@@ -39,15 +39,18 @@ export function sweep(c, x, y) {
 // one hue family at a time, swapped on the phrase line: A and its neighbour B, one accent. seed/deep/reset/return
 // are one colour only; peak opens the rainbow (at(off) spreads by off only there).
 export function fam(c) {
+  // the BODY (A, B) stays ultramarine..violet in every roll and phrase (pal 0.22..0.36), 60 % of the frame;
+  // the roll and the phrase move only the hot accent, kept in the hot arc green..yellow..red..magenta (pal 0.62..1.17)
   const q = c.phrase.floor().add(8).mod(4);
-  const h = float(0.3).sub(step(1, q).mul(0.08)).add(step(2, q).mul(0.14)).sub(step(3, q).mul(0.22)).add(c.hue).add(c.pick(20, 3).div(3));
+  const h = float(0.31).sub(step(1, q).mul(0.03)).add(step(2, q).mul(0.05)).sub(step(3, q).mul(0.04)).add(c.hue.sub(0.5).mul(0.08));
+  const ha = c.hue.add(c.pick(20, 3).div(3)).add(q.mul(0.29)).fract().mul(0.55).add(0.62);
   const peak = win(c.sec, SEC.peak);
   const mono = win(c.sec, SEC.seed, 0.1).add(win(c.sec, SEC.deep, 0.1)).add(win(c.sec, SEC.reset, 0.1)).add(win(c.sec, SEC.return, 0.1)).min(1);
-  const lift = vec3(0.02, 0.035, 0.0);
-  const at = (off) => pal(h.add(float(off).mul(peak))).add(lift);
+  const at = (off) => pal(h.add(float(off).mul(peak)));
   const A = at(0);
-  return { h, peak, mono, at, A, B: mix(at(0.07), A.mul(0.45), mono), acc: mix(pal(h.add(0.5)), A, mono), acc2: mix(pal(h.add(0.58)), A.mul(0.45), mono),
-    hot: (off) => mix(pal(h.add(0.5).add(float(off).mul(peak))), A, mono) };
+  const B0 = pal(h.sub(0.08).add(float(0.07).mul(peak)));
+  return { h, ha, peak, mono, at, A, B: mix(B0, A.mul(0.45), mono), acc: mix(pal(ha), A, mono), acc2: mix(pal(ha.add(0.08)), A.mul(0.45), mono),
+    hot: (off) => mix(pal(ha.add(float(off).mul(peak))), A, mono) };
 }
 const max3 = (v) => v.x.max(v.y).max(v.z);
 // unlit = graphite that keeps the form; lit = the colour. lit is 0..1.
