@@ -60,6 +60,15 @@ field:
   primitive: {kind: scripted, script: scripts/field-disc.js}
   receiveShadow: false
   tags: [trip, field]
+field-glyphs:
+  castShadow: false
+  feetPosition: {x: 0, y: 0, z: 0}
+  id: field-glyphs
+  material: {kind: scripted, params: {"on": 0, t0: 0}, script: scripts/field-glyphs-mat.js}
+  physics: none
+  primitive: {kind: scripted, script: scripts/field-glyphs.js}
+  receiveShadow: false
+  tags: [trip, field]
 field-orbs:
   castShadow: false
   feetPosition: {x: 0, y: 0, z: 0}
