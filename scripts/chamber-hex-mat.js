@@ -3,7 +3,7 @@
 // each frame late by its radius. Frames step a few degrees per bar, neighbours opposite at two crawl rates;
 // on the fill (93.35 .. 96.35) they fly apart along z and snap back.
 import { MeshBasicNodeMaterial } from "builtin/three";
-import { positionLocal, positionWorld, length, uv, vec3, float, floor, smoothstep, step, sin, cos, select, mix, max } from "builtin/tsl";
+import { positionLocal, positionWorld, length, uv, vec3, float, floor, smoothstep, step, sin, cos, select, mix, max, pow } from "builtin/tsl";
 import { tripClock, shown } from "./lib/trip.js";
 import { near, alive, ripple, breath, family } from "./chamber-fx.js";
 
@@ -15,9 +15,9 @@ export function material(ctx) {
   const dir = id.mod(2).mul(2).sub(1);
   const snap = (x, w) => floor(x).add(smoothstep(0, w, x.fract()));
   const fill = smoothstep(93.35, 93.95, c.sec).mul(step(c.sec, 96.35));
-  const stepRad = select(id.mod(3).lessThan(0.5), 0.1309, 0.0873); // 7.5 or 5 degrees a bar
+  const stepRad = select(id.mod(3).lessThan(0.5), 0.1309, 0.06545); // 7.5 or 3.75 degrees a bar: the D6 alignment recurs
   const ang = dir.mul(stepRad).mul(snap(c.bar, 0.25).sub(60)).mul(frame).add(snap(c.bar, 0.3).mul(-1.0472).mul(glyph));
-  const rad = id.mul(1.225).add(1.2).min(13);
+  const rad = pow(float(3), id.min(8).sub(8).div(4)).mul(11);
   const e = ripple(c, rad);
   const p = positionLocal, ca = cos(ang), sa = sin(ang);
   const sc = breath(c).mul(0.03).add(1).add(e.mul(0.05));
