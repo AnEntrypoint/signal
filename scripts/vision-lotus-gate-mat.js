@@ -62,7 +62,7 @@ function leaf(x, y, len, wid) {
 export function material(ctx) {
   const layer = ctx.params.layer ?? "being";
   const c = tripClock(ctx);
-  const u = visionU(ctx, c);
+  const hold = ctx.param("hold", -1), u = hold.greaterThan(-0.5).select(hold, visionU(ctx, c));
   const io = (a, b, x, y) => smoothstep(a, b, u).mul(inv(smoothstep(x, y, u)));
   const rn = (n) => c.rnd(420 + n), pk = (n, k) => c.pick(420 + n, k);
   const sense = (n) => step(0.5, rn(n)).mul(2).sub(1);

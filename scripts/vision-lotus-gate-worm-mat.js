@@ -13,7 +13,7 @@ import { tripClock, visionShown, visionU, stripes } from "./lib/trip.js";
 const TAU = 6.28318, LEN = 120;
 export function material(ctx) {
   const n = Math.max(1, Math.round(ctx.params.n ?? 1)), sg = n % 2 ? 1 : -1, pair = n > 2 ? 1 : 0;
-  const c = tripClock(ctx), u = visionU(ctx, c), live = visionShown(ctx, c, 0);
+  const c = tripClock(ctx), hold = ctx.param("hold", -1), u = hold.greaterThan(-0.5).select(hold, visionU(ctx, c)), live = visionShown(ctx, c, 0);
   const inv = (x) => float(1).sub(x), is = (v, i) => step(v.sub(i).abs(), 0.5);
   const io = (a, b, x, y) => smoothstep(a, b, u).mul(inv(smoothstep(x, y, u)));
   const rn = (k) => c.rnd(420 + k), pk = (k, m) => c.pick(420 + k, m);
