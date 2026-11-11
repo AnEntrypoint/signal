@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
-  "basedOnSpecVersion": 473,
-  "updatedAt": "2026-11-11T13:00:36.156Z",
-  "summary": "Signal Stage is a walkable 3D motion-graphics stage with a synchronized, seeded 198-second cinematic on the measured 160-bpm track. A shared director, score/deck clocks and shader helpers drive the stage assemblies, two long vision slots per roll, and camera-riding beings and worms.",
+  "basedOnSpecVersion": 490,
+  "updatedAt": "2026-11-11T13:07:14.848Z",
+  "summary": "Signal Stage is a walkable 3D motion-graphics stage with a synchronized, seeded 198-second cinematic on the measured 160-bpm track. A shared director, score/deck clocks and shader helpers drive the stage assemblies, one long scene-deck segment per roll, two long vision slots, and camera-riding beings and worms.",
   "scriptPaths": [],
   "places": [
     "places/main/config.yaml (main, 3D) - black-void stage configuration, spawn/environment and place-wide scripts/look-trip.js post-processing.",
@@ -49,12 +49,12 @@
     "energy.yml → trip.js KICK_RUNS and visions.js slot timing → stage.js seeded choice from the built BEINGS registry; vision materials receive vw0/vw1 or -1/-1.",
     "stage.js → trip-tagged material/look params t0/on/seed, kick bounds k0/k1 and dealt scene mappings ds0..ds3/dr0..dr3; look also receives current vision slot v0/v1.",
     "stage.js + vision-<id> tags → selected being layers and worms attach to camera starting 3 s before their slot, at depth 74 with layer offsets; others return home unless held by visionTest.",
-    "score.yml + deck.js → seeded scene per drop stretch → cine.js cameraAt and trip.js shader scene clock share the assigned source section/rate.",
+    "score.yml + deck.js → one seeded scene across [12.35,180.35] per roll → cine.js cameraAt and trip.js shader scene clock share the assigned source section/rate.",
     "cine.js cameraAt → scripts/camera.js viewer camera; dealt beings and companion worms join the camera view rather than replacing it with separate vision shots.",
     "stage.js computes camera-shot-dependent fit scale for camera-attached vision layers so the whole being stays in front of the viewed subject; applies the same factor to depth and scale.",
     "score.yml + trip.js tripClock/shown/lens/mask helpers → field, eye, serpents, tunnel, chamber, vision assemblies and look-trip shader timing/cutouts.",
     "trip.js shown() → staged layer opacity/cutouts at dealt scene seams; layers thin out in name/distance order and the seam is a brief handover, not a sustained black scene.",
-    "look-trip.js reads scene depth and vision v0/v1 → subject-aware depth of field and seeded kick jobs for centre pulse or near/far occlusion; keyhole/tiled reads bypass depth blur."
+    "look-trip.js reads scene depth and vision v0/v1 → subject-aware near-only depth of field and seeded kick jobs; peak mirror imagery appears opaquely through one dealt symbol window, with occasional clean phrases."
   ],
   "behaviorFamilies": [
     "scripts/field-* - mandala, stalks, orbs and glyph/cartouche field layers share field-lib.js placement/timing while geometry and materials vary motifs.",
@@ -63,16 +63,16 @@
     "scripts/tunnel-* - wall, core, dust, gates, ribs and knot share tunnel geometry kinds and tunnel-lib.js spatial/color helpers; materials vary motif and seeded palette.",
     "scripts/chamber-* - room, circuit, hands, hex, Lissajous, solids and bilateral mask share chamber shader helpers and scored cutouts.",
     "scripts/sun-disc.js, sun-drips.js and sun-halo.js - sun-eye layers share sun-lib.js but vary disc, hanging-drip and depth-halo imagery.",
-    "scripts/vision-*-geo.js / -mat.js - all 16 beings share trip clocks and staged attachment; canvas planes/motifs vary, and worm-enabled beings add four unit-tube depth-winding meshes; owl-mask layers use seeded entry/exit masks for their staged piecewise departure.",
+    "scripts/vision-*-geo.js / -mat.js - all 16 beings share trip clocks and staged attachment; canvas planes/motifs vary, and worm-enabled beings add four unit-tube depth-winding meshes; owl-mask layers use seeded entry/exit masks for their staged leave.",
     "scripts/companion-worm-geo.js and companion-worm-mat.js - three camera-attached swimmers share one animated shader/geometry pair, varied by material param n."
   ],
   "probableOrphans": [],
   "migrationNotes": [
     "world.state.cine is the synchronized start/cut source; starts are scheduled 300 ms ahead. cine.js uses milliseconds for start/ctx.now() and seconds for score/shot keys.",
     "stage.js converts c.start to shader t0 seconds modulo 3600 and repeats parameter pushes over several ticks so late-built materials receive the roll; trip-tagged materials need t0/on/seed and kick bounds k0/k1.",
-    "energy.yml defines two 48-second vision slots; only built entries in BEINGS can be dealt. Vision layers attach only from 3 s before their slot; vision houses are above the field in +Y and selected layers ride the camera at depth 74.",
+    "energy.yml defines vision slots [48.35,96.35] and [132.35,180.35]; only built entries in BEINGS can be dealt. Vision layers attach 3 s before a slot; vision houses are above the field in +Y and selected layers ride the camera at depth 74.",
+    "score.yml deck has one segment [12.35,180.35] per roll; preserve the distinction between deck source time and the full trip clock, plus the fixed 12 s seed/return sections.",
     "Canonical vision layer offsets are world -30, ring -12, being 0, veil +10, fore +22; stage.js derives home z from tag suffix. Worm meshes use material param n for distinct paths; they are not serpents-curve.js meshes.",
-    "vision-owl-mask-mat.js seeds entry and distinct exit mask choices from channels 500..501; its parts leave in order over vision u .8..1, with world plumage last and lit through u .98. It also imports shared inv/is from trip.js; low quality reduces world ornament counts and disables ghost plumage.",
-    "Camera attachment fit scales both depth and object scale together based on cameraAt(t,seed); preserve that coupling. trip.js shown() owns scene-seam handover and look-trip keeps the vision lens/blackout hand off through the being's exit."
+    "Camera attachment fit scales both depth and object scale together based on cameraAt(t,seed); preserve that coupling. look-trip.js's peak mirror is an opaque symbol-mask window (not tiled/translucent), and its DOF softens only geometry in front of the subject."
   ]
 }
