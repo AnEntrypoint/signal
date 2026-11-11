@@ -50,13 +50,29 @@ function stageBeing(ctx, vs, seed) {
     for (const o of ctx.query({ tags: ['vision-' + b.id] })) {
       const h = ctx.getObject(o.id); if (!h) continue
       const z = homeZ(o.id)
+      if (ctx.world.state.visionTest?.being === b.id && !here) continue
       if (here) h.feetPosition = { attach: 'camera', x: 0, y: 0, depth: DEPTH - z }
       else if (h.feetPosition?.attach || h.visible !== false) h.feetPosition = { x: 0, y: b.centre.y, z }
+      if (ctx.world.state.visionTest?.being === b.id) continue
       h.visible = !!here
     }
   }
 }
+// TEST HOLD (savi's bench): world.state.visionTest = { being, at, seed } stands that being whole at its home,
+// its 24 s slot starting at ctx.now() == at, so a camera at centre + (0, 0, 64) watches it build. The roll is untouched.
+function holdTest(ctx, vt) {
+  const b = BEINGS.find((x) => x.id === vt.being); if (!b) return
+  for (const o of ctx.query({ tags: ['vision-' + b.id] })) {
+    const h = ctx.getObject(o.id); if (!h) continue
+    const p = h.material?.params
+    if (p) { p.t0 = (vt.at / 1000) % 3600; p.on = 1; p.seed = vt.seed ?? 23; p.vw0 = 0; p.vw1 = 24; p.k0 = 0; p.k1 = 24 }
+    h.feetPosition = { x: 0, y: b.centre.y, z: homeZ(o.id) }
+    h.visible = true
+  }
+}
 export function update(ctx, dt) {
+  const vt = ctx.world.state.visionTest
+  if (vt) { holdTest(ctx, vt); if (ctx.now() - vt.at > 30000) ctx.world.state.visionTest = null }
   const t = cineTime(ctx)
   const c = ctx.world.state.cine
   const k = kickRun(t)
