@@ -1,23 +1,15 @@
 // THE GIVING HANDS (vision being, K = 7): two open palms reaching in from the sides, dripping light into a pool.
-// Five canvases, one script (params.layer); every layer draws in "being metres" (P = xy * 74 / depth) so the
-// layers line up on screen, and each moves on its own kind of motion:
-//   world (z -30) SCROLLS OUTWARD: black ground arriving as ripple bands from the nest; sky of concentric bead
-//                 rings flowing out; below the horizon a pool where each finger's drop opens bead rings that
-//                 interfere (moire); at the culmination a moire FLOWER whose centres orbit against the bead flow.
-//   ring  (z -12) TURNS: a tilted ellipse of soft dots one way, a bead crown round the nest the other (additive).
-//   being (z 0)   BREATHES: occluding black hands drawn by a pen (hand, inner, outer contour), hex nest whose
-//                 levels breathe and counter-turn (they lock at the culmination), palm eyes, fingertip beads,
-//                 light drops falling from each fingertip, candles lit one by one under the hands.
-//   veil  (z +10) SCROLLS DOWN: black striped drip-strands hanging from the top, a drop of light at each tip.
-//   fore  (z +22) DRIFTS: near petals / stars rising up the far sides, black bodies with a neon rim.
-// Score (u): .00 nest + first drop | .08-.3 hand, fill, inner, outer | .25 drips fall | .27-.45 world grows |
-//   .4-.58 ring | .5-.66 nest levels | .58 eyes | .6-.74 candles | .66 tips | .6-.78 veil | .66-.8 fore |
-//   .84-.93 moire flower + nest lock | exit LIFO .93-1: fore, veil, details, ring, world, hands, nest.
-// Seed channels 340-359: 340 hue family, 341 flower petals, 342 pen start, 343 eye, 344 ring sense, 345 ring speed,
-//   346 tilt, 349 lean, 350 candles, 351 nest sides of turn, 352 fore set, 354 sky beads, 356 veil count, 357 hot.
+// Five canvases, one script (params.layer), drawn in "being metres" (P = xy * 74 / depth):
+//   world SCROLLS OUTWARD (bead rings, pool moire, flower) | ring TURNS | being BREATHES (hands, nest, eyes, drops,
+//   candles) | veil SCROLLS DOWN | fore DRIFTS. Exit LIFO: fore .93, veil .94, details .955, ring .96, hands .955-.99,
+//   world lit to .984 then out by its symbol.
+// SYMBOL MASKS (358 entrance, 359 exit): hands = pen contour | finger by finger in; fingers folding | palm eye
+//   eating outward on the way out. world = fan of ten fingers reaching out | one great lid opening; the other closes it.
+// Channels 340-359: 340 hue, 341 petals, 342 pen start, 343 eye, 344-346 ring, 349 lean, 350 candles, 352 fore,
+//   354 sky beads, 356 veil count, 357 hot.
 import { MeshBasicNodeMaterial, AdditiveBlending, DoubleSide } from "builtin/three";
 import { positionGeometry, float, vec2, vec3, smoothstep, step, mix, fwidth, select, atan2 } from "builtin/tsl";
-import { tripClock, visionShown, visionU, climb, maskDraw, maskBeads, maskIris, maskLid, maskClock, nib } from "./lib/trip.js";
+import { tripClock, visionShown, visionU, climb, maskDraw, maskBeads, maskIris, maskLid, maskClock, inv, is, ioU, NEON } from "./lib/trip.js";
 
 const TAU = 6.28318;
 const S = 1.6, HX = 19, HY = 1.6;     // hand units -> metres; right palm centre in hand units (left mirrors)
@@ -31,8 +23,6 @@ const TIPS = [[-9.3, 1.7], [-3.55, 11.7], [-1.15, 13.2], [1.25, 12.2], [3.65, 9.
 const EYE = [0.1, -2.2];
 const DEPTH = { world: 104, ring: 86, being: 74, veil: 64, fore: 52 };
 
-const is = (v, i) => step(v.sub(i).abs(), 0.5);
-const inv = (x) => float(1).sub(x);
 const rot = (v, a) => { const c = a.cos(), s = a.sin(); return vec2(v.x.mul(c).sub(v.y.mul(s)), v.x.mul(s).add(v.y.mul(c))); };
 const hexd = (v) => v.x.abs().mul(0.866).add(v.y.abs().mul(0.5)).max(v.y.abs());
 
@@ -61,17 +51,17 @@ function outline(q, pts) {
 }
 
 export function material(ctx) {
-  const layer = ctx.params.layer ?? "being";
+  const layer = ctx.params.layer ?? "being", low = ctx.quality === "low";
   const c = tripClock(ctx);
   const u = visionU(ctx, c);
   const t = c.real;
-  const io = (a, b, x, y) => smoothstep(a, b, u).mul(inv(smoothstep(x, y, u)));
+  const io = ioU(u);
   const cul = smoothstep(0.84, 0.9, u).mul(inv(smoothstep(0.93, 0.95, u))).mul(climb(c).mul(0.5).add(0.5));
   const kick = c.kick;                                   // gated: 0 where the track has no beat
   const rn = (k) => c.rnd(340 + k), pk = (k, m) => c.pick(340 + k, m);
   const fam = pk(0, 4), hot = pk(17, 3);
-  const blue = vec3(0.05, 0.12, 1.0), violet = vec3(0.45, 0.05, 1.0), pink = vec3(1.0, 0.05, 0.6), orange = vec3(1.0, 0.38, 0.02),
-    yellow = vec3(1.0, 0.85, 0.05), green = vec3(0.1, 1.0, 0.15), W = vec3(1, 1, 1);
+  const { BLU: blue, VIO: violet, PNK: pink, ORA: orange, YEL: yellow, GRN: green, W } = NEON;
+  const ent = pk(18, 2), exv = pk(19, 2);                // symbol mask picks: entrance, exit
   const A = blue.mul(is(fam, 0).add(is(fam, 2))).add(violet.mul(is(fam, 1).add(is(fam, 3))));      // body
   const B = violet.mul(is(fam, 0).add(is(fam, 2))).add(blue.mul(is(fam, 1).add(is(fam, 3))));      // second body
   const C = pink.mul(is(hot, 0)).add(yellow.mul(is(hot, 1))).add(orange.mul(is(hot, 2)));          // hot (worms share it)
@@ -91,50 +81,51 @@ export function material(ctx) {
   const put = (colour, mask) => { col = mix(col, colour, mask); cover = cover.max(mask); };
 
   if (layer === "world") {
-    // the ground arrives as ripple bands running out from the nest (and goes back the same way)
-    const d0 = vec2(P.x, P.y.sub(NY)).length();
-    const R = smoothstep(0.27, 0.45, u).mul(inv(smoothstep(0.965, 0.99, u))).mul(150);
-    const front = d0.sub(R).div(18);
-    const grown = step(d0, R).max(step(front, 1).mul(step(0, front)).mul(step(front, inv(vec2(d0.div(4.2).fract(), 0).x).mul(0.9))));
-    put(vec3(0.0, 0.0, 0.012), grown);
-    const lit = float(0.55).add(kick.mul(0.25)).add(cul.mul(0.3));
-    // sky: concentric rings flowing outward, a bead row on every other ring
-    const sky = smoothstep(HOR - 1, HOR + 2, P.y);
-    const fl = d0.sub(t.mul(0.7)), ri = fl.div(7).floor(), fr = fl.div(7).fract();
-    put(A.mul(0.42).mul(lit), stroke(fr.sub(0.5).abs().mul(7), 0.07).mul(sky).mul(grown).mul(step(9, d0)));
-    const a0 = atan2(P.y.sub(NY), P.x);
-    const nb = ri.mul(6).add(pk(14, 2).mul(4).add(8));
-    const ang = a0.div(TAU).mul(nb).add(t.mul(0.05).mul(c.dir)).fract().sub(0.5);
-    const bd = vec2(ang.mul(TAU).mul(d0).div(nb), fr.mul(7)).length();
-    put(mix(B, G, step(1, ri.mod(4))).mul(lit), disc(bd, 0.55).mul(sky).mul(grown).mul(step(0.5, ri.mod(2))).mul(step(9, d0)));
-    // the horizon: a bead line where the pool meets the sky
-    put(C.mul(lit), stroke(P.y.sub(HOR).abs(), 0.09).mul(grown));
-    // pool: each fingertip's drop lands and sends bead rings out; the five (x2) sets interfere
+    const d0 = vec2(P.x, P.y.sub(NY)).length(), a0 = atan2(P.y.sub(NY), P.x.add(0.0001));
+    // concentric feather: beads and lines thin to nothing, the black ground breaks into dots, well inside the quad
+    const de = vec2(P.x.div(112), P.y.div(63)).length(), fe = inv(smoothstep(0.62, 0.97, de));
+    const k10 = a0.div(TAU).add(0.5).mul(10);
+    const fan = (p) => step(d0.div(150).add(k10.fract().sub(0.5).abs().mul(0.25)), p.mul(1.9).sub(k10.floor().mul(0.7).fract().mul(0.8)).clamp(0, 1.05));
+    const lid = (p) => step(P.y.sub(NY).abs(), inv(P.x.div(125).mul(P.x.div(125))).max(0).mul(72).mul(p).mul(1.02));
+    const wIn = smoothstep(0, 0.3, u), wOut = inv(smoothstep(0.984, 0.999, u));
+    const inM = mix(fan(wIn), lid(wIn), ent), outM = mix(lid(wOut), fan(wOut), exv);
+    const R = smoothstep(0.27, 0.45, u).mul(150), front = d0.sub(R).div(18);
+    const gq = P.div(4.5).fract().sub(0.5).mul(4.5).length();
+    const edge = step(de, 0.8).max(disc(gq, inv(smoothstep(0.8, 0.98, de)).mul(3.3)).mul(step(de, 0.98)));
+    const grown = step(d0, R).max(step(front, 1).mul(step(0, front)).mul(step(front, inv(d0.div(4.2).fract()).mul(0.9)))).mul(outM).mul(edge);
+    put(NEON.BG, grown);
+    const lit = float(0.8).add(kick.mul(0.25)).add(cul.mul(0.3));
+    const sky = smoothstep(HOR - 1, HOR + 2, P.y), far9 = step(9, d0).mul(step(0.04, fe));
+    const fl = d0.sub(t.mul(0.7)).div(7), fr = fl.fract(), rb = fl.round();
+    put(A.mul(0.6).mul(lit), stroke(fr.sub(0.5).abs().mul(7), fe.mul(0.09)).mul(sky).mul(inM).mul(outM).mul(far9));
+    // a bead row between the rings; the count never reaches 0 (rb runs negative as the rings flow out)
+    const nb = rb.abs().mul(6).add(pk(14, 2).mul(4).add(8));
+    const bi = a0.div(TAU).mul(nb).add(t.mul(0.05).mul(c.dir));
+    const bd = vec2(bi.fract().sub(0.5).mul(TAU).mul(d0).div(nb), fl.sub(rb).mul(7)).length();
+    const odd = step(0.5, rb.mod(2)), glim = step(bi.floor().mul(0.618).add(rb.mul(0.37)).fract(), smoothstep(0, 0.05, u).mul(0.22));
+    put(mix(B, G, step(1, rb.mod(4))).mul(lit), disc(bd, fe.mul(mix(0.5, 0.95, odd))).mul(sky).mul(inM.max(glim)).mul(outM).mul(low ? odd : float(1)).mul(far9));
+    put(C.mul(lit), stroke(P.y.sub(HOR).abs(), fe.mul(0.09)).mul(grown));
+    // pool: each fingertip's drop lands and sends bead rings out; the sets interfere
     const pool = inv(sky);
     let ring = float(0);
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < (low ? 3 : 5); i++) {
       const lx = tipAt(i).x, per = fallP(i), sp = 5.2;
-      const q = vec2(P.x.abs().sub(lx), P.y.sub(RY).div(SQ));
-      const dq = q.length(), ph = t.div(per).add(i * 0.37).fract();
+      const dq = vec2(P.x.abs().sub(lx), P.y.sub(RY).div(SQ)).length(), ph = t.div(per).add(i * 0.37).fract();
       const w = dq.div(per * sp).sub(ph).fract();
-      const age = dq.div(46).clamp(0, 1);
-      ring = ring.add(stroke(w.sub(0.5).abs().mul(per * sp).mul(SQ + 0.15), 0.1).mul(inv(age)));
+      ring = ring.add(stroke(w.sub(0.5).abs().mul(per * sp).mul(SQ + 0.15), 0.1).mul(inv(dq.div(46).clamp(0, 1))));
     }
-    const started = smoothstep(0.25, 0.3, u);
-    put(mix(A, W, ring.sub(1).clamp(0, 1).mul(0.6)).mul(lit), ring.clamp(0, 1).mul(pool).mul(grown).mul(started));
+    put(mix(A, W, ring.sub(1).clamp(0, 1).mul(0.6)).mul(lit), ring.clamp(0, 1).mul(pool).mul(grown).mul(smoothstep(0.25, 0.3, u)));
     // THE MOIRE FLOWER (culmination): ring sets round centres orbiting the nest one way, beads flowing the other
-    const nP = pk(1, 4).add(3);
+    const nP = pk(1, low ? 2 : 4).add(3);
     const pf = smoothstep(0.82, 0.88, u).mul(inv(smoothstep(0.93, 0.955, u)));
     let s = float(0);
-    for (let k = 0; k < 6; k++) {
-      const on = step(k + 0.5, nP);
+    for (let k = 0; k < (low ? 4 : 6); k++) {
       const th = t.mul(-0.35).mul(c.dir).add(float(k).div(nP).mul(TAU));
       const dk = vec2(P.x.sub(th.cos().mul(7)), P.y.sub(NY).sub(th.sin().mul(7))).length();
-      s = s.add(dk.mul(1.15).sub(t.mul(2.4)).cos().mul(on));
+      s = s.add(dk.mul(1.15).sub(t.mul(2.4)).cos().mul(step(k + 0.5, nP)));
     }
     const v = s.div(nP);
-    const petal = smoothstep(0.5, 0.62, v).mul(maskIris(pf, d0.div(48)));
-    put(mix(C, W, smoothstep(0.75, 0.95, v)).mul(lit.add(0.3)), petal.mul(grown).mul(step(d0, 48)));
+    put(mix(C, W, smoothstep(0.75, 0.95, v)).mul(lit.add(0.3)), smoothstep(0.5, 0.62, v).mul(maskIris(pf, d0.div(48))).mul(grown).mul(step(d0, 48)));
     m.colorNode = col;
     m.opacityNode = cover.mul(visionShown(ctx, c, d0.div(120)));
     m.alphaTest = 0.5;
@@ -147,18 +138,18 @@ export function material(ctx) {
     const tilt = mix(0.1, 0.3, rn(6)).mul(sense);
     const e = rot(vec2(P.x, P.y.sub(NY)), tilt);
     const pb = smoothstep(0.4, 0.58, u).mul(inv(smoothstep(0.96, 0.98, u)));
-    const N1 = 18, ea = atan2(e.y.div(12), e.x.div(44)).div(TAU).sub(t.div(mix(36, 60, rn(5))).mul(sense));
+    const N1 = 18, ea = atan2(e.y.div(12), e.x.div(44).add(0.0001)).div(TAU).sub(t.div(mix(36, 60, rn(5))).mul(sense));
     const i1 = ea.mul(N1).round(), a1 = i1.div(N1).add(t.div(mix(36, 60, rn(5))).mul(sense)).mul(TAU);
     const pos = vec2(a1.cos().mul(44), a1.sin().mul(12));
     const near = inv(a1.sin()).mul(0.5);                     // the lower half nearer: larger
     const r1 = mix(0.7, 1.5, near).mul(mix(1, 1.4, is(i1.mod(3), 0)));
-    const g1 = smoothstep(r1, r1.mul(0.35), e.sub(pos).length()).mul(maskBeads(pb, i1.mul(0.618).fract()));
+    const g1 = inv(smoothstep(r1.mul(0.35), r1, e.sub(pos).length())).mul(maskBeads(pb, i1.mul(0.618).fract()));
     const q = vec2(P.x, P.y.sub(NY)), dq = q.length();
-    const N2 = 12, a2 = atan2(q.y, q.x).div(TAU).add(t.div(28).mul(sense)).mul(N2);
+    const N2 = 12, a2 = atan2(q.y, q.x.add(0.0001)).div(TAU).add(t.div(28).mul(sense)).mul(N2);
     const i2 = a2.round(), bq = vec2(a2.sub(i2).mul(TAU * 20 / N2), dq.sub(20)).length();
     const pb2 = smoothstep(0.46, 0.6, u).mul(inv(smoothstep(0.955, 0.975, u)));
-    const g2 = smoothstep(1.1, 0.35, bq).mul(maskBeads(pb2, i2.add(N2).mod(N2).div(N2)));
-    const lit = float(0.45).add(kick.mul(0.35)).add(cul.mul(0.4));
+    const g2 = inv(smoothstep(0.35, 1.1, bq)).mul(maskBeads(pb2, i2.add(N2).mod(N2).div(N2)));
+    const lit = float(0.65).add(kick.mul(0.35)).add(cul.mul(0.4));
     m.colorNode = A.mul(g1).add(mix(C, W, 0.3).mul(g2)).mul(lit);
     m.opacityNode = visionShown(ctx, c, dq.div(50));
     m.transparent = true; m.blending = AdditiveBlending; m.depthWrite = false;
@@ -186,7 +177,7 @@ export function material(ctx) {
       const dd = vec2(dx, P.y.sub(tipY).add(1.3)).length();
       const lit = float(0.9).add(kick.mul(0.35)).add(cul.mul(0.4));
       put(vec3(0), disc(dd, 1.75).mul(step(0.01, pv)));
-      put(mix(C, W, smoothstep(1.2, 0.2, dd)).mul(lit), disc(dd, 1.45).mul(step(0.01, pv)));
+      put(mix(C, W, inv(smoothstep(0.2, 1.2, dd))).mul(lit), disc(dd, 1.45).mul(step(0.01, pv)));
     }
     m.colorNode = col;
     m.opacityNode = cover.mul(visionShown(ctx, c, P.length().div(60)));
@@ -198,14 +189,14 @@ export function material(ctx) {
     // near petals (or four-point stars) rising up the far sides, black with a neon rim
     const star = step(0.5, rn(12));
     const pr = smoothstep(0.66, 0.8, u).mul(inv(smoothstep(0.93, 0.945, u)));
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < (low ? 3 : 4); i++) {
       const sp = 1 / (16 + i * 5), o = (i * 0.29 + 0.1) % 1;
       const y = t.mul(sp).add(o).add(rn(13 + (i % 2)).mul(0.5)).fract().mul(80).sub(40);
       const x = float(44 + i * 4.5).add(t.mul(0.3 + i * 0.1).add(i).sin().mul(3));
       const sz = 1.6 + (i % 3) * 0.5;
       const q = rot(vec2(P.x.abs().sub(x), P.y.sub(y)), t.mul(0.2 + i * 0.07).add(i)).div(sz);
       const tear = vec2(q.x, q.y.add(0.35).min(0)).length().sub(0.8).max(q.x.abs().sub(inv(q.y.add(0.35).div(1.6)).mul(0.8)).max(q.y.sub(1.25)).mul(step(-0.35, q.y)));
-      const ast = q.x.abs().pow(0.5).add(q.y.abs().pow(0.5)).sub(1.15);
+      const ast = q.x.abs().max(0.0001).sqrt().add(q.y.abs().max(0.0001).sqrt()).sub(1.15);
       const sd = mix(tear, ast, star);
       const show = maskBeads(pr, (i * 0.37 + 0.2) % 1).mul(step(sd, 0));
       put(vec3(0), show);
@@ -226,22 +217,27 @@ export function material(ctx) {
   const sd = hd.d.mul(inv(hd.inside.mul(2)));
   const along = mix(hd.u, inv(hd.u), pk(2, 2));
   const above = step(-9.5, q.y);
-  const p0 = io(0.08, 0.2, 0.98, 0.992), pF = io(0.12, 0.26, 0.98, 0.992);
-  const p1 = io(0.14, 0.26, 0.975, 0.986), p2 = io(0.2, 0.3, 0.97, 0.98);
-  const ss = (d, w) => stroke(d, w / S * 1.0).mul(1);
-  // the black body of the hand fills upward from the wrist: it hides the pool and sky behind
-  put(vec3(0.0, 0.0, 0.02), hd.inside.mul(step(q.y, mix(-9.5, 14, pF))).mul(step(0.01, pF)));
-  const pen = (pr) => nib(pr, along, 0.02).mul(step(0.002, pr)).mul(step(pr, 0.995));
-  const comet = smoothstep(0.06, 0, along.sub(t.div(7).fract()).abs()).mul(step(0.999, p0));
-  put(A.mul(lit.mul(0.9)), ss(sd.sub(0.75).abs(), 0.12).mul(maskDraw(p2, along)).mul(above));
-  put(W.mul(1.4), pen(p2).mul(ss(sd.sub(0.75).abs(), 0.36)).mul(above));
-  put(B.mul(lit), ss(sd.add(0.5).abs(), 0.1).mul(maskDraw(p1, along)).mul(above));
-  put(W.mul(1.4), pen(p1).mul(ss(sd.add(0.5).abs(), 0.36)).mul(above));
-  put(mix(W, C, comet).mul(lit.add(comet.mul(0.5))), ss(hd.d, 0.18).mul(maskDraw(p0, along)));
-  put(W.mul(1.6), pen(p0).mul(ss(hd.d, 0.5)));
+  const ex = q.x.sub(EYE[0]), ey = q.y.sub(EYE[1]);
+  // SYMBOL MASKS: in = the pen's contour | finger by finger from the wrist; out = fingers folding | the palm eye eating outward
+  const fi = step(-4.55, q.x).add(step(-2.35, q.x)).add(step(0.05, q.x)).add(step(2.45, q.x)).div(4);
+  const fing = (p, k) => step(q.y, mix(-9.6, 14, p.mul(1.8).sub(k.mul(0.8)).clamp(0, 1)));
+  const palm = (p) => step(inv(p).mul(34), ey.abs().mul(1.6).add(ex.mul(ex).mul(0.1)).add(0.01));
+  const hm = (a, b, x, y) => { const pi = smoothstep(a, b, u), po = inv(smoothstep(x, y, u)); return { pi, m: mix(maskDraw(pi, along), fing(pi, fi), ent).mul(mix(fing(po, inv(fi)), palm(po), exv)) }; };
+  const h0 = hm(0.08, 0.2, 0.968, 0.99), hF = hm(0.12, 0.26, 0.968, 0.99), h1 = hm(0.14, 0.26, 0.962, 0.98), h2 = hm(0.2, 0.3, 0.955, 0.972);
+  const ss = (d, w) => stroke(d, w / S);
+  // the black body of the hand hides the pool and sky behind
+  put(NEON.BG, hd.inside.mul(mix(step(q.y, mix(-9.5, 14, hF.pi)), float(1), ent)).mul(mix(float(1), hF.m, ent.max(step(0.96, u)))).mul(step(0.01, hF.pi)));
+  const pen = (h) => inv(smoothstep(0, 0.02, along.sub(h.pi).abs())).mul(step(0.002, h.pi)).mul(step(h.pi, 0.995)).mul(inv(ent));
+  const comet = inv(smoothstep(0, 0.06, along.sub(t.div(7).fract()).abs())).mul(step(0.999, h0.pi));
+  put(A.mul(lit.mul(0.9)), ss(sd.sub(0.75).abs(), 0.12).mul(h2.m).mul(above));
+  put(W.mul(1.4), pen(h2).mul(ss(sd.sub(0.75).abs(), 0.36)).mul(above));
+  put(B.mul(lit), ss(sd.add(0.5).abs(), 0.1).mul(h1.m).mul(above));
+  put(W.mul(1.4), pen(h1).mul(ss(sd.add(0.5).abs(), 0.36)).mul(above));
+  put(mix(W, C, comet).mul(lit.add(comet.mul(0.5))), ss(hd.d, 0.18).mul(h0.m));
+  put(W.mul(1.6), pen(h0).mul(ss(hd.d, 0.5)));
   // the eye in each palm opens by its lids
   const pe = io(0.58, 0.64, 0.955, 0.968);
-  const ex = q.x.sub(EYE[0]), ey = q.y.sub(EYE[1]), nx = ex.div(2.3), base = inv(nx.mul(nx)).max(0), inX = step(nx.abs(), 1);
+  const nx = ex.div(2.3), base = inv(nx.mul(nx)).max(0), inX = step(nx.abs(), 1);
   const lidY = base.mul(1.25);
   const seen = maskLid(pe, ey.div(lidY.max(0.001))).mul(inX).mul(step(0.002, pe));
   const er = vec2(ex, ey).length(), ev = pk(3, 3);
@@ -268,15 +264,15 @@ export function material(ctx) {
   const breath = t.mul(TAU / 9).sin();
   const p00 = io(0.0, 0.09, 0.988, 0.999);
   for (let i = 0; i < 4; i++) {
-    const r = (i + 1) * 3.4, sgn = (i % 2 ? -1 : 1) * (rn(11) < 0.5 ? 1 : 1);
-    const turn = t.mul(0.09 / (i + 1)).mul(sgn).mul(c.dir).mul(inv(lock)).add(lock.mul(i * 0.0));
+    const r = (i + 1) * 3.4, sgn = i % 2 ? -1 : 1;
+    const turn = t.mul(0.09 / (i + 1)).mul(sgn).mul(c.dir).mul(inv(lock));
     const v = rot(nq, turn), hx = hexd(v), rr = float(r).mul(breath.mul(0.04 * (i + 1)).add(1));
     const pl = i === 0 ? p00 : io(0.48 + i * 0.04, 0.55 + i * 0.04, 0.96 - i * 0.003, 0.97 - i * 0.003);
-    const reveal = maskClock(pl, atan2(v.y, v.x).mul(i % 2 ? -1 : 1));
+    const reveal = maskClock(pl, atan2(v.y, v.x.add(0.0001)).mul(i % 2 ? -1 : 1));
     if (i === 0) put(vec3(0.0, 0.0, 0.03), step(hx, rr).mul(step(0.99, pl)));
     put(mix(A, mix(B, W, 0.3), i / 3).mul(lit), stroke(hx.sub(rr).abs(), 0.14).mul(reveal).mul(step(0.002, pl)));
     // a bead on each corner
-    const ca = atan2(v.y, v.x).div(TAU / 6).round().mul(TAU / 6), cp = vec2(ca.cos(), ca.sin()).mul(rr.div(0.866));
+    const ca = atan2(v.y, v.x.add(0.0001)).div(TAU / 6).round().mul(TAU / 6), cp = vec2(ca.cos(), ca.sin()).mul(rr.div(0.866));
     put(mix(C, G, i % 2).mul(lit), disc(v.sub(cp).length(), 0.42 + i * 0.06).mul(step(0.99, pl)));
   }
   // the first stroke: a drop of light forms at the nest's heart and beats there on the kick
@@ -285,7 +281,7 @@ export function material(ctx) {
   // candles on an arc under the hands, lit one by one from the middle outward
   const nC = pk(10, 3).mul(2).add(7);
   const pc = io(0.6, 0.74, 0.955, 0.97);
-  const ca = atan2(nq.x, nq.y.negate()), cr = nq.length();
+  const ca = atan2(nq.x, nq.y.negate().add(0.0001)), cr = nq.length();
   const slot = ca.div(1.05).mul(nC.sub(1)).mul(0.5).round(), cang = slot.div(nC.sub(1).mul(0.5)).mul(1.05);
   const okC = step(slot.abs(), nC.sub(1).mul(0.5));
   const cpos = vec2(cang.sin().mul(30), cang.cos().mul(-30)).add(vec2(0, NY));
@@ -296,7 +292,7 @@ export function material(ctx) {
   const litC = maskBeads(pc, slot.abs().div(nC.mul(0.5)).add(0.02)).mul(okC);
   const fq = vec2(cq.x.mul(t.mul(9).add(slot.mul(1.7)).sin().mul(0.12).add(1)), cq.y.sub(2.6));
   const flame = disc(vec2(fq.x, fq.y.min(0)).length(), 0.62).max(disc(fq.x.abs(), inv(fq.y.div(1.5).clamp(0, 1)).mul(0.62)).mul(step(0, fq.y)).mul(step(fq.y, 1.5)));
-  put(mix(C, W, smoothstep(0.5, -0.8, fq.y)).mul(lit.add(0.3)), flame.mul(litC));
+  put(mix(C, W, inv(smoothstep(-0.8, 0.5, fq.y))).mul(lit.add(0.3)), flame.mul(litC));
   m.colorNode = col;
   m.opacityNode = cover.mul(visionShown(ctx, c, P.length().div(50)));
   m.alphaTest = 0.5;
