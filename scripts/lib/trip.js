@@ -38,8 +38,9 @@ export function win(sec, range, fade = 1.5) {
 
 // The trip's rainbow: fully saturated, never pastel, never grey. t is any float; one turn per 1.0.
 export function pal(t) {
-  const a = vec3(0.5, 0.5, 0.5), d = vec3(0.0, 0.33, 0.67);
-  return a.add(a.mul(float(t).add(d).mul(6.28318).cos())).pow(vec3(1.6));
+  const c = float(t).add(vec3(0.0, 0.33, 0.67)).mul(6.28318).cos().mul(0.5).add(0.5);
+  const lo = c.x.min(c.y).min(c.z), hi = c.x.max(c.y).max(c.z);
+  return c.sub(lo).div(hi.sub(lo).add(0.001)).pow(vec3(1.4)); // pure hue: one channel 1, one 0
 }
 // Hard black/white (or any two-tone) bands: 0 or 1, n bands per unit of x, antialias width w.
 export function stripes(x, n, w = 0.02) {
