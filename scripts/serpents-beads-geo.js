@@ -1,4 +1,5 @@
-// The bead row along every serpent's spine: one little sphere, ~900 copies, each record its spine point.
+// The bead string of every serpent: one little sphere, ~900 copies, each record its spine point and frame;
+// the material winds the string round the body, in front of it and behind it (it threads through).
 import { BODIES, frame, tubeR, codeOf } from "./serpents-curve.js";
 export function geometry(ctx) {
   const far = ctx.lod >= 3, LON = far ? 6 : 10, LAT = far ? 4 : 6, uvs = [], normals = [];
@@ -9,12 +10,12 @@ export function geometry(ctx) {
     if (la > 0) t(a, c, b);
     if (la < LAT - 1) t(a, d, c);
   }
-  ctx.instances({ layout: { pos: "float32x4", info: "float32x4" }, bounds: { min: [-110, -2, -110], max: [110, 70, 110] } });
+  ctx.instances({ layout: { pos: "float32x4", info: "float32x4", nn: "float32x4", bb: "float32x4" }, bounds: { min: [-110, -2, -110], max: [110, 70, 110] } });
   BODIES.forEach((b, bi) => {
     const n = 56;
     for (let i = 0; i < n; i++) {
       const s = 0.03 + (i / (n - 1)) * 0.93, F = frame(b, s), r = tubeR(b, s);
-      ctx.instance([F.P[0] + F.N[0] * r * 1.02, F.P[1] + F.N[1] * r * 1.02, F.P[2] + F.N[2] * r * 1.02, s], [codeOf(bi), i, r * 0.42 + 0.06, 0]);
+      ctx.instance([F.P[0], F.P[1], F.P[2], s], [codeOf(bi), i, r * 0.42 + 0.06, r], [F.N[0], F.N[1], F.N[2], 0], [F.B[0], F.B[1], F.B[2], 0]);
     }
   });
   return { uvs, normals };
