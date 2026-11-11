@@ -92,7 +92,9 @@ function pieceLag(name) {
   const h = salt(name), kind = h % 3, size = 2.5 + (h % 5) * 1.5; // metres
   const P = positionWorld;
   let id;
-  if (kind === 0) { const q = P.xz.add(P.y.mul(0.5)).div(size); id = q.floor().add(vec2(q.y.floor().mul(0.5).fract(), 0)).floor(); id = id.x.add(id.y.mul(57)); }
+  if (kind === 0) { // spiral arms: a galaxy unwinding, never square cells
+    const q = P.sub(vec3(0, 15, 0)), rr = q.length(), an = atan(q.x, q.z.sub(q.y.mul(0.3))).div(6.2831853);
+    id = an.add(rr.div(size * 6)).mul(6 + (h % 3) * 2).floor(); }
   else if (kind === 1) id = P.sub(vec3(0, 15, 0)).length().div(size).floor();                 // rings
   else id = atan(P.x, P.z.sub(P.y.mul(0.3))).div(6.2831853).add(0.5).mul(12 + (h % 4) * 4).floor(); // sectors
   const r = id.add(h * 0.731).sin().mul(43758.5453).fract();
