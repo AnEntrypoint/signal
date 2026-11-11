@@ -5,7 +5,16 @@ vision-giving-hands:
   id: vision-giving-hands
   material: {kind: scripted, params: {k0: -1, k1: -1, layer: being, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-giving-hands-mat.js}
   physics: none
-  primitive: {kind: scripted, params: {h: 40, w: 64}, script: scripts/vision-giving-hands-geo.js}
+  primitive: {kind: scripted, params: {h: 100, w: 180}, script: scripts/vision-giving-hands-geo.js}
+  receiveShadow: false
+  tags: [trip, vision-giving-hands]
+vision-giving-hands-fore:
+  castShadow: false
+  feetPosition: {x: 0, y: 1020, z: 22}
+  id: vision-giving-hands-fore
+  material: {kind: scripted, params: {k0: -1, k1: -1, layer: fore, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-giving-hands-mat.js}
+  physics: none
+  primitive: {kind: scripted, params: {h: 85, w: 150}, script: scripts/vision-giving-hands-geo.js}
   receiveShadow: false
   tags: [trip, vision-giving-hands]
 vision-giving-hands-ring:
@@ -14,7 +23,7 @@ vision-giving-hands-ring:
   id: vision-giving-hands-ring
   material: {kind: scripted, params: {k0: -1, k1: -1, layer: ring, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-giving-hands-mat.js}
   physics: none
-  primitive: {kind: scripted, params: {h: 48, w: 84}, script: scripts/vision-giving-hands-geo.js}
+  primitive: {kind: scripted, params: {h: 120, w: 210}, script: scripts/vision-giving-hands-geo.js}
   receiveShadow: false
   tags: [trip, vision-giving-hands]
 vision-giving-hands-veil:
@@ -23,6 +32,51 @@ vision-giving-hands-veil:
   id: vision-giving-hands-veil
   material: {kind: scripted, params: {k0: -1, k1: -1, layer: veil, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-giving-hands-mat.js}
   physics: none
-  primitive: {kind: scripted, params: {h: 56, w: 90}, script: scripts/vision-giving-hands-geo.js}
+  primitive: {kind: scripted, params: {h: 85, w: 150}, script: scripts/vision-giving-hands-geo.js}
+  receiveShadow: false
+  tags: [trip, vision-giving-hands]
+vision-giving-hands-world:
+  castShadow: false
+  feetPosition: {x: 0, y: 1020, z: -30}
+  id: vision-giving-hands-world
+  material: {kind: scripted, params: {k0: -1, k1: -1, layer: world, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-giving-hands-mat.js}
+  physics: none
+  primitive: {kind: scripted, params: {h: 180, w: 320}, script: scripts/vision-giving-hands-geo.js}
+  receiveShadow: false
+  tags: [trip, vision-giving-hands]
+vision-giving-hands-worm-1:
+  castShadow: false
+  feetPosition: {x: 0, y: 1020, z: 0}
+  id: vision-giving-hands-worm-1
+  material: {kind: scripted, params: {k0: -1, k1: -1, n: 1, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-giving-hands-worm-mat.js}
+  physics: none
+  primitive: {kind: scripted, script: scripts/vision-giving-hands-worm-geo.js}
+  receiveShadow: false
+  tags: [trip, vision-giving-hands]
+vision-giving-hands-worm-2:
+  castShadow: false
+  feetPosition: {x: 0, y: 1020, z: 0}
+  id: vision-giving-hands-worm-2
+  material: {kind: scripted, params: {k0: -1, k1: -1, n: 2, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-giving-hands-worm-mat.js}
+  physics: none
+  primitive: {kind: scripted, script: scripts/vision-giving-hands-worm-geo.js}
+  receiveShadow: false
+  tags: [trip, vision-giving-hands]
+vision-giving-hands-worm-3:
+  castShadow: false
+  feetPosition: {x: 0, y: 1020, z: 0}
+  id: vision-giving-hands-worm-3
+  material: {kind: scripted, params: {k0: -1, k1: -1, n: 3, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-giving-hands-worm-mat.js}
+  physics: none
+  primitive: {kind: scripted, script: scripts/vision-giving-hands-worm-geo.js}
+  receiveShadow: false
+  tags: [trip, vision-giving-hands]
+vision-giving-hands-worm-4:
+  castShadow: false
+  feetPosition: {x: 0, y: 1020, z: 0}
+  id: vision-giving-hands-worm-4
+  material: {kind: scripted, params: {k0: -1, k1: -1, n: 4, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-giving-hands-worm-mat.js}
+  physics: none
+  primitive: {kind: scripted, script: scripts/vision-giving-hands-worm-geo.js}
   receiveShadow: false
   tags: [trip, vision-giving-hands]
