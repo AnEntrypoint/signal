@@ -16,7 +16,7 @@ const HALF = [
   // the knot serpents (p,q torus knots standing on the field)
   [118, 58, 1, 118, 90, 0.5, 1, 2, 1],
   // the twin guardians flanking the Eye, cobra-raised, bowing toward it
-  [30, 50, 28, -90, 96, -0.35, -1.9, 3, 0],
+  [34, 52, 28, -90, 96, -0.3, -1.7, 3, 0],
 ];
 export const BODIES = [];
 for (const b of HALF) { BODIES.push(b); BODIES.push([-b[0], b[1], b[2], -b[3], ...b.slice(4)]); }
