@@ -28,8 +28,8 @@ export function material(ctx) {
   const r0 = pair ? 2.2 : 3.8;
   const grow = io(0.55 + pair * 0.06, 0.8, 0.935, 0.965 - pair * 0.01);
   const exists = pair ? step(0.5, rn(7)) : float(1);
-  const tip = smoothstep(grow, grow.sub(0.06), uu);
-  const rad = inv(uu).max(0).pow(0.45).mul(r0).mul(tip.sqrt()).mul(live).mul(exists).mul(step(0.002, grow));
+  const tip = inv(smoothstep(grow.sub(0.06), grow.max(0.0601), uu));          // edges in order: reversed smoothstep is undefined in GLSL
+  const rad = inv(uu).max(0).pow(0.45).mul(r0).mul(tip.max(0).sqrt()).mul(live).mul(exists).mul(step(0.002, grow));
   // spine (being metres, +z toward the camera): two travelling waves, a slower sway in x and a heave in z
   const ph = pair * 2.3 + (sg > 0 ? 0 : 1.3), env = uu.mul(0.85).add(0.15);
   const w1 = uu.mul(8).sub(c.real.mul(1.1)).add(ph).sin().mul(env).mul(5);

@@ -25,7 +25,7 @@ import { positionGeometry, float, vec2, vec3, smoothstep, step, mix, atan2, fwid
 import { tripClock, visionShown, visionU, climb, maskDraw, maskBeads, maskIris, maskLid, nib } from "./lib/trip.js";
 
 const TAU = 6.28318, S = 1.8;
-const at2 = (y, x) => atan2(y, x.add(0.00001));
+const at2 = (y, x) => atan2(y, select(x.abs().lessThan(0.00001), float(0.00001), x));   // atan2(0, 0) is undefined on some GPUs: never both zero
 const DEPTH = { world: 104, ring: 86, being: 74, veil: 64, fore: 52 };
 // one quadrant of a tree (x >= 0, y >= 0), mirrored in x and y by the shader
 function grow(T, LEN, SPR, NS, CURL, a0) {
@@ -96,10 +96,10 @@ export function material(ctx) {
     // coverage: a lobed crown above and its mirrored root-ball below, swelling from her centre
     const g = io(0.25, 0.45, 0.962, 0.99), Rg = g.mul(195);
     const th = at2(ay, ax), nl = pk(10, 3).mul(2).add(5);
-    const lobe = th.mul(nl).mul(2).cos().mul(0.5).add(0.5);
+    const lobe = th.mul(nl).mul(2).cos().mul(0.5).add(0.5).clamp(0, 1);
     const Rl = Rg.mul(lobe.mul(0.14).add(0.86));
     const r = P.length();
-    const buds = step(r, Rl.add(lobe.pow(6).mul(14).mul(g)));                 // each lobe leads with a bud
+    const buds = step(r, Rl.add(lobe.clamp(0, 1).pow(6).mul(14).mul(g)));                 // each lobe leads with a bud
     const cover = step(r, Rl).max(buds).mul(step(0.003, g));
     // the limbs grow with the crown, drawn outward; a kick sends sap out along them
     const spread = mix(0.85, 1.15, rn(17));
@@ -335,12 +335,12 @@ export function material(ctx) {
   const kb = vec2(ka.div(TAU).mul(8).fract().sub(0.5).mul(TAU * 2.5 / 8), ir.sub(2.5)).length();
   const knot = maskIris(ph2, ir.div(1.7)).mul(step(ir, 1.7)).max(step(kb, 0.32).mul(maskBeads(ph2, ka.div(TAU).add(0.5))));
   add(mix(B, W, step(1.7, ir).mul(0.6)).mul(knotRing.max(step(1.7, ir))).add(A.mul(step(ir, 0.6))), knot.mul(is(hv, 1)));
-  const s4 = hx.div(2.4).sqrt().add(hy.div(2.4).sqrt());
+  const s4 = hx.div(2.4).max(0).sqrt().add(hy.div(2.4).max(0).sqrt());
   const star = step(s4, ph2).mul(step(0.01, ph2));
   add(mix(W, B, smoothstep(0.3, 0.9, s4)).mul(step(s4.sub(ph2.mul(0.8)), 0).max(step(ph2.mul(0.8), s4).mul(0.0))).add(B.mul(step(ph2.mul(0.8), s4))), star.mul(is(hv, 2)));
 
   m.colorNode = col;
-  m.opacityNode = cover.mul(visionShown(ctx, c, rr.div(30)));
+  m.opacityNode = cover.mul(visionShown(ctx, c, rr.div(30))).clamp(0, 1);
   m.alphaTest = 0.5;
   return m;
 }
