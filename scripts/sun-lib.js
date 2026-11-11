@@ -25,10 +25,12 @@ export function fam(c) {
   const q = c.phrase.floor().add(8).mod(3);
   const h = float(0.86).add(c.hue.mul(0.35)).add(sel(c.pick(60, 3), [0, 0.1, 0.42])).add(q.mul(0.07));
   const peak = win(c.sec, SEC.peak);
+  const hp = mix(h, float(0.83).add(c.hue.mul(0.08)), peak); // peak: the sun's own run yellow -> orange -> red -> violet -> blue
   const span = mix(float(0.09), float(0.48), peak);
   const gain = float(0.95).add(smoothstep(155.6, 157.1, c.sec).mul(smoothstep(181, 179.5, c.sec)).mul(0.2));
-  const at = (x) => pal(h.add(float(x).mul(span))).mul(gain);
-  return { h, peak, gain, at, hot: () => pal(h.add(0.5)).mul(gain), gold: pal(float(0.88)).mul(gain) };
+  const sat = (v) => v.pow(vec3(2.4)); // linear -> keeps the third channel near 0 after sRGB encode, no pastel
+  const at = (x) => sat(pal(hp.add(float(x).mul(span)))).mul(gain);
+  return { h, peak, gain, at, hot: () => sat(pal(hp.add(0.5))).mul(gain), gold: sat(pal(float(0.88))).mul(gain) };
 }
 const max3 = (v) => v.x.max(v.y).max(v.z);
 // at rest graphite that keeps the form; lit = the colour

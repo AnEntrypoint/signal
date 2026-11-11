@@ -32,11 +32,11 @@ export function material(ctx) {
   const lit = mix(sweep(c, float(PI).sub(a.abs())).max(ripple(c, s.add(13)).mul(0.6)), clockLit.max(ripple(c, s.add(13)).mul(0.35)), clockOn).max(allLit(c));
   const chev = stripes(s.sub(x.abs().mul(0.7)).sub(sec.mul(0.3)), 0.8, 0.05);
   const body = F.at(smoothstep(0, 30, s).mul(0.7)).mul(mix(1, 0.12, chev));
-  const headCol = mix(mix(F.at(0).mul(0.75).add(0.25), vec3(0), step(dh, 0.62)), F.hot(), step(dh, 0.48));
+  const headCol = mix(mix(F.at(0), vec3(0), step(dh, 0.62)), F.hot(), step(dh, 0.48));
   // flame: white-hot head, yellow -> orange -> red tail, no chevrons
   const tailT = float(1).sub(smoothstep(0, Ld, s));
   const fTail = mix(mix(vec3(...HUE.red), vec3(...HUE.orange), smoothstep(0.0, 0.5, tailT)), vec3(...HUE.yellow), smoothstep(0.5, 1.0, tailT)).mul(0.9);
-  const fHead = mix(vec3(...HUE.yellow).mul(0.95), vec3(1.0, 0.95, 0.8), step(dh, 0.6));
+  const fHead = mix(vec3(...HUE.yellow).mul(0.95), vec3(1.0, 0.9, 0.55), step(dh, 0.6));
   const col = mix(mix(body, headCol, head), mix(fTail, fHead, head), flame);
   const glow = clockLit.mul(allLit(c)).mul(0.25);
   const m = new MeshBasicNodeMaterial();
