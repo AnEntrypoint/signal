@@ -9,6 +9,16 @@ chamber:
   primitive: {kind: scripted, params: {}, script: scripts/chamber-room-geo.js}
   receiveShadow: false
   tags: [trip, chamber]
+chamber-circuit:
+  audience: all
+  castShadow: false
+  feetPosition: {x: 0, y: 15, z: -362}
+  id: chamber-circuit
+  material: {kind: scripted, params: {"on": 0, t0: 0}, script: scripts/chamber-circuit-mat.js}
+  physics: none
+  primitive: {kind: scripted, params: {}, script: scripts/chamber-circuit-geo.js}
+  receiveShadow: false
+  tags: [trip, chamber]
 chamber-hands:
   audience: all
   castShadow: false
@@ -27,6 +37,16 @@ chamber-hex:
   material: {kind: scripted, params: {"on": 0, t0: 0}, script: scripts/chamber-hex-mat.js}
   physics: none
   primitive: {kind: scripted, params: {}, script: scripts/chamber-hex-geo.js}
+  receiveShadow: false
+  tags: [trip, chamber]
+chamber-liss:
+  audience: all
+  castShadow: false
+  feetPosition: {x: 0, y: 15, z: -362}
+  id: chamber-liss
+  material: {kind: scripted, params: {"on": 0, t0: 0}, script: scripts/chamber-liss-mat.js}
+  physics: none
+  primitive: {kind: scripted, params: {}, script: scripts/chamber-liss-geo.js}
   receiveShadow: false
   tags: [trip, chamber]
 chamber-solids:
