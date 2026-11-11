@@ -17,17 +17,18 @@ import { Y0 } from "./vision-sun-father-geo.js";
 const TAU = 6.28318, PI = 3.14159;
 const R = 8.0; // the disc's radius
 
-export function material(ctx0) {
-  // test hook: params.fixSec freezes the layer at one moment of a 12 s slot (a still for checking; never set in play)
-  const fix = ctx0.params && ctx0.params.fixSec;
-  const ctx = fix == null ? ctx0 : Object.assign(Object.create(ctx0), { param: (n, d) => n === "vw0" ? float(0) : n === "vw1" ? float(12) : n === "k0" ? float(0) : n === "k1" ? float(30) : ctx0.param(n, d) });
+export function material(ctx) {
   const layer = (ctx.params && ctx.params.layer) || "sun";
-  let c = tripClock(ctx);
-  if (fix != null) c = { ...c, sec: float(fix), beat: float((fix - SCORE.firstBeat) * BPS), bar: float((fix - SCORE.firstBeat) * BPS / 4), on: float(1) };
+  // a still for checking: param fix >= 0 freezes this being at that second (live uniform; -1 in play)
+  const c0 = tripClock(ctx), fixP = ctx.param("fix", -1), frozen = fixP.greaterThan(-0.5);
+  const sec = select(frozen, fixP, c0.sec);
+  const beat = sec.sub(SCORE.firstBeat).mul(BPS);
+  const c = { ...c0, sec, beat, bar: beat.div(4), on: select(frozen, float(1), c0.on) };
   const u = visionU(ctx, c);
   const vw0 = ctx.param("vw0", -1), vw1 = ctx.param("vw1", -1);
   const k0 = ctx.param("k0", -1), k1 = ctx.param("k1", -1);
   const kLive = smoothstep(k0.sub(0.05), k0, c.sec).mul(smoothstep(k1.add(0.05), k1, c.sec));
+  const kick = float(1).sub(beat.fract()).pow(5).mul(kLive).mul(step(SCORE.firstBeat, sec));
   const ex = smoothstep(vw1, vw1.sub(0.5), c.sec);           // 1 until the last half second, then the exit runs to 0
   const peak = climb(c).mul(smoothstep(0.66, 0.76, u));      // the culmination: overtones climbing, late in the slot
   const turn = c.dir.mul(c.rnd(15).step(0.5).mul(2).sub(1)); // this being's own turning sense
@@ -58,11 +59,10 @@ export function material(ctx0) {
   };
   // the kick's light: a thin ring leaving the eye on each kick, crossing 18 m in one beat
   const kr = c.beat.fract().mul(18);
-  const kickLight = smoothstep(2.2, 0, r.sub(kr).abs()).mul(c.kick).mul(1.6);
+  const kickLight = smoothstep(2.2, 0, r.sub(kr).abs()).mul(kick).mul(1.6);
 
   const m = new MeshBasicNodeMaterial();
   m.side = DoubleSide;
-  m.toneMapped = false;
   m.alphaTest = 0.5;
   let col = vec3(0), cover = float(0);
 
@@ -175,7 +175,7 @@ export function material(ctx0) {
     const rayShape = mix(rayLine, rayBead, rayLong);
     const rayM = rayShape.mul(maskDraw(rayP, ru));
     const rayNib = nib(rayP, ru, 0.06).mul(step(rq.abs(), 0.3)).mul(step(rayP, 0.99)).mul(step(0.01, rayP));
-    const rayGlow = float(0.5).add(kickLight).add(smoothstep(0.15, 0, ru.sub(c.beat.fract()).abs()).mul(c.kick)).add(peak);
+    const rayGlow = float(0.5).add(kickLight).add(smoothstep(0.15, 0, ru.sub(c.beat.fract()).abs()).mul(kick)).add(peak);
 
     // crown: 2N flame teardrops on a ring at 16.5 m pointing out, lighting top-down; the lower ones drip slowly
     const M = N.mul(2), cv = c.pick(13, 2);
