@@ -230,7 +230,8 @@ export function material(ctx) {
     .add(G(x2.div(1.5).add(sq(fy.add(5.6)).div(0.8))).mul(0.6));
   const Hf = dome.mul(3.6).add(feat.mul(ep.div(0.25).min(1)));
   const eb = float(1).sub(sq(p.x.div(38))).sub(sq(p.y.add(40).div(26)));
-  const neckIn = step(-17, p.y).mul(step(p.y, -8)), en = float(1).sub(sq(p.x.div(5.4))).mul(neckIn).sub(float(1).sub(neckIn));
+  // the neck: a waisted column, flaring into the shoulders and tapering under the jaw (no square corners)
+  const nw = smoothstep(-12, -19, p.y).mul(3.2).add(5.4), en = float(1).sub(sq(p.x.div(nw))).sub(sq(p.y.add(6).max(0).div(4))).sub(sq(p.y.add(19).negate().max(0).div(2)));
   const Dn = G(sq(p.x.div(5))).mul(smoothstep(-20, -13, p.y)).mul(smoothstep(-5, -10, p.y)).mul(3);
   const F = e.max(eb).max(en);
   const amp = S(0.06, 0.3).mul(t.mul(0.8).sin().mul(0.07).add(0.93));          // the relief rises, then breathes
