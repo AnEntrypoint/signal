@@ -25,7 +25,7 @@ export function material(ctx) {
   const H = PNK.mul(is(hot, 0)).add(YEL.mul(is(hot, 1))).add(GRN.mul(is(hot, 2)));
 
   const uu = positionGeometry.y, ca = positionGeometry.x, sa = positionGeometry.z;
-  const r0 = top ? 2.4 : 3.4;
+  const r0 = top ? 2.8 : 3.6;
   const count = pk(15, 3).add(2);
   const exists = step(float(n), count.add(0.1));
   const grow = io(0.55 + top * 0.04, 0.8, 0.93 + top * 0.004, 0.965);
@@ -41,8 +41,8 @@ export function material(ctx) {
   const ls = step(0.5, rn(14)).mul(2).sub(1);
   const la = uu.mul(TAU).mul(ls).add(ph), lr = uu.mul(3.1416).sin().mul(13);
   const base = top
-    ? vec3(uu.mul(-56).add(108).mul(sg), uu.mul(-34).add(62), uu.mul(70).sub(45))
-    : vec3(uu.mul(-56).add(104).mul(sg), uu.mul(46).sub(66), uu.mul(75).sub(45));
+    ? vec3(uu.mul(-78).add(108).mul(sg), uu.mul(-42).add(62), uu.mul(70).sub(45))
+    : vec3(uu.mul(-74).add(104).mul(sg), uu.mul(50).sub(66), uu.mul(75).sub(45));
   const spine = base.add(vec3(la.cos().mul(lr).mul(sg).add(w1), la.sin().mul(lr).mul(0.45).add(w2.mul(0.6)), la.sin().mul(lr).add(w2.mul(0.8))));
   const m = new MeshBasicNodeMaterial();
   m.side = DoubleSide;
