@@ -25,6 +25,7 @@ import { positionGeometry, float, vec2, vec3, smoothstep, step, mix, atan2, fwid
 import { tripClock, visionShown, visionU, climb, maskDraw, maskBeads, maskIris, maskLid, nib } from "./lib/trip.js";
 
 const TAU = 6.28318, S = 1.8;
+const at2 = (y, x) => atan2(y, x.add(0.00001));
 const DEPTH = { world: 104, ring: 86, being: 74, veil: 64, fore: 52 };
 // one quadrant of a tree (x >= 0, y >= 0), mirrored in x and y by the shader
 function grow(T, LEN, SPR, NS, CURL, a0) {
@@ -94,7 +95,7 @@ export function material(ctx) {
     const ax = P.x.abs(), ay = P.y.abs();
     // coverage: a lobed crown above and its mirrored root-ball below, swelling from her centre
     const g = io(0.25, 0.45, 0.962, 0.99), Rg = g.mul(195);
-    const th = atan2(ay, ax), nl = pk(10, 3).mul(2).add(5);
+    const th = at2(ay, ax), nl = pk(10, 3).mul(2).add(5);
     const lobe = th.mul(nl).mul(2).cos().mul(0.5).add(0.5);
     const Rl = Rg.mul(lobe.mul(0.14).add(0.86));
     const r = P.length();
@@ -162,10 +163,10 @@ export function material(ctx) {
     for (const w of W3) {
       const e = vec2(p.x.div(w.a), p.y.sub(w.cy).div(w.b)), f = e.length();
       const d = f.sub(1).abs().mul(f).div(vec2(e.x.div(w.a), e.y.div(w.b)).length().max(0.0001));
-      const th = atan2(e.y, e.x);
+      const th = at2(e.y, e.x);
       const rot = c.real.div(w.per).mul(speed).mul(sg).mul(w.s);
       const pe = io(w.from, w.from + 0.08, w.out, w.out + 0.01);
-      const drawn = maskDraw(pe, atan2(e.x.abs(), e.y.negate()).div(TAU / 2));     // from the near point round both sides
+      const drawn = maskDraw(pe, at2(e.x.abs(), e.y.negate()).div(TAU / 2));     // from the near point round both sides
       const dash = step(th.div(TAU).add(rot).mul(w.n).fract(), 0.55);
       const line = inv(smoothstep(float(0.035), blur.add(0.035), d)).mul(dash).mul(drawn);
       const pa = rot.mul(-TAU);
@@ -278,7 +279,7 @@ export function material(ctx) {
   const flip = maskIris(fp, fd0).mul(step(er, 1)).mul(half);
   const G = mix(A, W, 0.12).mul(0.85);
   add(G, flip);
-  const ea = atan2(ey, ex);
+  const ea = at2(ey, ex);
   add(W, stroke2(er.sub(1).abs().mul(8), 0.1).mul(step(ea.div(TAU).mul(40).fract(), 0.5)).mul(maskIris(fp, fd0)).mul(half).mul(step(0.01, fp)));
   function stroke2(dd, w) { return inv(smoothstep(float(w), aa.add(w), dd)); }
 
@@ -329,7 +330,7 @@ export function material(ctx) {
   const ir = hp.length();
   const eyeC = mix(mix(B, W, 0.2), vec3(0), step(ir, 0.45)).mul(step(ir, 0.95)).add(A.mul(eyeRim).mul(1.2)).add(W.mul(step(vec2(hp.x.sub(0.25), hp.y.sub(0.25)).length(), 0.14)));
   add(eyeC, eyeIn.mul(is(hv, 0)));
-  const ka = atan2(hp.y, hp.x);
+  const ka = at2(hp.y, hp.x);
   const knotRing = step(ir.sub(1.5).abs(), 0.16);
   const kb = vec2(ka.div(TAU).mul(8).fract().sub(0.5).mul(TAU * 2.5 / 8), ir.sub(2.5)).length();
   const knot = maskIris(ph2, ir.div(1.7)).mul(step(ir, 1.7)).max(step(kb, 0.32).mul(maskBeads(ph2, ka.div(TAU).add(0.5))));
