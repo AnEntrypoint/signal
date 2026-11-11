@@ -17,11 +17,12 @@ import { Y0 } from "./vision-sun-father-geo.js";
 const TAU = 6.28318, PI = 3.14159;
 const R = 8.0; // the disc's radius
 
-export function material(ctx) {
+export function material(ctx0) {
+  // test hook: params.fixSec freezes the layer at one moment of a 12 s slot (a still for checking; never set in play)
+  const fix = ctx0.params && ctx0.params.fixSec;
+  const ctx = fix == null ? ctx0 : Object.assign(Object.create(ctx0), { param: (n, d) => n === "vw0" ? float(0) : n === "vw1" ? float(12) : n === "k0" ? float(0) : n === "k1" ? float(30) : ctx0.param(n, d) });
   const layer = (ctx.params && ctx.params.layer) || "sun";
   let c = tripClock(ctx);
-  // test hook: params.fixSec freezes this layer at one moment of the roll (a still for checking; never set in play)
-  const fix = ctx.params && ctx.params.fixSec;
   if (fix != null) c = { ...c, sec: float(fix), beat: float((fix - SCORE.firstBeat) * BPS), bar: float((fix - SCORE.firstBeat) * BPS / 4), on: float(1) };
   const u = visionU(ctx, c);
   const vw0 = ctx.param("vw0", -1), vw1 = ctx.param("vw1", -1);
