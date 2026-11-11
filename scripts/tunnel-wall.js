@@ -50,7 +50,7 @@ export function material(ctx) {
     .add(c3.mul(w(3))).add(c4.mul(w(4))).add(c5.mul(w(5))).add(c6.mul(w(6))).add(c7.mul(w(7)));
   // deep: rings only, crawling
   const ud = T.d.div(12).add(c.sec.mul(0.06));
-  col = mix(BLUE.mul(stripes(ud, 2, 0.03)), col, flight);
+  col = mix(BLUE.mul(stripes(ud, 6, 0.03)), col, flight);
   // graphite at rest; the travelling light brings the colour through
   const Lt = light(c, T.d);
   col = mix(GRAPH.mul(max(col.x, max(col.y, col.z)).min(1)), col, Lt.L);
