@@ -1,0 +1,28 @@
+# spawn-scene v2 yaml x0y5z0
+vision-many-armed:
+  castShadow: false
+  feetPosition: {x: 0, y: 620, z: 0}
+  id: vision-many-armed
+  material: {kind: scripted, params: {k0: -1, k1: -1, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-many-armed-mat.js}
+  physics: none
+  primitive: {kind: scripted, params: {layer: being}, script: scripts/vision-many-armed-geo.js}
+  receiveShadow: false
+  tags: [trip, vision-many-armed]
+vision-many-armed-ring:
+  castShadow: false
+  feetPosition: {x: 0, y: 620, z: -10}
+  id: vision-many-armed-ring
+  material: {kind: scripted, params: {k0: -1, k1: -1, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-many-armed-mat.js}
+  physics: none
+  primitive: {kind: scripted, params: {layer: ring}, script: scripts/vision-many-armed-geo.js}
+  receiveShadow: false
+  tags: [trip, vision-many-armed]
+vision-many-armed-veil:
+  castShadow: false
+  feetPosition: {x: 0, y: 620, z: 12}
+  id: vision-many-armed-veil
+  material: {kind: scripted, params: {k0: -1, k1: -1, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-many-armed-mat.js}
+  physics: none
+  primitive: {kind: scripted, params: {layer: veil}, script: scripts/vision-many-armed-geo.js}
+  receiveShadow: false
+  tags: [trip, vision-many-armed]
