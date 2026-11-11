@@ -131,15 +131,24 @@ export function look(ctx) {
   const cellD = (n) => kq.mul(n).fract().sub(0.5);
   const hexD = (n) => { const q = kq.mul(n), R = vec2(1, 1.732), h = R.mul(0.5);
     return q.mod(R).sub(h).length().min(q.sub(h).mod(R).sub(h).length()); };
+  // symbol windows (creator 11-11 13:00: "these stripes and dots are a lot worse than more meaningful masks"): each peak
+  // phrase deals ONE emblem, centred, that the mirror world shows through; it swells slowly over the phrase and breathes
+  const symS = sec.sub(SEC.peak[0]).div(12).fract().mul(0.3).add(0.85).add(breath.mul(0.04));
+  const q = kq.div(symS), qr = q.length(), qa = atan(q.x, q.y);
+  const IN = (d) => smoothstep(0.006, -0.006, d);                         // 1 inside a shape whose edge is d = 0
+  const circ = (cx, cy, r) => q.sub(vec2(cx, cy)).length().sub(r);
+  const tri = (h, flip) => { let d = float(-9); for (const a of [90, 210, 330]) { const t = (a * Math.PI) / 180;
+    d = d.max(q.x.mul(Math.cos(t) * flip).add(q.y.mul(Math.sin(t) * flip))); } return d.sub(h); };
+  const almond = circ(0, -0.27, 0.42).max(circ(0, 0.27, 0.42));
   const KMASKS = [
-    float(1).sub(smoothstep(0.27, 0.3, cellD(9).length().sub(breath.mul(0.06)))),                                    // dots, breathing
-    band(kr2.mul(6).sub(sec.mul(0.3)), breath.mul(0.05).add(0.2)),                                      // iris rings flowing out
-    band(ka2.div(TAU).mul(sym).add(kr2.mul(4)).sub(sec.mul(0.12)), float(0.22)),                        // spiral arms, sym-fold
-    band(kq.x.add(kq.y).mul(7).add(kq.y.mul(5).add(sec).sin().mul(0.35)).sub(sec.mul(0.2)), float(0.21)), // op-art stripes, wavering
-    float(1).sub(smoothstep(0.27, 0.3, hexD(8).add(kr2.mul(0.18)).sub(breath.mul(0.05)))),                           // hex beads, smaller to the rim
-    float(1).sub(smoothstep(0, 0.02, cellD(13).length().sub(kr2.mul(4).sub(sec.mul(0.8)).sin().mul(0.5).add(0.5).mul(0.46)))), // halftone wave
-    band(kr2.mul(3.2).sub(ka2.mul(sym).add(kRot).cos().mul(0.28)).sub(sec.mul(0.18)), float(0.23)),      // nested petals
-    float(1).sub(smoothstep(0.97, 1.03, cellD(6).x.abs().div(breath.mul(0.05).add(0.11)).add(cellD(6).y.mul(cellD(6).y).mul(4.4)))), // pupil slits
+    IN(almond).mul(float(1).sub(IN(circ(0, 0, 0.12).abs().sub(0.012)))),                                // the eye: almond, iris ring left closed
+    IN(circ(0, 0, 0.36).max(circ(0.13, 0.05, 0.31).negate())),                                         // crescent moon
+    IN(qr.sub(qa.mul(4).add(kRot.mul(0.3)).cos().abs().pow(0.6).mul(0.22).add(0.16))),                  // lotus, eight petals turning
+    IN(circ(0, 0, 0.15)).max(IN(qr.sub(0.42)).mul(IN(float(0.2).sub(qr))).mul(step(0.55, qa.mul(12).sub(kRot).cos()))), // rayed sun
+    IN(tri(0.17, 1).min(tri(0.17, -1))),                                                               // six-point star
+    IN(qr.sub(0.31).abs().sub(qa.add(kRot).div(TAU).fract().mul(0.055).add(0.012))),                  // ouroboros: a ring tapering tail to head
+    IN(circ(0, 0.07, 0.13).min(q.x.abs().sub(float(0.05).add(float(0.07).sub(q.y).mul(0.22))).max(q.y.sub(0.07)).max(q.y.negate().sub(0.3)))), // keyhole
+    IN(tri(0.22, 1)).mul(float(1).sub(IN(tri(0.1, -1)))),                                               // triangle holding an inverted one
   ];
   const kPick = (salt) => pi.add(c.seed.mul(0.37)).add(salt).mul(91.7).sin().mul(43758.5453).fract().mul(KMASKS.length).floor();
   const kMask = (salt) => { const i = kPick(salt); return KMASKS.reduce((acc, m, j) => acc.add(m.mul(on1(i.sub(j).abs().lessThan(0.5)))), float(0)); };
