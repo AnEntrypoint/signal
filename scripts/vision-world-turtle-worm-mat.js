@@ -33,9 +33,12 @@ export function material(ctx) {
   const ph = pair * 2.1 + (sg > 0 ? 0 : 0.9), env = uu.mul(0.8).add(0.2);
   const w1 = uu.mul(9).sub(c.real.mul(1.3)).add(ph).sin().mul(env).mul(5);
   const w2 = uu.mul(7).sub(c.real.mul(0.9)).add(ph * 1.7).cos().mul(env).mul(4);
+  // sea eels: n 1, 2 dive in from the upper corners behind the sea and wind down past the front flippers toward the
+  // camera; n 3, 4 rise from the lower corners past the rear flippers. A third, slower wave makes them sinuous.
+  const w3 = uu.mul(4).sub(c.real.mul(0.5)).add(ph).sin().mul(env).mul(6);
   const spine = pair
-    ? vec3(uu.mul(-50).add(102).mul(sg).add(w1), uu.mul(-52).add(68).add(w2.mul(0.6)), uu.mul(62).sub(40).add(w2.mul(0.8)))
-    : vec3(uu.mul(-56).add(96).mul(sg).add(w1), uu.mul(58).sub(62).add(w2.mul(0.6)), uu.mul(70).sub(40).add(w2.mul(0.8)));
+    ? vec3(uu.mul(-58).add(104).mul(sg).add(w1), uu.mul(46).sub(66).add(w2.mul(0.6)).add(w3), uu.mul(62).sub(40).add(w2.mul(0.8)))
+    : vec3(uu.mul(-62).add(100).mul(sg).add(w1).add(w3.mul(0.5)), uu.mul(-70).add(60).add(w2.mul(0.6)), uu.mul(70).sub(40).add(w2.mul(0.8)));
   const m = new MeshBasicNodeMaterial();
   m.side = DoubleSide;
   m.positionNode = spine.add(vec3(ca.mul(rad), sa.mul(rad).mul(0.8), sa.mul(rad).mul(-0.6)));
