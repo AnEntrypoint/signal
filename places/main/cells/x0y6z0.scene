@@ -1,8 +1,28 @@
 # spawn-scene v2 yaml x0y6z0
 vision-thunderbird:
-  feetPosition: {x: 0, y: 800, z: 0}
+  castShadow: false
+  feetPosition: {x: 0, y: 820, z: 0}
   id: vision-thunderbird
-  material: {kind: scripted, script: engine/blueprint}
+  material: {kind: scripted, params: {k0: -1, k1: -1, layer: being, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-thunderbird-mat.js}
   physics: none
-  primitive: {depth: 1, height: 40, kind: box, width: 64}
-  tags: [blueprint]
+  primitive: {kind: scripted, params: {h: 40, w: 64}, script: scripts/vision-thunderbird-geo.js}
+  receiveShadow: false
+  tags: [trip, vision-thunderbird]
+vision-thunderbird-ring:
+  castShadow: false
+  feetPosition: {x: 0, y: 820, z: -12}
+  id: vision-thunderbird-ring
+  material: {kind: scripted, params: {k0: -1, k1: -1, layer: ring, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-thunderbird-mat.js}
+  physics: none
+  primitive: {kind: scripted, params: {h: 48, w: 48}, script: scripts/vision-thunderbird-geo.js}
+  receiveShadow: false
+  tags: [trip, vision-thunderbird]
+vision-thunderbird-veil:
+  castShadow: false
+  feetPosition: {x: 0, y: 820, z: 10}
+  id: vision-thunderbird-veil
+  material: {kind: scripted, params: {k0: -1, k1: -1, layer: veil, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-thunderbird-mat.js}
+  physics: none
+  primitive: {kind: scripted, params: {h: 56, w: 90}, script: scripts/vision-thunderbird-geo.js}
+  receiveShadow: false
+  tags: [trip, vision-thunderbird]
