@@ -119,7 +119,7 @@ export function shown(c, name, d = 0) {
   // so NOTHING may stand on it. Every piece is out by the seam itself and the next scene builds out of the dark;
   // the companion worms and the bend carry the eye across that half-second.
   const seamGate = smoothstep(0, 0.06, mix(float(-0.1), float(1.25), c.seamD.div(SCORE.deck.seam).clamp(0, 1))
-    .sub(pieceLag(name).div(SCORE.piece ?? 2.25).mul(0.25).add(float(d).clamp(0, 1).mul(0.35)).add(turn * 0.45))); // the heart of every layer stands through the drop: never an empty frame
+    .sub(pieceLag(name).div(SCORE.piece ?? 2.25).mul(0.25).add(float(d).clamp(0, 1).mul(0.35)).add(turn * 0.45).mul(0.38))); // 2026-11-11: the seam watched went black for ~10 s; now pieces thin out over ~6 s and the full dark is under 1 s // the heart of every layer stands through the drop: never an empty frame
   const lag = float(d).clamp(0, 1).mul(SCORE.wipe).add(pieceLag(name));
   let v = float(0);
   for (const [a0, b] of SCORE.layers[name]) {
