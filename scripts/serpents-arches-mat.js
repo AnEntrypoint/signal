@@ -25,7 +25,7 @@ export function material(ctx) {
   const col = mix(lines.mul(1.4), rainbow, pk);
   const L = smoothstep(0.3, 0.0, s.sub(c.sec.div(24).mul(side)).fract()).max(pk);
   m.colorNode = finish(c, col, L, s.mul(60));
-  m.opacityNode = shown(c, "serpents", s.sub(0.5).abs().mul(2));
+  m.opacityNode = shown(c, "serpents", s.sub(0.5).abs().mul(2)).mul(step(108.35, c.sec)).mul(step(c.sec, 190));
   m.alphaTest = 0.5;
   m.side = DoubleSide;
   m.fog = false;
