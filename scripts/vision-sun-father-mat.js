@@ -205,7 +205,7 @@ export function material(ctx) {
     const sunCover = coverDisc.mul(free).max(rayM).max(rayNib).max(crown).max(corona).max(contact).max(moon).max(pupilBlack.mul(free));
     cover = sunCover.mul(visionShown(ctx, c, r.div(18)));
   }
-  if (ctx.params && ctx.params.debug) { col = vec3(c.sec.div(16).fract(), u, visionShown(ctx, c, 0)); cover = float(1); }
+  if (ctx.params && ctx.params.debug) { col = vec3(step(6, c.sec).mul(step(c.sec, 14)), step(0.4, u).mul(step(u, 0.9)), visionShown(ctx, c, 0)).mul(0.2); cover = float(1); }
   m.colorNode = col.mul(2.2);
   m.opacityNode = cover;
   return m;
