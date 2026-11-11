@@ -3,8 +3,8 @@
 // each frame late by its radius. Frames step a few degrees per bar, neighbours opposite at two crawl rates;
 // on the fill (93.35 .. 96.35) they fly apart along z and snap back.
 import { MeshBasicNodeMaterial } from "builtin/three";
-import { positionLocal, uv, vec3, float, floor, smoothstep, step, sin, cos, select, mix, max } from "builtin/tsl";
-import { tripClock } from "./lib/trip.js";
+import { positionLocal, positionWorld, length, uv, vec3, float, floor, smoothstep, step, sin, cos, select, mix, max } from "builtin/tsl";
+import { tripClock, shown } from "./lib/trip.js";
 import { near, alive, ripple, breath, family } from "./chamber-fx.js";
 
 export function material(ctx) {
@@ -31,7 +31,7 @@ export function material(ctx) {
   const beadC = mix(F.a, F.b, id.mod(2)).mul(lit.mul(3.0).add(0.12));
   m.colorNode = mix(line, beadC, isBead).mul(g.mul(0.6));
   const reveal = c.sec.sub(82.35).div(4).sub(id.mul(0.03));
-  m.opacityNode = step(v, reveal.mul(1.1));
+  m.opacityNode = step(v, reveal.mul(1.1)).mul(shown(c, "chamber", length(positionWorld.sub(vec3(0, 15, -362))).div(34)));
   m.alphaTest = 0.5;
   return m;
 }

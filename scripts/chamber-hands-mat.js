@@ -5,7 +5,7 @@
 // 84.35 .. 90 and back out on the fill; left is the right mirrored.
 import { MeshBasicNodeMaterial } from "builtin/three";
 import { positionLocal, positionWorld, normalView, uv, vec2, vec3, float, floor, length, abs, sign, smoothstep, step, max, mix, sin, fwidth } from "builtin/tsl";
-import { tripClock } from "./lib/trip.js";
+import { tripClock, shown } from "./lib/trip.js";
 import { near, alive, ripple, breath, family, pxLine, pxEdge } from "./chamber-fx.js";
 
 export function material(ctx) {
@@ -16,7 +16,7 @@ export function material(ctx) {
   const isF = step(id, 4.5), isArm = step(5.5, id), isPalm = float(1).sub(isF).sub(isArm);
   // vertex: slide, breath, curl
   const p = positionLocal, sx = sign(p.x);
-  const reach = smoothstep(84.35, 90, c.sec).mul(float(1).sub(smoothstep(93.35, 95.6, c.sec)));
+  const reach = smoothstep(84.35, 90, c.sec).mul(float(1).sub(smoothstep(93.35, 95.6, c.sec).mul(0.45)));
   const eV = ripple(c, length(p.xy));
   const bend = t.max(0).mul(0.45).add(t.sub(1).max(0).mul(0.5)).add(t.sub(2).max(0).mul(0.45));
   const curl = bend.mul(isF).mul(eV.mul(0.32).add(breath(c).mul(0.12)));
@@ -42,5 +42,7 @@ export function material(ctx) {
     .add(F.hot.mul(hollow).mul(e.mul(1.5).add(1.0)))
     .add(F.b.mul(pupil).mul(e.mul(2.4).add(0.3)));
   m.colorNode = col.mul(g.mul(0.6));
+  m.opacityNode = shown(c, "hands", dist.div(24));
+  m.alphaTest = 0.5;
   return m;
 }

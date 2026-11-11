@@ -4,7 +4,7 @@
 // line ring, odd slots a ring of little targets (hollow circle, black, hot pupil), neighbours counter-crawling.
 import { MeshBasicNodeMaterial, DoubleSide } from "builtin/three";
 import { positionWorld, positionLocal, vec2, vec3, float, length, floor, fwidth, abs, smoothstep, saturate, max, atan2, log2, pow, select, mix, sin, step } from "builtin/tsl";
-import { tripClock } from "./lib/trip.js";
+import { tripClock, shown } from "./lib/trip.js";
 import { near, alive, ripple, breath, family } from "./chamber-fx.js";
 
 export function material(ctx) {
@@ -46,6 +46,11 @@ export function material(ctx) {
   const dotC = F.b.mul(hollow).mul(lit.mul(2.2).add(0.1)).add(F.hot.mul(pupil).mul(max(lit, chase).mul(2.6).add(0.12)));
   m.colorNode = mix(lineC, dotC, par).mul(g.mul(0.6));
   m.positionNode = positionLocal.mul(alive(g));
+  // cutout: the room opens as an iris on the layer score; inside its window one line slot in four is cut away,
+  // the gap stepping outward a slot per bar, uncovering the void behind the wall
+  const gap = step(idx.add(floor(c.bar)).mod(4), 0.5).mul(float(1).sub(par)).mul(step(6, d));
+  m.opacityNode = shown(c, "chamber", length(positionWorld.sub(vec3(0, 15, -362))).div(34)).mul(float(1).sub(gap));
+  m.alphaTest = 0.5;
   m.side = DoubleSide;
   return m;
 }

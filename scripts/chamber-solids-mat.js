@@ -1,8 +1,8 @@
 // Six tumbling line icosahedra in the chamber's floor corners, left and right exact mirrors: a turn per 12 s
 // (small things may), dim at rest, a plane of light passing through each, swelling as the kick's ripple arrives.
 import { MeshBasicNodeMaterial } from "builtin/three";
-import { positionLocal, instanceIndex, vec3, float, sin, cos, select, smoothstep, max } from "builtin/tsl";
-import { tripClock } from "./lib/trip.js";
+import { positionLocal, positionWorld, length, instanceIndex, vec3, float, sin, cos, select, smoothstep, max } from "builtin/tsl";
+import { tripClock, shown } from "./lib/trip.js";
 import { near, alive, ripple, breath, family } from "./chamber-fx.js";
 
 export function material(ctx) {
@@ -21,5 +21,7 @@ export function material(ctx) {
   const w = positionLocal.y.div(9).add(c.sec.div(6)).fract();
   const lit = max(smoothstep(0, 0.05, w).mul(float(1).sub(smoothstep(0.2, 0.4, w))), e.mul(0.7));
   m.colorNode = F.b.mul(lit.mul(2.6).add(0.14)).mul(g.mul(0.6));
+  m.opacityNode = shown(c, "chamber", length(positionWorld.sub(vec3(0, 15, -362))).div(34));
+  m.alphaTest = 0.5;
   return m;
 }
