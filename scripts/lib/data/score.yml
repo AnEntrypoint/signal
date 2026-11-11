@@ -32,7 +32,7 @@ wipe: 6     # slow: a layer opens out of the dark over 4 bars (was 3)
 # The scene holds the whole stretch: its own clock stretched or tightened to fit, the camera cutting on the drop.
 # seed (0-12.35) and return (180.35-198) stay put. 12 s stretches take a short scene, the rest a long one.
 deck:
-  segments: [[12.35, 96.35], [96.35, 180.35]]   # 2026-11-11 creator: ~4x fewer scene changes; two long scenes a roll
+  segments: [[12.35, 180.35]]   # 2026-11-11 13:05 creator: 'scenes still change 2-4x too frequently': one scene holds kick to return; the beings come and go through it
   long: [bloom, flight, ascent, peak]
   short: [pulse, deep, hex, reset]
   seam: 6       # seconds either side of a drop over which pieces leave / arrive
