@@ -4,7 +4,7 @@
 // kick is a thin ring leaving the pupil rim and reaching the outer edge one beat later, lighting what it passes.
 // Neighbour rows crawl opposite ways at different rates (48..96 s a turn). One hue family per phrase (eye-lib fam).
 import { MeshBasicNodeMaterial } from "builtin/three";
-import { positionGeometry, float, vec3, smoothstep, mix, step, atan2, length, fwidth } from "builtin/tsl";
+import { positionGeometry, float, vec2, vec3, smoothstep, mix, step, atan2, length, fwidth } from "builtin/tsl";
 import { tripClock, win, SEC, shown } from "./lib/trip.js";
 import { TAU, fam, sweep, relight, gate, breathScale } from "./eye-lib.js";
 
@@ -34,6 +34,29 @@ export function material(ctx) {
   const odd = ph.floor().mul(0.5).fract().mul(2);
   col = mix(col, mix(F.A.mul(0.1), mix(F.A, F.B, odd), ringM), band(5.3, 8.3));
   col = mix(col, white.mul(1.1), band(4.9, 5.3));
+  // THE SECTION'S MATHS (score.yml maths), drawn in the ring zone and again in the fibre band while the Eye leads:
+  // seed: Apollonian gasket by iterated circle inversion, 3 levels: q -> fold to the unit cell, q -> q * k/|q|^2
+  let q = p.div(5), sc = float(1);
+  for (let i = 0; i < 3; i++) {
+    q = q.mul(0.5).add(0.5).fract().mul(2).sub(1);
+    const kk = float(1.2).div(q.dot(q).max(0.02));
+    q = q.mul(kk); sc = sc.mul(kk);
+  }
+  const gv = q.y.abs().min(q.length().sub(1).abs()).div(sc);
+  const mSeed = smoothstep(0.022, 0.012, gv);
+  // pulse: two ring sources 5 m apart (1/3 of the eye), mirrored about x = 0; each a hard wavefront train
+  // sin(2pi d/0.7 - 2pi bar); the picture is their XOR: moire hyperbolae where the two trains cross
+  const wave = (sx) => smoothstep(-0.12, 0.12, p.sub(vec2(sx, 0)).length().mul(TAU / 0.7).sub(c.bar.mul(TAU)).sin());
+  const mPulse = wave(2.5).sub(wave(-2.5)).abs();
+  // return: the picture through ONE circle, r' = R^2 / r, the circle shrinking from the dot row to the pupil rim:
+  // a polar checker of the inverted radius, so the whole lattice falls back into the point it began as
+  const Rinv = mix(8.5, 5.0, smoothstep(180.35, 192, c.sec));
+  const ri = Rinv.mul(Rinv).div(r).mul(1.5);
+  const mRet = step(ri.fract(), 0.5).mul(step(an.mul(24).add(ri.floor().mul(0.5)).fract(), 0.5));
+  const wSeed = win(c.sec, SEC.seed, 0.1), wPulse = win(c.sec, SEC.pulse, 0.1), wRet = win(c.sec, SEC.return, 0.1);
+  const leadW = wSeed.add(wPulse).add(wRet).min(1);
+  const leadM = mSeed.mul(wSeed).add(mPulse.mul(wPulse)).add(mRet.mul(wRet)).min(1);
+  col = mix(col, mix(col, mix(F.A.mul(0.08), mix(F.A, F.B, step(0, p.x.abs().sub(r.mul(0.6)))), leadM), leadW), band(5.3, 8.3));
   // every dot is a little target: outer colour, black ring, contrasting centre
   const target = (base, rc, n, rot, rad, outer, inner) => {
     const q = an.add(rot).mul(n).fract().sub(0.5).mul((TAU * rc) / n);
@@ -55,7 +78,7 @@ export function material(ctx) {
   const twist = r.sub(10.85).mul(0.014).mul(c.phrase.mul(TAU / 2).sin());
   const ff = an.add(twist).sub(c.phrase.mul(0.125)).mul(60).fract();
   const fib = smoothstep(0.44, 0.5, ff).mul(smoothstep(1.0, 0.94, ff));
-  col = mix(col, white.mul(0.95).mul(fib), band(10.9, 12.75));
+  col = mix(col, white.mul(0.95).mul(mix(fib, leadM, leadW)), band(10.9, 12.75));
   // white triangle teeth on black, pointing inward, against the fibres
   const wf = an.add(c.phrase.mul(0.125)).mul(48).fract().sub(0.5).abs().mul(2);
   const wh = float(13.55).sub(r).div(0.65);
