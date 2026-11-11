@@ -6,3 +6,5 @@ export function geometry(ctx) {
   return { bounds: { min: [-w / 2, -h / 2, -0.1], max: [w / 2, h / 2, 0.1] } };
 }
 export function collider() { return null; }
+
+export const Y0 = 0;
