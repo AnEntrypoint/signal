@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "basedOnSpecVersion": 2,
+  "updatedAt": "2026-11-11T09:34:00.936Z",
+  "summary": "A multiplayer 3D starter world whose active place is a flat, heightmap-terrain meadow under a realistic sky. Player movement and humanoid animation are composed as behaviors, with shared camera, lighting, arrival, HUD and nametag hooks; several meadow-decoration scripts are present but not currently configured into the place.",
+  "scriptPaths": [],
+  "places": [
+    "places/main/config.yaml (no title) - default 3D place: flat heightmap terrain from scripts/flat-starter-terrain.js, grass/gravel/rock materials, realistic sky, linear fog, wind and spawn at the origin."
+  ],
+  "roots": [
+    "world.config.yaml - world entry: multiplayer networking, main default place, camera/player templates, arrival behavior, HUD and nametag hooks, jump and movement inputs.",
+    "places/main/config.yaml - main place entry: terrain generator/materials, atmosphere, gravity and default spawn.",
+    "templates/player.js#player - spawned player body: character physics, feetPosition and humanoid-locomotion/player behaviors.",
+    "templates/camera.js#camera - custom first-person camera attached to look orientation, with pitch/yaw state.",
+    "sim.js - world's referee program; cadence is 1s and tick is currently empty.",
+    "scripts/ui.js - world HUD renderer; currently renders nothing."
+  ],
+  "shared": [
+    "scripts/lighting.js - world-configured lighting function for lit surfaces.",
+    "scripts/lib/data/player.yml - shared player movement tuning defaults (acceleration, deceleration, jump and turn settings, walk speed); referenced by locomotion documentation.",
+    "scripts/lib/data/camera.yml - shared camera eye-height value (1.6).",
+    "scripts/lib/data/world.yml - shared terrain base-height value (0)."
+  ],
+  "notableExports": [
+    "scripts/player.js - exports onInput, update.",
+    "scripts/humanoid-locomotion.js - exports sit, onInput, update.",
+    "scripts/camera.js - exports finiteNumber, update.",
+    "scripts/arrival.js - exports onArrive, onLeave.",
+    "sim.js - exports cadence, tick.",
+    "scripts/flat-starter-terrain.js - exports heightAt, materialAt.",
+    "scripts/lighting.js - exports lighting; scripts/look-default.js - exports look.",
+    "scripts/flower.js, scripts/grass.js, scripts/pebble.js - each exports geometry; scripts/grass-look.js exports material."
+  ],
+  "ownership": [
+    "scripts/player.js - player movement from inputs: body feetPosition/velocity and jump/gravity behavior on the character controller.",
+    "scripts/humanoid-locomotion.js - humanoid sitting, turning and movement-driven animation; local gait scratch is in ctx.self.session['humanoid-locomotion.js'].",
+    "scripts/camera.js / templates/camera.js - camera update and the camera's pitch/yaw state under the declared look orientation contract.",
+    "scripts/arrival.js - world entry/exit callbacks; player arrival kind distinguishes first join, rejoin and links into this world.",
+    "sim.js - owns world/place shared game-state writes when implemented; current tick has no game logic.",
+    "scripts/ui.js and ui/nametag.js - render HUD for the viewer and tags above other players; they are presentation hooks, not state owners.",
+    "places/main/config.yaml - owns place atmosphere, gravity, spawn and terrain/material configuration; world.config.yaml owns world-level wiring and inputs."
+  ],
+  "flows": [
+    "world.config.yaml inputs (WASD axes, space jump) → scripts/player.js onInput/update on each player body → character feetPosition/velocity.",
+    "templates/player.js behavior order → scripts/humanoid-locomotion.js and scripts/player.js; locomotion selects avatar clips from body movement pace.",
+    "templates/camera.js#camera declares orientation.source 'look' → scripts/camera.js update; camera template state holds pitch/yaw.",
+    "world.config.yaml engine.behaviors → scripts/arrival.js onArrive/onLeave for world entry/exit; moving between this world's places is not these callbacks.",
+    "places/main/config.yaml terrain generator → scripts/flat-starter-terrain.js heightAt/materialAt → heightmap ground and material selection.",
+    "world.config.yaml lighting → scripts/lighting.js lighting(surface, lights) → shading for lit surfaces.",
+    "world.config.yaml ui.render → scripts/ui.js render(ctx, player) → per-viewer HUD HTML; ui.nametag → ui/nametag.js for changed tags."
+  ],
+  "behaviorFamilies": [
+    "templates/player.js composes scripts/humanoid-locomotion.js and scripts/player.js on the player character; locomotion owns gait/animation while player.js owns movement input and body motion.",
+    "scripts/flower.js, scripts/grass.js and scripts/pebble.js are heightmap decoration geometry, with scripts/grass-look.js as the grass layer material; none is presently listed as a layer in places/main/config.yaml."
+  ],
+  "probableOrphans": [],
+  "migrationNotes": [
+    "Movement speeds and terrain/world heights use metres; scripts/lib/data/player.yml documents walkSpeed and added runSpeed as metres per second.",
+    "The player template starts with feetPosition y=2; main-place spawn is (0,0,0), gravity is y=-24, and +Y is up.",
+    "The camera template's orientation.source is 'look'; keep scripts/camera.js on that engine contract rather than substituting a different orientation source.",
+    "The current main terrain is explicitly kind: heightmap; only that terrain kind calls the starter generator's heightAt/materialAt exports.",
+    "Decoration scripts' comments describe layers in places/main/config.yaml, but the current config has no decoration layers: adding those scripts to the active meadow requires restoring layer entries."
+  ]
+}
