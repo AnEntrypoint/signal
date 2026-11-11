@@ -108,10 +108,11 @@ export function shown(c, name, d = 0) {
   }
   return v.clamp(0, 1).mul(seamGate);
 }
-// A lens number ("bulge" | "swirl" | "fold" | "hyper" | "droste") at this moment, eased 1.5 s across section lines.
+// A lens number ("bulge" | "swirl" | "fold" | "hyper" | "droste") at this moment. The lens is the scene's own:
+// it changes ON the section line with the cut, never morphing from one scene's bend into the next.
 export function lens(c, key) {
   let v = float(0);
-  for (const name in SCORE.lens) v = v.add(win(c.sec, SEC[name], 1.5).mul(SCORE.lens[name][key]));
+  for (const name in SCORE.lens) v = v.add(win(c.sec, SEC[name], 0.04).mul(SCORE.lens[name][key]));
   return v;
 }
 // THE BENT CAMERA. bendUv(c, uv, aspect): where on the undistorted frame this screen pixel reads from.

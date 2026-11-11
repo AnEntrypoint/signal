@@ -18,7 +18,10 @@ export function look(ctx) {
   const q = ctx.device?.quality ?? "high";
   const hi = q === "high" || q === "ultra", low = q === "low";
   const c = tripClock(ctx);
-  const on = c.on.clamp(0, 1);
+  // a celestial vision plays straight: no lens, no treatment, while the track is inside its slot (v0/v1, the director's)
+  const v0 = ctx.param("v0", -1), v1 = ctx.param("v1", -1);
+  const vis = step(v0, c.real).mul(step(c.real, v1)).mul(step(0, v0));
+  const on = c.on.clamp(0, 1).mul(float(1).sub(vis));
   const sec = c.sec;
   const aspect = screenSize.x.div(screenSize.y);
   const asp = vec2(aspect, 1);
@@ -40,7 +43,8 @@ export function look(ctx) {
   const shape = select(mk.lessThan(0.5), r0.div(0.95), select(mk.lessThan(1.5), p0.x.abs().add(p0.y.abs()).div(1.25),
     p0.x.abs().mul(0.866).add(p0.y.abs().mul(0.5)).max(p0.y.abs()).div(0.95))).clamp(0, 0.95);
   const raw = (name, fade = 3) => win(sec, SEC[name], fade).mul(on);
-  const W = (name, fade = 3) => smoothstep(shape.sub(0.12), shape.add(0.12), raw(name, fade).mul(1.3).sub(0.15));
+  // a section's treatment is that scene's own: on with its cut, off with its cut. No shape-wipe, no cross-fade.
+  const W = (name) => raw(name, 0.04);
   const wSeed = W("seed"), wPulse = W("pulse"), wBloom = W("bloom"), wDeep = W("deep"), wFlight = W("flight"),
     wHex = W("hex", 2), wReset = W("reset", 2), wAsc = W("ascent"), wPeak = W("peak"), wRet = W("return");
 

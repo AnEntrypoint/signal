@@ -16,7 +16,7 @@ function setAll(p, t0, on, seed, k, deal) {
   p.t0 = t0; p.on = on; p.seed = seed; p.k0 = k[0]; p.k1 = k[1]
   deal.forEach((g, i) => { p['ds' + i] = g.src; p['dr' + i] = g.rate })
 }
-function push(ctx, t0, on, seed, k) {
+function push(ctx, t0, on, seed, k, vs) {
   const deal = dealDeck(on ? seed : 0)
   for (const o of ctx.query({ tags: ['trip'] })) {
     const h = ctx.getObject(o.id)
@@ -33,19 +33,22 @@ function push(ctx, t0, on, seed, k) {
     }
   }
   const a = ctx.place.atmosphere
-  if (a.look) { a.look.params ??= {}; setAll(a.look.params, t0, on, seed, k, deal) }
+  if (a.look) { a.look.params ??= {}; setAll(a.look.params, t0, on, seed, k, deal); a.look.params.v0 = vs[0]; a.look.params.v1 = vs[1] }
 }
 
 export function update(ctx, dt) {
   const t = cineTime(ctx)
   const c = ctx.world.state.cine
   const k = kickRun(t)
-  const key = (t != null ? c.start : 0) + ':' + k[0]   // a new roll or the next kick run: push again
+  // the vision slot that holds t, else the next one this roll: the look stands still inside it
+  let vs = [-1, -1]
+  if (t != null) for (const v of dealVisions(c.seed ?? 0)) if (t < v.slot[1]) { vs = v.slot; break }
+  const key = (t != null ? c.start : 0) + ':' + k[0] + ':' + vs[0]   // a new roll or the next kick run: push again
   if (ctx.self.session.key !== key || (ctx.self.session.n ?? 0) < 3) {
     // written a few ticks running so late-built materials get it too
     ctx.self.session.n = ctx.self.session.key === key ? (ctx.self.session.n ?? 0) + 1 : 0
     ctx.self.session.key = key
-    push(ctx, t != null ? (c.start / 1000) % 3600 : 0, t != null ? 1 : 0, t != null ? (c.seed ?? 0) : 0, k)
+    push(ctx, t != null ? (c.start / 1000) % 3600 : 0, t != null ? 1 : 0, t != null ? (c.seed ?? 0) : 0, k, vs)
   }
   if (t != null && ctx.self.state.track !== c.start) {
     ctx.self.state.track = c.start
