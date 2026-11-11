@@ -35,7 +35,7 @@ vision-contour-oracle-world:
   castShadow: false
   feetPosition: {x: 0, y: 520, z: -30}
   material: {kind: scripted, params: {k0: -1, k1: -1, layer: world, "on": 0, seed: 0, t0: 0, vw0: -1, vw1: -1}, script: scripts/vision-contour-oracle-mat.js}
-  primitive: {kind: scripted, params: {h: 180, w: 320}, script: scripts/vision-contour-oracle-geo.js}
+  primitive: {kind: scripted, params: {h: 270, w: 480}, script: scripts/vision-contour-oracle-geo.js}
   receiveShadow: false
   tags: [trip, vision-contour-oracle]
   visible: false
