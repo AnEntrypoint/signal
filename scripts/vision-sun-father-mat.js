@@ -54,7 +54,7 @@ export function material(ctx) {
   };
   // the kick's light: a thin ring leaving the eye on each kick, crossing 18 m in one beat
   const kr = c.beat.fract().mul(18);
-  const kickLight = smoothstep(2.2, 0, r.sub(kr).abs()).mul(c.kick.add(kLive.mul(0.0))).mul(1.6);
+  const kickLight = smoothstep(2.2, 0, r.sub(kr).abs()).mul(c.kick).mul(1.6);
 
   const m = new MeshBasicNodeMaterial();
   m.side = DoubleSide;
@@ -194,7 +194,7 @@ export function material(ctx) {
     const dropCore = smoothstep(0.18, 0.08, vec2(lx, ly.add(0.05)).length());
     const pC = smoothstep(0.52, 0.7, u).mul(ex);
     const crownLit = maskBeads(pC, ck);
-    const crown = dropLine.add(dropCore).clamp(0, 1).mul(crownLit).mul(float(1).sub(dripT.mul(hang).smoothstep(0.6, 1.0)));
+    const crown = dropLine.add(dropCore).clamp(0, 1).mul(crownLit).mul(float(1).sub(smoothstep(0.6, 1.0, dripT.mul(hang))));
     const crownGlow = float(0.55).add(kickLight).add(peak.mul(0.8));
 
     const outside = moon.oneMinus();
