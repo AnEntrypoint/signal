@@ -69,7 +69,7 @@ export function look(ctx) {
 
   // light-sweep: a clock hand going round once per 24 s (slow), the lit window for dust, lattice and lines
   const hand = sec.mul(TAU / 24).mul(speed(72)).add(c.rnd(72).mul(TAU));
-  const sweep = smoothstep(0.55, 1.0, ang0.sub(hand).cos());
+  const sweep = smoothstep(0.55, 1.0, ang0.abs().sub(hand).cos()) // two mirrored hands;
   const breath = sec.mul(TAU / 12).sin().mul(0.5).add(0.5);
 
   // ---- geometric warps of where the frame is read (height-unit space) ----
@@ -230,6 +230,8 @@ export function look(ctx) {
   col = mix(col, hueRot(col, sec.mul(TAU / 24).mul(c.dir)), wPeak);
   col = col.mul(float(1).add(c.barHit.mul(0.15).mul(smoothstep(155.6, 157.1, sec)).mul(wPeak)));
 
+  // black stays black: a soft floor under the dim graphite
+  col = col.mul(mix(float(1), smoothstep(0.012, 0.06, luma(col)), on));
   // dome mask, return fade to black 190-193 and hold, vignette
   col = col.mul(domeMask).mul(mix(float(1), smoothstep(193, 190, sec), on));
   return vignette(col.max(vec3(0)), ctx.param("vignette", 0.35), { color: [0, 0, 0] });
