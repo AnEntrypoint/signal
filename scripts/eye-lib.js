@@ -64,3 +64,14 @@ export const deal = (c, i, solo = false) => {
 };
 // symmetry-order: the roll's order 6, 8 or 12, shared by every radial piece (spine channel 8)
 export const symN = (c) => { const k = c.pick(8, 3); return k.mul(2).add(6).add(step(1.5, k).mul(2)); };
+
+// the pupil's content, dealt: g = apollonian gasket (deck card 0, always in seed), k = knot-flower (2 rolls in 3 carry
+// it, on the phrases the gasket leaves); in peak the two alternate phrase by phrase so both are seen.
+export const pupilDeal = (c) => {
+  const pk = win(c.sec, SEC.peak), alt = c.phrase.floor().mod(2);
+  const g0 = deal(c, 0, true).max(win(c.sec, SEC.seed, 0.5));
+  const roll = step(0.5, c.pick(33, 3));
+  const ph = step(0.5, c.phrase.floor().add(c.pick(36, 2)).mod(2));
+  const k0 = roll.mul(float(1).sub(g0)).mul(ph);
+  return { g: mix(g0, alt, pk), k: mix(k0, float(1).sub(alt), pk) };
+};
