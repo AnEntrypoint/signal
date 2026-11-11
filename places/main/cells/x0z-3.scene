@@ -49,6 +49,16 @@ chamber-liss:
   primitive: {kind: scripted, params: {}, script: scripts/chamber-liss-geo.js}
   receiveShadow: false
   tags: [trip, chamber]
+chamber-mask:
+  audience: all
+  castShadow: false
+  feetPosition: {x: 0, y: 15, z: -366}
+  id: chamber-mask
+  material: {kind: scripted, params: {"on": 0, seed: 0, t0: 0}, script: scripts/chamber-mask-mat.js}
+  physics: none
+  primitive: {kind: scripted, params: {}, script: scripts/chamber-mask-geo.js}
+  receiveShadow: false
+  tags: [trip, chamber]
 chamber-solids:
   audience: all
   castShadow: false
