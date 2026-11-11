@@ -11,7 +11,7 @@ export function geometry(ctx) {
     if (x < 4) continue;                                 // pairs stay apart across the mirror
     if (x < 20 && z < -16 && z > -54) continue;          // clear of the upright eye
     if (x < 12 && z > 28 && z < 52) continue;            // clear of the ground view's lens
-    const y = 2 + 10 * ctx.random(), size = 0.8 + 0.9 * ctx.random();
+    const y = 2 + 10 * ctx.random(), size = 1.1 + 1.2 * ctx.random();
     const shape = ctx.random() < 0.5 ? 0 : 1, glyph = Math.floor(ctx.random() * 3);
     ctx.instance([r, a, y, size], [shape, glyph, 1, k]);
     ctx.instance([r, Math.PI - a, y, size], [shape, glyph, -1, k]);

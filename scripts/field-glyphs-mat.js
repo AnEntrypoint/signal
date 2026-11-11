@@ -26,7 +26,9 @@ export function material(ctx) {
   const ang = card.y.add(side.mul(c.dir).mul(c.sec).mul(rate.mul(TAU)));
   const rad = card.x.mul(spread);
   const bobT = choose(c, 28, [9, 16.8, 21]); // the cartouches' own clock, apart from the field's 12 s breath
-  const y = card.z.mul(lift).min(13).add(c.sec.mul(TAU).div(bobT).add(idx.mul(0.7)).sin().mul(0.6));
+  // interleave: each pair's path climbs and dips 3 times a lap, threading over one orb ring's height and under the next
+  const weave = ang.mul(choose(c, 29, [3, 4, 5])).add(idx.mul(1.3)).sin().mul(2.6);
+  const y = card.z.mul(lift).add(weave).clamp(1.6, 13).add(c.sec.mul(TAU).div(bobT).add(idx.mul(0.7)).sin().mul(0.6));
   const sz = card.w.mul(kickAt(c, rad).mul(0.08).add(1));
   const lx = positionLocal.x.mul(hw).mul(sz).mul(side), ly = positionLocal.y.mul(hh).mul(sz);
   const m = new MeshBasicNodeMaterial();
