@@ -21,8 +21,21 @@ function walkOf(ctx) {
 
 export function onInput(ctx, input) {
   // Roll / cut the cinematic for the whole room. Starts 0.3 s out so every machine starts together.
-  if (input.pressed.cine) {
+  // a paid song plays to its end: only its buyer can cut it
+  const now = ctx.world.state.cine
+  const paidPlaying = now?.track && now.by !== ctx.self.id && cineTime(ctx) != null
+  if (input.pressed.cine && !paidPlaying) {
     ctx.world.state.cine = { start: ctx.now() + 300, by: ctx.self.id, seed: Math.floor(ctx.random() * 9973) + 1 } // P: a fresh roll from the top, new seed, for everyone
+  }
+
+  // ui.js measured and uploaded the player's own song: keep it on their body and open the checkout.
+  // buyables/own-track.js starts it for the whole room once the payment stands.
+  if (input.pressed.ownSong && input.actionData?.ownSong?.music) {
+    const s = input.actionData.ownSong
+    if (/^\/cdn\//.test(String(s.music)) || /^https:\/\//.test(String(s.music))) {
+      ctx.self.state.ownSong = s
+      ctx.proposePurchase(ctx.self, 'own-track')
+    }
   }
 
   const facingSin = input.axes.aimYawSin ?? 0

@@ -1,27 +1,28 @@
 // The director: starts the track on the shared clock and hands every trip shader the roll's start.
 // Nothing here moves per tick: the motion lives in the shaders (scripts/lib/trip.js).
 import { SCORE, cineTime, cameraAt } from './lib/cine.js'
-import { trackFor, trackParams, IDENTITY } from './lib/tracks.js'
+import { trackOf, trackParams, IDENTITY } from './lib/tracks.js'
 import { BEINGS, dealVisions } from './lib/visions.js'
 import { dealDeck } from './lib/deck.js'
 
 // the kick run that holds t, else the next one: [k0, k1] seconds; [-1, -1] idle or past the last
-function kickRun(t, seed) {
+function kickRun(t, c) {
   if (t == null) return [-1, -1]
-  for (const r of trackFor(seed).kicks) if (t < r[1]) return r
+  for (const r of trackOf(c).kicks) if (t < r[1]) return r
   return [-1, -1]
 }
 
-function setAll(p, t0, on, seed, k, deal) {
+function setAll(p, t0, on, seed, k, deal, tr) {
   p.t0 = t0; p.on = on; p.seed = seed; p.k0 = k[0]; p.k1 = k[1]
-  Object.assign(p, on ? trackParams(trackFor(seed)) : IDENTITY)
+  Object.assign(p, on ? trackParams(tr) : IDENTITY)
   deal.forEach((g, i) => { p['ds' + i] = g.src; p['dr' + i] = g.rate })
 }
 function push(ctx, t0, on, seed, k, vs, t = cineTime(ctx)) {
   const deal = dealDeck(on ? seed : 0)
+  const tr = trackOf(ctx.world.state.cine)
   for (const o of ctx.query({ tags: ['trip'] })) {
     const h = ctx.getObject(o.id)
-    if (h?.material?.params) setAll(h.material.params, t0, on, seed, k, deal)
+    if (h?.material?.params) setAll(h.material.params, t0, on, seed, k, deal, tr)
   }
   // each vision being learns its slot this roll: params.vw0 / vw1 seconds, -1 when not dealt
   const dealt = {}
@@ -30,12 +31,12 @@ function push(ctx, t0, on, seed, k, vs, t = cineTime(ctx)) {
     const w = dealt[b.id] ?? [-1, -1]
     for (const o of ctx.query({ tags: ['vision-' + b.id] })) {
       const h = ctx.getObject(o.id)
-      if (h?.material?.params) { const p = h.material.params; p.vw0 = w[0]; p.vw1 = w[1]; Object.assign(p, on ? trackParams(trackFor(seed)) : IDENTITY) }
+      if (h?.material?.params) { const p = h.material.params; p.vw0 = w[0]; p.vw1 = w[1]; Object.assign(p, on ? trackParams(tr) : IDENTITY) }
     }
   }
   stageBeing(ctx, vs, on ? seed : 0, t)
   const a = ctx.place.atmosphere
-  if (a.look) { a.look.params ??= {}; setAll(a.look.params, t0, on, seed, k, deal); a.look.params.v0 = vs[0]; a.look.params.v1 = vs[1]; a.look.params.vd = DEPTH * (ctx.self.session.fit ?? 1) }
+  if (a.look) { a.look.params ??= {}; setAll(a.look.params, t0, on, seed, k, deal, tr); a.look.params.v0 = vs[0]; a.look.params.v1 = vs[1]; a.look.params.vd = DEPTH * (ctx.self.session.fit ?? 1) }
 }
 
 // THE BEING ON STAGE: the dealt being of the slot now playing (or next) rides the camera's view at depth, so it
@@ -78,11 +79,11 @@ export function update(ctx, dt) {
   if (vt) { holdTest(ctx, vt); if (ctx.now() - vt.at > 30000) ctx.world.state.visionTest = null }
   const t = cineTime(ctx)
   const c = ctx.world.state.cine
-  const k = kickRun(t, c?.seed ?? 0)
+  const k = kickRun(t, c)
   // the vision slot that holds t, else the next one this roll: the look stands still inside it
   let vs = [-1, -1]
   if (t != null) for (const v of dealVisions(c.seed ?? 0)) if (t < v.slot[1]) { vs = v.slot; break }
-  const key = (t != null ? c.start : 0) + ':' + k[0] + ':' + vs[0]   // a new roll or the next kick run: push again
+  const key = (t != null ? c.start + (c.track?.music ?? '') : 0) + ':' + k[0] + ':' + vs[0]   // a new roll or the next kick run: push again
   if (ctx.self.session.key !== key || (ctx.self.session.n ?? 0) < 3) {
     // written a few ticks running so late-built materials get it too
     ctx.self.session.n = ctx.self.session.key === key ? (ctx.self.session.n ?? 0) + 1 : 0
@@ -91,13 +92,13 @@ export function update(ctx, dt) {
   }
   if (t != null && ctx.self.state.track !== c.start) {
     ctx.self.state.track = c.start
-    ctx.self.audio = { clip: trackFor(c.seed ?? 0).music, spatial: false, gain: 0.8, bus: 'Music', time: 0, timeAt: c.start }
+    ctx.self.audio = { clip: trackOf(c).music, spatial: false, gain: 0.8, bus: 'Music', time: 0, timeAt: c.start }
   } else if (t == null && ctx.self.state.track) {
     ctx.self.state.track = null
     ctx.self.audio = null
   }
   // the trip always plays: no roll standing (or the last one over) -> deal the next, 2 s out so every machine starts together
-  if (t == null && (!c || ctx.now() - c.start > trackFor(c.seed ?? 0).duration * 1000)) {
+  if (t == null && (!c || ctx.now() - c.start > trackOf(c).duration * 1000)) {
     ctx.world.state.cine = { start: ctx.now() + 2000, by: 'stage', seed: Math.floor(ctx.random() * 9973) + 1 }
   }
   // the being's whole scene stands in front of what the camera looks at: when the shot's subject comes nearer than

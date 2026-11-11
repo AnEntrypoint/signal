@@ -62,3 +62,24 @@ export function trackEnergyAt(t, canon) {
   const b = t.bars[Math.max(0, Math.min(t.bars.length - 1, Math.floor((s - t.firstBeat) / t.bar)))]
   return { rms: b[0], bass: b[1], high: b[2] }
 }
+
+// A PLAYER'S OWN SONG (paid, buyables.own-track): world.state.cine.track carries the song the buyer's browser
+// measured (ui.js analyseSong): { music, name, bpm, firstBeat, bar, duration, bars: [[rms, bass, high]…], anchors }.
+// Every machine builds the same track from that row, so everyone hears it and sees the same show.
+let OWN = null
+const fin = (x, d) => (Number.isFinite(+x) ? +x : d)
+export function ownTrack(u) {
+  if (OWN && OWN.music === u.music && OWN.duration === u.duration) return OWN
+  const duration = Math.max(30, Math.min(900, fin(u.duration, 198)))
+  const bpm = Math.max(60, Math.min(200, fin(u.bpm, 120)))
+  let A = Array.isArray(u.anchors) && u.anchors.length === 6 ? u.anchors.map((x) => fin(x, 0)) : null
+  if (!A || A.some((x, i) => i && x <= A[i - 1]) || A[5] > duration + 0.01) A = CANON.map((c) => (c / CANON[5]) * duration)
+  A[0] = 0; A[5] = duration
+  const bars = Array.isArray(u.bars) && u.bars.length ? u.bars : [[0.5, 0.5, 0.5]]
+  const t = { id: 'own', name: String(u.name ?? 'your song').slice(0, 60), music: String(u.music), bpm: Math.round(bpm * 100) / 100,
+    firstBeat: fin(u.firstBeat, 0), bar: 240 / bpm, duration, bars, anchors: A }
+  t.kicks = kickRuns(t).map(([a, b]) => [toCanon(t, a), toCanon(t, b)])
+  return (OWN = t)
+}
+// the track this roll plays: the player's own song when one was paid for, else the one its seed deals
+export const trackOf = (c) => (c?.track?.music ? ownTrack(c.track) : trackFor(c?.seed ?? 0))

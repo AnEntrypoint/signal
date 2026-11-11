@@ -22,6 +22,8 @@ inputs:
       keys:
         - space
       gamepad: a
+    ownSong:
+      gamepad: false
   axes:
     moveX:
       keys: a/d
@@ -35,3 +37,10 @@ nametag: ui/nametag.js
 authoring:
   starter:
     id: 3d
+buyables:
+  own-track:
+    name: Play your own song
+    description: Your song becomes the next roll. The whole room hears it, and the show reads its beat and drops.
+    priceSpoins: 50
+    imageUrl: /cdn/value.f1b763361a1679ad4eed5eaeb23d75fea5b51bfb9377ed5676dec1ce379c1d7e.png
+    onPurchase: scripts/buyables/own-track.js
