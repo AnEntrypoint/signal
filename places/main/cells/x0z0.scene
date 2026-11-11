@@ -7,12 +7,50 @@ director:
   state: {}
   tags: [stage]
 eye:
-  feetPosition: {x: 0, y: 0, z: -34}
+  castShadow: false
+  feetPosition: {x: 0, y: 15, z: -34}
   id: eye
-  material: {kind: scripted, script: engine/blueprint}
+  material: {kind: scripted, params: {"on": 1, t0: 1654.5649999999996}, script: scripts/eye-iris.js}
   physics: none
-  primitive: {depth: 3, height: 32, kind: box, width: 34}
-  tags: [blueprint]
+  primitive: {kind: scripted, params: {inner: 5, outer: 15, segments: 128, z: 0}, script: scripts/eye-iris-geo.js}
+  receiveShadow: false
+  tags: [trip, eye]
+eye-beads:
+  castShadow: false
+  feetPosition: {x: 0, y: 15, z: -34}
+  id: eye-beads
+  material: {kind: scripted, params: {"on": 1, t0: 1654.5649999999996}, script: scripts/eye-beads.js}
+  physics: none
+  primitive: {kind: scripted, params: {}, script: scripts/eye-beads-geo.js}
+  receiveShadow: false
+  tags: [trip, eye]
+eye-lids:
+  castShadow: false
+  feetPosition: {x: 0, y: 15, z: -34}
+  id: eye-lids
+  material: {kind: scripted, params: {"on": 1, t0: 1654.5649999999996}, script: scripts/eye-lids.js}
+  physics: none
+  primitive: {kind: scripted, params: {}, script: scripts/eye-lids-geo.js}
+  receiveShadow: false
+  tags: [trip, eye]
+eye-pupil:
+  castShadow: false
+  feetPosition: {x: 0, y: 15, z: -34}
+  id: eye-pupil
+  material: {kind: scripted, params: {"on": 1, t0: 1654.5649999999996}, script: scripts/eye-pupil.js}
+  physics: none
+  primitive: {kind: scripted, params: {inner: 0, outer: 5, segments: 64, z: -1.5}, script: scripts/eye-iris-geo.js}
+  receiveShadow: false
+  tags: [trip, eye]
+eye-rays:
+  castShadow: false
+  feetPosition: {x: 0, y: 15, z: -34}
+  id: eye-rays
+  material: {kind: scripted, params: {"on": 1, t0: 1654.5649999999996}, script: scripts/eye-rays.js}
+  physics: none
+  primitive: {kind: scripted, params: {}, script: scripts/eye-rays-geo.js}
+  receiveShadow: false
+  tags: [trip, eye]
 field:
   castShadow: false
   feetPosition: {x: 0, y: 0.02, z: 0}
