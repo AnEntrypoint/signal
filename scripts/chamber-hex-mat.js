@@ -16,13 +16,21 @@ export function material(ctx) {
   const snap = (x, w) => floor(x).add(smoothstep(0, w, x.fract()));
   const fill = smoothstep(93.35, 93.95, c.sec).mul(step(c.sec, 96.35));
   const stepRad = select(id.mod(3).lessThan(0.5), 0.1309, 0.06545); // 7.5 or 3.75 degrees a bar: the D6 alignment recurs
-  const ang = dir.mul(stepRad).mul(snap(c.bar, 0.25).sub(60)).mul(frame).add(snap(c.bar, 0.3).mul(-1.0472).mul(glyph));
+  // INDEPENDENT LAYERS: each frame its own continuous clock: a seeded rate (one turn per 40..140 s), alternating
+  // direction, so neighbouring hexagons slide past each other and their hexagram crossings crawl (the moire is the
+  // illusion); each also drifts in depth on its own phase, and a contraction wave rolls inward frame by frame
+  // (outer first), so the nest reads as falling into itself.
+  const hsh = id.mul(12.9898).add(c.seed.mul(0.173)).sin().mul(43758.5453).fract();
+  const rate = mix(float(1 / 140), float(1 / 40), hsh).mul(6.28318);
+  const ang = dir.mul(rate).mul(c.sec.sub(80)).mul(frame).add(snap(c.bar, 0.3).mul(-1.0472).mul(glyph));
   const rad = pow(float(3), id.min(8).sub(8).div(4)).mul(11);
   const e = ripple(c, rad);
   const p = positionLocal, ca = cos(ang), sa = sin(ang);
-  const sc = breath(c).mul(0.03).add(1).add(e.mul(0.05));
+  const fall = sin(c.sec.mul(6.28318 / 6).add(id.mul(0.785)).mul(1)).mul(0.07).mul(frame);
+  const sc = breath(c).mul(0.03).add(1).add(e.mul(0.05)).add(fall);
   const x = p.x.mul(ca).sub(p.y.mul(sa)).mul(sc), y = p.x.mul(sa).add(p.y.mul(ca)).mul(sc);
-  const z = p.z.add(id.sub(4).mul(2.3).mul(fill).mul(frame));
+  const drift = sin(c.sec.mul(6.28318).mul(mix(float(1 / 16), float(1 / 9), hsh)).add(hsh.mul(6.28))).mul(1.4).mul(frame);
+  const z = p.z.add(id.sub(4).mul(2.3).mul(fill).mul(frame)).add(drift);
   m.positionNode = vec3(x, y, z).mul(alive(g));
   const w = v.mul(c.pick(46, 3).add(2)).sub(dir.mul(c.sec).div(12).mul(mix(0.7, 1.3, c.rnd(47)))).fract(); // 2, 3 or 4 lit windows a frame
   const lit = max(smoothstep(0, 0.06, w).mul(float(1).sub(smoothstep(0.22, 0.42, w))), e);
