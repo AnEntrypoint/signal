@@ -134,11 +134,11 @@ export function look(ctx) {
   // symbol windows (creator 11-11 13:00: "these stripes and dots are a lot worse than more meaningful masks"): each peak
   // phrase deals ONE emblem, centred, that the mirror world shows through; it swells slowly over the phrase and breathes
   const symS = sec.sub(SEC.peak[0]).div(12).fract().mul(0.3).add(0.85).add(breath.mul(0.04));
-  const q = kq.div(symS), qr = q.length(), qa = atan(q.x, q.y);
+  const sq = kq.div(symS), qr = sq.length(), qa = atan(sq.x, sq.y);
   const IN = (d) => smoothstep(0.006, -0.006, d);                         // 1 inside a shape whose edge is d = 0
-  const circ = (cx, cy, r) => q.sub(vec2(cx, cy)).length().sub(r);
+  const circ = (cx, cy, r) => sq.sub(vec2(cx, cy)).length().sub(r);
   const tri = (h, flip) => { let d = float(-9); for (const a of [90, 210, 330]) { const t = (a * Math.PI) / 180;
-    d = d.max(q.x.mul(Math.cos(t) * flip).add(q.y.mul(Math.sin(t) * flip))); } return d.sub(h); };
+    d = d.max(sq.x.mul(Math.cos(t) * flip).add(sq.y.mul(Math.sin(t) * flip))); } return d.sub(h); };
   const almond = circ(0, -0.27, 0.42).max(circ(0, 0.27, 0.42));
   const KMASKS = [
     IN(almond).mul(float(1).sub(IN(circ(0, 0, 0.12).abs().sub(0.012)))),                                // the eye: almond, iris ring left closed
@@ -147,7 +147,7 @@ export function look(ctx) {
     IN(circ(0, 0, 0.15)).max(IN(qr.sub(0.42)).mul(IN(float(0.2).sub(qr))).mul(step(0.55, qa.mul(12).sub(kRot).cos()))), // rayed sun
     IN(tri(0.17, 1).min(tri(0.17, -1))),                                                               // six-point star
     IN(qr.sub(0.31).abs().sub(qa.add(kRot).div(TAU).fract().mul(0.055).add(0.012))),                  // ouroboros: a ring tapering tail to head
-    IN(circ(0, 0.07, 0.13).min(q.x.abs().sub(float(0.05).add(float(0.07).sub(q.y).mul(0.22))).max(q.y.sub(0.07)).max(q.y.negate().sub(0.3)))), // keyhole
+    IN(circ(0, 0.07, 0.13).min(sq.x.abs().sub(float(0.05).add(float(0.07).sub(sq.y).mul(0.22))).max(sq.y.sub(0.07)).max(sq.y.negate().sub(0.3)))), // keyhole
     IN(tri(0.22, 1)).mul(float(1).sub(IN(tri(0.1, -1)))),                                               // triangle holding an inverted one
   ];
   const kPick = (salt) => pi.add(c.seed.mul(0.37)).add(salt).mul(91.7).sin().mul(43758.5453).fract().mul(KMASKS.length).floor();
