@@ -19,7 +19,10 @@ const R = 8.0; // the disc's radius
 
 export function material(ctx) {
   const layer = (ctx.params && ctx.params.layer) || "sun";
-  const c = tripClock(ctx);
+  let c = tripClock(ctx);
+  // test hook: params.fixSec freezes this layer at one moment of the roll (a still for checking; never set in play)
+  const fix = ctx.params && ctx.params.fixSec;
+  if (fix != null) c = { ...c, sec: float(fix), beat: float((fix - SCORE.firstBeat) * BPS), bar: float((fix - SCORE.firstBeat) * BPS / 4), on: float(1) };
   const u = visionU(ctx, c);
   const vw0 = ctx.param("vw0", -1), vw1 = ctx.param("vw1", -1);
   const k0 = ctx.param("k0", -1), k1 = ctx.param("k1", -1);
@@ -205,7 +208,6 @@ export function material(ctx) {
     const sunCover = coverDisc.mul(free).max(rayM).max(rayNib).max(crown).max(corona).max(contact).max(moon).max(pupilBlack.mul(free));
     cover = sunCover.mul(visionShown(ctx, c, r.div(18)));
   }
-  if (ctx.params && ctx.params.debug) { col = vec3(step(6, c.sec).mul(step(c.sec, 14)), step(0.4, u).mul(step(u, 0.9)), visionShown(ctx, c, 0)).mul(0.2); cover = float(1); }
   m.colorNode = col.mul(2.2);
   m.opacityNode = cover;
   return m;
