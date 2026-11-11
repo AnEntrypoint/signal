@@ -40,15 +40,30 @@ layers:
   chamber:  [[81.35, 97.35]]
   hands:    [[87.35, 97.35]]                    # reach in on the fill, last thing before the cut
 # The lens, by section: bulge (barrel, + bulges toward us, - pinches), swirl (radians of twist at the centre,
-# falling to 0 at the edge), fold (0..1: mirror the left half onto the right, the peak's symmetry).
+# falling to 0 at the edge), fold (0..1 mirror the left half onto the right), hyper (0..0.6: a Mobius slide of the
+# Poincare disc, the centre holds and the rim crushes toward infinity, the slide direction turning once per 24 s),
+# droste (0..1: log-polar recursion, the frame repeats inside itself x4 smaller and zooms through, one copy per 12 s).
 lens:
-  seed:   { bulge: 0.0,  swirl: 0.0,  fold: 0 }
-  pulse:  { bulge: 0.12, swirl: 0.0,  fold: 0 }
-  bloom:  { bulge: 0.2,  swirl: 0.15, fold: 0 }
-  deep:   { bulge: -0.35, swirl: 0.5, fold: 0 }
-  flight: { bulge: 0.45, swirl: 0.3,  fold: 0 }
-  hex:    { bulge: 0.1,  swirl: 0.0,  fold: 1 }
-  reset:  { bulge: 0.0,  swirl: -0.25, fold: 0 }
-  ascent: { bulge: 0.25, swirl: 0.2,  fold: 1 }
-  peak:   { bulge: 0.4,  swirl: 0.35, fold: 1 }
-  return: { bulge: -0.2, swirl: 0.0,  fold: 0 }
+  seed:   { bulge: 0.0,  swirl: 0.0,  fold: 0, hyper: 0.0,  droste: 0 }
+  pulse:  { bulge: 0.12, swirl: 0.0,  fold: 0, hyper: 0.0,  droste: 0 }
+  bloom:  { bulge: 0.1,  swirl: 0.15, fold: 0, hyper: 0.35, droste: 0 }
+  deep:   { bulge: -0.35, swirl: 0.5, fold: 0, hyper: 0.0,  droste: 1 }
+  flight: { bulge: 0.45, swirl: 0.3,  fold: 0, hyper: 0.0,  droste: 0 }
+  hex:    { bulge: 0.0,  swirl: 0.0,  fold: 1, hyper: 0.25, droste: 0 }
+  reset:  { bulge: 0.0,  swirl: -0.25, fold: 0, hyper: 0.55, droste: 0 }
+  ascent: { bulge: 0.2,  swirl: 0.2,  fold: 1, hyper: 0.3,  droste: 0 }
+  peak:   { bulge: 0.3,  swirl: 0.3,  fold: 1, hyper: 0.45, droste: 0 }
+  return: { bulge: -0.2, swirl: 0.0,  fold: 0, hyper: 0.0,  droste: 1 }
+# The maths each section is COMPOSED with: a different family every time, never the same trick twice running.
+# The piece that leads a section draws that section's pattern with that maths (win(c.sec, SEC.<name>)).
+maths:
+  seed:   "a single point and its circle inversions: one dot, then its images in nested circles (Apollonian gasket, 3 levels)"
+  pulse:  "concentric wavefronts and their interference: two ring sources 1/3 apart, moire where they cross"
+  bloom:  "phyllotaxis: bead n at angle n*137.508deg, radius c*sqrt(n); the 13/21/34 Fibonacci spirals lit as chases"
+  deep:   "logarithmic spirals and Droste recursion: r = a*e^(b*theta), 5 arms, self-similar at x4"
+  flight: "helices and torus knots on the tunnel wall: (p,q) = (3,8) stripes, diamond lattice where two helices cross"
+  hex:    "the hexagonal lattice and its dihedral group D6: 6 mirrors, nested hexagons scaled by 1/sqrt(3) and turned 30deg each step"
+  reset:  "hyperbolic tiling of the Poincare disc, {7,3}: heptagons shrinking to the rim, drawn as line-art"
+  ascent: "rose curves and Lissajous figures: r = cos(k*theta), k stepping 3, 5/2, 7/3, 4 on the bar; superformula petals"
+  peak:   "kaleidoscope: wallpaper group p6m folds over everything, Truchet arcs inside each wedge, all of the above at once"
+  return: "inversion again: the whole picture mapped through one circle and shrunk back to the point it began as"

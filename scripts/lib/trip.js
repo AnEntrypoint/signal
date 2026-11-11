@@ -66,7 +66,7 @@ export function shown(c, name, d = 0) {
   }
   return v.clamp(0, 1);
 }
-// A lens number ("bulge" | "swirl" | "fold") at this moment, eased 1.5 s across section lines.
+// A lens number ("bulge" | "swirl" | "fold" | "hyper" | "droste") at this moment, eased 1.5 s across section lines.
 export function lens(c, key) {
   let v = float(0);
   for (const name in SCORE.lens) v = v.add(win(c.sec, SEC[name], 1.5).mul(SCORE.lens[name][key]));
@@ -82,6 +82,18 @@ export function bendUv(c, uv, aspect = 1.78) {
   const a = lens(c, "swirl").mul(float(1).sub(r.mul(1.3)).clamp(0, 1)).mul(c.sec.mul(6.28318 / 24).sin());
   const p1 = vec2(p0.x.mul(a.cos()).sub(p0.y.mul(a.sin())), p0.x.mul(a.sin()).add(p0.y.mul(a.cos())));
   const p2 = p1.div(float(1).add(k.mul(r.mul(r)).mul(1.6)));
-  const px = mix(p2.x, p2.x.abs().negate(), lens(c, "fold").mul(smoothstep(0.0, 0.02, p2.x.abs())));
-  return vec2(px, p2.y).div(vec2(aspect, 1)).add(0.5);
+  // hyperbolic: Mobius slide of the Poincare disc, w = (z + a) / (1 + conj(a) z), centre held
+  const h = lens(c, "hyper"), th = c.sec.mul(6.28318 / 24);
+  const ax = h.mul(th.cos()), ay = h.mul(th.sin());
+  const zx = p2.x.mul(1.6), zy = p2.y.mul(1.6);
+  const nx = zx.add(ax), ny = zy.add(ay);
+  const dx = float(1).add(ax.mul(zx)).add(ay.mul(zy)), dy = ax.mul(zy).sub(ay.mul(zx));
+  const dd = dx.mul(dx).add(dy.mul(dy)).max(0.02);
+  const p3 = vec2(nx.mul(dx).add(ny.mul(dy)).div(dd).sub(ax), ny.mul(dx).sub(nx.mul(dy)).div(dd).sub(ay)).div(1.6);
+  // droste: log-polar recursion, radius wrapped into one x4 octave that zooms through once per phrase
+  const r3 = p3.length().max(0.0005);
+  const oct = r3.log().div(1.3863).add(c.sec.div(12)).fract();
+  const p4 = mix(p3, p3.div(r3).mul(oct.mul(1.3863).exp().mul(0.12)), lens(c, "droste"));
+  const px = mix(p4.x, p4.x.abs().negate(), lens(c, "fold").mul(smoothstep(0.0, 0.02, p4.x.abs())));
+  return vec2(px, p4.y).div(vec2(aspect, 1)).add(0.5);
 }
