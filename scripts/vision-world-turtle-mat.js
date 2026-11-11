@@ -67,7 +67,7 @@ export function material(ctx) {
     // coverage: the sea combs outward from the turtle, alternate stream lines reaching further
     const de = vec2(P.x.div(1.6), P.y).length();
     const grow = io(0.25, 0.45, 0.955, 0.995), Rg = grow.mul(150);
-    const finger = stripes(psi.div(sp * 2), 1, 0.05).mul(22);
+    const finger = stripes(psi.div(sp.mul(2)), 1, 0.05).mul(22);
     const cover = step(de, Rg.add(finger)).mul(step(0.004, grow));
     const front = c.beat.fract().mul(130);
     const kl = smoothstep(6, 0, r.sub(front).abs()).mul(kickOn).mul(smoothstep(130, 60, front));
