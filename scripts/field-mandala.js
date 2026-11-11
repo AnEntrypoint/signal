@@ -115,8 +115,22 @@ export function material(ctx) {
   const m1 = ring(eM), m2 = ring(eM.negate());
   const colMo = A.mul(m1).add(B.mul(m2)).add(H.mul(m1).mul(m2).mul(0.7));
   const dMo = float(0.5).sub(max(m1, m2));
+  // aztec-steps: stepped crosses and stepped pyramids (pointing outward) tiled two rows a band in blue and teal,
+  // each glyph double-stroked with a ringed dark bead at its heart; the tiling pattern is the roll's (checker, rows, crosses)
+  const SA = BW / 2, ca = cell(SA, jb.mul(0.5)), gx = ca.x.div(SA), gy = fyb.div(SA), qx = gx.abs(), qy = gy.abs();
+  const bx = (w, h, yc = 0) => max(qx.sub(w), gy.sub(yc).abs().sub(h));
+  const crossA = min(bx(0.11, 0.4), min(bx(0.25, 0.25), bx(0.4, 0.11)));
+  const pyrA = min(bx(0.42, 0.09, -0.32), min(bx(0.31, 0.09, -0.14), min(bx(0.2, 0.09, 0.04), bx(0.09, 0.1, 0.23))));
+  const azP = c.pick(20, 3);
+  const azK = select(azP.lessThan(0.5), ca.id.add(ri).mod(2), select(azP.lessThan(1.5), ri.mod(2), ca.id.mod(3).lessThan(0.5).select(1, 0)));
+  const sdA = select(azK.lessThan(0.5), crossA, pyrA).mul(SA);
+  const TEAL = vec3(0.0, 0.85, 0.62), BLUE = vec3(0.02, 0.12, 1.0);
+  const lA = length(vec2(ca.x, fyb));
+  const colAz = mix(BLUE.mul(fill(sdA)).mul(0.55), TEAL, line(sdA, 0.07)).add(TEAL.mul(line(sdA.add(0.17), 0.03)).mul(0.7))
+    .mul(fill(lA.sub(0.2)).oneMinus()).add(K.fam.H.mul(line(lA.sub(0.14), 0.04)));
+  const dAz = sdA;
   const phI = c.sec.sub(0.35).div(12).floor().max(0), zone = r.div(30).floor().min(2);
-  const vi = phI.add(zone).add(c.pick(18, 4)).mod(4);
+  const vi = phI.add(zone).add(c.pick(18, 5)).mod(5);
   const ov = phI.add(c.rnd(18).mul(12).floor()).mod(3); // 0 graphite-and-gold, 1 keyhole depths, 2 soft mask
   // layer-keyhole + depth-parallax: through the black between the shapes, the same dot rows twice more, deeper, slower, dimmer
   const deepDots = (pitch, rot, rad) => {
@@ -135,7 +149,8 @@ export function material(ctx) {
   const lineCol = mix(K.fam.A, K.fam.B, u.mul(3).add(c.sec.div(24)).mul(TAU).sin().mul(0.5).add(0.5)).mul(1.2);
   const kl = kickAt(c, r);
   const lam = lit(c, r, a, i);
-  const colV = sel4(vi, col, colBd, colOp, colMo), dV = sel4(vi, d, sdB, dOp, dMo);
+  const sel5 = (v, a0, a1, a2, a3, a4) => select(v.lessThan(3.5), sel4(v, a0, a1, a2, a3), a4);
+  const colV = sel5(vi, col, colBd, colOp, colMo, colAz), dV = sel5(vi, d, sdB, dOp, dMo, dAz);
   const lamV = max(lam, vi.sub(1).abs().lessThan(0.5).select(chase, 0));
   const keyOn = max(ov.sub(1).abs().lessThan(0.5).select(1, 0), K.fam.full.select(1, 0));
   const bandBody = shade(colV, lamV).mul(kl.mul(lamV).mul(0.3).add(1)).add(deep.mul(fill(dV).oneMinus()).mul(keyOn));
