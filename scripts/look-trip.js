@@ -20,7 +20,8 @@ export function look(ctx) {
   const c = tripClock(ctx);
   // a celestial vision plays straight: no lens, no treatment, while the track is inside its slot (v0/v1, the director's)
   const v0 = ctx.param("v0", -1), v1 = ctx.param("v1", -1);
-  const vis = step(v0, c.real).mul(step(c.real, v1)).mul(step(0, v0));
+  // eased over 3 s each side (lanmower 2026-11-11: no hard cuts): the bend and the focus hand over to the being slowly
+  const vis = smoothstep(v0, v0.add(3), c.real).mul(smoothstep(v1.add(1), v1.sub(2), c.real)).mul(step(0, v0));
   const on = c.on.clamp(0, 1);
   // THE BEAT'S JOB, dealt every four bars by the roll: 0 a centre push (the old habit, now one in four),
   // 1 the far layers drop to black behind the subject, 2 the near layers go silhouette in front of it, 3 rest.
