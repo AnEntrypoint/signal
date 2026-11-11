@@ -198,7 +198,7 @@ export function material(ctx) {
     for (let j = 0; j < 6; j++) {
       const v = 2.4 + ((j * 5) % 6) * 0.22, off = ((j * 7) % 6) * 9 + 2;
       const fall = e.mul(v).sub(off), yy0 = float(33).sub(fall.max(0).mod(72));
-      const cx = float(COLS[j] + side * 3).add(rn(14).sub(0.5).mul(6)).add(c.real.mul(0.31 + j * 0.05).add(j * 1.9).sin().mul(2.4));
+      const cx = float(COLS[j]).add(side.mul(3)).add(rn(14).sub(0.5).mul(6)).add(c.real.mul(0.31 + j * 0.05).add(j * 1.9).sin().mul(2.4));
       const ang = c.real.mul(0.29 + j * 0.05).add(j * 2.1).sin().mul(0.8).add(j * 0.9).mul(j % 2 ? 1 : -1);
       const on = step(0, fall).mul(keep);
       const leaf = (dx, dy) => {
