@@ -183,7 +183,11 @@ export function material(ctx) {
   const a13 = arm(choose(c, 19, [8, 13, 21]), stepI), a21 = arm(choose(c, 19, [13, 21, 34]), stepI.negate().add(8000)), a34 = arm(choose(c, 19, [21, 34, 55]), stepI.mul(2));
   const K0 = colours(c.sec, float(0));
   const beadC = select(a13.greaterThan(0.5), target(lp, 0.62, K0.H, K0.H2), select(a21.greaterThan(0.5), target(lp, 0.62, K0.A, K0.H), target(lp, 0.62, K0.B, K0.A)));
-  const pL = max(a13, max(a21, a34)).max(kl.mul(0.6));
+  // one by one: the first spiral family lights as bloom opens, the counter-spiral a phrase later, the third a phrase after;
+  // the kick is a thin ripple front through the beads, never the whole carpet at once
+  const b0 = SEC.bloom[0];
+  const on21 = smoothstep(b0 + 6, b0 + 7.5, c.sec), on34 = smoothstep(b0 + 12, b0 + 13.5, c.sec);
+  const pL = max(a13, max(a21.mul(on21), a34.mul(on34))).max(kl.pow(8).mul(0.7));
   const phyBody = shade(beadC, pL).mul(kl.mul(0.25).add(1));
 
   // RESET = THE {7,3} HYPERBOLIC TILING of the Poincare disc, as line-art. The pixel is folded into the (2,3,7)
