@@ -12,7 +12,7 @@ export function material(ctx) {
   const F = fam(c);
   const g = positionGeometry;
   const vc = vertexColor().xyz;
-  const t = vc.x, fi = step(0.5, vc.y), cp = step(0.45, vc.z), border = step(0.2, vc.z.sub(cp.mul(0.5)));
+  const t = vc.x, fi = step(0.5, vc.y), cp = step(0.45, vc.z), L = vc.z.sub(cp.mul(0.5)).mul(8).floor(), border = step(L, 0.5), core = step(1.5, L);
   const keep = float(1).sub(fi.sub(c.pick(35, 2)).abs());
   const th = c.sec.mul(TAU / 72).mul(c.dir).mul(mix(0.8, 1.25, c.rnd(37))).add(TAU / 24).mul(cp.mul(-2).add(1));
   const cs = th.cos(), sn = th.sin();
@@ -22,7 +22,8 @@ export function material(ctx) {
   // colour along the stroke: A <-> B six times round, a hot accent knot at every third crossing
   const along = t.mul(TAU * 6).add(cp.mul(3.14159)).cos().mul(0.5).add(0.5);
   const acc = t.mul(TAU * 3).add(c.phrase.mul(TAU / 4)).cos().max(0).pow(10);
-  const col = mix(mix(F.A, F.B, along), F.hot(t), acc.mul(0.7));
+  const col0 = mix(mix(F.A, F.B, along), F.hot(t), acc.mul(0.7));
+  const col = mix(col0, mix(col0, vec3(1, 1, 1), 0.55).mul(1.3), core);
   // a lit head per petal, clicking round on the bars (opposite way on the second copy)
   const head = t.mul(6).sub(barStep(c).div(4).mul(c.dir).mul(cp.mul(-2).add(1))).fract();
   const lit = gate(c, smoothstep(0.3, 0.0, head).max(0.38), F.peak).max(0.3);
