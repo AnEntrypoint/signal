@@ -21,6 +21,12 @@ export const BEINGS = [
   { id: 'giving-hands',   name: 'the giving hands', built: true },
   { id: 'star-jelly',     name: 'the star medusa', built: true },
   { id: 'star-child',     name: 'the star child', built: true },
+  { id: 'circuit-oracle', name: 'the circuit oracle', built: false },
+  { id: 'lotus-gate',     name: 'the lotus gate', built: false },
+  { id: 'twin-serpents',  name: 'the twin serpents', built: false },
+  { id: 'weaver',         name: 'the weaver', built: false },
+  { id: 'owl-mask',       name: 'the night owl', built: false },
+  { id: 'world-turtle',   name: 'the world turtle', built: false },
 ].map((b, k) => ({ ...b, k, centre: { x: 0, y: 320 + k * 100, z: 0 } }))
 
 function rnd(seed, n) { const x = Math.sin((seed + 1) * (n * 7.1234 + 3.1)) * 15731.743; return x - Math.floor(x) }
@@ -31,11 +37,9 @@ export function dealVisions(seed) {
   const order = BEINGS.filter((b) => b.built).map((b) => ({ b, r: rnd(seed, 40 + b.k) })).sort((p, q) => p.r - q.r).map((p) => p.b)
   // a being is part of its stretch, not a cut-away: it starts drawing in up to 16 bars before the drop (never in the
   // stretch's first 4 bars), culminates on the drop and leaves piece by piece across the seam after it
-  const drops = ENERGY.drops ?? []
-  return ENERGY.visions.map(([a, b], i) => {
-    const prev = drops.filter((d) => d < b - 0.01).pop() ?? 0
-    return { slot: [Math.max(prev + 4 * ENERGY.bar, b - 16 * ENERGY.bar), b + 2.5], being: order[i % order.length] }
-  })
+  // a being's scene is its whole slot: it draws in from the slot's first bar, culminates on the drop, and
+  // leaves piece by piece across the 2.5 s seam after it
+  return ENERGY.visions.map(([a, b], i) => ({ slot: [a, b + 2.5], being: order[i % order.length] }))
 }
 export function visionAt(t, seed) {
   for (const v of dealVisions(seed)) if (t >= v.slot[0] && t < v.slot[1]) return v

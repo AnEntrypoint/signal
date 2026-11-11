@@ -41,7 +41,8 @@ function push(ctx, t0, on, seed, k, vs) {
 // draws itself in among the running scene; the scene keeps moving round and through it. Every other being goes
 // home to its black above the field and stops drawing.
 const DEPTH = 74
-function homeZ(id) { return id.endsWith('-ring') ? -12 : id.endsWith('-veil') ? 10 : 0 }
+// a being's scene, far to near: -world (its ground and sky, fills the frame) / -ring / the being / -veil / -fore
+function homeZ(id) { return id.endsWith('-world') ? -30 : id.endsWith('-ring') ? -12 : id.endsWith('-veil') ? 10 : id.endsWith('-fore') ? 22 : 0 }
 function stageBeing(ctx, vs, seed) {
   const cur = seed ? dealVisions(seed).find((v) => v.slot[0] === vs[0]) : null
   for (const b of BEINGS) {
