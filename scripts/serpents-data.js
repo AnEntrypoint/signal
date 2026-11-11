@@ -13,8 +13,6 @@ const HALF = [
   [60, 72, 54, 60, 98, -1.3, 1.5, 0, 1],
   [100, 72, 48, 105, 98, -1.1, -1.6, 1, 1],
   [140, 72, 46, 150, 100, -1.0, 1.5, 0, 1],
-  // the knot serpents (p,q torus knots standing on the field)
-  [118, 58, 1, 118, 90, 0.5, 1, 2, 1],
   // the twin guardians flanking the Eye, cobra-raised, bowing toward it
   [34, 52, 28, -90, 96, -0.3, -1.7, 3, 0],
 ];
