@@ -178,7 +178,7 @@ export function look(ctx) {
 
   // trails: deep (0.8, inward, +0.4 deg/frame), flight (0.55, other way), kick-echo (shrinking hue-shifted ghosts)
   const tDeep = raw("deep"), tFl = raw("flight"), tEcho = raw("pulse").add(raw("bloom")).add(raw("ascent")).mul(echoOn).clamp(0, 1).mul(c.kick);
-  const decay = tDeep.mul(0.8).add(tFl.mul(0.55)).add(tEcho.mul(0.5)).clamp(0, 0.85);
+  const decay = tDeep.mul(0.62).add(tFl.mul(0.5)).add(tEcho.mul(0.5)).clamp(0, 0.7); // lower in deep: the droste recursion feeds the trail and flooded the black
   const trail = ctx.target("trip-trail", { scale: low ? 0.5 : 1 });
   const tex = ctx.pass(trail, (uv) => {
     const tp = uv.sub(0.5).mul(asp);
@@ -189,11 +189,11 @@ export function look(ctx) {
     const cur = S(mix(uv, bendUv(c, uv, aspect), on));
     return vec4(cur.max(prev.mul(decay)), 1);
   });
-  col = mix(col, col.max(tex.sample(screenUV).rgb), decay.mul(3).clamp(0, 1));
+  col = mix(col, col.max(tex.sample(screenUV).rgb.mul(smoothstep(0.08, 0.3, luma(tex.sample(screenUV).rgb)))), decay.mul(1.4).clamp(0, 0.8)); // faint ghosts drop to black, not a wash
 
   // deep: pulled toward deep ultramarine, near-monochrome
   const dl = luma(col);
-  col = mix(col, vec3(0.08, 0.16, 1.0).mul(smoothstep(0.05, 0.9, dl).mul(1.5)).add(vec3(0.6, 0.45, 1).mul(dl.sub(0.75).max(0).mul(2))), wDeep.mul(0.75).add(wRet.mul(float(1).sub(retGG)).mul(0.7)));
+  col = mix(col, vec3(0.08, 0.16, 1.0).mul(smoothstep(0.12, 0.9, dl).pow(1.6).mul(1.5)).add(vec3(0.6, 0.45, 1).mul(dl.sub(0.75).max(0).mul(2))), wDeep.mul(0.75).add(wRet.mul(float(1).sub(retGG)).mul(0.7)));
 
   // hue-family-swap: the whole frame steps its hue on the phrase line (small, blue stays blue/violet)
   const ph = c.phrase.floor().add(c.seed).mul(0.618).fract().mul(3).floor().sub(1);
@@ -231,7 +231,7 @@ export function look(ctx) {
   col = col.mul(float(1).add(c.barHit.mul(0.15).mul(smoothstep(155.6, 157.1, sec)).mul(wPeak)));
 
   // black stays black: a soft floor under the dim graphite
-  col = col.mul(mix(float(1), smoothstep(0.012, 0.06, luma(col)), on));
+  col = col.mul(mix(float(1), smoothstep(mix(float(0.012), float(0.1), wDeep), mix(float(0.06), float(0.22), wDeep), luma(col)), on)); // deep: a harder black floor, half the frame stays black
   // dome mask, return fade to black 190-193 and hold, vignette
   col = col.mul(domeMask).mul(mix(float(1), smoothstep(193, 190, sec), on));
   return vignette(col.max(vec3(0)), ctx.param("vignette", 0.35), { color: [0, 0, 0] });
