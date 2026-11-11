@@ -16,7 +16,7 @@ function setAll(p, t0, on, seed, k, deal) {
   p.t0 = t0; p.on = on; p.seed = seed; p.k0 = k[0]; p.k1 = k[1]
   deal.forEach((g, i) => { p['ds' + i] = g.src; p['dr' + i] = g.rate })
 }
-function push(ctx, t0, on, seed, k, vs) {
+function push(ctx, t0, on, seed, k, vs, t = cineTime(ctx)) {
   const deal = dealDeck(on ? seed : 0)
   for (const o of ctx.query({ tags: ['trip'] })) {
     const h = ctx.getObject(o.id)
