@@ -26,10 +26,3 @@ vision-giving-hands-veil:
   primitive: {kind: scripted, params: {h: 56, w: 90}, script: scripts/vision-giving-hands-geo.js}
   receiveShadow: false
   tags: [trip, vision-giving-hands]
-vision-star-jelly:
-  feetPosition: {x: 0, y: 1100, z: 0}
-  id: vision-star-jelly
-  material: {kind: scripted, script: engine/blueprint}
-  physics: none
-  primitive: {depth: 1, height: 40, kind: box, width: 64}
-  tags: [blueprint]
