@@ -151,7 +151,7 @@ export function material(ctx) {
     const i1 = ea.mul(N1).round(), a1 = i1.div(N1).add(t.div(mix(36, 60, rn(5))).mul(sense)).mul(TAU);
     const pos = vec2(a1.cos().mul(44), a1.sin().mul(12));
     const near = inv(a1.sin()).mul(0.5);                     // the lower half nearer: larger
-    const r1 = mix(0.7, 1.5, near).mul(mix(1, 1.4, step(0.5, i1.mod(3).sub(1).abs().oneMinus())));
+    const r1 = mix(0.7, 1.5, near).mul(mix(1, 1.4, is(i1.mod(3), 0)));
     const g1 = smoothstep(r1, r1.mul(0.35), e.sub(pos).length()).mul(maskBeads(pb, i1.mul(0.618).fract()));
     const q = vec2(P.x, P.y.sub(NY)), dq = q.length();
     const N2 = 12, a2 = atan2(q.y, q.x).div(TAU).add(t.div(28).mul(sense)).mul(N2);
