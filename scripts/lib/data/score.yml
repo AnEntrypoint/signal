@@ -39,10 +39,7 @@ layers:
   tunnel:   [[51.35, 87.35]]
   chamber:  [[81.35, 97.35]]
   hands:    [[87.35, 97.35]]                    # reach in on the fill, last thing before the cut
-# VISIONS: four phrase-long slots where the camera cuts away to one celestial being, alone on black.
-# Every roll deals 4 of the deck's beings (scripts/lib/visions.js) into these slots in a seeded order,
-# so each trip meets different beings in a different order on the same beats.
-visions: [[36.35, 48.35], [108.35, 120.35], [144.35, 156.35], [168.35, 180.35]]
+# VISIONS: their slots are measured from the track itself: scripts/lib/data/energy.yml (tools/analyse-track.py).
 # The lens, by section: bulge (barrel, + bulges toward us, - pinches), swirl (radians of twist at the centre,
 # falling to 0 at the edge), fold (0..1 mirror the left half onto the right), hyper (0..0.6: a Mobius slide of the
 # Poincare disc, the centre holds and the rim crushes toward infinity, the slide direction turning once per 24 s),
