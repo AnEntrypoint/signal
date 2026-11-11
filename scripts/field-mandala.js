@@ -237,6 +237,12 @@ export function material(ctx) {
   const m = new MeshBasicNodeMaterial();
   m.colorNode = body.mul(fill(r.sub(R))).add(vec3(1, 1, 1).mul(rim)).add(K.fam.H.mul(ripple).mul(fill(r.sub(R)))).add(vec3(0.3, 0.4, 1).mul(seed)).mul(endFade(c.sec));
   m.colorNode = roll(c, m.colorNode);
+  // under everything after reset: in ascent and peak the field is the ground under the stack, not the picture.
+  // It sinks to a dim bed and only three slow rings, drawing in toward the centre a bar apart, carry it lit.
+  const under = win(c.sec, [SEC.ascent[0], SEC.peak[1]], 2);
+  const inward = r.div(90).add(c.bar.div(3)).fract();
+  const bands = smoothstep(0.0, 0.04, inward).mul(smoothstep(0.14, 0.05, inward));
+  m.colorNode = m.colorNode.mul(mix(float(1), bands.mul(0.85).add(0.12), under));
   // graphite-and-gold: the whole field embossed near-black, only the gold teeth lit where the hand passes
   const inBloom = win(c.sec, SEC.bloom);
   const ggOn = ov.lessThan(0.5).and(K.fam.full.not()).select(1, 0).mul(inBloom.oneMinus()).mul(la.oneMinus()).mul(fill(r.sub(R)));
