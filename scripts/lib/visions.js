@@ -21,7 +21,7 @@ export const BEINGS = [
   { id: 'giving-hands',   name: 'the giving hands', built: true },
   { id: 'star-jelly',     name: 'the star medusa', built: true },
   { id: 'star-child',     name: 'the star child', built: true },
-  { id: 'circuit-oracle', name: 'the circuit oracle', built: false },
+  { id: 'circuit-oracle', name: 'the circuit oracle', built: true },
   { id: 'lotus-gate',     name: 'the lotus gate', built: true },
   { id: 'twin-serpents',  name: 'the twin serpents', built: true },
   { id: 'weaver',         name: 'the weaver', built: true },
