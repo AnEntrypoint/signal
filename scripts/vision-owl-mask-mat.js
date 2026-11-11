@@ -30,7 +30,8 @@ function tear(q, r, L) {
   const t = qx.mul(s).add(qy.mul(co)), line = qx.mul(co).sub(qy.mul(s));
   return select(t.lessThan(L * co), select(t.lessThan(0), vec2(qx, qy).length(), line), q.length().sub(r));
 }
-const cd = (k, w, y) => cd(k, w, y);
+const cd = (k, w, y) => vec2(k.fract().sub(0.5).mul(w), y).length();
+const cut = (m, col, cover, live) => { m.colorNode = col; m.opacityNode = cover.mul(live); m.alphaTest = 0.5; return m; };
 const four = (d, sz) => d.x.abs().div(sz).sqrt().add(d.y.abs().div(sz).sqrt());
 
 export function material(ctx) {
@@ -80,25 +81,25 @@ export function material(ctx) {
     const lead = de.sub(Rg), ri = lead.div(5).floor(), rc = Rg.add(ri.add(0.5).mul(5));
     const nc = rc.mul(TAU / 7).max(6).floor();
     const kc = ang.div(TAU).mul(nc).add(ri.mul(0.5));
-    const cdd = vec2(kc.fract().sub(0.5).mul(rc.mul(TAU).div(nc)), lead.sub(ri.add(0.5).mul(5))).length();
+    const cdd = cd(kc, rc.mul(TAU).div(nc), lead.sub(ri.add(0.5).mul(5)));
     const sr = float(3.3).sub(ri.mul(0.8)), band = step(0, lead).mul(step(lead, 15));
-    const scale = step(cd, sr).mul(band);
+    const scale = step(cdd, sr).mul(band);
     const cover = step(de, Rg).max(scale).mul(step(0.0005, grow)).mul(wg);
-    let col = mix(A, B, ri.mod(2)).mul(stroke(cd.sub(sr).abs(), 0.12)).mul(band).mul(0.7);
-    // ghost plumage: faint scalloped growth rings inside
+    let col = mix(A, B, ri.mod(2)).mul(stroke(cdd.sub(sr).abs(), 0.12)).mul(band).mul(0.7);
+    // faint scalloped growth rings inside the plumage
     const hi = de.div(12).floor(), hr = hi.add(0.5).mul(12), hn = hr.mul(TAU / 10).max(6).floor();
     const hk2 = ang.div(TAU).mul(hn).add(hi.mul(0.5));
-    const gd = vec2(hk2.fract().sub(0.5).mul(hr.mul(TAU).div(hn)), de.sub(hr)).length();
+    const gd = cd(hk2, hr.mul(TAU).div(hn), de.sub(hr));
     if (!low) col = col.add(A.mul(stroke(gd.sub(5).abs(), 0.1)).mul(step(de, Rg.sub(6))).mul(0.16));
     // sparse bead rows on two plumage rings, a kick ripple running out through them
-    const front = c.beat.fract().mul(130), kl = smoothstep(6, 0, de.sub(front).abs()).mul(kickOn).mul(smoothstep(130, 60, front));
+    const front = c.beat.fract().mul(130), kl = inv(smoothstep(0, 6, de.sub(front).abs())).mul(kickOn).mul(inv(smoothstep(60, 130, front)));
     [44, 64].forEach((R, j) => {
       const n = Math.round(R * TAU / 5), k = ang.div(TAU).mul(n).add(c.real.mul(0.02 * (j ? -1 : 1)));
       const bd = cd(k, R * TAU / n, de.sub(R));
       col = col.add(mix(B, H, kl).mul(stroke(bd, 0.45)).mul(float(0.35).add(kl)).mul(maskBeads(grow.mul(1.6).sub(0.6 + j * 0.15).clamp(0, 1), k.fract())));
     });
     const sw = sense(12), pst = io(0.58, 0.63, 0.85, 0.88), pca = io(0.6, 0.65, 0.87, 0.9), pcr = io(0.62, 0.66, 0.885, 0.915), pfe = io(0.63, 0.66, 0.86, 0.89);
-    const gly = pk(11, 3);
+    const gly = pk(11, 3), scr = (y0) => float(y0).add(c.real.mul(1.1).mul(sw)).add(80).mod(160).sub(80);
     (low ? STARS.slice(0, 4) : STARS).forEach(([x, y, s], i) => {
       const tw = c.real.mul(1.3).add(i * 2.1).sin().mul(0.25).add(0.75);
       const sp = rot(vec2(ax.sub(x), q.y.sub(y)), rn(18).mul(0.8).add(c.real.mul(0.05)));
@@ -106,21 +107,20 @@ export function material(ctx) {
       col = mix(col, mix(H2, W, 0.6).mul(float(0.9).add(kl)), st);
     });
     (low ? CARTS.slice(0, 3) : CARTS).forEach(([x, y0], i) => {
-      const y = float(y0).add(c.real.mul(1.1).mul(sw)).add(80).mod(160).sub(80);
+      const y = scr(y0);
       const cq = vec2(ax.sub(x), q.y.sub(y)), vert = i % 2 === 1;
       const qq = vert ? vec2(cq.y, cq.x) : cq;
       const sd = vec2(qq.x.abs().sub(5.5).max(0), qq.y).length().sub(2.6);
       const on = maskBeads(pca, i / 5);
-      const inner = qq;
-      const g0 = stroke(vec2(inner.x.abs().sub(3).abs(), inner.y).length(), 0.7).max(stroke(inner.length(), 0.7));
-      const g1 = stroke(inner.x.abs().add(inner.y.abs()).sub(1.6).abs(), 0.15).max(stroke(inner.length(), 0.45));
-      const g2 = stroke(vec2(inner.x.div(2.4), inner.y.div(1.2)).length().sub(1).abs(), 0.12).max(stroke(inner.length(), 0.6));
+        const g0 = stroke(vec2(qq.x.abs().sub(3).abs(), qq.y).length(), 0.7).max(stroke(qq.length(), 0.7));
+      const g1 = stroke(qq.x.abs().add(qq.y.abs()).sub(1.6).abs(), 0.15).max(stroke(qq.length(), 0.45));
+      const g2 = stroke(vec2(qq.x.div(2.4), qq.y.div(1.2)).length().sub(1).abs(), 0.12).max(stroke(qq.length(), 0.6));
       const g = g0.mul(is(gly, 0)).add(g1.mul(is(gly, 1))).add(g2.mul(is(gly, 2)));
       col = mix(col, K, step(sd, 0).mul(on));
       col = col.add(H.mul(stroke(sd.abs(), 0.18)).add(mix(H2, W, 0.3).mul(g).mul(step(sd, -0.4))).mul(on));
     });
     (low ? CROSS.slice(0, 2) : CROSS).forEach(([x, y0], i) => {
-      const y = float(y0).add(c.real.mul(1.1).mul(sw)).add(80).mod(160).sub(80);
+      const y = scr(y0);
       const cq = rot(vec2(ax.sub(x), q.y.sub(y)), c.real.mul(0.12 * (i % 2 ? 1 : -1)));
       const r1 = vec2(cq.x.abs().sub(3.3), cq.y.abs().sub(1.2)), r2 = vec2(cq.x.abs().sub(1.2), cq.y.abs().sub(3.3));
       const sd = r1.max(0).length().add(r1.x.max(r1.y).min(0)).min(r2.max(0).length().add(r2.x.max(r2.y).min(0)));
@@ -138,10 +138,7 @@ export function material(ctx) {
       col = mix(col, K, step(fe, 1).mul(on));
       col = col.add(B.mul(stroke(fe.sub(1).abs().mul(2.3), 0.14).max(stroke(f.x.abs(), 0.12).mul(step(fe, 1))).max(barbs.mul(0.5))).mul(on).mul(0.8));
     });
-    m.colorNode = col.mul(wl);
-    m.opacityNode = cover.mul(live);
-    m.alphaTest = 0.5;
-    return m;
+    return cut(m, col.mul(wl), cover, live);
   }
 
   // ---- RING: bead ring and sparkle ring (turns, soft)
@@ -152,14 +149,14 @@ export function material(ctx) {
     const nb = pk(13, 3).mul(8).add(28);
     const ka = a.add(w1).div(TAU).add(0.5);
     const k1 = ka.mul(nb);
-    const bd = vec2(k1.fract().sub(0.5).mul(r.mul(TAU).div(nb)), r.sub(38)).length();
+    const bd = cd(k1, r.mul(TAU).div(nb), r.sub(38));
     const bead = stroke(bd, 0.65).mul(maskBeads(p1, k1.floor().div(nb)));
     const l1 = stroke(r.sub(35.6).abs(), 0.1).mul(maskDraw(p1, ka));
     const kb = a.add(w2).div(TAU).add(0.5), k2 = kb.mul(12);
     const sp = vec2(k2.fract().sub(0.5).mul(r.mul(TAU).div(12)), r.sub(45));
     const spark = step(four(sp, float(1.8).add(c.kick.mul(0.6))), 1).mul(maskBeads(p2, k2.floor().div(12)));
     const l2 = stroke(r.sub(47.5).abs(), 0.09).mul(maskDraw(p2, inv(kb)));
-    const k3 = k2.add(0.5), od = vec2(k3.fract().sub(0.5).mul(r.mul(TAU).div(12)), r.sub(42)).length();
+    const k3 = k2.add(0.5), od = cd(k3, r.mul(TAU).div(12), r.sub(42));
     const oce = stroke(od.sub(1.3).abs(), 0.12).max(stroke(od, 0.45)).mul(maskBeads(p3, k3.floor().div(12)));
     const halo = r.sub(38).div(4).pow(2).negate().exp().mul(p1.max(0)).mul(0.12);
     const lit = float(0.8).add(cul.mul(0.6));
@@ -201,10 +198,7 @@ export function material(ctx) {
       col = mix(col, mix(H2, H, bk.floor().mod(2)).mul(0.9), beads.mul(inv(body)));
       col = mix(col, fc.mul(inv(cul.mul(0.7))), body);
     });
-    m.colorNode = col;
-    m.opacityNode = cover.mul(live);
-    m.alphaTest = 0.5;
-    return m;
+    return cut(m, col, cover, live);
   }
 
   // ---- FORE: petal-feathers and sparks on a swell (undulates)
@@ -217,7 +211,7 @@ export function material(ctx) {
       const x = float(108).sub(s.mul(48));
       const y = float(lo ? -46 : 46).add(s.mul(9).add(c.real.mul(0.8)).add(i).sin().mul(6)).add(s.mul(lo ? 8 : -8));
       const pq = vec2(ax.sub(x), q.y.sub(y));
-      const on = maskBeads(pf, i / 6).mul(smoothstep(0, 0.12, s)).mul(smoothstep(1, 0.85, s));
+      const on = maskBeads(pf, i / 6).mul(smoothstep(0, 0.12, s)).mul(inv(smoothstep(0.85, 1, s)));
       if (i % 2 === 0) {
         const tq = rot(pq, s.mul(6).add(i).sin().mul(0.8).add(lo ? 0.6 : 2.5));
         const sd = tear(tq, 1.8, 6.5);
@@ -231,10 +225,7 @@ export function material(ctx) {
         col = mix(col, mix(H2, W, 0.6).mul(1.3), st);
       }
     }
-    m.colorNode = col;
-    m.opacityNode = cover.mul(live);
-    m.alphaTest = 0.5;
-    return m;
+    return cut(m, col, cover, live);
   }
 
   // ---- BEING: the owl mask (breathes)
@@ -353,8 +344,5 @@ export function material(ctx) {
   const flip = step(0.5, cul.mul(is(ill, 1)).mul(face));
   col = mix(col, mix(A.mul(0.6).add(H.mul(0.08)), K, lines), flip);
   const cover = face.max(tuft).max(fan).max(beard).max(lines.mul(step(0.5, lines)));
-  m.colorNode = col;
-  m.opacityNode = cover.mul(live);
-  m.alphaTest = 0.5;
-  return m;
+  return cut(m, col, cover, live);
 }
