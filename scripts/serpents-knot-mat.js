@@ -11,7 +11,7 @@ export function material(ctx) {
   const pk = c.pick(56, 3);
   const P = select(pk.lessThan(1.5), select(pk.lessThan(0.5), float(2), float(3)), float(2));
   const Q = select(pk.lessThan(0.5), float(3), float(5));
-  const k = kickAt(c, 60);
+  const k = kickAt(c, float(60));
   const br = c.sec.mul(TAU / 12).sin().mul(0.015).add(1);
   const R = float(7.5).mul(br), r = float(3.2).mul(k.mul(0.06).add(1));
   const turn = c.sec.mul(TAU / 72).mul(c.dir).mul(side);
