@@ -11,7 +11,7 @@ export default function render(ctx, player) {
   const t = cineTime(ctx)
   const key = ctx.world.inputs?.actions?.cine?.label
   if (t == null) {
-    return `${STYLE}<div style="position:absolute;left:24px;bottom:24px;display:flex;gap:12px;align-items:center;font-family:inherit">
+    return `${STYLE}<div style="position:absolute;left:24px;top:24px;display:flex;gap:12px;align-items:center;font-family:inherit">
       <button onclick="sendAction('cine')" style="pointer-events:auto;background:#0b0f1a;border:1px solid #39d0ff;color:#bff3ff;padding:10px 18px;font-size:18px;letter-spacing:.2em;box-shadow:0 0 18px #39d0ff55;cursor:pointer">▶ ROLL${key ? ` <span style="opacity:.6">[${key}]</span>` : ''}</button>
       <span style="color:#7f95a3;font-size:14px;letter-spacing:.15em">${CINE.duration}s · ${CINE.keys.length - 1} shots · ${CINE.bpm} bpm</span>
     </div>`
