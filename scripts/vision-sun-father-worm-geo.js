@@ -1,8 +1,8 @@
 // THE SUN FATHER's flare tongues: a canonical round tube. x, y = the unit circle (the around-angle), z = 0..1 the
 // along-length. vision-sun-father-worm-mat.js winds it along its seeded spine in depth and undulates it in the
-// vertex stage, and reads the same two numbers back for the skin. params: { sides, rings }
+// vertex stage, and reads the same two numbers back for the skin. params: { sides, rings } at lod 1, fewer by ctx.lod.
 export function geometry(ctx) {
-  const S = ctx.params.sides ?? 12, R = ctx.params.rings ?? 72;
+  const K = [1, 1, 2 / 3, 0.5, 0.25][Math.min(4, Math.max(1, ctx.lod ?? 1))], S = Math.max(5, Math.round((ctx.params.sides ?? 12) * K)), R = Math.max(12, Math.round((ctx.params.rings ?? 72) * K));
   const P = (i, j) => { const a = (j % S) / S * Math.PI * 2; return [Math.cos(a), Math.sin(a), i / R]; };
   for (let i = 0; i < R; i++) for (let j = 0; j < S; j++) {
     const a = P(i, j), b = P(i, j + 1), c = P(i + 1, j + 1), d = P(i + 1, j);

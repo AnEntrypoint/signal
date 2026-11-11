@@ -1,8 +1,6 @@
-// THE OUROBOROS's HATCHLINGS grown large, before they are bent: a straight unit tube along +Y (y = 0 root .. 1 tip,
-// radius 1, 12 sides, 76 rings). vision-ouroboros-worm-mat.js winds it round the serpent ring IN DEPTH and undulates
-// it in the vertex stage, reading along-length (y) and around-angle (atan2(z, x)) off these positions.
+// A HATCHLING before it is bent: unit tube along +Y (y 0..1 along, x/z = cos/sin around, radius 1); vision-ouroboros-worm-mat.js bends it. Counts step down by ctx.lod.
 export function geometry(ctx) {
-  const SIDES = 12, RINGS = 76;
+  const K = [1, 1, 2 / 3, 0.5, 0.25][Math.min(4, Math.max(1, ctx.lod ?? 1))], SIDES = Math.max(5, Math.round(12 * K)), RINGS = Math.max(12, Math.round(76 * K));
   for (let i = 0; i < RINGS; i++) {
     const y0 = i / RINGS, y1 = (i + 1) / RINGS;
     for (let j = 0; j < SIDES; j++) {

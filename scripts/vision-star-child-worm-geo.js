@@ -1,8 +1,6 @@
-// A COMET WORM of the star child, before it is bent: a straight unit tube along +Y (y 0 root .. 1 head, radius 1,
-// 12 sides, 72 rings). vision-star-child-worm-mat.js bends it IN DEPTH and undulates it in the vertex stage; along-length
-// is y, around-angle atan2(z, x). The bounds are the whole scene's room.
+// A COMET WORM before it is bent: unit tube along +Y (y 0..1 along, x/z = cos/sin around, radius 1); vision-star-child-worm-mat.js bends it. Counts step down by ctx.lod.
 export function geometry(ctx) {
-  const L = ctx.lod ?? 1, SIDES = L > 2 ? 6 : L > 1 ? 10 : 12, RINGS = L > 2 ? 24 : L > 1 ? 48 : 72;
+  const K = [1, 1, 2 / 3, 0.5, 0.25][Math.min(4, Math.max(1, ctx.lod ?? 1))], SIDES = Math.max(5, Math.round(12 * K)), RINGS = Math.max(12, Math.round(72 * K));
   for (let i = 0; i < RINGS; i++) {
     const y0 = i / RINGS, y1 = (i + 1) / RINGS;
     for (let j = 0; j < SIDES; j++) {

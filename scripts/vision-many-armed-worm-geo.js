@@ -2,7 +2,6 @@
 // (z 0 is the figure; the temple is at z -30, the camera at z +74). Tails 1,2 rise from below the floor behind the
 // temple, pass between ring (z -12) and figure, and end nearer the eye than the figure; 3,4 come down from above.
 // params: { n } 1..4. uv.x = along the length 0 (root) .. 1 (tip), uv.y = around 0..1.
-const RINGS = 76, SIDES = 12;
 export function spine(n, s) {
   const sx = n % 2 ? -1 : 1, top = n > 2;
   const z = -25 + 55 * s;
@@ -11,6 +10,7 @@ export function spine(n, s) {
   return [x, y, z];
 }
 export function geometry(ctx) {
+  const K = [1, 1, 2 / 3, 0.5, 0.25][Math.min(4, Math.max(1, ctx.lod ?? 1))], RINGS = Math.max(12, Math.round(76 * K)), SIDES = Math.max(5, Math.round(12 * K));
   const n = ctx.params.n ?? 1, top = n > 2, R0 = top ? 2.6 : 3.6;
   const rows = [], uvs = [];
   for (let i = 0; i <= RINGS; i++) {

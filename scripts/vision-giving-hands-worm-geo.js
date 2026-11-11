@@ -1,8 +1,6 @@
-// A DRIP-WORM of the giving hands before it is bent: a straight unit tube along +Y (y = 0 root .. 1 tip, radius 1,
-// 12 sides, 80 rings). vision-giving-hands-worm-mat.js bends it along its spine IN DEPTH and undulates it in the
-// vertex stage, reading along-length (y) and around-angle (atan2(z, x)) off these positions.
+// A DRIP-WORM before it is bent: unit tube along +Y (y 0..1 along, x/z = cos/sin around, radius 1); vision-giving-hands-worm-mat.js bends it. Counts step down by ctx.lod.
 export function geometry(ctx) {
-  const SIDES = 12, RINGS = 80;
+  const K = [1, 1, 2 / 3, 0.5, 0.25][Math.min(4, Math.max(1, ctx.lod ?? 1))], SIDES = Math.max(5, Math.round(12 * K)), RINGS = Math.max(12, Math.round(80 * K));
   for (let i = 0; i < RINGS; i++) {
     const y0 = i / RINGS, y1 = (i + 1) / RINGS;
     for (let j = 0; j < SIDES; j++) {
