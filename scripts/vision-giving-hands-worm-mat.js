@@ -49,7 +49,7 @@ export function material(ctx) {
   const nW = varying(M3(nrm.sub(tg.mul(nrm.dot(tg).div(t2))))), tW = varying(M3(tg)), vW = varying(cameraPosition.sub(modelWorldMatrix.mul(vec4(pos, 1)).xyz));
   const vP = vW.sub(tW.mul(vW.dot(tW).div(tW.dot(tW).max(0.0001))));
   const facing = nW.dot(vP).abs().div(nW.length().mul(vP.length()).max(0.0001)).clamp(0, 1);
-  const rim = inv(smoothstep(0.3, 0.46, facing));
+  const rim = inv(smoothstep(0.14, 0.28, facing));
 
   const ang = atan2(sa, ca.add(0.0001)).div(TAU), s = uu.mul(LEN), face = smoothstep(0.5, 0.7, facing);
   const run = inv(smoothstep(0, 0.05, uu.sub(c.beat.fract()).abs())).mul(step(0.001, c.kick));
