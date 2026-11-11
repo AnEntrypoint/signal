@@ -1,0 +1,8 @@
+# spawn-scene v2 yaml x0y4z0
+vision-contour-oracle:
+  feetPosition: {x: 0, y: 500, z: 0}
+  id: vision-contour-oracle
+  material: {kind: scripted, script: engine/blueprint}
+  physics: none
+  primitive: {depth: 10, height: 40, kind: box, width: 70}
+  tags: [blueprint]
