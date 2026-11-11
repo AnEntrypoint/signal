@@ -157,8 +157,8 @@ export function material(ctx) {
     // NEAR VEIL: three mirrored hanging bead strands a side, black beads with neon rims, drifting down, each
     // trailing a dithered black shadow band over what stands behind
     const ax = p.x.abs();
-    const strand = ax.sub(21).div(3.6).floor().clamp(0, 2);
-    const sx = strand.mul(3.6).add(22.8);
+    const strand = ax.sub(43).div(3.6).floor().clamp(0, 2);
+    const sx = strand.mul(3.6).add(44.8);
     const sway = p.y.mul(0.12).add(sec.mul(0.4)).add(strand.mul(2.1)).sin().mul(0.6);
     const gap = float(4.2).sub(strand.mul(0.5));
     const yy = p.y.add(sec.mul(0.5).mul(strand.add(1)));
@@ -171,7 +171,7 @@ export function material(ctx) {
     const thread = line(dx, 0.06);
     const dith = step(0.5, p.x.mul(5).floor().add(p.y.mul(5).floor()).mod(2));
     const shadow = step(dx.abs(), 1.7).mul(dith);
-    const inX = step(21, ax).mul(step(ax, 32.2)).mul(step(p.y.abs(), 40));
+    const inX = step(43, ax).mul(step(ax, 54.2)).mul(step(p.y.abs(), 40));
     const k = float(1).sub(p.y.add(40).div(80)).clamp(0, 1);
     const lit = maskBeads(P(0.6, 0.8, 0.94, 0.97), k.mul(0.85).add(strand.mul(0.05)));
     const glow = float(0.8).add(kickLight.mul(0.5)).add(peak.mul(0.4));
