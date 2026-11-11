@@ -25,7 +25,7 @@ export function material(ctx) {
   const dv = varying(dot(normalize(positionGeometry), gaze));
   const vr1 = varying(r1), vr2 = varying(r2), vpop = varying(pop);
 
-  const base = mix(mix(hue(HUE.yellow, 1.8), vec3(1.9, 1.9, 1.9), vr1), hue(HUE.magenta, 1.9), vr2);
+  const base = mix(mix(hue(HUE.yellow, 1.8), vec3(1.0, 1.0, 1.0), vr1), hue(HUE.magenta, 1.9), vr2);
   const irisC = mix(mix(hue(HUE.red, 1.6), hue(HUE.blue, 1.8), vr1), hue(HUE.cyan, 1.6), vr2);
   let col = mix(base, irisC, smoothstep(0.74, 0.76, dv));
   col = mix(col, vec3(0, 0, 0), smoothstep(0.86, 0.88, dv));

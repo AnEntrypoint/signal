@@ -29,10 +29,10 @@ export function material(ctx) {
   const w = aa.mul(k);
   const ringM = smoothstep(0, w, f).mul(float(1).sub(smoothstep(duty.sub(w), duty, f)));
   const odd = ph.floor().mul(0.5).fract().mul(2);
-  const blue = mix(hue(HUE.blue, 1.7), vec3(0.08, 0.5, 1.9), odd);
-  col = mix(col, mix(vec3(0.07, 0.0, 0.3), blue, ringM), band(5.3, 8.3));
+  const blue = mix(hue(HUE.blue, 1.7), vec3(0.0, 0.22, 1.0), odd);
+  col = mix(col, mix(vec3(0.05, 0.0, 0.16), blue, ringM), band(5.3, 8.3));
   // white rim at the pupil
-  col = mix(col, vec3(2.4, 2.4, 2.4), band(4.9, 5.3));
+  col = mix(col, vec3(1.15, 1.15, 1.15), band(4.9, 5.3));
   // every dot is a little target: outer colour, black ring, contrasting centre
   const target = (base, rc, n, rot, rad, outer, inner) => {
     const q = an.add(rot).mul(n).fract().sub(0.5).mul((TAU * rc) / n);
@@ -43,7 +43,7 @@ export function material(ctx) {
     return mix(o, inner, float(1).sub(smoothstep(float(0.42).sub(e), 0.42, d)));
   };
   // white targets, 1 turn per 2 phrases
-  col = target(col, 8.66, 40, c.phrase.mul(0.5), c.kick.mul(0.07).add(0.27), vec3(1.9, 1.9, 1.9), hue(HUE.blue, 2));
+  col = target(col, 8.66, 40, c.phrase.mul(0.5), c.kick.mul(0.07).add(0.27), vec3(1.0, 1.0, 1.0), hue(HUE.blue, 2));
   // magenta / violet split band (the white beads ride it), cells turning against the white row
   const cell = an.sub(c.phrase.mul(0.5)).mul(36).fract();
   const cellM = smoothstep(0.03, 0.06, cell).mul(smoothstep(0.5, 0.47, cell));
@@ -57,11 +57,11 @@ export function material(ctx) {
   const twist = r.sub(10.85).mul(0.014).mul(c.phrase.mul(TAU / 2).sin());
   const ff = an.add(twist).add(c.phrase.mul(0.25)).mul(60).fract();
   const fib = smoothstep(0.44, 0.5, ff).mul(smoothstep(1.0, 0.94, ff));
-  col = mix(col, vec3(1.35, 1.35, 1.35).mul(fib), band(10.9, 12.75));
+  col = mix(col, vec3(0.95, 0.95, 0.95).mul(fib), band(10.9, 12.75));
   // a row of white triangle teeth on black, pointing inward, turning against the fibres
   const wf = an.sub(c.phrase.mul(0.25)).mul(48).fract().sub(0.5).abs().mul(2);
   const wh = float(13.55).sub(r).div(0.65);
-  col = mix(col, vec3(1.6, 1.6, 1.6).mul(smoothstep(0.0, 0.06, float(1).sub(wf).sub(wh))), band(12.9, 13.56));
+  col = mix(col, vec3(1.0, 1.0, 1.0).mul(smoothstep(0.0, 0.06, float(1).sub(wf).sub(wh))), band(12.9, 13.56));
   // green rim
   col = mix(col, hue(HUE.green, 2.3), band(13.7, 13.97));
   // teeth: yellow triangles in orange, each with a red dot, turning with the magenta row

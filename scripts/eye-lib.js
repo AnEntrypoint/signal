@@ -5,7 +5,8 @@ import { SCORE } from "./lib/trip.js";
 
 export const TAU = 6.28318530718;
 export const LID = { W: 22, H: 19, band: 0.95, z: 2.2 }; // the almond: half-width, half-height (m)
-export const hue = (h, g = 1) => vec3(h[0] * g, h[1] * g, h[2] * g);
+// tone map washes anything far above 1 to pastel: keep hues at about 1.0 peak so they stay flat and saturated
+export const hue = (h, g = 1) => vec3(h[0] * g * 0.55, h[1] * g * 0.55, h[2] * g * 0.55);
 
 // 1 while the kick plays
 export const live = (sec) => smoothstep(SCORE.kickFrom - 0.05, SCORE.kickFrom, sec).mul(smoothstep(SCORE.kickTo + 0.05, SCORE.kickTo, sec));
