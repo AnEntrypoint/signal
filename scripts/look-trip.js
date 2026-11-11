@@ -281,8 +281,15 @@ export function look(ctx) {
   // the running scene around it goes soft. Otherwise the focus pulls slowly through the layers, near to far and
   // back once every two phrases, so one layer reads at a time while the others breathe out of focus.
   const pullT = c.phrase.mul(0.5).add(c.rnd(74)).mul(TAU).sin().mul(0.5).add(0.5);
-  const focusD = mix(mix(9, 42, pullT), float(74), vis);
-  const focusR = mix(mix(6, 18, pullT), float(14), vis);
+  // never blur without a subject: the focus plane is the depth of what actually stands at the frame's centre
+  // (the nearest of five taps round it), so that thing is crisp and only the layers before and behind it soften.
+  // Nothing there (open black) = no blur at all. Some phrases the roll deals an extreme, razor-thin plane.
+  let zC = float(0);
+  for (const [ox, oy] of [[0, 0], [0.03, 0], [-0.03, 0], [0, 0.04], [0, -0.04]]) zC = zC.max(ctx.viewZAt(vec2(0.5 + ox, 0.5 + oy)).negate().min(400));
+  const hasSubject = smoothstep(2, 4, zC).mul(smoothstep(300, 200, zC));
+  const razor = step(0.7, c.phrase.floor().add(c.seed).mul(78.233).sin().mul(43758.5453).fract());
+  const focusD = mix(zC.clamp(4, 200), float(74), vis);
+  const focusR = mix(mix(zC.mul(0.35).add(3), zC.mul(0.08).add(1), razor), float(16), vis);
   const graded = col.max(vec3(0));
   const focused = dof(graded, ctx.viewZ, focusD, focusR, low ? 3 : 6);
   // only when it means something: a being on stage, or a phrase the roll deals a focus pull (about 1 in 3),
@@ -290,6 +297,6 @@ export function look(ctx) {
   const phF = c.phrase.floor(), phu = c.phrase.fract();
   const pullOn = step(0.66, phF.add(c.seed).mul(12.9898).sin().mul(43758.5453).fract())
     .mul(smoothstep(0, 0.125, phu)).mul(smoothstep(1, 0.875, phu));
-  const dofW = on.mul(pullOn.max(vis));
+  const dofW = on.mul(pullOn.mul(hasSubject).max(vis));
   return vignette(mix(graded, focused, dofW), ctx.param("vignette", 0.35), { color: [0, 0, 0] });
 }
