@@ -54,7 +54,8 @@ export function fam(c) {
 }
 const max3 = (v) => v.x.max(v.y).max(v.z);
 // unlit = graphite that keeps the form; lit = the colour. lit is 0..1.
-export const relight = (col, lit) => mix(vec3(0.05, 0.05, 0.068).mul(max3(col).min(1)), col, lit);
+// the rest tone is a dark ultramarine-tinted ink of the colour itself, never neutral grey (creator: no grey)
+export const relight = (col, lit) => mix(col.mul(0.022).add(vec3(0.006, 0.008, 0.04)).mul(max3(col).min(1)), col, lit);
 // the Eye only takes colour on the first kick phrase, and everything is lit in peak
 export const gate = (c, lit, peak) => float(lit).max(peak.mul(0.85)).mul(step(12.35, c.sec));
 
