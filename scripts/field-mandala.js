@@ -1,0 +1,103 @@
+// The mandala field: 28 concentric bands painted in polar space from (0,0,0), six kinds in a repeating order,
+// neighbours counter-rotating, a kick ripple running outward, growing in bloom, line-art in reset.
+import { positionWorld, float, vec2, vec3, length, atan2, fwidth, smoothstep, select, mix, min, max } from "builtin/tsl";
+import { MeshBasicNodeMaterial } from "builtin/three";
+import { tripClock, SEC, stripes, HUE } from "./lib/trip.js";
+import { BW, growR, resetR, endFade, base, hot } from "./field-lib.js";
+
+const TAU = 6.2831853;
+
+export function material(ctx) {
+  const c = tripClock(ctx);
+  const p = positionWorld.xz;
+  const r = length(p);
+  const a = atan2(p.y, p.x).div(TAU);
+  const aa = length(fwidth(p)).mul(0.7).clamp(0.004, 0.6);
+  const fill = (d) => smoothstep(aa, aa.negate(), d);
+  const line = (d, w) => smoothstep(aa.add(w), float(w).mul(0.5), d.abs());
+  // outer colour, black ring, inner contrasting colour: a little target
+  const target = (len, R, cA, cB) => mix(mix(cA.mul(fill(len.sub(R))), vec3(0), fill(len.sub(R * 0.68))), cB, fill(len.sub(R * 0.42)));
+
+  const q = r.div(BW), i = q.floor(), f = q.fract(), y = f.mul(BW), rm = i.add(0.5).mul(BW);
+  const dir = i.mod(2).mul(2).sub(1);
+  const u = a.add(dir.mul(c.phrase).div(i.mod(3).add(4)));
+  const cell = (w, shift = 0) => {
+    const n = rm.mul(TAU / w).floor().max(3);
+    const tc = u.mul(n).add(shift).fract().sub(0.5);
+    const cw = r.mul(TAU).div(n);
+    return { tc, cw, x: tc.mul(cw) };
+  };
+  const A = base(i), B = base(i.add(1)), H = hot(i), H2 = hot(i.add(2));
+  const W = vec3(1.5, 1.5, 1.5);
+  const inset = (m) => f.sub(0.5).abs().sub(m).mul(BW);
+
+  // 0: three staggered rows of target dots
+  const j0 = f.mul(3).floor(), fy0 = f.mul(3).fract().sub(0.5).mul(BW / 3);
+  const c0 = cell(BW / 3, j0.mul(0.5));
+  const l0 = length(vec2(c0.x, fy0));
+  const col0 = target(l0, 0.44, H, H2), d0 = l0.sub(0.44);
+
+  // 1: black/white radial stripes, each white stripe carrying a row of body-colour dots
+  const c1 = cell(1.3);
+  const d1 = max(c1.tc.abs().sub(0.25).mul(c1.cw), inset(0.44));
+  const l1 = length(vec2(c1.x, f.mul(4).fract().sub(0.5).mul(BW / 4)));
+  const col1 = mix(W.mul(fill(d1)), A, fill(l1.sub(0.17)).mul(fill(d1)));
+
+  // 2: scallop petals filled with moving contour lines, a hot target at each root
+  const c2 = cell(3.0);
+  const l2 = length(vec2(c2.x, y.sub(0.2)));
+  const d2 = max(l2.sub(c2.cw.mul(0.47)), float(0.2).sub(y));
+  const con2 = stripes(l2.mul(1.7).sub(c.beat.mul(0.25)), 1, 0.12);
+  const col2 = mix(mix(A, B, con2).mul(fill(d2)).mul(line(d2.add(0.14), 0.07).oneMinus()), target(l2, 0.55, H, H2), fill(l2.sub(0.62)));
+
+  // 3: white triangle teeth, a body dot in each tooth, a hot bead in each gap
+  const c3 = cell(1.6);
+  const tri = c3.tc.abs().mul(2);
+  const d3 = max(f.sub(float(0.92).sub(tri.mul(0.84))).mul(BW * 0.55), float(0.08).sub(f).mul(BW));
+  const l3 = length(vec2(c3.x, y.sub(BW * 0.33)));
+  const g3 = length(vec2(c3.tc.abs().sub(0.5).mul(c3.cw), y.sub(BW * 0.7)));
+  const col3 = mix(W.mul(fill(d3)), B, fill(l3.sub(0.2))).add(target(g3, 0.3, H, A));
+
+  // 4: two thin bright rims with two staggered rows of beads between
+  const dL = min(f.sub(0.1).abs(), f.sub(0.9).abs()).mul(BW).sub(0.08);
+  const g4 = f.sub(0.18).div(0.64), j4 = g4.mul(2).floor();
+  const c4 = cell(0.95, j4.mul(0.5));
+  const l4 = length(vec2(c4.x, g4.mul(2).fract().sub(0.5).mul(BW * 0.32)));
+  const in4 = g4.greaterThan(0).and(g4.lessThan(1)).select(1, 0);
+  const col4 = H.mul(1.6).mul(fill(dL)).add(target(l4, 0.36, H2, A).mul(in4));
+  const d4 = min(dL, select(in4.greaterThan(0.5), l4.sub(0.36), float(9)));
+
+  // 5: a pinstriped body band with black portholes, a target in each
+  const c5 = cell(3.3);
+  const l5 = length(vec2(c5.x, y.sub(BW * 0.5)));
+  const dI = inset(0.43);
+  const solid = fill(dI).mul(fill(l5.sub(1.22)).oneMinus());
+  const col5 = mix(A, B, stripes(f, 6, 0.12)).mul(solid).add(target(l5, 0.98, H, H2));
+  const d5 = min(max(dI, float(1.22).sub(l5)), l5.sub(0.98));
+
+  const k = i.mod(6);
+  const pick = (v0, v1, v2, v3, v4, v5) => select(k.lessThan(0.5), v0, select(k.lessThan(1.5), v1, select(k.lessThan(2.5), v2,
+    select(k.lessThan(3.5), v3, select(k.lessThan(4.5), v4, v5)))));
+  const col = pick(col0, col1, col2, col3, col4, col5);
+  const d = pick(d0, d1, d2, d3, d4, d5);
+
+  // reset: neon line-art outside the refilling radius
+  const Rf = resetR(c.sec);
+  const la = fill(Rf.sub(r));
+  const lineCol = mix(hot(i.add(1)), vec3(HUE.cyan[0], HUE.cyan[1], HUE.cyan[2]), k.mod(2)).mul(1.7);
+  let body = mix(col, lineCol.mul(line(d, 0.05)), la);
+  body = body.mul(c.barHit.mul(i.mod(4).lessThan(0.5).select(1.6, 0)).add(1));
+
+  // bloom: the hard growing edge with its white rim
+  const R = growR(c.sec);
+  const rimOn = c.sec.greaterThan(SEC.pulse[0]).and(R.lessThan(90.5)).select(1, 0);
+  const rim = line(r.sub(R), 0.14).mul(rimOn).mul(3).add(line(r.sub(Rf), 0.14).mul(Rf.lessThan(95).and(Rf.greaterThan(0.5)).select(3, 0)));
+  const seed = fill(r.sub(0.45)).mul(smoothstep(SEC.pulse[0] + 0.5, SEC.pulse[0], c.sec)).mul(0.5);
+  // the kick ripple: one thin ring a beat, running the whole radius
+  const ripple = line(r.sub(c.beat.fract().mul(90)), 0.22).mul(c.kick.pow(0.3)).mul(2.6);
+
+  const m = new MeshBasicNodeMaterial();
+  m.colorNode = body.mul(fill(r.sub(R))).add(vec3(1, 1, 1).mul(rim)).add(vec3(0.5, 0.8, 1.0).mul(ripple)).add(vec3(0.3, 0.4, 1).mul(seed)).mul(endFade(c.sec));
+  m.fog = false;
+  return m;
+}
