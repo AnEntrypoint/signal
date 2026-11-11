@@ -7,6 +7,7 @@
 // avatar, and its own file carries Idle, Walk, Run, Sprint, Jump; any other clip is an address on a
 // mixer channel (anim.sit = "cdn/clip-sit-loop.glb": →animations).
 import PLAYER from './lib/data/player.yml'
+import { cineTime } from './lib/cine.js'
 
 // The keys' intent is this machine's alone: onInput writes it, update() reads it, nobody else does:
 // and a value written to state rides the wire and the save on every tick it changes (the intent turns
@@ -19,6 +20,11 @@ function walkOf(ctx) {
 }
 
 export function onInput(ctx, input) {
+  // Roll / cut the cinematic for the whole room. Starts 0.3 s out so every machine starts together.
+  if (input.pressed.cine) {
+    ctx.world.state.cine = cineTime(ctx) == null ? { start: ctx.now() + 300, by: ctx.self.id } : null
+  }
+
   const facingSin = input.axes.aimYawSin ?? 0
   const facingCos = input.axes.aimYawCos ?? 1
 

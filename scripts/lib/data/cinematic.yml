@@ -1,0 +1,20 @@
+# The shot list. Press P (or the roll button) and every camera in the room flies it together.
+# t: seconds from the roll. eye: where the camera stands, aim: what it looks at, fov: lens.
+# word: the big kinetic word on screen during that shot (empty = none).
+# Edit any number and press roll again.
+duration: 24          # my pick: one 24 s piece
+bpm: 120              # my pick: drives every pulse on the stage
+music: /cdn/moodboard-scifi-neon/music-cinematic-synthwave-pulse-build-and-drop.mp3
+idleTitle: "SIGNAL"
+keys:
+  - { t: 0,    eye: [-18, 10, 26], aim: [0, 3.5, 0],   fov: 42, word: "" }
+  - { t: 4,    eye: [12, 2, 10],   aim: [0, 3.5, 0],   fov: 36, word: "SIGNAL" }
+  - { t: 7,    eye: [6, 4, -6],    aim: [0, 3.5, -14], fov: 50, word: "" }
+  - { t: 9,    eye: [0, 3.5, -10], aim: [0, 3.5, -30], fov: 62, word: "FORM" }
+  - { t: 12.5, eye: [0, 3.5, -50], aim: [0, 3.5, -70], fov: 75, word: "" }
+  - { t: 15,   eye: [0, 45, -28],  aim: [0, 0, -22],   fov: 40, word: "MOTION" }
+  - { t: 19,   eye: [0, 7, 20],    aim: [0, 7, 0],     fov: 34, word: "" }
+  - { t: 24,   eye: [0, 8, 26],    aim: [0, 7, 0],     fov: 30, word: "" }
+titles:               # the 3D title over the rings
+  - { t: 0,  text: "" }
+  - { t: 19, text: "LANMOWER" }
