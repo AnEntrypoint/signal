@@ -35,8 +35,8 @@ export function material(ctx) {
   const w2 = uu.mul(6).sub(c.real.mul(0.75)).add(ph * 1.7).cos().mul(env).mul(4);
   const bow = uu.mul(3.14159).sin();
   const spine = pair
-    ? vec3(uu.mul(-66).add(100).mul(sg).add(w1), uu.mul(-34).add(62).add(bow.mul(6)).add(w2.mul(0.6)), uu.mul(60).sub(38).add(w2.mul(0.8)))
-    : vec3(uu.mul(-80).add(112).mul(sg).add(w1), uu.mul(22).sub(40).sub(bow.mul(12)).add(w2.mul(0.6)), uu.mul(72).sub(42).add(w2.mul(0.8)));
+    ? vec3(uu.mul(-76).add(100).mul(sg).add(w1), uu.mul(-48).add(62).add(bow.mul(6)).add(w2.mul(0.6)), uu.mul(60).sub(38).add(w2.mul(0.8)))
+    : vec3(uu.mul(-90).add(112).mul(sg).add(w1), uu.mul(34).sub(40).sub(bow.mul(8)).add(w2.mul(0.6)), uu.mul(72).sub(42).add(w2.mul(0.8)));
   const m = new MeshBasicNodeMaterial();
   m.side = DoubleSide;
   m.positionNode = spine.add(vec3(ca.mul(rad), sa.mul(rad).mul(0.8), sa.mul(rad).mul(-0.6)));
