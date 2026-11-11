@@ -81,7 +81,7 @@ export function material(ctx) {
     const cover = step(R, front).mul(step(1, Rf));
     const lag = smoothstep(front.sub(2), front.sub(16), R);               // what the front has passed and settled
     let col = vec3(0);
-    col = col.add(mix(C2, W, 0.4).mul(stroke(R.sub(front).abs().sub(0.35), 0.2)));
+    col = col.add(mix(C1, W, 0.2).mul(stroke(R.sub(front).abs().sub(0.35), 0.2)));
     const lane = R.sub(front.sub(3.5)), at = ang.mul(nsc).mul(3).div(TAU);
     col = col.add(mix(C3, W, 0.3).mul(0.8).mul(stroke(vec2(at.fract().sub(0.5).mul(R.mul(TAU).div(nsc.mul(3))), lane).length(), 0.6)));
     // the ground of nested crescents, scrolling upward (or down) out of the floor
