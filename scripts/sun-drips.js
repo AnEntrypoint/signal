@@ -43,6 +43,6 @@ export function material(ctx) {
   m.side = DoubleSide;
   m.colorNode = relight(col, lit).add(glow);
   m.opacityNode = shown(c, "sky", s.add(12.2).div(42)).mul(shape);
-  m.alphaTest = 0.5;
+  m.alphaTest = 0.5; m.toneMapped = false;
   return m;
 }

@@ -110,6 +110,6 @@ export function material(ctx) {
   mt.side = DoubleSide;
   mt.colorNode = col;
   mt.opacityNode = shown(c, "sky", rMask.div(13)).mul(solid).mul(float(1).sub(cut));
-  mt.alphaTest = 0.5;
+  mt.alphaTest = 0.5; mt.toneMapped = false;
   return mt;
 }
