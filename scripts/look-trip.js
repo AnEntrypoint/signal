@@ -150,7 +150,8 @@ export function look(ctx) {
   const kmix = aWin.mul(0.95).mul(wAsc).add(pk.mul(pWin).mul(wPeak)).clamp(0, 1);
 
   // chromatic aberration: R and B pushed radially, growing toward the edge
-  const ab = float(0.0015).add(c.kick.mul(0.006).mul(on).mul(job(0)));
+  // a being on stage plays clean: no resting fringe on its line-art (the split only rides a real kick, off-vision)
+  const ab = float(0.0008).add(c.kick.mul(0.006).mul(on).mul(job(0))).mul(float(1).sub(vis));
   const rgb = (u) => {
     if (low) return S(u); // low tier: one tap, no aberration split
     const d = u.sub(0.5).mul(ab.mul(2));
@@ -279,9 +280,11 @@ export function look(ctx) {
     zC = zC.min(select(z.greaterThan(1.5).and(z.lessThan(300)), z, float(999))); // the nearest thing round the middle is the subject
   }
   const hasSubject = step(zC, 400);
+  // on a vision the subject is the being itself, wherever the director's fit has hung it (74 m x fit): the centre tap
+  const zMid = ctx.viewZAt(vec2(0.5, 0.5)).negate(), zV = select(zMid.greaterThan(1.5).and(zMid.lessThan(300)), zMid, zC.min(74));
   const razor = step(0.7, c.phrase.floor().add(c.seed).mul(78.233).sin().mul(43758.5453).fract());
-  const focusD = mix(zC.clamp(4, 200), float(74), vis);
-  const focusR = mix(mix(zC.mul(0.35).add(3), zC.mul(0.08).add(1), razor), float(16), vis);
+  const focusD = mix(zC.clamp(4, 200), zV.clamp(4, 200), vis);
+  const focusR = mix(mix(zC.mul(0.35).add(3), zC.mul(0.08).add(1), razor), zV.mul(0.45).add(6), vis); // being + its ring/veil sharp; only the far world and the near fore soften
   // the beat as occlusion: on the kick one side of the subject's depth blinks to black, so layers trade places
   // as figure and ground instead of the whole picture pumping
   const dz = ctx.viewZ.negate();
