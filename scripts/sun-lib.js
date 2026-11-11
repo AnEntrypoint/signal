@@ -26,7 +26,7 @@ export function fam(c) {
   const h = float(0.83).add(c.hue.mul(0.05)).add(sel(c.pick(60, 3), [0, 0.03, 0.06])).add(q.mul(0.015)); // fire: yellow -> orange -> red, the roll only nudges it (creator's ref: picture 2's sun)
   const peak = win(c.sec, SEC.peak);
   const hp = mix(h, float(0.83).add(c.hue.mul(0.08)), peak); // peak: the sun's own run yellow -> orange -> red -> violet -> blue
-  const span = mix(float(0.12), float(0.48), peak);
+  const span = mix(float(0.12), float(0.22), peak); // peak widens the fire toward magenta, never into green
   const gain = float(0.95).add(smoothstep(155.6, 157.1, c.sec).mul(smoothstep(181, 179.5, c.sec)).mul(0.2));
   const sat = (v) => v.pow(vec3(2.4)); // linear -> keeps the third channel near 0 after sRGB encode, no pastel
   const at = (x) => sat(pal(hp.add(float(x).mul(span)))).mul(gain);
