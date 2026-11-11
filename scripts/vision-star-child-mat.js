@@ -1,7 +1,7 @@
 // STAR CHILD vision: contour-line seated child in a nursery of constellations; layers world/ring/being/veil/fore by params.layer; seed ch 380-399
 import { MeshBasicNodeMaterial, AdditiveBlending, DoubleSide } from "builtin/three";
 import { positionGeometry, float, vec2, vec3, smoothstep, step, mix, atan2, fwidth } from "builtin/tsl";
-import { tripClock, visionShown, visionU, climb, maskDraw, maskBeads, maskIris, maskClock, maskLid, nib, BPS, inv, is, ang2, smin, capsule, segH, rbox, strokeAA, ioU, famPick, NEON } from "./lib/trip.js";
+import { tripClock, visionShown, visionU, climb, maskDraw, maskBeads, maskIris, maskClock, maskLid, BPS, inv, is, ang2, smin, capsule, segH, rbox, strokeAA, ioU, famPick, NEON } from "./lib/trip.js";
 const TAU = 6.28318, PI = 3.14159;
 const HY = 1.6;
 const HEAD = [0, 8.6], HR = 1.7;
@@ -15,9 +15,29 @@ const ANIMALS = [
 { s: [[-1, -.1, -.5, .3], [-.5, .3, 0, -.15], [0, -.15, .5, .25], [.5, .25, .95, 0], [.95, 0, 1.15, .22]], e: [.98, .2], m: 0 },
 ];
 const SLOTS = [[-88, 40, 11], [90, 36, 11], [-94, -8, 9], [96, -12, 9]];
+const nib = (p, x, w) => inv(smoothstep(0, w, float(x).sub(float(p)).abs()));
+const hash = (v, o) => v.dot(vec2(12.9898, 78.233)).add(o).sin().mul(43758.5453).fract();
+function stars(P, prog, v, cs, o, rmax) {
+const q = P.div(cs), cell = q.floor(), f = q.fract(), h = hash(cell, o), h2 = h.mul(7.13).fract();
+const j = vec2(h, h2).mul(0.4).add(0.3), d = f.sub(j).length();
+const cc = cell.add(j).mul(cs), rk = cc.length().div(rmax).clamp(0, 1);
+const key = mix(h, mix(rk, ang2(cc.x, cc.y).div(TAU).add(0.5).fract(), is(v, 2)), step(0.5, v).mul(0.75));
+const lp = float(prog).mul(1.35).sub(key.mul(0.35).add(key)).mul(2.6).add(0.0).clamp(0, 1);
+const lp2 = float(prog).sub(key.mul(0.74)).div(0.26).clamp(0, 1);
+const cover = step(d, lp2.mul(1.05)).max(step(0.999, lp2));
+const n = cell.add(vec2(1, 0)), hn = hash(n, o), jn = vec2(hn, hn.mul(7.13).fract()).mul(0.4).add(0.3).add(vec2(1, 0));
+const ab = jn.sub(j), hh = f.sub(j).dot(ab).div(ab.dot(ab).max(0.001)).clamp(0, 1);
+const link = f.sub(j).sub(ab.mul(hh)).length();
+const live = step(0.001, lp2).mul(step(lp2, 0.995));
+return { cover, d, born: step(key.mul(0.74), float(prog)), live, link, hh, lp: lp2, h, cc };
+}
 export function material(ctx) {
+const low = ctx.quality === "low";
 const layer = ctx.params.layer ?? "being";
 const c = tripClock(ctx);
+const vin = c.pick(396, 3), vout = c.pick(397, 3);
+const span = ctx.param("vw1", -1).sub(ctx.param("vw0", -1)).max(1);
+const uEnd = float(1).sub(float(0.4).div(span));
 const u = visionU(ctx, c);
 const vw0 = ctx.param("vw0", -1), vw1 = ctx.param("vw1", -1);
 const tAt = (x) => c.sec.sub(vw0.add(vw1.sub(vw0).mul(x)));
