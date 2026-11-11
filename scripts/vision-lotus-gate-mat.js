@@ -21,7 +21,7 @@
 // 17 hot accent.
 import { MeshBasicNodeMaterial, AdditiveBlending, DoubleSide } from "builtin/three";
 import { positionGeometry, float, vec2, vec3, smoothstep, step, mix, atan2, fwidth } from "builtin/tsl";
-import { tripClock, visionShown, visionU, climb, maskDraw, maskBeads, maskClock, nib } from "./lib/trip.js";
+import { tripClock, visionShown, visionU, climb, maskDraw, maskBeads, maskClock, nib , inv } from "./lib/trip.js";
 
 const TAU = 6.28318, PI = 3.14159;
 const DEPTH = { world: 104, ring: 86, being: 74, veil: 64, fore: 52 };
@@ -318,7 +318,7 @@ export function material(ctx) {
   const ar2 = arch(q2.add(vec2(0, CY)));
   dl = dl.max(stroke(ar2.sd.abs(), 0.35));
   const pDr = io(0.56, 0.64, 0.85, 0.89);
-  dc = dc.mul(inv(dl)).add(mix(B, A, 0.4).mul(dl).mul(smoothstep(pDr.mul(7.5), pDr.mul(7.5).sub(0.6), rd)).mul(0.9));
+  dc = dc.mul(inv(dl)).add(mix(B, A, 0.4).mul(dl).mul(inv(smoothstep(pDr.mul(7.5).sub(0.6), pDr.mul(7.5), rd))).mul(0.9));
   col = mix(col, dc, doorIn);
   cover = cover.max(doorIn);
   const outl = stroke(ar.sd.abs(), 0.24).mul(maskDraw(pA, ar.ua));

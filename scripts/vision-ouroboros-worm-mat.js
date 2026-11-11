@@ -22,7 +22,7 @@ export function material(ctx) {
   const r0 = pair ? 2.6 : 3.8;
   const exists = pair ? step(0.4, rn(8)) : float(1);
   const grow = io(0.55 + pair * 0.04, 0.8, 0.93, 0.955 - pair * 0.008);
-  const tip = smoothstep(grow, grow.sub(0.06), uu);
+  const tip = inv(smoothstep(grow.sub(0.06), grow, uu));
   const head = smoothstep(0.9, 0.97, uu).mul(inv(smoothstep(0.97, 1, uu))).mul(0.5);
   const rad = inv(uu.mul(0.85)).max(0).pow(0.6).mul(r0).add(head.mul(r0)).mul(tip.sqrt()).mul(live).mul(exists).mul(step(0.002, grow));
   const sweep = step(0.5, rn(18)).mul(2).sub(1);
@@ -57,7 +57,7 @@ export function material(ctx) {
   const cSc = mix(B, A, inv(dia)).mul(dia.mul(0.8).add(0.2));
   const swap = pair ? inv(step(0.5, rn(9))) : step(0.5, rn(9));
   const skin = mix(cStr, (low ? cSc : mix(cBe, cSc, swap)), step(uu, smoothstep(0.74, 0.84, u).mul(1.02)));
-  const pulse = low ? float(0) : smoothstep(0.05, 0, uu.sub(c.beat.fract()).abs()).mul(step(0.001, c.kick));
+  const pulse = low ? float(0) : inv(smoothstep(0, 0.05, uu.sub(c.beat.fract()).abs())).mul(step(0.001, c.kick));
   const edge = ca.abs();
   const lit = skin.mul(sa.abs().mul(0.45).add(0.55)).add(mix(A, W, 0.5).mul(smoothstep(0.85, 1, edge)).mul(pulse.add(0.45)));
   const eye = step(vec2(uu.sub(0.955).mul(LEN), ang.sub(sg > 0 ? 1.2 : 1.9).mul(rf.max(1))).length(), 0.9);

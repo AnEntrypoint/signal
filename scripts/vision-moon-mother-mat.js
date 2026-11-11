@@ -84,7 +84,7 @@ const G = gIn.mul(gOut);
     const rings = step(lead.div(5).fract(), float(0.55).sub(lead.div(15).mul(0.5))).mul(step(lead, 15)).mul(step(0, lead));
     const cover = step(de, Rg).max(rings).mul(step(0.004, grow));
     const front = c.beat.fract().mul(110);
-    const kl = smoothstep(5, 0, de.sub(front).abs()).mul(kickOn).mul(smoothstep(110, 50, front));
+    const kl = inv(smoothstep(0, 5, de.sub(front).abs())).mul(kickOn).mul(inv(smoothstep(50, 110, front)));
     const yH = float(-18).add(tide.mul(5));
     const v = yH.sub(P.y).max(0);
     const ri = v.sqrt().mul(1.6).floor();
@@ -130,7 +130,7 @@ const G = gIn.mul(gOut);
     const k = atan2(q0.x, q0.y).div(TAU).abs().mul(2);                    // 0 top .. 1 bottom, both sides at once
     const pe = io(0.4, 0.5, 0.95, 0.975), pe2 = io(0.43, 0.53, 0.95, 0.975), pb = io(0.42, 0.56, 0.95, 0.975), pc = io(0.48, 0.6, 0.945, 0.97);
     const front = c.beat.fract().mul(50);
-    const kl = smoothstep(3.5, 0, rr.sub(front).abs()).mul(kickOn).mul(smoothstep(50, 24, front));
+    const kl = inv(smoothstep(0, 3.5, rr.sub(front).abs())).mul(kickOn).mul(inv(smoothstep(24, 50, front)));
     const l1 = stroke(rr.sub(39.6).abs(), 0.08).mul(maskDraw(pe, k));
     const l2 = stroke(rr.sub(37.4).abs(), 0.06).mul(maskDraw(pe2, k));
     const rot = c.real.div(mix(60, 110, rn(5))).mul(sense(6));            // its own clock and sense
@@ -212,7 +212,7 @@ const G = gIn.mul(gOut);
   const aa = fwidth(p.x).mul(1.2).max(0.008);
   const q0 = p.sub(vec2(0, CY)), rr = q0.length();
   const front = c.beat.fract().mul(30);
-  const kl = smoothstep(2.2, 0, rr.sub(front).abs()).mul(kickOn).mul(smoothstep(30, 14, front));
+  const kl = inv(smoothstep(0, 2.2, rr.sub(front).abs())).mul(kickOn).mul(inv(smoothstep(14, 30, front)));
   const stroke = (d, w) => inv(smoothstep(float(w), aa.add(w), d));
   let col = vec3(0), cover = float(0);
   const add = (colour, mask) => { col = col.add(colour.mul(mask)); cover = cover.max(mask); };
@@ -256,7 +256,7 @@ const G = gIn.mul(gOut);
   const edgeIn = stroke(occ.sub(R).abs(), 0.07).mul(smoothstep(float(R).add(0.3), R, rr)).mul(step(0.002, pc));
   const hatch = step(occ.sub(R).div(0.5).fract(), 0.16).mul(cres);
   const angB = atan2(q0.x, q0.y.negate()).div(TAU).abs().mul(2);       // 0 bottom .. 1 top, both horns
-  const comet = smoothstep(0.08, 0, angB.sub(c.real.div(mix(4.5, 8, rn(18))).fract()).abs());
+  const comet = inv(smoothstep(0, 0.08, angB.sub(c.real.div(mix(4.5, 8, rn(18))).fract()).abs()));
   const bj = atan2(q0.y, q0.x).div(TAU).mul(56).fract().sub(0.5).mul(TAU * (R - 0.8) / 56);
   const bd = vec2(bj, rr.sub(R - 0.8)).length();
   const cbead = inv(smoothstep(float(0.2).sub(aa), 0.2, bd)).mul(smoothstep(float(R).add(0.25), R + 0.45, occ));
@@ -284,8 +284,8 @@ const G = gIn.mul(gOut);
   const inFace = step(fx.add(0.22), fq.x).mul(inBowl);
   const fc = u.sub(0.7).mul(TAU * 6.5).cos(), vB = step(0.5, rn(9)), fg = io(0.7, 0.74, 0.93, 0.95);
   const g = smoothstep(-0.25, 0.25, fc), x0 = fc.mul(8);
-  const litF = mix(g, smoothstep(5, 2.5, p.x.sign().mul(7).sub(x0).abs()), vB).mul(fg);   // variant B: a light crossing left-chalice-right
-  const litC = mix(inv(g), smoothstep(4.5, 2, x0.abs()), vB).mul(fg);
+  const litF = mix(g, inv(smoothstep(2.5, 5, p.x.sign().mul(7).sub(x0).abs())), vB).mul(fg);   // variant B: a light crossing left-chalice-right
+  const litC = mix(inv(g), inv(smoothstep(2, 4.5, x0.abs())), vB).mul(fg);
   const faceFill = inFace.mul(step(p.y.sub(CY - R).div(2 * R), litF.mul(1.05))).mul(step(0.01, litF)).mul(stripes(p.y, 1.5, 0.05));
   const chalFill = inChal.mul(step(p.y.sub(yB).div(yT - yB), litC.mul(1.05))).mul(step(0.01, litC)).mul(stripes(pl.d, 1.3, 0.05));
   add(mix(A, W, 0.3).mul(float(0.75).add(kl.mul(0.4))), faceFill);

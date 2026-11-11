@@ -42,7 +42,7 @@ const sf = ang.div(TAU).mul(28).fract().sub(0.5).mul(2);
 const scallop = inv(sf.mul(sf)).max(0).sqrt().mul(5);
 const cover = step(rr, Rg.sub(5).add(scallop)).mul(step(0.004, grow));
 const front = c.beat.fract().mul(110);
-const kl = smoothstep(5, 0, rr.sub(front).abs()).mul(kickOn).mul(smoothstep(110, 40, front));
+const kl = inv(smoothstep(0, 5, rr.sub(front).abs())).mul(kickOn).mul(inv(smoothstep(40, 110, front)));
 let col = vec3(0);
 const KR = 16, RL = 122;
 const w = inv(rr.div(RL).min(0.995)).log().negate();
@@ -136,7 +136,7 @@ const tl = mix(float(1.0), float(2.2), step(ti.mod(4), 0.5));
 const tick = stroke(at.fract().sub(0.5).abs().mul(TAU * 30).div(48), 0.07).mul(step(rr, float(29.6).add(tl))).mul(step(29.6, rr))
 .mul(maskBeads(io(0.52, 0.62, 0.94, 0.96), ti.div(48)));
 const front = c.beat.fract().mul(40);
-const kl = smoothstep(2.5, 0, rr.sub(front).abs()).mul(kickOn).mul(smoothstep(40, 20, front));
+const kl = inv(smoothstep(0, 2.5, rr.sub(front).abs())).mul(kickOn).mul(inv(smoothstep(20, 40, front)));
 const lit = float(0.45).add(cul.mul(0.5)).add(kl.mul(0.8));
 m.colorNode = A.mul(l1.add(l2).mul(lit)).add(mix(B, W, odd).mul(bead).mul(lit.add(0.2))).add(mix(A, W, 0.4).mul(tick).mul(lit.mul(0.8)));
 m.opacityNode = live;
@@ -217,7 +217,7 @@ const aa = fwidth(p.x).mul(1.2).max(0.01);
 const mx = sgn(rn(1)), fy = sgn(rn(4));
 const rr = p.length();
 const front = c.beat.fract().mul(30);
-const kl = smoothstep(2.2, 0, rr.sub(front).abs()).mul(kickOn).mul(smoothstep(30, 14, front));
+const kl = inv(smoothstep(0, 2.2, rr.sub(front).abs())).mul(kickOn).mul(inv(smoothstep(14, 30, front)));
 const slot = ctx.param("vw1", -1).sub(ctx.param("vw0", -1)).max(1);
 const xl = u.sub(0.84).div(0.04).clamp(0, 1);
 const spin = xl.mul(xl).mul(0.02).add(u.sub(0.88).max(0)).mul(slot).mul(0.55 / TAU).mul(sense(11).mul(sense(5)));
@@ -269,7 +269,7 @@ const bodyM = inv(smoothstep(wb.add(0.07), wb.add(0.07).add(aa), an)).mul(bodyVi
 const sv = pk(3, 3);
 const ph = sh.add(spin.mul(vs)).mul(59).add(c.real.mul(0.5).mul(cs))
 .add(an.div(wb).mul(0.9).mul(is(sv, 1))).add(step(an, wb.mul(0.5)).mul(0.5).mul(is(sv, 2)));
-const comet = smoothstep(0.07, 0, k.sub(c.real.div(6).mul(cs).fract()).abs()).mul(step(0.5, u));
+const comet = inv(smoothstep(0, 0.07, k.sub(c.real.div(6).mul(cs).fract()).abs())).mul(step(0.5, u));
 const blit = float(0.72).add(cul.mul(0.3)).add(kl.mul(0.45)).add(comet.mul(0.5));
 put(W.mul(stripes(ph, 1, 0.05)).mul(blit), bodyM);
 put(mix(A, W, comet.add(cul.mul(0.4)).min(1)).mul(blit.add(0.2)), bodyM.mul(smoothstep(wb.sub(0.1).sub(aa), wb.sub(0.1), an)));

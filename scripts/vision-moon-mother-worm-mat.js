@@ -21,7 +21,7 @@ export function material(ctx) {
   const r0 = pair ? 2.4 : 3.6;
   const grow = io(0.28 + pair * 0.07, 0.66 + pair * 0.06, 0.93, 0.965 - pair * 0.01);
   const exists = pair ? step(0.45, rn(7)) : float(1);
-  const tip = smoothstep(grow, grow.sub(0.07), uu);
+  const tip = inv(smoothstep(grow.sub(0.07), grow, uu));
   const rad = inv(uu).max(0).pow(0.5).mul(r0).mul(tip.sqrt()).mul(live).mul(exists).mul(step(0.002, grow));
   const ph = pair * 2.1 + (sg > 0 ? 0 : 0.9), env = uu.mul(0.8).add(0.2);
   const w1 = uu.mul(9).sub(c.real.mul(1.3)).add(ph).sin().mul(env).mul(5);
@@ -51,7 +51,7 @@ export function material(ctx) {
   const swap = pair ? inv(step(0.5, rn(8))) : step(0.5, rn(8));
   const t1 = 0.8 + pair * 0.03;
   const skin = mix(cStr, (low ? cSc : mix(cBe, cSc, swap)), step(uu, smoothstep(t1, t1 + 0.08, u).mul(1.02)));
-  const run = low ? float(0) : smoothstep(0.05, 0, uu.sub(c.beat.fract()).abs()).mul(step(0.001, c.kick));
+  const run = low ? float(0) : inv(smoothstep(0, 0.05, uu.sub(c.beat.fract()).abs())).mul(step(0.001, c.kick));
   const edge = ca.abs();
   const lit = skin.mul(sa.abs().mul(0.45).add(0.55)).add(mix(A, W, 0.5).mul(smoothstep(0.86, 1, edge)).mul(run.add(0.5)));
   const dark = is(float(n), step(0.5, rn(13)).add(1)).mul(step(uu, smoothstep(0.86, 0.92, u).mul(1.02)));
