@@ -3,7 +3,7 @@
 import { atan2, positionWorld, float, vec2, vec3, length, fwidth, smoothstep, select, mix, min, max } from "builtin/tsl";
 import { MeshBasicNodeMaterial } from "builtin/three";
 import { tripClock, SEC, stripes, HUE, shown, win } from "./lib/trip.js";
-import { BW, growR, resetR, endFade, colours, breath, mirrorTurn, kickAt, lit, shade } from "./field-lib.js";
+import { BW, growR, resetR, endFade, colours, breath, mirrorTurn, kickAt, lit, shade, roll, choose } from "./field-lib.js";
 
 const TAU = 6.2831853;
 const GA = 0.38196601125, PC = 1.25, FIB = [3, 5, 8, 13, 21, 34, 55, 89, 144, 233];
@@ -23,9 +23,9 @@ export function material(ctx) {
 
   const q = r.div(BW), i = q.floor(), f = q.fract(), y = f.mul(BW), rm = i.add(0.5).mul(BW);
   const dir = i.mod(2).mul(2).sub(1);
-  const u = a.add(dir.mul(c.phrase).div(i.mod(3).add(4)));
+  const u = a.add(dir.mul(c.dir).mul(mix(0.7, 1.3, c.rnd(13))).mul(c.phrase).div(i.mod(3).add(4)));
   const cell = (w, shift = 0) => {
-    const n = rm.mul(TAU / w).floor().max(3);
+    const n = rm.mul(TAU).div(w).floor().max(3);
     const tc = u.mul(n).add(shift).fract().sub(0.5);
     const cw = r.mul(TAU).div(n);
     return { tc, cw, x: tc.mul(cw) };
@@ -41,20 +41,20 @@ export function material(ctx) {
   const col0 = mix(A.mul(fill(inset(0.47))).mul(fill(l0.sub(0.58)).oneMinus()), target(l0, 0.44, H, H2), fill(l0.sub(0.44))), d0 = l0.sub(0.44);
 
   // 1: black/white radial stripes, each white stripe carrying a row of body-colour dots
-  const c1 = cell(1.3);
+  const c1 = cell(choose(c, 16, [1.0, 1.3, 1.9]));
   const d1 = max(c1.tc.abs().sub(0.25).mul(c1.cw), inset(0.44));
   const l1 = length(vec2(c1.x, f.mul(4).fract().sub(0.5).mul(BW / 4)));
   const col1 = mix(W.mul(fill(d1)), A, fill(l1.sub(0.17)).mul(fill(d1)));
 
   // 2: scallop petals filled with moving contour lines, a hot target at each root
-  const c2 = cell(3.0);
+  const c2 = cell(choose(c, 15, [2.3, 3.0, 4.2]));
   const l2 = length(vec2(c2.x, y.sub(0.2)));
   const d2 = max(l2.sub(c2.cw.mul(0.47)), float(0.2).sub(y));
   const con2 = stripes(l2.mul(1.7).sub(c.bar.mul(0.25)), 1, 0.12);
   const col2 = mix(mix(A, B, con2).mul(fill(d2)).mul(line(d2.add(0.14), 0.07).oneMinus()), target(l2, 0.55, H, H2), fill(l2.sub(0.62)));
 
   // 3: white triangle teeth, a body dot in each tooth, a hot bead in each gap
-  const c3 = cell(1.6);
+  const c3 = cell(choose(c, 17, [1.2, 1.6, 2.4]));
   const tri = c3.tc.abs().mul(2);
   const d3 = max(f.sub(float(0.92).sub(tri.mul(0.84))).mul(BW * 0.55), float(0.08).sub(f).mul(BW));
   const l3 = length(vec2(c3.x, y.sub(BW * 0.33)));
@@ -117,8 +117,9 @@ export function material(ctx) {
     }
   }
   const lp = bestD.sqrt(), barI = c.bar.floor();
-  const arm = (F, k) => bestN.sub(k).mod(F).mul(2).mod(F).lessThan(0.5).select(1, 0); // two opposite arms of F
-  const a13 = arm(13, barI), a21 = arm(21, barI.negate().add(2100)), a34 = arm(34, barI.mul(2));
+  const arm = (F, k) => bestN.add(F.mul(400)).sub(k).mod(F).mul(2).mod(F).lessThan(0.5).select(1, 0); // two opposite arms of F
+  const stepI = barI.mul(c.dir).add(4000);
+  const a13 = arm(choose(c, 19, [8, 13, 21]), stepI), a21 = arm(choose(c, 19, [13, 21, 34]), stepI.negate().add(8000)), a34 = arm(choose(c, 19, [21, 34, 55]), stepI.mul(2));
   const K0 = colours(c.sec, float(0));
   const beadC = select(a13.greaterThan(0.5), target(lp, 0.62, K0.H, K0.H2), select(a21.greaterThan(0.5), target(lp, 0.62, K0.A, K0.H), target(lp, 0.62, K0.B, K0.A)));
   const pL = max(a13, max(a21, a34)).max(kl.mul(0.6));
@@ -161,11 +162,15 @@ export function material(ctx) {
 
   const m = new MeshBasicNodeMaterial();
   m.colorNode = body.mul(fill(r.sub(R))).add(vec3(1, 1, 1).mul(rim)).add(K.fam.H.mul(ripple).mul(fill(r.sub(R)))).add(vec3(0.3, 0.4, 1).mul(seed)).mul(endFade(c.sec));
+  m.colorNode = roll(c, m.colorNode);
   // THE LAYER SCORE: a real cutout that opens from the centre like an iris. Only the grown part is surface;
   // and the self-cutout: on every 2nd bar the stripe bands swap which of them have their black gaps cut away.
   const grown = max(fill(r.sub(R).sub(0.3)), fill(r.sub(0.45)).mul(c.sec.lessThan(SEC.pulse[0] + 0.5).select(1, 0)));
   const swap = i.div(6).floor().add(c.bar.div(2).floor()).mod(2);
-  const hole = k.greaterThan(0.5).and(k.lessThan(1.5)).and(swap.lessThan(0.5)).select(fill(d1).oneMinus().mul(fill(inset(0.44))), 0);
+  const cutV = c.pick(12, 3); // which band kind is cut away this roll: stripes, teeth or dot rows
+  const cutK = select(cutV.lessThan(0.5), float(1), select(cutV.lessThan(1.5), float(3), float(0)));
+  const gap = select(cutV.lessThan(0.5), fill(d1).oneMinus(), select(cutV.lessThan(1.5), fill(d3).oneMinus().mul(fill(g3.sub(0.3)).oneMinus()), fill(d0).oneMinus()));
+  const hole = k.sub(cutK).abs().lessThan(0.5).and(swap.lessThan(0.5)).select(gap.mul(fill(inset(0.44))), 0);
   const seedOn = c.sec.lessThan(SEC.pulse[0] + 0.5).select(1, 0);
   m.opacityNode = max(shown(c, "field", r.div(90)), seedOn).mul(grown).mul(float(1).sub(hole));
   m.alphaTest = 0.5;

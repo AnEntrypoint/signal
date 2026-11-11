@@ -3,14 +3,14 @@
 import { positionLocal, attribute, uv, float, vec3, smoothstep, select, mix, varying, step } from "builtin/tsl";
 import { MeshBasicNodeMaterial } from "builtin/three";
 import { tripClock, shown } from "./lib/trip.js";
-import { riseR, resetR, endFade, backOut, colours, breath, mirrorTurn, kickAt, lit, shade } from "./field-lib.js";
+import { riseR, resetR, endFade, backOut, colours, breath, mirrorTurn, kickAt, lit, shade, roll, choose } from "./field-lib.js";
 
 export function material(ctx) {
   const c = tripClock(ctx);
   const pol = attribute("polar", "vec4");
   const r = pol.x, ang = pol.y, row = pol.z, mul = pol.w;
   const hop = kickAt(c, r);
-  const wave = r.mul(0.35).sub(c.bar.mul(1.5707963)).add(ang.mul(8).cos().mul(1.5)).sin().mul(0.5).add(0.5);
+  const wave = r.mul(0.35).sub(c.bar.mul(1.5707963)).add(ang.mul(choose(c, 18, [6, 8, 12])).cos().mul(1.5)).sin().mul(0.5).add(0.5);
   const h = wave.mul(1.6).add(0.6).add(hop.mul(0.22)).mul(mul);
   const s = backOut(riseR(c.sec).sub(1.5).sub(r).div(4)).mul(backOut(resetR(c.sec).sub(r).div(4))).mul(endFade(c.sec));
   const part = uv().x, v = uv().y;
@@ -24,7 +24,7 @@ export function material(ctx) {
   const K = colours(c.sec, vrow);
   const beadCol = shade(mix(mix(K.H, vec3(0), step(0.6, v)), K.H2, step(0.8, v)), vL).mul(vhop.mul(vL).mul(0.3).add(1));
   const stemCol = shade(vec3(0.9, 0.9, 0.9), vL).mul(step(0.5, v.mul(vh).mul(2.5).fract()));
-  m.colorNode = select(part.greaterThan(0.5), beadCol, stemCol);
+  m.colorNode = roll(c, select(part.greaterThan(0.5), beadCol, stemCol));
   m.opacityNode = varying(shown(c, "stalks", r.div(90)));
   m.alphaTest = 0.5;
   m.fog = false;

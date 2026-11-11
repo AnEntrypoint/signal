@@ -3,14 +3,14 @@
 import { positionLocal, normalView, attribute, float, vec3, smoothstep, select, mix, varying } from "builtin/tsl";
 import { MeshBasicNodeMaterial } from "builtin/three";
 import { tripClock, HUE, shown } from "./lib/trip.js";
-import { endFade, backOut, family, breath, mirrorTurn, kickAt, lit, shade } from "./field-lib.js";
+import { endFade, backOut, family, breath, mirrorTurn, kickAt, lit, shade, roll } from "./field-lib.js";
 
 const V = (h, g = 1) => vec3(h[0] * g, h[1] * g, h[2] * g);
 
 export function material(ctx) {
   const c = tripClock(ctx);
   const o = attribute("orb", "vec4"), t = attribute("turn", "vec2");
-  const ang = o.y.add(t.x.mul(c.phrase).mul(6.2831853));
+  const ang = o.y.add(t.x.mul(c.phrase).mul(c.dir).mul(mix(0.7, 1.3, c.rnd(14))).mul(6.2831853));
   const appear = backOut(c.sec.sub(36.35).sub(t.y.mul(0.12)).div(0.9)).mul(endFade(c.sec));
   const bob = c.half.mul(0.15).add(c.beat.mul(0.3927).add(t.y).sin().mul(0.5));
   const m = new MeshBasicNodeMaterial();
@@ -29,7 +29,7 @@ export function material(ctx) {
   col = mix(col, bodyC, e(0.37));
   col = mix(col, coreC, e(0.62));
   col = mix(col, bodyC, e(0.78));
-  m.colorNode = shade(col, vL);
+  m.colorNode = roll(c, shade(col, vL));
   m.opacityNode = varying(shown(c, "orbs", o.x.div(90)));
   m.alphaTest = 0.5;
   m.fog = false;

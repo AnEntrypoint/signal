@@ -72,7 +72,7 @@ export function kickAt(c, r) {
 // The travelling light: a mirrored hand that steps round on each bar (a turn of the half-field per 16 bars,
 // spiralled by band), a slow front running outward once a phrase, and the kick ripple. 1 everywhere in peak.
 export function lit(c, r, am, i) {
-  const sweep = c.bar.floor().add(smoothstep(0, 0.25, c.bar.fract())).div(16);
+  const sweep = c.bar.floor().add(smoothstep(0, 0.25, c.bar.fract())).div(16).mul(c.dir);
   const w = am.mul(2).add(0.5).sub(sweep).add(float(i).mul(0.045)).fract();
   const hand = smoothstep(0, 0.012, w).mul(smoothstep(0.36, 0.348, w));
   const fr = r.div(90).sub(c.phrase).fract();
@@ -84,4 +84,16 @@ export function lit(c, r, am, i) {
 export function shade(col, L) {
   const lum = col.x.mul(0.3).add(col.y.mul(0.6)).add(col.z.mul(0.1)).min(1);
   return mix(vec3(0.75, 0.82, 1.0).mul(lum.mul(0.06).add(0.004)), col, L);
+}
+
+// THE ROLL'S OWN PALETTE: the same pure colours with their channels turned (3 turns x a swap = 6 palettes), so a
+// roll is blue/violet with hot accents, or green/cyan, or red/amber, never grey. Applied last, on the finished colour.
+export function roll(c, col) {
+  const k = c.pick(10, 3), t = select(k.lessThan(0.5), col.xyz, select(k.lessThan(1.5), col.yzx, col.zxy));
+  return select(c.pick(11, 2).greaterThan(0.5), t.xzy, t);
+}
+// One of three numbers for this roll, on channel n.
+export function choose(c, n, opts) {
+  const k = c.pick(n, 3);
+  return select(k.lessThan(0.5), float(opts[0]), select(k.lessThan(1.5), float(opts[1]), float(opts[2])));
 }
