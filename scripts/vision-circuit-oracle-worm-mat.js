@@ -28,7 +28,7 @@ export function material(ctx) {
   const exists = pair ? step(0.45, rn(7)) : float(1);
   const e = uu.div(grow.max(0.001));                                           // 0 root .. 1 the connector head
   const cap = inv(e.sub(0.93).max(0).div(0.07).pow(2)).max(0).sqrt();         // the round head
-  const collar = inv(smoothstep(0.86, 0.88, e).mul(inv(smoothstep(0.9, 0.92, e)))).mul(-0.3).add(1.3).min(1).add(smoothstep(0.86, 0.88, e).mul(0.3)).min(1.3);
+  const collar = smoothstep(0.86, 0.88, e).mul(0.3).add(1);                     // the connector swells from its collar
   const rad = inv(e.mul(0.35)).mul(r0).mul(collar).mul(cap).mul(step(e, 1)).mul(live).mul(exists).mul(step(0.002, grow));
   const ph = pair * 2.1 + (sg > 0 ? 0 : 0.9), env = uu.mul(0.8).add(0.2);
   const w1 = uu.mul(8).sub(c.real.mul(1.1)).add(ph).sin().mul(env).mul(5);
