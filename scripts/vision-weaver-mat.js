@@ -2,17 +2,17 @@
 //   element                                   layer   u in   u whole  u out
 //   first radial thread (top spoke) ALONE      world   .00    .10      .95-.97 (with the spokes)
 //   the other spokes, one by one from the top  world   .155   .28      .95-.97 retract to the hub
-//   loom warp threads, one by one              world   .19    .34      .955-.975; a few stay to .985-.99
-//   loom weft threads, one by one              world   .23    .38      same as warp
-//   capture rings (weft of the web), hub out   world   .27    .44      .945-.965
-//   spider: hub dot, dragline, thorax          being   .30    .36      .93-.965
-//   spider: legs pair by pair                  being   .32    .43      .915-.955
-//   spider: abdomen, head + palps, pattern     being   .35    .43      .915-.945
-//   spider: eight eyes (being WHOLE)           being   .41    .44      .915-.935
-//   ring cords                                 ring    .49    .57      .905-.945
-//   silk skein below her                       being   .52    .56      .91-.93
-//   leg beads, galaxy, eyes wake (details)     being   .55    .64      .905-.925
-//   ring dew beads                             ring    .58    .66      .905-.935
+//   loom warp threads, one by one              world   .21    .36      .955-.975; a few stay to .985-.99
+//   loom weft threads, one by one              world   .26    .41      same as warp
+//   capture rings (weft of the web), hub out   world   .31    .46      .945-.965
+//   spider: hub dot, dragline, thorax          being   .38    .44      .93-.965
+//   spider: legs pair by pair                  being   .40    .51      .915-.955
+//   spider: abdomen, head + palps, pattern     being   .43    .52      .915-.945
+//   spider: eight eyes (being WHOLE)           being   .49    .52      .915-.935
+//   ring cords                                 ring    .53    .60      .905-.945
+//   silk skein below her                       being   .56    .60      .91-.93
+//   leg beads, galaxy, eyes wake (details)     being   .58    .66      .905-.925
+//   ring dew beads                             ring    .61    .67      .905-.935
 //   loom crossing beads + loose dew            world   .61    .74      .965-.99
 //   worms, pair 0 / pair 1                     worm    .64/.70 .80     .90-.93
 //   silkworms on silk, one by one              veil    .67    .81      .875-.91
@@ -117,7 +117,7 @@ export function material(ctx) {
     const odd = (k) => step(0.5, k.mul(0.5).fract().mul(2)), par = odd(ci.add(cj));
     const uW0 = R0.y.div(420).add(0.5).clamp(0, 1), uW = mix(uW0, inv(uW0), odd(ci));
     const uF0 = R0.x.div(420).add(0.5).clamp(0, 1), uF = mix(uF0, inv(uF0), odd(cj));
-    const pW = u.sub(hi.mul(0.09).add(0.19)).div(0.06).clamp(0, 1), pF = u.sub(hj.mul(0.09).add(0.23)).div(0.06).clamp(0, 1);
+    const pW = u.sub(hi.mul(0.09).add(0.21)).div(0.06).clamp(0, 1), pF = u.sub(hj.mul(0.09).add(0.26)).div(0.06).clamp(0, 1);
     const qW = mix(float(0.955), float(0.985), step(hi, 0.22)).add(hi.mul(0.02)).sub(u).div(0.012).clamp(0, 1);   // out: retract; a few stay under the dew
     const qF = mix(float(0.955), float(0.985), step(hj, 0.22)).add(hj.mul(0.02)).sub(u).div(0.012).clamp(0, 1);
     const onW = maskDraw(pW, uW).mul(step(0.002, pW)).mul(maskDraw(qW, inv(uW))).mul(step(0.002, qW)), onF = maskDraw(pF, uF).mul(step(0.002, pF)).mul(maskDraw(qF, inv(uF))).mul(step(0.002, qF));
@@ -148,7 +148,7 @@ export function material(ctx) {
     // the capture thread: straight chords between spokes, laid ring by ring from the hub out
     const NR = 21, kr = rl.round(), dR = rl.sub(kr).abs().mul(SP);
     const okR = step(0, kr).mul(step(kr, NR)), kKey = kr.div(NR);
-    const pr = lin(0.27, 0.44).sub(kKey.mul(0.8)).div(0.2).clamp(0, 1).mul(inv(lin(0.945, 0.965)));
+    const pr = lin(0.31, 0.46).sub(kKey.mul(0.8)).div(0.2).clamp(0, 1).mul(inv(lin(0.945, 0.965)));
     const uR = a01.sub(0.5).abs().mul(2);
     const drawn = maskDraw(pr, uR).mul(okR).mul(step(0.002, pr));
     const ringL = stroke(dR, 0.15).mul(drawn);
@@ -208,7 +208,7 @@ export function material(ctx) {
     const r = P.length(), a = atan2(P.x, P.y);
     const R1 = 47, R2 = 54, sn = sense(5);
     const r1 = t.mul(0.045).mul(sn), r2 = t.mul(-0.03).mul(sn);
-    const p1 = io(0.49, 0.57, 0.92, 0.945), p2 = io(0.58, 0.66, 0.905, 0.935);
+    const p1 = io(0.53, 0.6, 0.92, 0.945), p2 = io(0.61, 0.67, 0.905, 0.935);
     const cord = step(a.add(r1).div(TAU).mul(96).add(P.length().sub(R1).mul(0.45).mul(sense(9))).fract(), 0.5);
     const band = stroke(r.sub(R1).abs(), 1.3).mul(maskClock(p1, a));
     const rails = stroke(r.sub(R1 + 1.9).abs(), 0.1).add(stroke(r.sub(R1 - 1.9).abs(), 0.1)).mul(maskClock(p1, a.negate()));
@@ -311,18 +311,18 @@ export function material(ctx) {
   const add = (colour, mask) => { col = col.add(colour.mul(mask)); cover = cover.max(mask); };
   const solid = (mask) => { col = col.mul(inv(mask)); cover = cover.max(mask); };
   // the first stroke: a dot at the hub, her dragline drawn up out of it; later the silk she pays down to the web
-  add(W, step(rr, io(0.3, 0.315, 0.95, 0.963).mul(1.3)));
-  const pTh = io(0.3, 0.36, 0.94, 0.96), uTh = p.y.sub(10.7).div(37);
+  add(W, step(rr, io(0.38, 0.395, 0.95, 0.963).mul(1.3)));
+  const pTh = io(0.38, 0.44, 0.94, 0.96), uTh = p.y.sub(10.7).div(37);
   add(mix(B, W, 0.5), stroke(ax, 0.1).mul(step(0, uTh)).mul(maskDraw(pTh, uTh)).mul(step(0.002, pTh)));
   add(W.mul(1.5), nib(pTh, uTh, 0.03).mul(stroke(ax, 0.35)).mul(step(pTh, 0.995)).mul(step(0, uTh)).mul(step(0.002, pTh)));
-  const pSk = io(0.52, 0.56, 0.91, 0.93), uSk = p.y.add(16.8).negate().div(31);
+  const pSk = io(0.56, 0.6, 0.91, 0.93), uSk = p.y.add(16.8).negate().div(31);
   add(mix(B, W, 0.4), stroke(ax, 0.09).mul(step(0, uSk)).mul(maskDraw(pSk, uSk)).mul(step(0.002, pSk)));
   add(W.mul(1.5), nib(pSk, uSk, 0.03).mul(stroke(ax, 0.35)).mul(step(0, uSk)).mul(step(pSk, 0.995)).mul(step(0.002, pSk)));
   // eight legs, pair by pair: black, a neon rim, striped knees, a bead row along each (details)
-  const pDet = io(0.55, 0.62, 0.905, 0.925);
+  const pDet = io(0.58, 0.64, 0.905, 0.925);
   LEGS.forEach((pts, i) => {
     const pl = polyline(pm, pts);
-    const pL = io(0.32 + i * 0.02, 0.37 + i * 0.02, 0.915 + (3 - i) * 0.008, 0.93 + (3 - i) * 0.008);
+    const pL = io(0.40 + i * 0.02, 0.45 + i * 0.02, 0.915 + (3 - i) * 0.008, 0.93 + (3 - i) * 0.008);
     const on = maskDraw(pL, pl.u).mul(step(0.002, pL));
     const w = float(1.0).sub(pl.u.mul(0.55));
     const body = step(pl.d, w).mul(on);
@@ -336,18 +336,18 @@ export function material(ctx) {
     add(W.mul(1.4), nib(pL, pl.u, 0.03).mul(step(pl.d, 1.3)).mul(step(pL, 0.995)));
   });
   // the abdomen: black, an op-art pattern (chevrons or bead rows), a spiral galaxy in its heart
-  const pAb = io(0.35, 0.4, 0.92, 0.94), ap = t.mul(TAU / 3.4).sin().mul(0.035).add(1);
+  const pAb = io(0.43, 0.48, 0.92, 0.94), ap = t.mul(TAU / 3.4).sin().mul(0.035).add(1);
   const qa = p.sub(vec2(0, -8.6)).div(ap), ea = vec2(qa.x.div(6.4), qa.y.div(8.2)).length(), aA = atan2(qa.x, qa.y.negate());
   solid(step(ea, 1).mul(step(0.9, pAb)));
   add(rimC.mul(1.2), stroke(ea.sub(1).abs().mul(7), 0.13).mul(maskClock(pAb, aA)).mul(step(0.002, pAb)));
-  const pPt = io(0.4, 0.43, 0.915, 0.935), ann = step(0.62, ea).mul(step(ea, 0.9)).mul(maskBeads(pPt, inv(ea).div(0.4)));
+  const pPt = io(0.49, 0.52, 0.915, 0.935), ann = step(0.62, ea).mul(step(ea, 0.9)).mul(maskBeads(pPt, inv(ea).div(0.4)));
   const chev = step(ax.mul(0.75).add(qa.y).div(1.5).fract(), 0.5);
   const er = ea.sub(0.62).div(0.07), ek = er.floor(), nbk = ek.mul(6).add(18);
   const eb = vec2(er.fract().sub(0.5), aA.div(TAU).mul(nbk).fract().sub(0.5).mul(2)).length();
   const rowsB = inv(smoothstep(0.32, 0.42, eb));
   const patV = step(0.5, rn(11));
   add(mix(mix(W, B, 0.45).mul(chev).mul(0.75), mix(mix(B, W, 0.4), H, step(ek.mod(3), 0.5)).mul(rowsB), patV), ann);
-  const pGx = io(0.56, 0.64, 0.905, 0.925), rg = vec2(qa.x, qa.y.mul(0.8)).length(), agx = atan2(qa.y, qa.x);
+  const pGx = io(0.59, 0.66, 0.905, 0.925), rg = vec2(qa.x, qa.y.mul(0.8)).length(), agx = atan2(qa.y, qa.x);
   const arms = float(2).add(pk(12, 2));
   const phx = agx.sub(rg.add(0.3).log().mul(2.6)).mul(arms).div(TAU).add(t.mul(0.09).mul(sense(16))).fract();
   const arm = inv(smoothstep(0, 0.2, phx.min(inv(phx)))).mul(inv(smoothstep(2.6, 3.4, rg)));
@@ -357,22 +357,22 @@ export function material(ctx) {
   col = col.add(gal.mul(gm).mul(step(ea, 0.56)));
   add(B.mul(0.9), stroke(ea.sub(0.56).abs().mul(7), 0.08).mul(gm));
   // the thorax: black disc, a neon rim drawn round, an inner ring and eight rays (her legs' roots)
-  const pTx = io(0.3, 0.34, 0.93, 0.95), qt = p.sub(vec2(0, 2)), rt = qt.length(), at = atan2(qt.x, qt.y);
+  const pTx = io(0.38, 0.42, 0.93, 0.95), qt = p.sub(vec2(0, 2)), rt = qt.length(), at = atan2(qt.x, qt.y);
   solid(step(rt, 4.2).mul(step(0.9, pTx)));
   add(rimC.mul(1.2), stroke(rt.sub(4.2).abs(), 0.13).mul(maskClock(pTx, at)).mul(step(0.002, pTx)));
   add(W.mul(1.4), stroke(rt.sub(4.2).abs(), 0.4).mul(nib(pTx, at.div(TAU).add(0.5), 0.02)).mul(step(pTx, 0.995)).mul(step(0.002, pTx)));
-  const pTl = io(0.33, 0.37, 0.92, 0.94);
+  const pTl = io(0.41, 0.45, 0.92, 0.94);
   add(B.mul(0.9), stroke(rt.sub(2.6).abs(), 0.09).mul(maskClock(pTl, at)).mul(step(0.002, pTl)));
   const rayD = at.div(TAU).mul(8).add(0.5).fract().sub(0.5).abs().mul(TAU / 8).mul(rt);
   add(A.mul(0.8), stroke(rayD, 0.08).mul(step(1, rt)).mul(step(rt, 2.5)).mul(maskDraw(pTl, rt.sub(1).div(1.5))));
   // head and palps, then her eight eyes one by one; at .5 they wake
-  const pHd = io(0.38, 0.42, 0.925, 0.945), qh = p.sub(vec2(0, 8.3)), rh = qh.length();
+  const pHd = io(0.46, 0.5, 0.925, 0.945), qh = p.sub(vec2(0, 8.3)), rh = qh.length();
   const palp = polyline(pm, PALP), pon = maskDraw(pHd, palp.u).mul(step(0.002, pHd));
   solid(step(palp.d, 0.45).mul(pon));
   add(rimC, stroke(palp.d.sub(0.45).abs(), 0.1).mul(pon));
   solid(step(rh, 2.4).mul(step(0.9, pHd)));
   add(rimC.mul(1.2), stroke(rh.sub(2.4).abs(), 0.12).mul(maskClock(pHd, atan2(qh.x, qh.y))).mul(step(0.002, pHd)));
-  const pEy = io(0.41, 0.44, 0.915, 0.935), wake = io(0.55, 0.6, 0.915, 0.935).add(cul).clamp(0, 1.5);
+  const pEy = io(0.49, 0.52, 0.915, 0.935), wake = io(0.58, 0.63, 0.915, 0.935).add(cul).clamp(0, 1.5);
   EYES.forEach(([ex, ey, er0], i) => {
     const de = pm.sub(vec2(ex, ey)).length();
     const disc = inv(smoothstep(float(er0).sub(aa), float(er0), de)).mul(maskBeads(pEy, i / 4));
