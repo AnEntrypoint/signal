@@ -22,7 +22,6 @@ const q = P.div(cs), cell = q.floor(), f = q.fract(), h = hash(cell, o), h2 = h.
 const j = vec2(h, h2).mul(0.4).add(0.3), d = f.sub(j).length();
 const cc = cell.add(j).mul(cs), rk = cc.length().div(rmax).clamp(0, 1);
 const key = mix(h, mix(rk, ang2(cc.x, cc.y).div(TAU).add(0.5).fract(), is(v, 2)), step(0.5, v).mul(0.75));
-const lp = float(prog).mul(1.35).sub(key.mul(0.35).add(key)).mul(2.6).add(0.0).clamp(0, 1);
 const lp2 = float(prog).sub(key.mul(0.74)).div(0.26).clamp(0, 1);
 const cover = step(d, lp2.mul(1.05)).max(step(0.999, lp2));
 const n = cell.add(vec2(1, 0)), hn = hash(n, o), jn = vec2(hn, hn.mul(7.13).fract()).mul(0.4).add(0.3).add(vec2(1, 0));
@@ -57,16 +56,18 @@ m.fog = false;
 const cutout = (col, cover) => { m.colorNode = col; m.opacityNode = cover.mul(live); m.alphaTest = 0.5; return m; };
 if (layer === "world") {
 const P = vec2(p0.x.mul(step(0.5, rn(9)).mul(2).sub(1)), p0.y), R = P.length(), ang = ang2(P.x, P.y);
-const grow = smoothstep(0.25, 0.45, u).mul(inv(smoothstep(0.955, 0.985, u)));
-const nsc = pk(19, 3).mul(4).add(10);
-const Rf = grow.mul(grow).mul(185);
-const front = Rf.sub(inv(ang.mul(nsc).mul(0.5).cos().abs()).mul(7));
-const cover = step(R, front).mul(step(1, Rf));
-const lag = smoothstep(front.sub(2), front.sub(16), R);
+const ein = smoothstep(0.1, 0.42, u), eout = smoothstep(uEnd, 1, u);
+const SI = stars(P, ein, vin, 16, rn(16).mul(97), 170), SO = stars(P, inv(eout), vout, 16, rn(17).mul(53), 170);
+const ec = SI.cc.div(vec2(150, 84)).length().add(SI.h.mul(0.14));
+const feather = step(ec, 0.92);
+const cover = SI.cover.mul(SO.cover).mul(feather);
+const lag = float(1);
 let col = vec3(0);
-col = col.add(mix(C1, W, 0.2).mul(stroke(R.sub(front).abs().sub(0.35), 0.2)));
-const lane = R.sub(front.sub(3.5)), at = ang.mul(nsc).mul(3).div(TAU);
-col = col.add(mix(C3, W, 0.3).mul(0.8).mul(stroke(vec2(at.fract().sub(0.5).mul(R.mul(TAU).div(nsc.mul(3))), lane).length(), 0.6)));
+const glim = SI.born.mul(feather).mul(c.real.mul(1.3).add(SI.h.mul(40)).sin().mul(0.35).add(0.65));
+const sglow = inv(smoothstep(0.03, 0.09, SI.d)).mul(glim).mul(SO.cover.max(SO.live));
+col = col.add(mix(C3, W, 0.6).mul(1.4).mul(sglow));
+const lk = inv(smoothstep(0.015, 0.04, SI.link)).mul(SI.live.max(SO.live)).mul(feather);
+col = col.add(mix(C1, W, 0.4).mul(lk));
 const CY = -190, OFF = 4.2, SPG = 7;
 const dc = P.sub(vec2(0, CY)).length(), dg = P.sub(vec2(0, CY - OFF)).length();
 const ph = c.real.div(9).mul(step(0.5, rn(11)).mul(2).sub(1));
@@ -97,7 +98,7 @@ const t0 = 0.46 + 0.06 * i;
 const pe = smoothstep(0.945 + 0.004 * (3 - i), 0.953 + 0.004 * (3 - i), u);
 const pd = smoothstep(t0, t0 + 0.05, u).mul(inv(pe));
 const wake = smoothstep(t0 + 0.05, t0 + 0.08, u).mul(inv(smoothstep(0.94, 0.945, u)));
-const near = step(q.length(), 1.6).mul(step(R, front.sub(4)));
+const near = step(q.length(), 1.6);
 for (let s = 0; s < 5; s++) {
 const A = sel((X) => vec2(X.s[s][0], X.s[s][1])), B = sel((X) => vec2(X.s[s][2], X.s[s][3]));
 const { d, h } = segH(q, A, B);
@@ -118,7 +119,7 @@ const open = wake.mul(blink);
 const eye = stroke(qe.length().sub(1.0).abs(), 0.16).max(inv(smoothstep(0.4, 0.5, qe.length()))).mul(maskLid(open, qe.y.div(1.15)));
 col = col.add(mix(C3, W, 0.5).mul(1.2).mul(eye).mul(near));
 });
-return cutout(col.mul(0.85).add(BG), cover);
+return cutout(col.mul(0.85).add(BG), cover.max(sglow.add(lk).clamp(0, 1).mul(step(0.4, sglow.add(lk)))));
 }
 if (layer === "ring") {
 const p = p0, rr = p.length();
