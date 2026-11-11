@@ -21,7 +21,7 @@ export function material(ctx) {
   const r0 = pair ? 2.6 : 3.4;
   const grow = io(0.55 + pair * 0.06, 0.8, 0.93 + pair * 0.004, 0.962);
   const exists = n === 4 ? step(0.5, rn(6)) : float(1);
-  const tip = smoothstep(grow, grow.sub(0.06), uu);
+  const tip = inv(smoothstep(grow.sub(0.06), grow, uu));
   const seg = uu.mul(LEN / 4.2).fract().sub(0.5).abs().mul(-0.28).add(1);
   const rad = inv(uu).max(0).pow(0.4).mul(smoothstep(0, 0.03, uu).mul(0.6).add(0.4)).mul(r0).mul(seg).mul(tip.sqrt()).mul(live).mul(exists).mul(step(0.002, grow));
   const ph = pair * 2.3 + (sg > 0 ? 0 : 1.1), env = uu.mul(0.85).add(0.15);
