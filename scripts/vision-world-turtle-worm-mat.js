@@ -37,8 +37,8 @@ export function material(ctx) {
   // camera; n 3, 4 rise from the lower corners past the rear flippers. A third, slower wave makes them sinuous.
   const w3 = uu.mul(4).sub(c.real.mul(0.5)).add(ph).sin().mul(env).mul(6);
   const spine = pair
-    ? vec3(uu.mul(-58).add(104).mul(sg).add(w1), uu.mul(46).sub(66).add(w2.mul(0.6)).add(w3), uu.mul(62).sub(40).add(w2.mul(0.8)))
-    : vec3(uu.mul(-62).add(100).mul(sg).add(w1).add(w3.mul(0.5)), uu.mul(-70).add(60).add(w2.mul(0.6)), uu.mul(70).sub(40).add(w2.mul(0.8)));
+    ? vec3(uu.mul(-76).add(104).mul(sg).add(w1), uu.mul(46).sub(66).add(w2.mul(0.6)).add(w3), uu.mul(62).sub(40).add(w2.mul(0.8)))
+    : vec3(uu.mul(-78).add(100).mul(sg).add(w1).add(w3.mul(0.5)), uu.mul(-70).add(60).add(w2.mul(0.6)), uu.mul(64).sub(40).add(w2.mul(0.8)));
   const m = new MeshBasicNodeMaterial();
   m.side = DoubleSide;
   m.positionNode = spine.add(vec3(ca.mul(rad), sa.mul(rad).mul(0.8), sa.mul(rad).mul(-0.6)));
