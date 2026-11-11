@@ -1,11 +1,14 @@
 // The mandala field: 28 concentric bands painted in polar space from (0,0,0), six kinds in a repeating order,
 // neighbours counter-rotating, a kick ripple running outward, growing in bloom, line-art in reset.
-import { positionWorld, float, vec2, vec3, length, fwidth, smoothstep, select, mix, min, max } from "builtin/tsl";
+import { atan2, positionWorld, float, vec2, vec3, length, fwidth, smoothstep, select, mix, min, max } from "builtin/tsl";
 import { MeshBasicNodeMaterial } from "builtin/three";
-import { tripClock, SEC, stripes, HUE, shown } from "./lib/trip.js";
+import { tripClock, SEC, stripes, HUE, shown, win } from "./lib/trip.js";
 import { BW, growR, resetR, endFade, colours, breath, mirrorTurn, kickAt, lit, shade } from "./field-lib.js";
 
 const TAU = 6.2831853;
+const GA = 0.38196601125, PC = 1.25, FIB = [3, 5, 8, 13, 21, 34, 55, 89, 144, 233];
+const HQ = Math.sqrt(Math.cos(Math.PI / 3) ** 2 - Math.sin(Math.PI / 7) ** 2);
+const HD = Math.cos(Math.PI / 3) / HQ, HR = Math.sin(Math.PI / 7) / HQ; // {7,3}: edge circle centre and radius
 
 export function material(ctx) {
   const c = tripClock(ctx);
@@ -89,7 +92,64 @@ export function material(ctx) {
   const lineCol = mix(K.fam.A, K.fam.B, u.mul(3).add(c.sec.div(24)).mul(TAU).sin().mul(0.5).add(0.5)).mul(1.2);
   const kl = kickAt(c, r);
   const lam = lit(c, r, a, i);
-  const body = mix(shade(col, lam).mul(kl.mul(lam).mul(0.3).add(1)), lineCol.mul(line(d, 0.05)).mul(drawn), la);
+  const bandBody = shade(col, lam).mul(kl.mul(lam).mul(0.3).add(1));
+
+  // BLOOM = PHYLLOTAXIS. Bead n sits at angle n * 137.508 deg, radius C * sqrt(n). The nearest bead to this pixel is
+  // found exactly: the beads are a lattice in (n, turn) space, solved in the two Fibonacci bases that are reduced
+  // at this radius. The 13 / 21 / 34 parastichy spirals are lit as chases stepping one arm a bar.
+  const s = r.mul(r).div(PC * PC), keyF = r.mul(2.37 / PC);
+  let Fa = float(FIB[0]), Fb = float(FIB[1]), Fc = float(FIB[2]);
+  for (let q = 2; q < FIB.length - 1; q++) {
+    const on = keyF.greaterThan(FIB[q]);
+    Fa = select(on, FIB[q - 1], Fa); Fb = select(on, FIB[q], Fb); Fc = select(on, FIB[q + 1], Fc);
+  }
+  const eOf = (F) => { const x = F.mul(GA); return x.sub(x.add(0.5).floor()); };
+  const turnOf = (n) => n.mul(0.375).fract().add(n.mul(GA - 0.375)); // n * golden angle, kept exact
+  let bestD = float(1e6), bestN = float(1);
+  for (const [P, Q] of [[Fa, Fb], [Fb, Fc]]) {
+    const eP = eOf(P), eQ = eOf(Q), det = P.mul(eQ).sub(Q.mul(eP));
+    const ca = s.mul(eQ).sub(a.mul(Q)).div(det).floor(), cb = a.mul(P).sub(s.mul(eP)).div(det).floor();
+    for (let ii = 0; ii < 2; ii++) for (let jj = 0; jj < 2; jj++) {
+      const n = ca.add(ii).mul(P).add(cb.add(jj).mul(Q)).add(0.5).floor().max(1);
+      const dr = r.sub(n.sqrt().mul(PC)), dt = a.sub(turnOf(n)).add(0.5).fract().sub(0.5).mul(r).mul(TAU);
+      const dd = dr.mul(dr).add(dt.mul(dt)), nearer = dd.lessThan(bestD);
+      bestN = select(nearer, n, bestN); bestD = select(nearer, dd, bestD);
+    }
+  }
+  const lp = bestD.sqrt(), barI = c.bar.floor();
+  const arm = (F, k) => bestN.sub(k).mod(F).mul(2).mod(F).lessThan(0.5).select(1, 0); // two opposite arms of F
+  const a13 = arm(13, barI), a21 = arm(21, barI.negate().add(2100)), a34 = arm(34, barI.mul(2));
+  const K0 = colours(c.sec, float(0));
+  const beadC = select(a13.greaterThan(0.5), target(lp, 0.62, K0.H, K0.H2), select(a21.greaterThan(0.5), target(lp, 0.62, K0.A, K0.H), target(lp, 0.62, K0.B, K0.A)));
+  const pL = max(a13, max(a21, a34)).max(kl.mul(0.6));
+  const phyBody = shade(beadC, pL).mul(kl.mul(0.25).add(1));
+
+  // RESET = THE {7,3} HYPERBOLIC TILING of the Poincare disc, as line-art. The pixel is folded into the (2,3,7)
+  // triangle: 7-fold dihedral fold about the centre, then inversion in the heptagon's edge circle, 7 times.
+  let zx = p.y.div(90), zy = p.x.div(90), gen = float(0);
+  const r02 = zx.mul(zx).add(zy.mul(zy));
+  const fold7 = () => {
+    const rr = vec2(zx, zy).length(), af = atan2(zy, zx).add(Math.PI / 7 + TAU).mod(TAU / 7).sub(Math.PI / 7).abs();
+    zx = rr.mul(af.cos()); zy = rr.mul(af.sin());
+  };
+  for (let it = 0; it < 7; it++) {
+    fold7();
+    const dx = zx.sub(HD), dd = dx.mul(dx).add(zy.mul(zy)).max(1e-5), ins = dd.lessThan(HR * HR), kk = float(HR * HR).div(dd);
+    zx = select(ins, dx.mul(kk).add(HD), zx); zy = select(ins, zy.mul(kk), zy); gen = gen.add(ins.select(1, 0));
+  }
+  fold7();
+  const hs = float(1).sub(r02).max(0).div(float(1).sub(zx.mul(zx).add(zy.mul(zy))).max(0.05)).mul(90); // disc -> metres here
+  const dEdge = vec2(zx.sub(HD), zy).length().sub(HR).mul(hs);
+  const dSpoke = min(zy, zx.mul(Math.sin(Math.PI / 7)).sub(zy.mul(Math.cos(Math.PI / 7))).abs()).mul(hs);
+  const dHub = vec2(zx, zy).length().mul(hs);
+  const rimFade = smoothstep(0.02, 0.14, float(1).sub(r02));
+  const genOn = gen.lessThan(c.sec.sub(SEC.reset[0]).div(0.75)).select(1, 0); // the tiling draws itself on, ring by ring
+  const genLit = gen.sub(barI).mod(4).lessThan(0.5).select(1.25, 0.3);       // one generation lit, stepping out a bar
+  const drift = mix(K.fam.A, K.fam.B, zy.mul(9).add(gen.mul(0.37)).add(c.sec.div(24)).mul(TAU).sin().mul(0.5).add(0.5));
+  const hyp = drift.mul(line(dEdge, 0.1)).mul(genLit).add(K.fam.B.mul(line(dSpoke, 0.03)).mul(0.22))
+    .add(target(dHub, 0.9, K.fam.H, K.fam.A).mul(genLit)).mul(rimFade).mul(genOn);
+
+  const body = mix(mix(bandBody, phyBody, win(c.sec, SEC.bloom)), hyp, la);
 
   // bloom: the hard growing edge with its white rim
   const R = growR(c.sec);
