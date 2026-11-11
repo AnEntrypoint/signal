@@ -61,7 +61,7 @@ export function material(ctx) {
     const ba = atan2(e.y, e.x.add(0.0001)).div(TAU).add(0.5).mul(nB);
     const bd = vec2(ba.fract().sub(0.5).mul(rI).mul(TAU * 2.4).div(nB), ri.fract().sub(0.5).mul(2.4)).length();
     const fall = inv(smoothstep(30, 57, vec2(q.x.mul(0.56), q.y).length()));
-    const cover = fm(S(0, 0.3), kE, 9).mul(fm(inv(S(0.984, 0.999)), kX, 9)).mul(step(bd, fall.mul(1.75))).mul(step(0.01, fall));
+    const cover = fm(S(-0.1, 0.28), kE, 9).mul(fm(inv(S(0.984, 0.999)), kX, 9)).mul(step(bd, fall.mul(1.75))).mul(step(0.01, fall));
     const tw = step(0.93, hash(ba.floor().add(rI.mul(17.3)).add(c.beat.floor().mul(0.37))));
     const mand = dot(bd, 0.5).mul(step(8, rI)).mul(odd(rI.sub(0.5)));
     let col = mix(C, D, odd(rI.sub(0.5).mul(0.5).floor())).mul(mand)
@@ -227,13 +227,13 @@ export function material(ctx) {
   const add = (colour, mask) => { col = col.add(colour.mul(mask)); cover = cover.max(mask); };
   const body = (mask) => { cover = cover.max(mask); };
 
-  // first stroke: the lid line drawn out from the centre, its nib running ahead; it retracts last of all
-  const pline = io(0.0, 0.04, 0.992, 1.0);
+  // first stroke: the lid line drawn out from the centre, its nib running ahead; it retracts last of the being, before the storm
+  const pline = io(0.0, 0.04, 0.972, 0.984);
   const xn = e.x.div(EW), inX = step(xn.abs(), 1);
   add(mix(B, W, 0.7), stroke(e.y.abs(), 0.1).mul(maskDraw(pline, xn.abs())).mul(inX));
   add(W.mul(1.3), dot(vec2(ax.sub(pline.mul(EW)), e.y).length(), 0.3).mul(step(0.01, pline)).mul(step(pline, 0.99)));
   // the eye: two lids parting from that line
-  const pl = io(0.04, 0.1, 0.984, 0.996);
+  const pl = io(0.04, 0.1, 0.966, 0.98);
   const lidY = inv(xn.mul(xn)).mul(EH).mul(pl);
   const slope = e.x.mul(2 * EH / (EW * EW)).mul(pl);
   const lids = stroke(e.y.abs().sub(lidY).abs().div(slope.mul(slope).add(1).sqrt()), 0.12).mul(inX).mul(step(0.001, pl));
