@@ -4,7 +4,7 @@ chamber:
   castShadow: false
   feetPosition: {x: 0, y: -9, z: -362}
   id: chamber
-  material: {kind: scripted, params: {"on": 1, t0: 1867.9316666666673}, script: scripts/chamber-room-mat.js}
+  material: {kind: scripted, params: {"on": 0, t0: 0}, script: scripts/chamber-room-mat.js}
   physics: none
   primitive: {kind: scripted, params: {}, script: scripts/chamber-room-geo.js}
   receiveShadow: false
@@ -14,7 +14,7 @@ chamber-hands:
   castShadow: false
   feetPosition: {x: 0, y: 15, z: -366}
   id: chamber-hands
-  material: {kind: scripted, params: {"on": 1, t0: 1867.9316666666673}, script: scripts/chamber-hands-mat.js}
+  material: {kind: scripted, params: {"on": 0, t0: 0}, script: scripts/chamber-hands-mat.js}
   physics: none
   primitive: {kind: scripted, params: {}, script: scripts/chamber-hands-geo.js}
   receiveShadow: false
@@ -24,7 +24,7 @@ chamber-hex:
   castShadow: false
   feetPosition: {x: 0, y: 15, z: -372}
   id: chamber-hex
-  material: {kind: scripted, params: {"on": 1, t0: 1867.9316666666673}, script: scripts/chamber-hex-mat.js}
+  material: {kind: scripted, params: {"on": 0, t0: 0}, script: scripts/chamber-hex-mat.js}
   physics: none
   primitive: {kind: scripted, params: {}, script: scripts/chamber-hex-geo.js}
   receiveShadow: false
@@ -34,7 +34,7 @@ chamber-solids:
   castShadow: false
   feetPosition: {x: 0, y: 15, z: -362}
   id: chamber-solids
-  material: {kind: scripted, params: {"on": 1, t0: 1867.9316666666673}, script: scripts/chamber-solids-mat.js}
+  material: {kind: scripted, params: {"on": 0, t0: 0}, script: scripts/chamber-solids-mat.js}
   physics: none
   primitive: {kind: scripted, params: {}, script: scripts/chamber-solids-geo.js}
   receiveShadow: false
