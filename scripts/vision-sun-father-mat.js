@@ -9,7 +9,7 @@
 // out behind a rayed front | .3-.55 orbits draw | .38-.5 inner crown | .45-.6 outer crown + bead ring |
 // .5-.7 rays reach the sundials one by one, planets rise | .6-.8 veil and fore (and the worms) | .85-.93 the two
 // crowns swing against each other and breathe in counter-phase | .93-1 exit, last in first out.
-// The kick (gated) is a ring of light leaving the eye. Seeded: channels 200-216.
+// The kick (gated) is a ring of light leaving the eye. Seeded: channels 200-217.
 import { MeshBasicNodeMaterial, DoubleSide } from "builtin/three";
 import { positionGeometry, float, vec2, vec3, smoothstep, mix, step, atan2, length, fwidth, select } from "builtin/tsl";
 import { tripClock, visionShown, visionU, climb, maskEclipse, maskBeads, maskLid, maskDraw, nib, BPS, SCORE } from "./lib/trip.js";
@@ -36,12 +36,15 @@ export function material(ctx) {
   const turn = c.dir.mul(c.rnd(205).step(0.5).mul(2).sub(1)); // this being's own turning sense
   const shown = (d) => visionShown(ctx, c, d);
 
-  // fire family: body, mid, hot (linear)
-  const fam = c.pick(200, 3);
+  // hue family (linear body, mid, hot), crossing the palette: 0 blue/violet, 1 magenta/orange, 2 green/yellow,
+  // 3 white-led op-art (grey-white body, white mid, one hot accent picked on channel 217)
+  const fam = c.pick(200, 4);
   const is = (v, i) => step(float(v).sub(i).abs(), 0.5);
-  const body = vec3(1, 0.1, 0.02).mul(is(fam, 0)).add(vec3(1, 0.04, 0.42).mul(is(fam, 1))).add(vec3(1, 0.3, 0.02).mul(is(fam, 2)));
-  const mid = vec3(1, 0.38, 0.02).mul(is(fam, 0)).add(vec3(1, 0.3, 0.03).mul(is(fam, 1))).add(vec3(1, 0.7, 0.05).mul(is(fam, 2)));
-  const hot = vec3(1, 0.85, 0.08).mul(is(fam, 0).add(is(fam, 1))).add(vec3(1, 0.95, 0.75).mul(is(fam, 2)));
+  const acc = c.pick(217, 3);
+  const accent = vec3(1, 0.04, 0.42).mul(is(acc, 0)).add(vec3(1, 0.38, 0.02).mul(is(acc, 1))).add(vec3(0.05, 0.12, 1).mul(is(acc, 2)));
+  const body = vec3(0.05, 0.1, 1).mul(is(fam, 0)).add(vec3(1, 0.04, 0.42).mul(is(fam, 1))).add(vec3(0.1, 1, 0.15).mul(is(fam, 2))).add(vec3(0.45, 0.45, 0.5).mul(is(fam, 3)));
+  const mid = vec3(0.45, 0.05, 1).mul(is(fam, 0)).add(vec3(1, 0.38, 0.02).mul(is(fam, 1))).add(vec3(1, 0.85, 0.05).mul(is(fam, 2))).add(vec3(1, 1, 1).mul(is(fam, 3)));
+  const hot = vec3(0.6, 0.75, 1).mul(is(fam, 0)).add(vec3(1, 0.85, 0.08).mul(is(fam, 1))).add(vec3(0.85, 1, 0.55).mul(is(fam, 2))).add(accent.mul(is(fam, 3)));
 
   const p = vec2(positionGeometry.x, positionGeometry.y);
   const r = length(p);
