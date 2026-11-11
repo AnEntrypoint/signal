@@ -2,7 +2,7 @@
 // 12 sides, 80 rings). vision-thunderbird-worm-mat.js bends it along its spine IN DEPTH and undulates it in the
 // vertex stage, reading along-length (y) and around-angle (x = cos, z = sin) off these positions.
 export function geometry(ctx) {
-  const SIDES = 12, RINGS = 80;
+  const SIDES = ctx.lod >= 4 ? 6 : 12, RINGS = ctx.lod >= 4 ? 16 : ctx.lod >= 3 ? 40 : 80;
   for (let i = 0; i < RINGS; i++) {
     const y0 = i / RINGS, y1 = (i + 1) / RINGS;
     for (let j = 0; j < SIDES; j++) {
