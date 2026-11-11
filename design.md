@@ -17,9 +17,21 @@ seed (void, the Eye's lid opens) → pulse (iris rings fire on the kick) → blo
 - peaks composed in left-right mirror symmetry.
 - the music is the conductor: kick = ripple from the centre, bar = step, phrase = scene.
 
+**How it moves** (read off 36 timed stills of 12 TAS films and his Resolume effects Pulse, Color Drift, Radial; not yet off playing footage, which the workshop could not reach):
+- the structure holds, the light travels through it; resting elements are graphite, not lit.
+- slow is the default: big forms 1 turn per 48-96 s; one fast thing per section, only in flight and peak.
+- the kick is a ripple travelling out from the centre, not a flash; bar = a step; phrase = a palette swap.
+- one hue family at a time, the whole world swapping together; rainbow only at the peak.
+- colour drifts along strokes; strokes draw themselves on.
+- black is half the frame; seed, deep, reset, return are near-monochrome.
+- mirrored about x = 0; one shared breath per phrase.
+- the camera holds on the axis and creeps; the tunnel is the only fast flight.
+
 **Numbers that are my pick:** section names and boundaries (on the measured phrases), camera path, gain 0.8 (was 0.7).
 
 **Open.** Whether the creator wants words/titles back on screen (the old kinetic words went with the old stage).
 
 - 2026-11-11: cleared the starter for a fresh start; set up as a motion-graphics cinematic stage (creator: "motion graphics cinematics", not music videos).
 - 2026-11-11: rebuilt as the acid-mandala trip on the creator's track; the old 24 s neon ring stage and its 120 bpm placeholder retired (creator's lock-in plan).
+
+- 2026-11-11: creator: "not everything is fast, not everything is normal visuals". Old rule: everything counter-rotating and flashing on the beat. New rule: the How it moves list above; camera re-cut to holds and creeps.
