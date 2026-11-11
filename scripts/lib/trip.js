@@ -109,7 +109,9 @@ function pieceLag(name) {
 const SCENE_STARTS = new Set(Object.values(SCORE.sections).map(([a]) => a));
 export function shown(c, name, d = 0) {
   // a dealt seam: pieces leave before it and arrive after it, never all at once (40% stand at the seam itself)
-  const seamGate = step(pieceLag(name).div(SCORE.piece ?? 2.25), mix(float(0.4), float(1), c.seamD.div(SCORE.deck.seam).clamp(0, 1)));
+  // no piece pops whole: each one closes along its own radius (d), outside in, as the seam nears, and opens the
+  // same way after it, so a sector or ring is seen shrinking away, never cut out of the picture in one frame
+  const seamGate = step(pieceLag(name).div(SCORE.piece ?? 2.25).add(float(d).clamp(0, 1).mul(0.3)), mix(float(0.4), float(1.3), c.seamD.div(SCORE.deck.seam).clamp(0, 1)));
   const lag = float(d).clamp(0, 1).mul(SCORE.wipe).add(pieceLag(name));
   let v = float(0);
   for (const [a0, b] of SCORE.layers[name]) {
