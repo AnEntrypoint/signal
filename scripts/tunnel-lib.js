@@ -65,3 +65,13 @@ export function light(c, d) {
   const L = max(sweep.mul(mix(c.bass.min(1).mul(0.09).add(0.025), front, f)), ring.mul(mix(0.1, 1, f)));
   return { L, ring };
 }
+
+// THE LAYER SCORE: the tunnel's cutout, opening from the mouth and eaten away the same way (d = depth / 300).
+import { shown } from "./lib/trip.js";
+export const cut = (c, p = positionWorld) => shown(c, "tunnel", float(Z0).sub(p.z).div(LEN));
+// The wall's self-cutout: mirrored panels (8 around x 12 m cells), one in four cut away, the set stepping every 2 bars.
+export function panels(c, p = positionWorld) {
+  const pa = floor(mirAng(p).add(0.25).mul(8)), pc = floor(float(Z0).sub(p.z).div(12));
+  const k = mod(pa.add(pc.mul(2)).add(floor(c.bar.div(2))), 4);
+  return float(1).sub(step(k, 0.5).mul(smoothstep(60.35, 61.85, c.sec)));
+}

@@ -4,7 +4,7 @@
 import { float, vec2, vec3, floor, fract, abs, mod, step, smoothstep, select, mix, length, round, min, max, varying, positionLocal, positionGeometry, instanceIndex } from "builtin/tsl";
 import { MeshBasicNodeMaterial, DoubleSide } from "builtin/three";
 import { tripClock } from "./lib/trip.js";
-import { inside, LY, LZ, GRAPH, mirAng, breath, fam, light } from "./tunnel-lib.js";
+import { inside, LY, LZ, GRAPH, mirAng, breath, fam, light , cut, panels } from "./tunnel-lib.js";
 
 export function material(ctx) {
   const m = new MeshBasicNodeMaterial();
@@ -35,7 +35,7 @@ export function material(ctx) {
   const rest = GRAPH.mul(aLine.add(aMain).add(aOp).add(aRim).min(1).add(aMain.mul(tgt)));
   const beadCol = mix(GRAPH.mul(1.6), F.acc, max(chase.mul(0.9), L.mul(0.35)));
   m.colorNode = mix(mix(rest, body, L), beadCol, bead).mul(smoothstep(192, 186, c.sec));
-  m.opacityNode = bead.add(aLine).add(aMain.mul(float(1).sub(tring))).add(aOp).add(aRim).min(1).mul(inside());
+  m.opacityNode = bead.add(aLine).add(aMain.mul(float(1).sub(tring))).add(aOp).add(aRim).min(1).mul(inside().mul(cut(c)));
   m.alphaTest = 0.5;
   m.side = DoubleSide;
   m.fog = false;

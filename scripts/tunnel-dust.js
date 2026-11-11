@@ -3,7 +3,7 @@
 import { float, vec3, floor, fract, mod, step, smoothstep, length, varying, positionLocal, positionGeometry, instanceIndex } from "builtin/tsl";
 import { MeshBasicNodeMaterial, DoubleSide, AdditiveBlending } from "builtin/three";
 import { tripClock } from "./lib/trip.js";
-import { inside, LY, LZ, breath, fam, light } from "./tunnel-lib.js";
+import { inside, LY, LZ, breath, fam, light , cut, panels } from "./tunnel-lib.js";
 
 export function material(ctx) {
   const m = new MeshBasicNodeMaterial();
@@ -16,7 +16,7 @@ export function material(ctx) {
   m.positionNode = vec3(ang.cos().mul(3.3).add(positionLocal.x.mul(size)), ang.sin().mul(3.3).add(LY).add(positionLocal.y.mul(size)), float(LZ).sub(dd));
   const vd = varying(dd), vL = varying(Lv.L);
   const dot = step(length(positionGeometry.xy), 0.5).mul(smoothstep(0, 6, vd)).mul(smoothstep(300, 290, vd));
-  m.colorNode = F.acc.mul(dot).mul(inside()).mul(float(0.08).add(vL.mul(0.7))).mul(smoothstep(192, 186, c.sec));
+  m.colorNode = F.acc.mul(dot).mul(inside().mul(cut(c))).mul(float(0.08).add(vL.mul(0.7))).mul(smoothstep(192, 186, c.sec));
   m.transparent = true;
   m.blending = AdditiveBlending;
   m.depthWrite = false;

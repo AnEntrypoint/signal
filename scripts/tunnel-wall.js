@@ -4,7 +4,7 @@
 import { float, vec2, vec3, floor, fract, abs, max, mod, step, smoothstep, select, mix, length, dot, positionWorld, cameraPosition } from "builtin/tsl";
 import { MeshBasicNodeMaterial, BackSide } from "builtin/three";
 import { tripClock, pal, stripes, HUE } from "./lib/trip.js";
-import { tun, inside, GRAPH, mirAng, fam, light } from "./tunnel-lib.js";
+import { tun, inside, GRAPH, mirAng, fam, light , cut, panels } from "./tunnel-lib.js";
 
 export function material(ctx) {
   const m = new MeshBasicNodeMaterial();
@@ -57,7 +57,7 @@ export function material(ctx) {
   // far wall steps back so the gates and the core read; dark by 192
   const far = mix(1, 0.3, smoothstep(50, 200, length(positionWorld.sub(cameraPosition))));
   m.colorNode = col.mul(far).mul(smoothstep(192, 186, c.sec));
-  m.opacityNode = inside();
+  m.opacityNode = inside().mul(cut(c)).mul(panels(c));
   m.alphaTest = 0.5;
   m.side = BackSide;
   m.fog = false;
