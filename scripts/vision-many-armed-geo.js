@@ -107,7 +107,7 @@ function being(ctx, uvs) {
     const R = 2.5, H = [Q[0] + Math.cos(a) * 2.2 * s, Q[1] + Math.sin(a) * 2.2];
     ctx.attribute("el", 600 + h);
     const nr = 18;
-    for (let k = 0; k < nr; k++) { const t = (k / nr) * TAU - Math.PI / 2; bead(ctx, uvs, H[0] + Math.cos(t) * R, H[1] + Math.sin(t) * R, 0.17, Math.abs(((k / nr + 0.5) % 1) - 0.5) * 2 === 0 ? 0 : 1 - Math.abs((k / nr) * 2 - 1) * 0 - Math.abs(0.5 - Math.abs(k / nr - 0.5)) * 2, 0, 8); }
+    for (let k = 0; k < nr; k++) { const t = (k / nr) * TAU - Math.PI / 2; bead(ctx, uvs, H[0] + Math.cos(t) * R, H[1] + Math.sin(t) * R, 0.17, Math.min(k, nr - k) / (nr / 2), 0, 8); }
     // every symbol at every hand: the shader shows the one this roll deals
     if (lo) continue;
     for (let g = 0; g < 8; g++) {
