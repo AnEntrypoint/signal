@@ -23,16 +23,20 @@ export const ripple = (c, dist) => {
 };
 // The shared breath: one swell per phrase, 0..1.
 export const breath = (c) => sin(c.sec.mul(6.28318 / 12)).mul(0.5).add(0.5);
-// One hue family per phrase: two neighbouring hues for the structure, one hot accent pair, all off the roll's
-// c.hue (so every roll wears its own colours); the seed (channel 40) picks the step, each phrase steps 0.31 on.
+// One hue family per phrase, from a hand-built table of six (structure hue, accent hue) pairs on black; the
+// roll's seed (channel 46) picks the starting row, each phrase steps one row on, c.hue jitters the row a little.
+// Rows: blue/yellow, green/magenta, violet/green, cyan/red, magenta/cyan, teal/orange (picture 3).
+const ROWS = [[0.64, 0.15], [0.36, 0.85], [0.75, 0.33], [0.5, 0.98], [0.86, 0.5], [0.44, 0.05]];
 export const family = (c) => {
-  const i = floor(c.phrase.add(64)).add(c.pick(40, 3)).mod(3);
-  const h = c.hue.add(i.mul(0.31)), sp = mix(0.05, 0.11, c.rnd(43));
+  const i = floor(c.phrase.add(64)).add(c.pick(46, 6)).mod(6);
+  let ha = float(0), hh = float(0);
+  ROWS.forEach(([x, y], j) => { const e = step(j - 0.5, i).mul(step(i, j + 0.5)); ha = ha.add(e.mul(x)); hh = hh.add(e.mul(y)); });
+  const jit = c.hue.sub(0.5).mul(0.06), h = ha.add(jit), hk = hh.add(jit), sp = mix(0.04, 0.09, c.rnd(43));
   // graphite-and-gold: one roll in three the structure is embossed graphite and only gold is lit
   const gold = step(floor(c.rnd(42).mul(89)).mod(3), 0.5), gg = (v, q) => mix(v, vec3(...q), gold);
   return {
-    a: gg(pal(h), [0.09, 0.09, 0.1]), b: gg(pal(h.add(sp)), [0.12, 0.11, 0.1]),
-    hot: gg(pal(h.add(0.42)), [1, 0.7, 0.05]), hot2: gg(pal(h.add(0.42).add(sp)), [1, 0.48, 0.02]),
+    a: gg(pal(h), [0.34, 0.34, 0.38]), b: gg(pal(h.add(sp)), [0.42, 0.4, 0.36]),
+    hot: gg(pal(hk), [1, 0.7, 0.05]), hot2: gg(pal(hk.add(sp)), [1, 0.48, 0.02]),
   };
 };
 // The trope deal: this roll's hand, 0..2. dealt(c, [1, 0, 1]) is 1 when the roll's hand shows that trope.
