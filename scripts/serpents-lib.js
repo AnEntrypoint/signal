@@ -56,8 +56,12 @@ export function lightOf(c, b, s, wp, oc) {
   return w.max(win(c.sec, SEC.peak, 2));
 }
 // stripe skin: hard black/white bands scrolling root to tip; every 4th a coloured band of target dots
+// the scroll crawls one stripe per 2 bars; only in peak (its one fast thing) it runs half a stripe a beat
+export function scroll(c) {
+  return c.bar.mul(0.5).add(c.sec.sub(132.35).clamp(0, 47.65).mul(160 / 60 * 0.5));
+}
 export function skinStripes(c, x, a, K) {
-  const n = x.div(1.4).sub(c.beat.mul(0.5)), idx = n.floor(), f = n.fract();
+  const n = x.div(1.4).sub(scroll(c)), idx = n.floor(), f = n.fract();
   const white = step(0.5, f);
   const dq = vec2(a.mul(10).fract().sub(0.5), f.sub(0.5).mul(0.8)), r = dq.length();
   const dot = select(r.lessThan(0.17), K.H2, select(r.lessThan(0.27), vec3(0), select(r.lessThan(0.4), K.H, select(idx.mod(2).lessThan(0.5), K.A, K.B))));
@@ -73,7 +77,7 @@ export function skinDiamond(c, x, a, K) {
 }
 // chain: a ladder of white rungs on black between two rails, a hot bead in every 3rd link
 export function skinChain(c, x, a, K) {
-  const g = x.div(1.3).sub(c.beat.mul(0.25)), f = g.fract(), aa = a.mul(2).fract();
+  const g = x.div(1.3).sub(c.bar.mul(0.5)), f = g.fract(), aa = a.mul(2).fract();
   const rung = step(0.78, f), rail = step(aa.sub(0.5).abs(), 0.06);
   const bead = step(vec2(f.sub(0.39), aa.sub(0.5).mul(1.3)).length(), 0.2).mul(step(g.floor().mod(3), 0.5));
   return select(bead.greaterThan(0.5), K.H, vec3(rung.max(rail).mul(0.95)));

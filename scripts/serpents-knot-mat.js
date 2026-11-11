@@ -26,7 +26,7 @@ export function material(ctx) {
   m.positionNode = vec3(side.mul(34), 40, -62).add(vec3(p.x.mul(side), p.y, p.z));
   const K = colours(c.sec, side.add(1));
   const x = u.mul(160);
-  const n = x.sub(c.beat.mul(0.5)), idx = n.floor();
+  const n = x.sub(c.bar.mul(0.5)), idx = n.floor();
   const col = select(idx.mod(4).lessThan(0.5), select(w.mul(8).fract().sub(0.5).abs().lessThan(0.2), K.H, K.A), vec3(step(0.5, n.fract()).mul(0.95)));
   const L = smoothstep(0.25, 0.0, u.sub(c.sec.div(16).mul(c.dir)).fract()).max(win(c.sec, SEC.peak, 2));
   m.colorNode = finish(c, col, L, x);
