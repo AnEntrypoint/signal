@@ -2,7 +2,7 @@
 // Idle (on = 0): only aberration, vignette, bloom. Deck of tropes dealt by the roll's seed on channels 70-79.
 import { float, vec2, vec3, vec4, mix, smoothstep, select, screenUV, screenSize, convertToTexture, mx_noise_float, atan, step } from "builtin/tsl";
 import { vignette, dof } from "builtin/postfx";
-import { tripClock, win, SEC, pal, bendUv } from "./lib/trip.js";
+import { tripClock, win, SEC, SCORE, pal, bendUv } from "./lib/trip.js";
 
 const TAU = 6.283185;
 const luma = (v) => v.dot(vec3(0.2126, 0.7152, 0.0722));
@@ -253,6 +253,30 @@ export function look(ctx) {
   col = col.mul(mix(float(1), smoothstep(mix(float(0.012), float(0.1), wDeep), mix(float(0.06), float(0.22), wDeep), luma(col)), on)); // deep: a harder black floor, half the frame stays black
   // dome mask, return fade to black 190-193 and hold, vignette
   col = col.mul(domeMask).mul(mix(float(1), smoothstep(193, 190, sec), on));
+  // THE CROSSING: a scene never cuts in the open. Around each drop three great worms (solid black bodies, op-art
+  // stripes, a neon rim) slide across the frame one after another, nearest things in the picture, so the old scene
+  // is hidden behind them piece by piece and the new one is what their tails uncover. Pure occlusion, no fade.
+  {
+    let tS = float(99);
+    for (const sT of [...new Set(SCORE.deck.segments.flat())]) { const d = c.real.sub(sT); tS = select(d.abs().lessThan(tS.abs()), d, tS); }
+    const halfW = aspect.mul(0.5);
+    const RIM = [vec3(0.08, 0.13, 1), vec3(1, 0.06, 0.6), vec3(0.1, 1, 0.15)];
+    [0.3, -0.02, -0.33].forEach((y0, i) => {
+      const dirn = i === 1 ? c.dir.negate() : c.dir, lag = i * 0.35;
+      const xx = p0.x.mul(dirn);
+      const head = mix(halfW.negate().sub(0.4), halfW.add(0.9), smoothstep(-2.3 + lag, 0.15 + lag, tS));
+      const tail = mix(halfW.negate().sub(0.9), halfW.add(0.4), smoothstep(-0.35 + lag, 2.5 + lag, tS));
+      const half = smoothstep(0, 0.45, head.sub(xx)).mul(smoothstep(0, 0.9, xx.sub(tail))).mul(0.205);
+      const spine = xx.mul(3.1).add(c.real.mul(2.2)).add(i * 2.1).sin().mul(0.085).add(y0);
+      const d = p0.y.sub(spine).abs(), k = d.div(half.max(0.0001));
+      const body = step(d, half).mul(step(0.004, half));
+      const stripe = step(0.5, xx.mul(7).sub(c.real.mul(1.4 + i * 0.5)).add(k.mul(k).mul(0.7)).fract()).mul(step(k, 0.72));
+      const bead = step(xx.mul(14).fract().sub(0.5).abs().mul(0.0714).div(0.02).pow(2).add(d.div(0.02).pow(2)), 1);
+      const rim = step(0.9, k);
+      const skin = vec3(0.92).mul(stripe).mul(float(1).sub(bead)).add(RIM[i].mul(rim.max(bead)).mul(1.6));
+      col = mix(col, skin, body.mul(on));
+    });
+  }
   // FOCUS: depth of field gives the layers meaning. A being on stage (74 m out on the camera's line) stands sharp,
   // the running scene around it goes soft. Otherwise the focus pulls slowly through the layers, near to far and
   // back once every two phrases, so one layer reads at a time while the others breathe out of focus.
