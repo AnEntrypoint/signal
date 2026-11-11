@@ -102,11 +102,11 @@ export function material(ctx) {
       .add(mix(C1, W, 0.35).mul(0.3).mul(stripe.mul(cres))).add(mix(C3, W, 0.3).mul(0.7).mul(bead.mul(cres))).mul(ground).mul(lag));
     // the sky: concentric rows of star dots, each twinkling on its own
     const sky = smoothstep(4.8, 5.8, fz);
-    const kr = R.sub(30).div(12).round().clamp(0, 9), rk = kr.mul(12).add(30), nk = rk.mul(TAU / 9).round();
+    const kr = R.sub(30).div(6).round().clamp(0, 18), rk = kr.mul(6).add(30), nk = rk.mul(TAU / 3.5).round();
     const ak = ang.div(TAU).mul(nk);
-    const sdot = stroke(vec2(ak.add(0.5).fract().sub(0.5).mul(rk.mul(TAU).div(nk)), R.sub(rk)).length(), 0.32);
-    const tw = c.real.mul(hash(ak.floor().add(kr.mul(37))).mul(2).add(0.6)).add(hash(ak.floor().add(kr.mul(11))).mul(TAU)).sin().mul(0.4).add(0.6);
-    col = col.add(mix(C2, W, 0.45).mul(0.4).mul(sdot).mul(tw).mul(sky).mul(lag).mul(step(26, R)));
+    const sdot = stroke(vec2(ak.add(0.5).fract().sub(0.5).mul(rk.mul(TAU).div(nk)), R.sub(rk)).length(), 0.26);
+    const tw = ak.floor().mul(0.9).sub(c.real.mul(2.2)).add(kr.mul(1.3)).sin().mul(0.45).add(0.55);   // a chase running round each row
+    col = col.add(mix(C1, W, 0.2).mul(0.65).mul(sdot).mul(tw).mul(sky).mul(lag).mul(step(26, R)));
     // the constellations: drawn star to star by the nib, then they wake into animals
     const deal = pk(8, 4);
     SLOTS.forEach(([sx, sy, S], i) => {
@@ -162,13 +162,13 @@ export function material(ctx) {
     const twoSq = pk(5, 2);
     let sq = float(0);
     for (let s = 0; s < 2; s++) {
-      const angS = rotS.mul(TAU).add(s * PI / 4), cs = angS.cos(), sn = angS.sin();
+      const angS = rotS.mul(TAU).add(s * PI / 3), cs = angS.cos(), sn = angS.sin();
       const rp = vec2(p.x.mul(cs).sub(p.y.mul(sn)), p.x.mul(sn).add(p.y.mul(cs)));
-      const sd = rbox(rp, [0, 0], S, S, 0.01).abs();
+      const sd = rp.y.negate().max(rp.x.mul(0.866).add(rp.y.mul(0.5))).max(rp.x.mul(-0.866).add(rp.y.mul(0.5))).sub(S * 0.62).abs();   // a triangle; the second turned 60 deg makes the hexagram
       const k = ang2(rp.y, rp.x).div(TAU).add(0.5).fract();
       sq = sq.max(soft(sd, 0.06).mul(maskDraw(ps, k)).mul(s === 0 ? float(1) : is(twoSq, 1)));
     }
-    const lit = float(0.45).add(cul.mul(0.4)).add(c.kick.mul(0.4));
+    const lit = float(0.75).add(cul.mul(0.3)).add(c.kick.mul(0.3));
     let col = C1.mul(circ).mul(lit).add(mix(C2, W, 0.4).mul(tick).mul(lit)).add(C2.mul(sq).mul(lit.mul(0.7)));
     // the mobile: a thread from the top, three tilted orbits round it, planets turning opposite ways
     const MY = 36, K = 0.27, np = pk(12, 2).add(2);
