@@ -3,9 +3,9 @@
 // each frame late by its radius. Frames step a few degrees per bar, neighbours opposite at two crawl rates;
 // on the fill (93.35 .. 96.35) they fly apart along z and snap back.
 import { MeshBasicNodeMaterial } from "builtin/three";
-import { positionLocal, positionWorld, length, uv, vec3, float, floor, smoothstep, step, sin, cos, select, mix, max, pow } from "builtin/tsl";
+import { atan2, positionLocal, positionWorld, length, uv, vec3, float, floor, smoothstep, step, sin, cos, select, mix, max, pow } from "builtin/tsl";
 import { tripClock, shown } from "./lib/trip.js";
-import { near, alive, ripple, breath, family } from "./chamber-fx.js";
+import { near, alive, ripple, breath, family, dealt } from "./chamber-fx.js";
 
 export function material(ctx) {
   const c = tripClock(ctx), g = near(), F = family(c);
@@ -31,7 +31,10 @@ export function material(ctx) {
   const beadC = mix(F.a, F.b, id.mod(2)).mul(lit.mul(3.0).add(0.12));
   m.colorNode = mix(line, beadC, isBead).mul(g.mul(0.6));
   const reveal = c.sec.sub(82.35).div(4).sub(id.mul(0.03));
-  m.opacityNode = step(v, reveal.mul(1.1)).mul(shown(c, "chamber", length(positionWorld.sub(vec3(0, 15, -362))).div(34)));
+  // d6-bloom: the nest unfolds through its six mirrors, one 60 degree sector a bar, whole by the fill
+  const sector = floor(atan2(positionLocal.y, positionLocal.x).div(1.0472).add(3)).min(5);
+  const bloom = mix(float(1), step(sector, floor(c.sec.sub(84.35).div(1.5))), dealt(c, [1, 1, 0]).mul(frame));
+  m.opacityNode = step(v, reveal.mul(1.1)).mul(bloom).mul(shown(c, "chamber", length(positionWorld.sub(vec3(0, 15, -362))).div(34)));
   m.alphaTest = 0.5;
   return m;
 }

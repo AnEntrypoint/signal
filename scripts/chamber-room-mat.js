@@ -5,7 +5,7 @@
 import { MeshBasicNodeMaterial, DoubleSide } from "builtin/three";
 import { positionWorld, positionLocal, vec2, vec3, float, length, floor, fwidth, abs, smoothstep, saturate, max, atan2, log2, pow, select, mix, sin, step } from "builtin/tsl";
 import { tripClock, shown } from "./lib/trip.js";
-import { near, alive, ripple, breath, family, pace } from "./chamber-fx.js";
+import { near, alive, ripple, breath, family, pace, order } from "./chamber-fx.js";
 
 export function material(ctx) {
   const c = tripClock(ctx), g = near(), F = family(c);
@@ -15,7 +15,8 @@ export function material(ctx) {
   const px = fwidth(d).max(0.002);
   const e = ripple(c, d);
   const S = breath(c).mul(0.03).add(1).mul(1.6);
-  const r = d.div(S).sub(e.mul(0.22)).sub(c.bar);
+  // counter-breath: neighbouring 3.2 m bands of rings swell in antiphase, so the wall rolls like a wave
+  const r = d.div(S).sub(e.mul(0.22)).sub(c.bar).add(sin(d.mul(3.14159 / 3.2)).mul(breath(c).sub(0.5)).mul(0.3));
   const k = floor(r), f = r.sub(k), kk = k.add(4096);
   const par = kk.mod(2), idx = floor(kk.div(2));
   const LW = 0.05;
@@ -23,7 +24,7 @@ export function material(ctx) {
   const lines = max(ln(f.sub(0.3).mul(S)), ln(f.sub(0.7).mul(S)));
   const dc = k.add(0.5).add(c.bar).mul(S).max(0.4);
   const lv = log2(dc.div(1.3)).max(0), lev = floor(lv), grow = smoothstep(0.55, 0.95, lv.sub(lev));
-  const N = pow(float(2), lev).mul(c.pick(42, 3).mul(3).add(6)); // 6, 9 or 12 targets on the innermost ring
+  const ord = order(c), N = pow(float(2), lev).mul(ord); // symmetry-order: 6, 8 or 12 targets on the innermost ring
   const dir = idx.mod(2).mul(2).sub(1);
   const ang = atan2(rel.y, rel.x).div(6.28318);
   const a01 = ang.add(select(dir.greaterThan(0), c.sec.div(48), c.sec.div(-96)).mul(pace(c, 41)));
@@ -52,8 +53,8 @@ export function material(ctx) {
   // seed) is cut away, stepping on the bar, uncovering the void behind the wall
   const bar = floor(c.bar).add(4096), cv = c.pick(45, 3);
   const gap0 = step(idx.add(bar).mod(4), 0.5).mul(float(1).sub(par)).mul(step(6, d)); // one line slot in four
-  const gap1 = step(floor(am.add(0.25).mul(24)).add(bar).mod(4), 0.5).mul(step(14, d)); // mirrored wedges, one in four
-  const gap2 = step(idx.add(bar).mod(3), 0.5).mul(par).mul(step(6, d)); // every third target ring
+  const gap1 = step(floor(am.add(0.25).mul(ord.mul(2))).add(bar).mod(4), 0.5).mul(step(14, d)); // mirrored wedges, one in four
+  const gap2 = disc(c1.dist, float(0.27)).mul(par).mul(step(6, d)); // layer-keyhole: every target's heart is a window onto the void
   const gap = mix(mix(gap0, gap1, step(0.5, cv)), gap2, step(1.5, cv));
   m.opacityNode = shown(c, "chamber", length(positionWorld.sub(vec3(0, 15, -362))).div(34)).mul(float(1).sub(gap));
   m.alphaTest = 0.5;
