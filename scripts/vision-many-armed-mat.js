@@ -40,7 +40,7 @@ export function material(ctx) {
   const S = vec2(side.mul(3), 3.6);
   const rel = positionGeometry.xy.sub(S);
   const rot = vec2(rel.x.mul(th.cos()).sub(rel.y.mul(th.sin())), rel.x.mul(th.sin()).add(rel.y.mul(th.cos()))).add(S);
-  const drift = c.sec.mul(TAU / 18).add(strand.mul(1.7)).sin().mul(0.5).mul(is(10).add(is(11)));
+  const drift = c.sec.mul(TAU).div(mix(14, 26, c.rnd(20))).add(strand.mul(1.7)).sin().mul(0.5).mul(is(10).add(is(11)));
   m.positionNode = vec3(rot.x, rot.y.add(drift), positionGeometry.z);
   const p = positionGeometry.xy;
 
@@ -108,12 +108,13 @@ export function material(ctx) {
   col = col.add(mix(C, vec3(1), 0.3).mul(cul.mul(2).add(0.5)).mul(is(7)));
   // far ring pattern (polar, turning on its own slow clock, this roll's sense)
   const N = c.pick(14, 3).mul(4).add(8);
-  const turn = c.sec.mul(c.dir).div(72);
+  const ringDir = step(c.rnd(17), 0.5).mul(2).sub(1), turn = c.sec.mul(ringDir).div(mix(56, 96, c.rnd(18)));
+  const turn2 = c.sec.mul(ringDir.negate()).div(mix(40, 70, c.rnd(19)));
   const an = atan2(p.y, p.x).div(TAU);
   const band = (rc, w) => sm(w.add(aa), w, r.sub(rc).abs());
   const dots = (rc, n, rt, rad) => { const q = an.add(rt).mul(n).fract().sub(0.5).mul(float(TAU * rc).div(n)); return sm(rad + 0.05, rad, q.mul(q).add(r.sub(rc).mul(r.sub(rc))).sqrt()); };
-  const scal = float(16.4).add(an.add(turn.mul(-0.6)).mul(N).mul(Math.PI).sin().abs().pow(0.6).mul(3.4));
-  const outerRow = dots(20.9, N.mul(4), turn.negate(), 0.2).mul(step(fromBottom, sm(0.7, 0.85, u).mul(1.01)));
+  const scal = float(16.4).add(an.add(turn.mul(0.45)).mul(N).mul(Math.PI).sin().abs().pow(0.6).mul(3.4));
+  const outerRow = dots(20.9, N.mul(4), turn2, 0.2).mul(step(fromBottom, sm(0.7, 0.85, u).mul(1.01)));
   const ringM = band(13.6, float(0.06)).add(band(21.6, float(0.06))).add(dots(15.0, N.mul(3), turn, 0.22)).add(sm(aa.add(0.08), 0.08, r.sub(scal).abs())).add(outerRow).clamp(0, 1);
   const ringL = dH.mul(24).div(24);
   const ringLight = sm(0.08, 0, ringL.sub(f.mul(1.25)).abs()).mul(float(1).sub(f)).mul(live).mul(2.4).add(cul.mul(0.8));
