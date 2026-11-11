@@ -1,6 +1,6 @@
 // THE CONTOUR ORACLE's ribbon-worms, the light and the motion (geometry: vision-contour-oracle-worm-geo.js).
 // Opaque black bodies that really occlude. Every vertex is rebuilt from uv on the spine + travelling sine waves,
-// so the body undulates in 3D. Grow in root -> tip u .55-.8 (cut along the length, the front rounded), skin changes
+// so the body undulates in 3D. Each body crosses the bust behind it (z<0) and in front (z>+10) in the same frame. Grow in root -> tip u .16-.55 (cut along the length, the front rounded), skin changes
 // root -> tip at .74-.84 (contour bands <-> bead rows, order by seed 244), the seeded one (255) goes to a pure black
 // silhouette with a thin rim at the culmination, all retract tip first at .93. Seed 243: how many of the four show.
 import { MeshBasicNodeMaterial, DoubleSide } from "builtin/three";
@@ -20,27 +20,34 @@ export function material(ctx) {
   const A = blue.mul(is(fam, 0)).add(violet.mul(is(fam, 1))).add(mix(blue, violet, 0.5).mul(is(fam, 2)));
   const B = violet.mul(is(fam, 0)).add(blue.mul(is(fam, 1))).add(mix(blue, W, 0.4).mul(is(fam, 2)));
   const al = uv().x, ar = uv().y.mul(TAU);
-  const L = Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]) + Math.hypot(cc[0] - b[0], cc[1] - b[1], cc[2] - b[2]);
-  const va = vec3(...a), vb = vec3(...b), vc = vec3(...cc), i1 = float(1).sub(al);
-  const C0 = va.mul(i1.mul(i1)).add(vb.mul(i1.mul(al).mul(2))).add(vc.mul(al.mul(al)));
-  const T = vb.sub(va).mul(i1.mul(2)).add(vc.sub(vb).mul(al.mul(2))).normalize();
-  const N = T.cross(vec3(0, 0, 1)).normalize(), Bn = T.cross(N);
-  // travelling waves: root still, tip free; two waves at different pitch, in two planes: a real 3D sway
+  // THE SPINE, rebuilt here (the geo's rest pose is only bounds): each body crosses the bust's silhouette in x/y while
+  // its z runs from behind the being (-22) through the being plane (0) and the veil (+10) to in front (+24), so in ONE frame
+  // the root half is hidden by the bust and the tip half covers it. A slow wave slides the crossing points along the body.
+  // Seed: mirror (x flip), which end is behind (dir), wave phase. Path control points [x, y] per n.
+  const PTS = [[[-95, -60], [-10, -30], [70, 10]], [[95, 55], [10, 5], [-70, -45]], [[30, 82], [-30, 10], [45, -62]], [[-40, 85], [40, -10], [-80, -55]]][n - 1];
+  const L = 190;
+  const flip = step(0.5, R(31 + n)).mul(2).sub(1), dir = step(0.5, R(35 + n)).mul(2).sub(1), zph = R(39 + n).mul(TAU);
+  const spine = (s) => {
+    const j = float(1).sub(s), q0 = j.mul(j), q1 = j.mul(s).mul(2), q2 = s.mul(s);
+    const x = q0.mul(PTS[0][0]).add(q1.mul(PTS[1][0])).add(q2.mul(PTS[2][0])).mul(flip);
+    const y = q0.mul(PTS[0][1]).add(q1.mul(PTS[1][1])).add(q2.mul(PTS[2][1]));
+    const z = s.mul(46).sub(22).mul(dir).add(s.mul(7.85).add(t.mul(0.31 + 0.05 * n)).add(zph).sin().mul(s.mul(3.1416).sin().mul(7)));
+    return vec3(x, y, z);
+  };
+  const C0 = spine(al), dT = spine(al.add(0.004)).sub(C0);
+  const T = dT.div(dT.length().max(0.0001));
+  const Nr = T.cross(vec3(0, 0, 1)), N = Nr.div(Nr.length().max(0.0001)), Bn = T.cross(N);
+  // travelling waves: root still, tip free; in the screen plane mostly, so the depth crossing stays where it is designed
   const ph = al.mul(9).sub(t.mul(0.7 + n * 0.13)).add(n * 2.1), ph2 = al.mul(5).add(t.mul(0.33)).add(n);
-  const C = C0.add(N.mul(ph.sin().mul(al).mul(5))).add(Bn.mul(ph2.cos().mul(al).mul(3.2)));
+  const C = C0.add(N.mul(ph.sin().mul(al).mul(3.5))).add(Bn.mul(ph2.cos().mul(al).mul(1.6)));
   const here = step(n - 0.5, pk(3, 3).add(2));
-  const g = smoothstep(0.55 + 0.03 * (n - 1), 0.8, u).mul(out(0.93, 0.955)).mul(here);
+  // out of the dark one by one: body n starts growing at u .16 + .07 per body, whole by .55; tip-first retract at .93
+  const g = smoothstep(0.16 + 0.07 * (n - 1), 0.55, u).mul(out(0.93, 0.955)).mul(here);
   const tipR = g.mul(1.03).sub(al).div(0.05).clamp(0, 1).sqrt();
-  const rad = float(S.r).mul(float(1).sub(al.mul(0.75))).mul(tipR);
+  const rad = float(S.r).mul(float(1).sub(al.mul(0.6))).mul(tipR);
   const nor = N.mul(ar.cos()).add(Bn.mul(ar.sin()));
   const m = new MeshBasicNodeMaterial();
   m.positionNode = C.add(nor.mul(rad));
-  // THE DEPTH WEAVE: the mid-body swings through the canvas planes (ring -12, being 0, veil +10), so one body dips
-  // behind the being and comes out in front of it, more than once; the ends stay rooted. Seeded per body: swing, turns, phase.
-  { const S = float(al).clamp(0, 1), dz = step(0.5, c.rnd(391 + n)).mul(2).sub(1).mul(c.rnd(395 + n).mul(5).add(11));
-    const turns = c.rnd(399 + n).mul(1.6).add(1.4).mul(3.14159);
-    const weave = S.mul(turns).add(c.rnd(403 + n).mul(6.283)).add(c.real.mul(0.21 + 0.04 * n)).sin().mul(S.mul(float(1).sub(S)).mul(4)).mul(dz);
-    m.positionNode = m.positionNode.add(vec3(0, 0, weave)); }
   m.side = DoubleSide;
   const nz = nor.z.abs(), edge = float(1).sub(nz);
   const sL = al.mul(L);
