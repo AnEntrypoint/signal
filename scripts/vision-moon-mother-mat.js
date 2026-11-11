@@ -9,7 +9,7 @@
 // gated kick (c.kick, zero where the track has no beat) and a slow comet up the crescent's bead row.
 // Seed channels: 11 hue family, 12 profile gap, 13 moon order, 14 chalice content, 15 veil strands,
 // 16 ring speed, 20+ sparkle stars.
-import { MeshBasicNodeMaterial, AdditiveBlending } from "builtin/three";
+import { MeshBasicNodeMaterial, AdditiveBlending, DoubleSide } from "builtin/three";
 import { positionGeometry, float, vec2, vec3, smoothstep, step, mix, atan2, length, fwidth, select } from "builtin/tsl";
 import { tripClock, visionShown, visionU, climb, maskDraw, maskBeads, maskIris, nib } from "./lib/trip.js";
 
@@ -56,6 +56,7 @@ export function material(ctx) {
   const front = c.beat.fract().mul(30);
   const kl = smoothstep(2.2, 0, rr.sub(front).abs()).mul(step(0.001, c.kick)).mul(smoothstep(30, 14, front));
   const m = new MeshBasicNodeMaterial();
+  m.side = DoubleSide;
 
   if (layer === "ring") {
     const blur = aa.mul(4);                                               // far: soft, out of focus
