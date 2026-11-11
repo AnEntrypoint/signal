@@ -37,21 +37,38 @@ export function rollRnd(seed, n) { const x = Math.sin((seed + 1) * (n * 12.9898 
 export function cameraAt(t, seed = 0) {
   // a vision being joins the scene (stage.js brings it into view): the camera never cuts away to it
   const deal = dealDeck(seed)
-  const c0 = cameraRaw(sceneTime(t, deal)) // the dealt scene's own shot, cut on the drop
-  if (!seed) return c0
-  const c = shotMove(c0, t, deal, seed)
+  const c = glideIn(t, deal, seed)
+  if (!seed) return c
   const side = rollRnd(seed, 1) < 0.5 ? -1 : 1, rs = (rollRnd(seed, 2) < 0.5 ? -1 : 1) * (0.6 + rollRnd(seed, 3) * 0.9)
   const lift = 0.8 + rollRnd(seed, 4) * 0.5, wide = 0.92 + rollRnd(seed, 5) * 0.18
   const y = (v) => 15 + (v - 15) * lift
   return { eye: { x: c.eye.x * side, y: y(c.eye.y), z: c.eye.z }, aim: { x: c.aim.x * side, y: c.aim.y, z: c.aim.z }, fov: c.fov * wide, roll: c.roll * rs }
 }
+// NO CUTS (lanmower: sudden camera changes break the effect). At a drop the old scene's flight carries on and
+// eases into the new scene's over GLIDE seconds, so the new element arrives first and the view follows it in.
+const GLIDE = 6
+const ss = (x) => { x = Math.min(1, Math.max(0, x)); return x * x * x * (x * (x * 6 - 15) + 10) }
+function poseIn(t, g, gi, deal, seed) {
+  const c = cameraRaw(g ? g.src + (t - g.a) * g.rate : sceneTime(t, deal))
+  return seed ? shotMove(c, t, deal, seed, gi) : c
+}
+function mixPose(p, q, e) {
+  const l = (a, b) => a + (b - a) * e, v = (a, b) => ({ x: l(a.x, b.x), y: l(a.y, b.y), z: l(a.z, b.z) })
+  return { eye: v(p.eye, q.eye), aim: v(p.aim, q.aim), fov: l(p.fov, q.fov), roll: l(p.roll, q.roll) }
+}
+function glideIn(t, deal, seed) {
+  const gi = deal.findIndex((g) => t >= g.a && t < g.b)
+  const now = poseIn(t, deal[gi], gi, deal, seed)
+  if (gi <= 0 || t - deal[gi].a >= GLIDE) return now
+  const was = poseIn(t, deal[gi - 1], gi - 1, deal, seed)
+  return mixPose(was, now, ss((t - deal[gi].a) / GLIDE))
+}
 // THE SHOT DECK: each drop stretch flies one of five moves over its scene's written path, dealt by the roll:
 // 0 as written, 1 a slow orbit round what it looks at, 2 a push in, 3 a pull out, 4 low and looking up.
 // The move eases in from nothing at the stretch's start, so the cut on the drop still lands on the written frame.
-function shotMove(c, t, deal, seed) {
-  const gi = deal.findIndex((g) => t >= g.a && t < g.b)
+function shotMove(c, t, deal, seed, gi = deal.findIndex((g) => t >= g.a && t < g.b)) {
   if (gi < 0) return c
-  const g = deal[gi], u = (t - g.a) / (g.b - g.a), e = u * u * (3 - 2 * u)
+  const g = deal[gi], u = Math.min(1, (t - g.a) / (g.b - g.a)), e = u * u * (3 - 2 * u)
   // inside the tunnel, the pupil and the chamber the eye must stay on the axis: only push, pull or as written
   const inside = g.name === 'flight' || g.name === 'deep' || g.name === 'hex'
   const kind = inside ? [0, 2, 3][Math.floor(rollRnd(seed, 30 + gi) * 3)] : Math.floor(rollRnd(seed, 30 + gi) * 5)
@@ -75,7 +92,11 @@ function cameraRaw(t) {
   const b = k[i], c = k[i + 1]
   const a = i > 0 && !b.cut ? k[i - 1] : b
   const d = i + 2 < k.length && !k[i + 2].cut ? k[i + 2] : c
-  if (c.cut) return { eye: { x: b.eye[0], y: b.eye[1], z: b.eye[2] }, aim: { x: b.aim[0], y: b.aim[1], z: b.aim[2] }, fov: b.fov, roll: b.roll ?? 0 }
+  if (c.cut) {
+    const P = (k) => ({ eye: { x: k.eye[0], y: k.eye[1], z: k.eye[2] }, aim: { x: k.aim[0], y: k.aim[1], z: k.aim[2] }, fov: k.fov, roll: k.roll ?? 0 })
+    const dur = c.t - b.t
+    return mixPose(P(b), P(c), ss((u * dur - (dur - GLIDE)) / GLIDE))
+  }
   const e = b.ease === 'linear' ? u : u * u * (3 - 2 * u)
   const pt = (f) => ({ x: cr(a[f][0], b[f][0], c[f][0], d[f][0], e), y: cr(a[f][1], b[f][1], c[f][1], d[f][1], e), z: cr(a[f][2], b[f][2], c[f][2], d[f][2], e) })
   return { eye: pt('eye'), aim: pt('aim'), fov: b.fov + (c.fov - b.fov) * e, roll: (b.roll ?? 0) + ((c.roll ?? 0) - (b.roll ?? 0)) * e }
