@@ -11,13 +11,22 @@ import { TAU, fam, sweep, relight, gate, breathScale } from "./eye-lib.js";
 export function material(ctx) {
   const c = tripClock(ctx);
   const F = fam(c);
+  const rot = c.phrase.mul(c.dir).mul(mix(0.7, 1.3, c.rnd(21))); // this roll's turning sense and crawl speed
+  const is = (v, i) => step(v.sub(i).abs(), 0.5);
+  const nDot = c.pick(22, 3).mul(8).add(32);      // inner target row: 32 / 40 / 48
+  const nDot2 = c.pick(23, 3).mul(6).add(30);     // outer target row: 30 / 36 / 42
+  const nFib = c.pick(24, 3).mul(12).add(48);     // fibres: 48 / 60 / 72
+  const nTooth = c.pick(25, 3).mul(6).add(12);    // outer teeth: 12 / 18 / 24
+  const nCell = c.pick(26, 3).mul(12).add(24);    // split band cells: 24 / 36 / 48
+  const vMath = c.pick(27, 3);                    // section-maths numbers
+  const vCut = c.pick(28, 3);                     // which self-cutout
   const p = positionGeometry.xy;
   const r = length(p);
   const an = atan2(p.y, p.x).div(TAU); // turns, -0.5..0.5
   const aa = fwidth(r).mul(1.3).max(0.004);
   const band = (lo, hi) => smoothstep(float(lo).sub(aa), lo, r).mul(float(1).sub(smoothstep(float(hi).sub(aa), hi, r)));
   const dots = (rc, n, rot, rad) => {
-    const q = an.add(rot).mul(n).fract().sub(0.5).mul((TAU * rc) / n);
+    const q = an.add(rot).mul(n).fract().sub(0.5).mul(float(TAU * rc).div(n));
     const d = q.mul(q).add(r.sub(rc).mul(r.sub(rc))).sqrt();
     return float(1).sub(smoothstep(float(rad).sub(aa), rad, d));
   };
@@ -28,7 +37,7 @@ export function material(ctx) {
   const k = 5 / 3.0;
   const ph = r.sub(5.3).mul(k).add(c.bar.mul(0.5));
   const f = ph.fract();
-  const duty = float(0.5).add(c.phrase.mul(TAU).add(r.mul(0.9)).sin().mul(0.2));
+  const duty = float(0.5).add(rot.mul(TAU).add(r.mul(0.9)).sin().mul(0.2));
   const w = aa.mul(k);
   const ringM = smoothstep(0, w, f).mul(float(1).sub(smoothstep(duty.sub(w), duty, f)));
   const odd = ph.floor().mul(0.5).fract().mul(2);
@@ -36,61 +45,61 @@ export function material(ctx) {
   col = mix(col, white.mul(1.1), band(4.9, 5.3));
   // THE SECTION'S MATHS (score.yml maths), drawn in the ring zone and again in the fibre band while the Eye leads:
   // seed: Apollonian gasket by iterated circle inversion, 3 levels: q -> fold to the unit cell, q -> q * k/|q|^2
-  let q = p.div(5), sc = float(1);
+  let q = p.div(vMath.mul(0.8).add(4.2)), sc = float(1);
   for (let i = 0; i < 3; i++) {
     q = q.mul(0.5).add(0.5).fract().mul(2).sub(1);
-    const kk = float(1.2).div(q.dot(q).max(0.02));
+    const kk = vMath.mul(0.14).add(1.08).div(q.dot(q).max(0.02));
     q = q.mul(kk); sc = sc.mul(kk);
   }
   const gv = q.y.abs().min(q.length().sub(1).abs()).div(sc);
   const mSeed = smoothstep(0.022, 0.012, gv);
   // pulse: two ring sources 5 m apart (1/3 of the eye), mirrored about x = 0; each a hard wavefront train
   // sin(2pi d/0.7 - 2pi bar); the picture is their XOR: moire hyperbolae where the two trains cross
-  const wave = (sx) => smoothstep(-0.12, 0.12, p.sub(vec2(sx, 0)).length().mul(TAU / 0.7).sub(c.bar.mul(TAU)).sin());
-  const mPulse = wave(2.5).sub(wave(-2.5)).abs();
+  const wave = (sx) => smoothstep(-0.12, 0.12, p.sub(vec2(sx, 0)).length().mul(float(TAU).div(vMath.mul(0.18).add(0.55))).sub(c.bar.mul(TAU)).sin());
+  const mPulse = wave(vMath.mul(0.8).add(1.7)).sub(wave(vMath.mul(-0.8).sub(1.7))).abs();
   // return: the picture through ONE circle, r' = R^2 / r, the circle shrinking from the dot row to the pupil rim:
   // a polar checker of the inverted radius, so the whole lattice falls back into the point it began as
   const Rinv = mix(8.5, 5.0, smoothstep(180.35, 192, c.sec));
   const ri = Rinv.mul(Rinv).div(r).mul(1.5);
-  const mRet = step(ri.fract(), 0.5).mul(step(an.mul(24).add(ri.floor().mul(0.5)).fract(), 0.5));
+  const mRet = step(ri.fract(), 0.5).mul(step(an.mul(vMath.mul(8).add(16)).add(ri.floor().mul(0.5)).fract(), 0.5));
   const wSeed = win(c.sec, SEC.seed, 0.1), wPulse = win(c.sec, SEC.pulse, 0.1), wRet = win(c.sec, SEC.return, 0.1);
   const leadW = wSeed.add(wPulse).add(wRet).min(1);
   const leadM = mSeed.mul(wSeed).add(mPulse.mul(wPulse)).add(mRet.mul(wRet)).min(1);
   col = mix(col, mix(col, mix(F.A.mul(0.08), mix(F.A, F.B, step(0, p.x.abs().sub(r.mul(0.6)))), leadM), leadW), band(5.3, 8.3));
   // every dot is a little target: outer colour, black ring, contrasting centre
   const target = (base, rc, n, rot, rad, outer, inner) => {
-    const q = an.add(rot).mul(n).fract().sub(0.5).mul((TAU * rc) / n);
+    const q = an.add(rot).mul(n).fract().sub(0.5).mul(float(TAU * rc).div(n));
     const d = q.mul(q).add(r.sub(rc).mul(r.sub(rc))).sqrt().div(rad);
     const e = aa.div(rad);
     let o = mix(base, outer, float(1).sub(smoothstep(float(1).sub(e), 1, d)));
     o = mix(o, black, float(1).sub(smoothstep(float(0.68).sub(e), 0.68, d)));
     return mix(o, inner, float(1).sub(smoothstep(float(0.42).sub(e), 0.42, d)));
   };
-  col = target(col, 8.66, 40, c.phrase.mul(0.25), 0.3, white, F.at(0.1));
+  col = target(col, 8.66, nDot, rot.mul(0.25), 0.3, white, F.at(0.1));
   // split band, cells crawling against the white row
-  const cell = an.sub(c.phrase.mul(0.125)).mul(36).fract();
+  const cell = an.sub(rot.mul(0.125)).mul(nCell).fract();
   const cellM = smoothstep(0.03, 0.06, cell).mul(smoothstep(0.5, 0.47, cell));
   const cellV = smoothstep(0.53, 0.56, cell).mul(smoothstep(1.0, 0.97, cell));
   col = mix(col, F.at(0.2).mul(cellM).add(F.B.mul(0.6).mul(cellV)), band(9.06, 9.94));
   col = mix(col, black, band(9.44, 9.56));
-  col = target(col, 10.4, 36, c.phrase.mul(1 / 6), 0.36, F.at(0.3).mul(0.9).add(F.B.mul(0.1)), F.hot(0.1));
+  col = target(col, 10.4, nDot2, rot.mul(1 / 6), 0.36, F.at(0.3).mul(0.9).add(F.B.mul(0.1)), F.hot(0.1));
   // iris fibres: hard b/w, twisting back and forth every 2 phrases, crawling
-  const twist = r.sub(10.85).mul(0.014).mul(c.phrase.mul(TAU / 2).sin());
-  const ff = an.add(twist).sub(c.phrase.mul(0.125)).mul(60).fract();
+  const twist = r.sub(10.85).mul(0.014).mul(rot.mul(TAU / 2).sin());
+  const ff = an.add(twist).sub(rot.mul(0.125)).mul(nFib).fract();
   const fib = smoothstep(0.44, 0.5, ff).mul(smoothstep(1.0, 0.94, ff));
   col = mix(col, white.mul(0.95).mul(mix(fib, leadM, leadW)), band(10.9, 12.75));
   // white triangle teeth on black, pointing inward, against the fibres
-  const wf = an.add(c.phrase.mul(0.125)).mul(48).fract().sub(0.5).abs().mul(2);
+  const wf = an.add(rot.mul(0.125)).mul(48).fract().sub(0.5).abs().mul(2);
   const wh = float(13.55).sub(r).div(0.65);
   col = mix(col, white.mul(smoothstep(0.0, 0.06, float(1).sub(wf).sub(wh))), band(12.9, 13.56));
   // rim line (the green rim of picture 1 in the blue family)
   col = mix(col, F.hot(0.15), band(13.7, 13.97));
   // outer teeth with a dot each, against the white teeth
-  const tf = an.sub(c.phrase.mul(1 / 6)).mul(18).fract().sub(0.5).abs().mul(2);
+  const tf = an.sub(rot.mul(1 / 6)).mul(nTooth).fract().sub(0.5).abs().mul(2);
   const th = r.sub(14.15).div(0.85);
   const tooth = smoothstep(0.0, 0.05, float(1).sub(tf).sub(th));
   col = mix(col, mix(F.acc2, F.hot(0.3), tooth), band(14.15, 15.01));
-  col = mix(col, white, dots(14.42, 18, c.phrase.mul(-1 / 6), 0.17));
+  col = mix(col, white, dots(14.42, nTooth, rot.mul(-1 / 6), 0.17));
 
   // the light: the heart is always lit once the eye is open; outside it the mirrored hand and the kick ring
   const rk = c.beat.fract().mul(10).add(5);
@@ -109,7 +118,13 @@ export function material(ctx) {
   // layer score cutout (wipes out from the pupil) + self-cutout: every 4th 0.4 m ring of the blue zone is a real
   // hole showing the tunnel/rays behind; the holes step one ring inward per bar.
   const hk = r.sub(5.4).div(0.4).floor();
-  const hole = step(5.4, r).mul(step(r, 9.0)).mul(step(hk.add(c.bar.floor()).mod(4), 0.5)).mul(step(12.35, c.sec));
+  const bf = c.bar.floor();
+  const cutRing = step(hk.add(bf).mod(4), 0.5);                                            // 0: every 4th ring, stepping inward
+  const sect = atan2(p.y, p.x.abs()).div(TAU).add(0.25).mul(24).floor();                   // mirrored sectors
+  const cutWedge = step(sect.add(bf).mod(4), 0.5);                                         // 1: every 4th wedge, clicking round
+  const cutCheck = step(hk.add(sect).add(bf).mod(2), 0.5).mul(step(hk.mod(3), 0.5));       // 2: checker on every 3rd ring
+  const cut = cutRing.mul(is(vCut, 0)).add(cutWedge.mul(is(vCut, 1))).add(cutCheck.mul(is(vCut, 2)));
+  const hole = step(5.4, r).mul(step(r, 9.0)).mul(cut).mul(step(12.35, c.sec));
   m.opacityNode = shown(c, "eye", r.div(15)).mul(float(1).sub(hole));
   m.alphaTest = 0.5;
   return m;

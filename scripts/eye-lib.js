@@ -33,14 +33,14 @@ export const barStep = (c) => c.bar.floor().add(smoothstep(0, 0.3, c.bar.fract()
 // the light as a clock hand, mirrored left-right, clicking round on the bars (bottom to top in 16 bars)
 export function sweep(c, x, y) {
   const am = atan2(y, x.abs()).div(TAU).add(0.25).mul(2);
-  const d = am.sub(barStep(c).div(16)).add(0.5).fract().sub(0.5).abs();
+  const d = am.sub(barStep(c).mul(c.dir).div(16)).add(0.5).fract().sub(0.5).abs();
   return smoothstep(0.24, 0.18, d);
 }
 // one hue family at a time, swapped on the phrase line: A and its neighbour B, one accent. seed/deep/reset/return
 // are one colour only; peak opens the rainbow (at(off) spreads by off only there).
 export function fam(c) {
   const q = c.phrase.floor().add(8).mod(4);
-  const h = float(0.3).sub(step(1, q).mul(0.08)).add(step(2, q).mul(0.14)).sub(step(3, q).mul(0.22));
+  const h = float(0.3).sub(step(1, q).mul(0.08)).add(step(2, q).mul(0.14)).sub(step(3, q).mul(0.22)).add(c.hue).add(c.pick(20, 3).div(3));
   const peak = win(c.sec, SEC.peak);
   const mono = win(c.sec, SEC.seed, 0.1).add(win(c.sec, SEC.deep, 0.1)).add(win(c.sec, SEC.reset, 0.1)).add(win(c.sec, SEC.return, 0.1)).min(1);
   const lift = vec3(0.02, 0.035, 0.0);

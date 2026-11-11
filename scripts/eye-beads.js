@@ -18,9 +18,9 @@ export function material(ctx) {
   const dir = r2.mul(2).sub(r1.mul(2)).add(1);
   const rate = float(0.25).sub(r1.mul(0.25 + 1 / 6)).add(r2.mul(1 / 6 + 0.125)); // +1/4, -1/6, +1/8 turn a phrase
   const fr = j.div(n);
-  const ang = fr.add(rate.mul(c.phrase)).mul(TAU);
+  const ang = fr.add(rate.mul(c.phrase).mul(c.dir).mul(mix(0.7, 1.3, c.rnd(21)))).mul(TAU);
   const rip = ripple(c, R);
-  const chase = smoothstep(0.36, 0.3, fr.mul(2).sub(dir.mul(barStep(c)).div(8)).fract());
+  const chase = smoothstep(0.36, 0.3, fr.mul(2).sub(dir.mul(c.dir).mul(barStep(c)).div(8)).fract());
   const lit = gate(c, chase.max(rip.mul(0.8)), F.peak);
   const bs = breathScale(c.sec);
   const size = ring.mul(0.06).add(0.34).mul(rip.mul(0.08).add(1)).mul(bs);

@@ -18,7 +18,7 @@ export function material(ctx) {
   const odd = ph.floor().mul(0.5).fract().mul(2);
   let col = mix(F.A, F.B, odd).mul(on).mul(smoothstep(0.5, 4.6, r).mul(0.8).add(0.2));
   // 12 orange targets turning against the iris' white row
-  const an = atan2(p.y, p.x).div(TAU).sub(c.phrase.mul(0.25));
+  const an = atan2(p.y, p.x).div(TAU).sub(c.phrase.mul(0.25).mul(c.dir).mul(mix(0.7, 1.3, c.rnd(21))));
   const q = an.mul(12).fract().sub(0.5).mul((TAU * 3.3) / 12);
   const d = q.mul(q).add(r.sub(3.3).mul(r.sub(3.3))).sqrt().div(float(0.38));
   col = mix(col, F.hot(0.0), float(1).sub(smoothstep(0.94, 1, d)));

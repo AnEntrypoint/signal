@@ -16,7 +16,7 @@ export function material(ctx) {
   const rayK = r.sub(15).mul(o.mul(ripple(c, 20).mul(0.05).add(1))).add(15).div(r);
   const haloK = mix(float(0.5), ripple(c, 27).mul(0.03).add(1), o);
   const k = mix(rayK, haloK, halo).mul(breathScale(c.sec));
-  const th = mix(c.phrase.mul(TAU / 8), c.phrase.mul(-TAU / 6), halo);
+  const th = mix(c.phrase.mul(TAU / 8), c.phrase.mul(-TAU / 6), halo).mul(c.dir).mul(mix(0.7, 1.3, c.rnd(21)));
   const cs = th.cos(), sn = th.sin();
   const X = g.x.mul(cs).sub(g.y.mul(sn)), Y = g.x.mul(sn).add(g.y.mul(cs));
   const lit = varying(gate(c, sweep(c, X, Y).max(ripple(c, r).mul(halo)), F.peak));
