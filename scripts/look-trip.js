@@ -140,7 +140,14 @@ export function look(ctx) {
   const petal = apa.mul(nA).add(kRot.mul(-2)).cos().mul(0.5).add(0.5).mul(0.07);
   const aR = aStep.mul(0.17).add(0.12).add(petal).add(breath.mul(0.015));
   const aWin = smoothstep(aR, aR.sub(0.03), apr);
-  const kmix = aWin.mul(0.95).mul(wAsc).add(pk.mul(wPeak)).clamp(0, 1);
+  // peak's mirror modes change every 12 s phrase. A mode never swaps across the whole frame at once: it closes as an iris
+  // into the centre over the phrase's last bar, so the clean world is back by the change, and the next mode opens out
+  // of the centre over the first bar.
+  const pfr = sec.sub(SEC.peak[0]).div(12).fract();
+  const pOpen = smoothstep(0, 0.125, pfr).mul(smoothstep(1, 0.875, pfr));
+  const pR = pOpen.mul(1.15).add(petal.mul(pOpen));
+  const pWin = smoothstep(pR, pR.sub(0.06), apr);
+  const kmix = aWin.mul(0.95).mul(wAsc).add(pk.mul(pWin).mul(wPeak)).clamp(0, 1);
 
   // chromatic aberration: R and B pushed radially, growing toward the edge
   const ab = float(0.0015).add(c.kick.mul(0.006).mul(on).mul(job(0)));
