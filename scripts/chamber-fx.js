@@ -19,7 +19,7 @@ export const pxEdge = (x, wide = 1) => {
 export const ripple = (c, dist) => {
   const fill = smoothstep(93.3, 93.4, c.sec).mul(step(c.sec, 96.35));
   const kicked = smoothstep(10.8, 10.85, c.sec).mul(float(1).sub(smoothstep(190.85, 190.9, c.sec)));
-  return exp(fract(c.beat.sub(float(dist).div(30))).mul(-5)).mul(kicked).mul(float(1).sub(fill));
+  return exp(fract(c.beat.sub(float(dist).div(30))).mul(-8)).mul(kicked).mul(float(1).sub(fill));
 };
 // The shared breath: one swell per phrase, 0..1.
 export const breath = (c) => sin(c.sec.mul(6.28318 / 12)).mul(0.5).add(0.5);

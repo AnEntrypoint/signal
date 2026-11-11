@@ -42,8 +42,8 @@ export function material(ctx) {
   const sweep = smoothstep(0, 0.02, w).mul(float(1).sub(smoothstep(0.06, 0.2, w)));
   const lit = max(sweep, e.mul(0.8));
   const hue = mix(F.a, F.b, sin(ang.mul(12.566).add(c.sec.mul(0.2)).add(idx)).mul(0.5).add(0.5));
-  const lineC = hue.mul(lines).mul(lit.mul(2.6).add(0.1));
-  const dotC = F.b.mul(hollow).mul(lit.mul(2.2).add(0.1)).add(F.hot.mul(pupil).mul(max(lit, chase).mul(2.6).add(0.12)));
+  const lineC = hue.mul(lines).mul(lit.mul(2.6).add(0.06));
+  const dotC = F.b.mul(hollow).mul(lit.mul(2.2).add(0.06)).add(F.hot.mul(pupil).mul(max(lit, chase).mul(2.6).add(0.12)));
   m.colorNode = mix(lineC, dotC, par).mul(g.mul(0.6));
   m.positionNode = positionLocal.mul(alive(g));
   // cutout: the room opens as an iris on the layer score; inside its window one line slot in four is cut away,

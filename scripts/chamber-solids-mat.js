@@ -10,7 +10,7 @@ export function material(ctx) {
   const m = new MeshBasicNodeMaterial();
   const i = float(instanceIndex), j = i.div(2).floor(), sx = i.mod(2).mul(2).sub(1);
   const pick = (a, b, d) => select(j.lessThan(0.5), float(a), select(j.lessThan(1.5), float(b), float(d)));
-  const cx = sx.mul(j.mul(4).add(13)), cy = pick(5.5, 3.5, 28.5), cz = pick(-8, 2, -12);
+  const cx = sx.mul(j.mul(4).add(13)), cy = pick(-9.5, -11.5, 13.5), cz = pick(-8, 2, -12);
   const row = cz.mul(0.1);
   const e = ripple(c, float(24));
   const a1 = c.sec.mul(6.28318 / 12).add(row), a2 = c.sec.mul(6.28318 / 24).add(row.mul(2));
