@@ -100,7 +100,7 @@ export function material(ctx) {
   const ripple = line(r.sub(c.beat.fract().mul(90)), 0.16).mul(c.kick.pow(0.3)).mul(0.9);
 
   const m = new MeshBasicNodeMaterial();
-  m.colorNode = body.mul(fill(r.sub(R))).add(vec3(1, 1, 1).mul(rim)).add(K.fam.H.mul(ripple)).add(vec3(0.3, 0.4, 1).mul(seed)).mul(endFade(c.sec));
+  m.colorNode = body.mul(fill(r.sub(R))).add(vec3(1, 1, 1).mul(rim)).add(K.fam.H.mul(ripple).mul(fill(r.sub(R)))).add(vec3(0.3, 0.4, 1).mul(seed)).mul(endFade(c.sec));
   m.fog = false;
   return m;
 }
