@@ -10,7 +10,7 @@
 //   win(c.sec, SEC.flight)  -> 0..1 window, 1 inside that section, 1.5 s soft edges (or win(sec,[a,b],fade))
 // A param write is how the roll starts: the director writes params.t0 (seconds on the shader `time` clock)
 // and params.on (1 rolling, 0 idle) to every object tagged "trip", to look.params and to sky.params.
-import { time, float, vec3, smoothstep, audioSpectrum, select } from "builtin/tsl";
+import { time, float, vec2, vec3, smoothstep, audioSpectrum, select, mix } from "builtin/tsl";
 import SCORE from "./data/score.yml";
 
 export { SCORE };
@@ -52,3 +52,36 @@ export const HUE = {
   blue: [0.05, 0.12, 1.0], violet: [0.45, 0.05, 1.0], magenta: [1.0, 0.05, 0.6], red: [1.0, 0.08, 0.05],
   orange: [1.0, 0.38, 0.02], yellow: [1.0, 0.85, 0.05], green: [0.1, 1.0, 0.15], cyan: [0.05, 0.9, 1.0], white: [1, 1, 1],
 };
+
+// THE LAYER SCORE. shown(c, "tunnel", d): 0 or 1 (soft 0.2 s edge), is this layer's surface shown here, now.
+// d = 0..1, this fragment's distance from the composition centre over the layer's own radius (0 at the centre):
+// the show and the hide both travel outward over SCORE.wipe seconds, so a layer opens like an iris and is
+// eaten away the same way. Use it as the material's cutout (m.opacityNode = shown(...); m.alphaTest = 0.5),
+// never as a fade to black: a hidden layer must uncover what stands behind it.
+export function shown(c, name, d = 0) {
+  const lag = float(d).clamp(0, 1).mul(SCORE.wipe);
+  let v = float(0);
+  for (const [a, b] of SCORE.layers[name]) {
+    v = v.add(smoothstep(a, a + 0.2, c.sec.sub(lag)).mul(smoothstep(b + 0.2, b, c.sec.sub(lag))));
+  }
+  return v.clamp(0, 1);
+}
+// A lens number ("bulge" | "swirl" | "fold") at this moment, eased 1.5 s across section lines.
+export function lens(c, key) {
+  let v = float(0);
+  for (const name in SCORE.lens) v = v.add(win(c.sec, SEC[name], 1.5).mul(SCORE.lens[name][key]));
+  return v;
+}
+// THE BENT CAMERA. bendUv(c, uv, aspect): where on the undistorted frame this screen pixel reads from.
+// Bulge breathes with the phrase and kicks 4% on the beat; the swirl twists the centre, not the edge.
+export function bendUv(c, uv, aspect = 1.78) {
+  const breath = c.sec.mul(6.28318 / 12).sin().mul(0.5).add(0.5);
+  const k = lens(c, "bulge").mul(breath.mul(0.4).add(0.8)).add(c.kick.mul(0.04));
+  const p0 = uv.sub(0.5).mul(vec2(aspect, 1));
+  const r = p0.length();
+  const a = lens(c, "swirl").mul(float(1).sub(r.mul(1.3)).clamp(0, 1)).mul(c.sec.mul(6.28318 / 24).sin());
+  const p1 = vec2(p0.x.mul(a.cos()).sub(p0.y.mul(a.sin())), p0.x.mul(a.sin()).add(p0.y.mul(a.cos())));
+  const p2 = p1.div(float(1).add(k.mul(r.mul(r)).mul(1.6)));
+  const px = mix(p2.x, p2.x.abs().negate(), lens(c, "fold").mul(smoothstep(0.0, 0.02, p2.x.abs())));
+  return vec2(px, p2.y).div(vec2(aspect, 1)).add(0.5);
+}

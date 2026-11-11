@@ -24,3 +24,31 @@ layout:
   eye:     { centre: [0, 15, -34], radius: 15 }        # upright, faces +Z; pupil hole radius 5 is the tunnel mouth
   tunnel:  { from: [0, 15, -36], to: [0, 15, -336], radius: 6 }   # straight along -Z, 300 m
   chamber: { centre: [0, 15, -362], radius: 24 }       # hexagonal room at the tunnel's end, floor y = 3
+# The layer score: when each layer is SHOWN, [from, to] seconds. Outside its windows a layer is cut away
+# (discarded, so what is behind it shows). Each show and hide is a wipe travelling out from the composition
+# centre over `wipe` seconds, so a layer uncovers the next instead of everything standing at once.
+wipe: 3
+layers:
+  eye:      [[3.35, 57.35], [108.35, 195]]      # lids open at 3.35; cut away as we pass the pupil; back for ascent
+  rays:     [[12.35, 36.35], [132.35, 180.35]]  # the lash/ray crown: pulse, gone while the field grows, back at peak
+  field:    [[24.35, 51.35], [96.35, 189.35]]   # the ground mandala: bloom; alone in reset; under everything after
+  stalks:   [[30.35, 51.35], [114.35, 180.35]]
+  orbs:     [[36.35, 48.35], [144.35, 180.35]]
+  serpents: [[42.35, 57.35], [120.35, 180.35]]
+  sky:      [[108.35, 186.35]]                  # the sun-eye only exists from ascent
+  tunnel:   [[51.35, 87.35]]
+  chamber:  [[81.35, 97.35]]
+  hands:    [[87.35, 97.35]]                    # reach in on the fill, last thing before the cut
+# The lens, by section: bulge (barrel, + bulges toward us, - pinches), swirl (radians of twist at the centre,
+# falling to 0 at the edge), fold (0..1: mirror the left half onto the right, the peak's symmetry).
+lens:
+  seed:   { bulge: 0.0,  swirl: 0.0,  fold: 0 }
+  pulse:  { bulge: 0.12, swirl: 0.0,  fold: 0 }
+  bloom:  { bulge: 0.2,  swirl: 0.15, fold: 0 }
+  deep:   { bulge: -0.35, swirl: 0.5, fold: 0 }
+  flight: { bulge: 0.45, swirl: 0.3,  fold: 0 }
+  hex:    { bulge: 0.1,  swirl: 0.0,  fold: 1 }
+  reset:  { bulge: 0.0,  swirl: -0.25, fold: 0 }
+  ascent: { bulge: 0.25, swirl: 0.2,  fold: 1 }
+  peak:   { bulge: 0.4,  swirl: 0.35, fold: 1 }
+  return: { bulge: -0.2, swirl: 0.0,  fold: 0 }

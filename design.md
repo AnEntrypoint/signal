@@ -35,3 +35,4 @@ seed (void, the Eye's lid opens) → pulse (iris rings fire on the kick) → blo
 - 2026-11-11: rebuilt as the acid-mandala trip on the creator's track; the old 24 s neon ring stage and its 120 bpm placeholder retired (creator's lock-in plan).
 
 - 2026-11-11: creator: "not everything is fast, not everything is normal visuals". Old rule: everything counter-rotating and flashing on the beat. New rule: the How it moves list above; camera re-cut to holds and creeps.
+- 2026-11-11: creator: "camera bending is important, different layers exposing and hiding others to compose, not just everything showing at once". New: score.yml `layers` (when each layer is cut in and out, by iris wipe) and `lens` (bulge, swirl, mirror fold per section); trip.js shown() and bendUv(). Windows and lens numbers are my pick.
