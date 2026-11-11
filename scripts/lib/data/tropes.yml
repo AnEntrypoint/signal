@@ -48,6 +48,20 @@ tas:
   soft-mask-reveal:    { owner: all,      what: "a soft-edged shape wipes one layer away to expose the one behind (his Soft Mask)" }
   title-in-linework:   { owner: none,     what: "the artist's name in outlined type among the glyphs; NOT built until the creator asks for words" }
   depth-parallax:      { owner: all,      what: "the same motif at three depths moving at three speeds, far ones dimmer and blurred" }
+  # --- from the creator's second set of references (aesthetic.yml rows)
+  mask-totem:          { owner: chamber,  what: "a bilateral neon line-art animal mask (cat/owl): two target eyes, nose shield, whisker fans, feather ears; strokes draw on and colour drifts along them" }
+  sparkle-stars:       { owner: look,     what: "small 4-point sparkle stars and diamonds scattered in the black, twinkling on the off-beat" }
+  glyph-cartouches:    { owner: field,    what: "pill-shaped and square cartouches holding a single glyph (eye, cross, chevron) floating around the main form" }
+  aztec-steps:         { owner: field,    what: "stepped-cross and stepped-pyramid glyphs in blue/teal, tiled across the ground" }
+  chain-serpent:       { owner: serpents, what: "a serpent drawn as a chain of linked rounded segments or a ladder of rungs, white on black" }
+  flame-teardrops:     { owner: sun,      what: "teardrops that are flames: white-hot head, yellow-orange-red tail, falling in diagonals" }
+  beaded-tentacles:    { owner: serpents, what: "two vertical tentacle pillars of overlapping green ring-beads mirrored either side, swaying in antiphase" }
+  knot-flower:         { owner: eye,      what: "a line-art flower of looping petals tied in a knot, sixfold, slowly turning, in the centre between the pillars" }
+  bead-mask:           { owner: chamber,  what: "a face built entirely of beads and feather fans inside a dark dome" }
+  orb-domes:           { owner: tunnel,   what: "corridor walls made of bulging domes of orange-red orbs, each orb shaded with a hot centre, receding symmetric" }
+  serpent-teeth:       { owner: tunnel,   what: "a row of white triangle teeth along the tunnel floor, as if the tunnel is a mouth" }
+  kaleido-machine:     { owner: chamber,  what: "mirrored white line-art machinery with coloured cells, a structure, not a pattern" }
+  cell-lattice:        { owner: look,     what: "the frame mirrored into a lattice of beaded cells behind everything (the logo frame's background)" }
 ours:
   phyllotaxis-chase:   { owner: field,    what: "sunflower bead field whose 13 / 21 / 34 spiral families light in turn, so the spiral seems to reverse" }
   apollonian-eye:      { owner: eye,      what: "the pupil filled with a circle-inversion gasket, each circle a smaller eye" }
