@@ -1,0 +1,67 @@
+# The trope catalogue. `tas`: what recurs in TAS Visuals' films and Resolume effects (read off timed stills of
+# Radial, A Colorful Deep Dive, Mandala Meditation, Bloom of Serenity, Sun Salutation, Origin Bliss, The Lost
+# Diamond, Cielo Aya, and his effects Hyperspace, Torus, Pulse, Color Drift, Mirror, Turbulent, Slice Color,
+# Soft Mask, Motion Key), plus the creator's three pictures. `ours`: built on them, not his.
+# owner = the piece that draws it. Each piece builds EVERY trope it owns as a switchable variant and shows
+# 2-3 at a time per section, chosen by the roll's seed (trip.js c.pick), so the deck is dealt differently each roll.
+tas:
+  # --- structure
+  bead-mandala:        { owner: field,    what: "concentric rows of raised beads, each row a different bead shape (sphere, cube, chevron, drop)" }
+  light-sweep:         { owner: all,      what: "the structure rests graphite; a lit window sweeps through it like a clock hand or a radial wavefront" }
+  target-dots:         { owner: eye,      what: "dots that are themselves 3-ring targets (pupil, iris, rim), in rows" }
+  nested-eye:          { owner: eye,      what: "almond lids round concentric iris rings round a black pupil; the pupil is a doorway" }
+  triangle-teeth:      { owner: eye,      what: "rows of small white triangles ringing a form, pointing in, alternating out" }
+  lash-crown:          { owner: eye,      what: "radial spikes tipped with beads fanning from a rim, alternating two lengths" }
+  totem-stack:         { owner: serpents, what: "a vertical central column of stacked glyph plates (chevrons, squares, dots), mirrored, like a totem or spine" }
+  feather-fans:        { owner: serpents, what: "arcs of tapered quills spreading from a spine, each quill striped" }
+  bead-stalks:         { owner: field,    what: "thin stalks topped with a bead or teardrop, in ranks, swaying together" }
+  floating-orbs:       { owner: field,    what: "large flat-shaded orbs with one rim highlight hovering over the field, few and big" }
+  teardrop-rain:       { owner: sun,      what: "long teardrops hanging and stretching from a rim; drips lengthen on the bar" }
+  sun-eye:             { owner: sun,      what: "a blazing disc that is also an eye, crowned with flame points" }
+  striped-serpent:     { owner: serpents, what: "thick tubes in hard black/white or two-tone stripes, tapering, coiling slowly" }
+  diamond-scales:      { owner: serpents, what: "a diamond lattice skin with a dot or ring in each diamond" }
+  twin-guardians:      { owner: serpents, what: "two mirrored creature forms flanking a central emblem (Origin Bliss's green pair)" }
+  ribbon-knot:         { owner: tunnel,   what: "one fat striped ribbon tied in a trefoil / torus knot, turning slowly in the void (Sun Salutation)" }
+  hourglass-throat:    { owner: tunnel,   what: "the tunnel pinched to a wormhole throat, pattern stretching to streaks at the waist (his Torus effect)" }
+  hyperspace-streaks:  { owner: tunnel,   what: "radial dashes flying outward in concentric shells, two or three flat colours (his Hyperspace effect)" }
+  radial-gates:        { owner: tunnel,   what: "flat patterned discs with a hole, spaced down the axis, each turned against the last" }
+  hex-nest:            { owner: chamber,  what: "nested hexagons in neon line, each scaled and turned from the last" }
+  branching-circuit:   { owner: chamber,  what: "Y-branching line glyphs growing from a hexagon's corners in sixfold symmetry (Mandala Meditation)" }
+  reaching-hands:      { owner: chamber,  what: "two outlined hands reaching in from left and right, contour-lined like a topographic map" }
+  wire-solids:         { owner: chamber,  what: "wireframe platonic solids parked in the corners, turning slowly" }
+  op-art-field:        { owner: field,    what: "warped black/white stripe fields that bulge like cloth; checker that bends into a sphere" }
+  moire:               { owner: field,    what: "two fine line sets crossing at a small angle so slow fringes crawl" }
+  # --- colour and light
+  hue-family-swap:     { owner: all,      what: "one structure, one hue family at a time; the whole frame swaps on the phrase" }
+  color-drift:         { owner: chamber,  what: "line-art whose hue slides along each stroke; strokes draw themselves on (his Color Drift effect)" }
+  slice-color:         { owner: look,     what: "the frame cut into slices or shapes, each recoloured from the picture's own average (his Slice Color)" }
+  graphite-and-gold:   { owner: all,      what: "a near-black embossed version with only gold chevrons lit (Radial's rest state)" }
+  bokeh-dust:          { owner: look,     what: "big soft out-of-focus colour discs and 4-point star glints drifting in front" }
+  godrays:             { owner: look,     what: "radial light streaks from the centre behind the figure" }
+  # --- camera and space
+  mirror-fold:         { owner: look,     what: "left-right mirror; also 4-way and kaleidoscope wedges (his Mirror effect)" }
+  pulse-ripple:        { owner: look,     what: "a refracting ring travelling out from the centre on each beat, bending what it passes (his Pulse effect)" }
+  fluid-turbulence:    { owner: look,     what: "FBM flow warping the frame like oil, slow, in breakdowns only (his Turbulent effect)" }
+  hyperbolic-disc:     { owner: look,     what: "Poincare-disc crush: the centre holds, the rim compresses toward infinity" }
+  droste-zoom:         { owner: look,     what: "the picture recursing into itself, endless zoom" }
+  fisheye-dome:        { owner: look,     what: "full-dome barrel bulge, the world wrapped on a sphere (his Ultrawide / dome work)" }
+  soft-mask-reveal:    { owner: all,      what: "a soft-edged shape wipes one layer away to expose the one behind (his Soft Mask)" }
+  title-in-linework:   { owner: none,     what: "the artist's name in outlined type among the glyphs; NOT built until the creator asks for words" }
+  depth-parallax:      { owner: all,      what: "the same motif at three depths moving at three speeds, far ones dimmer and blurred" }
+ours:
+  phyllotaxis-chase:   { owner: field,    what: "sunflower bead field whose 13 / 21 / 34 spiral families light in turn, so the spiral seems to reverse" }
+  apollonian-eye:      { owner: eye,      what: "the pupil filled with a circle-inversion gasket, each circle a smaller eye" }
+  rose-lash:           { owner: eye,      what: "the lash crown's lengths follow a rose curve r = cos(k theta), k stepping on the bar" }
+  knot-serpent:        { owner: serpents, what: "a serpent whose body is a (p,q) torus knot, p and q from the seed" }
+  heptagon-floor:      { owner: field,    what: "the {7,3} hyperbolic tiling as the field's floor in reset, drifting by Mobius slide" }
+  truchet-skin:        { owner: tunnel,   what: "Truchet quarter-arcs on the tunnel wall forming endless mazes that re-tile on the bar" }
+  lissajous-hands:     { owner: chamber,  what: "the hands trace Lissajous figures between them in drawn-on line, ratio from the seed" }
+  d6-bloom:            { owner: chamber,  what: "the hex nest unfolding through its six mirrors one at a time, a fold per bar" }
+  drip-clock:          { owner: sun,      what: "nine drips as a clock: the lit drip steps round once per phrase" }
+  interference-iris:   { owner: eye,      what: "two ring sources offset by a third of the iris so the rings beat into moire petals" }
+  inversion-return:    { owner: look,     what: "the whole frame mapped through one circle, turning the world inside out for the return" }
+  kick-echo:           { owner: look,     what: "feedback trail: each kick leaves a shrinking, hue-shifted ghost of the frame toward the centre" }
+  layer-keyhole:       { owner: all,      what: "a layer shown only through the holes of the one in front (dots of one are windows onto the next)" }
+  counter-breath:      { owner: all,      what: "neighbouring rings breathe in antiphase so the surface seems to roll like a wave" }
+  seed-sigil:          { owner: sun,      what: "a small sigil drawn from the roll's seed (a k-pointed star polygon {n/m}) at the heart of the sun-eye: the roll's signature" }
+  symmetry-order:      { owner: all,      what: "the roll's symmetry order 6, 8 or 12 (c.pick(8, 3)) used by every radial piece at once" }
