@@ -91,7 +91,7 @@ export function material(ctx) {
     const cell = yy.div(gap).floor();
     const dy = yy.sub(cell.add(0.5).mul(gap));
     const dx = ax.sub(sx).sub(sway);
-    const rad = float(0.75).sub(strand.mul(0.15));
+    const rad = float(0.42).sub(strand.mul(0.08));
     const d = dx.mul(dx).add(dy.mul(dy)).sqrt();
     // bokeh: a soft disc with a brighter rim, so it reads as out of focus
     const disc = float(1).sub(smoothstep(rad.mul(0.7), rad, d));
@@ -99,7 +99,7 @@ export function material(ctx) {
     const inX = step(12, ax).mul(step(ax, 18)).mul(step(p.y.abs(), 17));
     const k = float(1).sub(p.y.add(17).div(34)).clamp(0, 1);    // top to bottom
     const lit = maskBeads(smoothstep(0.15, 0.55, u).mul(ex), k.add(strand.mul(0.1)));
-    const glow = float(0.18).add(rim.mul(0.35)).add(kickLight.mul(0.4)).add(peak.mul(0.25));
+    const glow = float(0.05).add(rim.mul(0.25)).add(kickLight.mul(0.3)).add(peak.mul(0.15));
     col = mix(body, mid, step(1.5, strand)).mul(glow).mul(disc);
     cover = disc.mul(inX).mul(lit).mul(visionShown(ctx, c, r.div(20)));
   } else {
