@@ -64,7 +64,9 @@ export function material(ctx) {
     const grow = sm(0.25, 0.47).mul(out(0.955, 0.992)).mul(215);
     const scal = t.div(7).mul(3.14159).sin().abs().mul(3.2);
     const edge = s.add(scal).sub(grow);
-    paint(K, step(edge, 0));
+    // the doorway's dark never shows the canvas's rectangle: it thins through the dither toward the edges
+    const rim = float(1).sub(smoothstep(0.45, 0.9, p.x.abs().div(160).max(p.y.abs().div(90))));
+    paint(K, step(edge, 0).mul(dith(rim)));
     paint(mix(C, W, 0.5), ln(edge.add(0.25), 0.22).mul(step(0.5, grow)).mul(step(grow, 214)));
     const inside = step(edge, -0.6);
     const sky = step(GY, p.y);
