@@ -38,7 +38,8 @@ const sign = (r) => step(0.5, r).mul(2).sub(1);
 export function material(ctx) {
   const layer = ctx.params.layer ?? "being";
   const c = tripClock(ctx);
-  const u = visionU(ctx, c);
+  const uh = ctx.param("hold", -1);                                     // bench: a held u (>= 0), else the slot's
+  const u = select(uh.greaterThanEqual(0), uh, visionU(ctx, c));
   const io = (a, b, x, y) => smoothstep(a, b, u).mul(inv(smoothstep(x, y, u)));
   const rn = (n) => c.rnd(280 + n), pk = (n, k) => c.pick(280 + n, k);
   const sense = (n) => sign(rn(n));
@@ -109,8 +110,8 @@ export function material(ctx) {
     const hb = step(e.x.sub(xc).abs(), inv(s.mul(0.4)).mul(0.55)).mul(step(0.4, e.y)).mul(step(e.y, L.add(0.4))).mul(step(0.02, ph));
     const hh = inv(smoothstep(0.75, 0.75 + 0.1, vec2(e.x.sub(xc.mul(step(0.99, s)).add(inv(step(0.99, s)).mul(s.mul(TAU * 1.4).sub(c.real.mul(5)).add(idx.mul(1.7)).sin().mul(1.7)))), e.y.sub(L).sub(0.4)).length())).mul(step(0.02, ph));
     const eggZone = inEgg.max(hb).max(hh);
-    col = col.add(mix(A, W, crest.mul(0.4)).mul(scl).mul(float(0.16).add(crest.mul(0.45)).add(kl.mul(0.6))).mul(outside).mul(inv(eggZone)));
-    col = col.add(mix(B, C, row.mod(2)).mul(bead).mul(float(0.25).add(crest.mul(0.6)).add(kl.mul(0.5))).mul(outside).mul(inv(eggZone)));
+    col = col.add(mix(A, W, crest.mul(0.4)).mul(scl).mul(float(0.08).add(crest.mul(0.3)).add(kl.mul(0.5))).mul(outside).mul(inv(eggZone)));
+    col = col.add(mix(B, C, row.mod(2)).mul(bead).mul(float(0.2).add(crest.mul(0.5)).add(kl.mul(0.5))).mul(outside).mul(inv(eggZone)));
     col = col.add(B.mul(shell).mul(0.9)).add(W.mul(band)).add(W.mul(crack).mul(1.2));
     col = mix(col, mix(B, W, stripes(s.mul(L), 1.2, 0.05).mul(0.6)).mul(0.9), hb.max(hh));
     // -- inside the ring: day half and night half, the sun and the moon on one orbit

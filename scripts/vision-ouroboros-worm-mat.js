@@ -7,13 +7,13 @@
 // op-art stripes to diamond scales or bead rows (ch 289) climbing the body at .74, one goes black with a thin rim at
 // the culmination (ch 290), all retract tip-first on the exit (.93-.955). Ch 280 hue, 285 sense, 298 sweep, 299 hot.
 import { MeshBasicNodeMaterial, DoubleSide } from "builtin/three";
-import { positionGeometry, float, vec2, vec3, smoothstep, step, mix, atan2 } from "builtin/tsl";
+import { positionGeometry, float, vec2, vec3, smoothstep, step, mix, atan2, select } from "builtin/tsl";
 import { tripClock, visionShown, visionU, stripes } from "./lib/trip.js";
 
 const TAU = 6.28318, LEN = 120;
 export function material(ctx) {
   const n = Math.max(1, Math.round(ctx.params.n ?? 1)), sg = n % 2 ? 1 : -1, pair = n > 2 ? 1 : 0;
-  const c = tripClock(ctx), u = visionU(ctx, c), live = visionShown(ctx, c, 0);
+  const c = tripClock(ctx), uh = ctx.param("hold", -1), u = select(uh.greaterThanEqual(0), uh, visionU(ctx, c)), live = visionShown(ctx, c, 0);
   const inv = (x) => float(1).sub(x), is = (v, i) => step(v.sub(i).abs(), 0.5);
   const io = (a, b, x, y) => smoothstep(a, b, u).mul(inv(smoothstep(x, y, u)));
   const rn = (k) => c.rnd(280 + k), pk = (k, m) => c.pick(280 + k, m);
