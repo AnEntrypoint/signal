@@ -20,7 +20,7 @@ export const BEINGS = [
   { id: 'world-tree',     name: 'the world tree', built: true },
   { id: 'giving-hands',   name: 'the giving hands', built: true },
   { id: 'star-jelly',     name: 'the star medusa', built: true },
-  { id: 'star-child',     name: 'the star child' },
+  { id: 'star-child',     name: 'the star child', built: true },
 ].map((b, k) => ({ ...b, k, centre: { x: 0, y: 320 + k * 100, z: 0 } }))
 
 function rnd(seed, n) { const x = Math.sin((seed + 1) * (n * 7.1234 + 3.1)) * 15731.743; return x - Math.floor(x) }
