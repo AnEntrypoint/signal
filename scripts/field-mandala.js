@@ -2,7 +2,7 @@
 // neighbours counter-rotating, a kick ripple running outward, growing in bloom, line-art in reset.
 import { positionWorld, float, vec2, vec3, length, fwidth, smoothstep, select, mix, min, max } from "builtin/tsl";
 import { MeshBasicNodeMaterial } from "builtin/three";
-import { tripClock, SEC, stripes, HUE } from "./lib/trip.js";
+import { tripClock, SEC, stripes, HUE, shown } from "./lib/trip.js";
 import { BW, growR, resetR, endFade, colours, breath, mirrorTurn, kickAt, lit, shade } from "./field-lib.js";
 
 const TAU = 6.2831853;
@@ -101,6 +101,14 @@ export function material(ctx) {
 
   const m = new MeshBasicNodeMaterial();
   m.colorNode = body.mul(fill(r.sub(R))).add(vec3(1, 1, 1).mul(rim)).add(K.fam.H.mul(ripple).mul(fill(r.sub(R)))).add(vec3(0.3, 0.4, 1).mul(seed)).mul(endFade(c.sec));
+  // THE LAYER SCORE: a real cutout that opens from the centre like an iris. Only the grown part is surface;
+  // and the self-cutout: on every 2nd bar the stripe bands swap which of them have their black gaps cut away.
+  const grown = max(fill(r.sub(R).sub(0.3)), fill(r.sub(0.45)).mul(c.sec.lessThan(SEC.pulse[0] + 0.5).select(1, 0)));
+  const swap = i.div(6).floor().add(c.bar.div(2).floor()).mod(2);
+  const hole = k.greaterThan(0.5).and(k.lessThan(1.5)).and(swap.lessThan(0.5)).select(fill(d1).oneMinus().mul(fill(inset(0.44))), 0);
+  const seedOn = c.sec.lessThan(SEC.pulse[0] + 0.5).select(1, 0);
+  m.opacityNode = max(shown(c, "field", r.div(90)), seedOn).mul(grown).mul(float(1).sub(hole));
+  m.alphaTest = 0.5;
   m.fog = false;
   return m;
 }

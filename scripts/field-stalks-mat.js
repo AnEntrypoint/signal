@@ -2,7 +2,7 @@
 // outward with the kick ripple, rising behind the bloom edge. All from the trip clock; no script moves them.
 import { positionLocal, attribute, uv, float, vec3, smoothstep, select, mix, varying, step } from "builtin/tsl";
 import { MeshBasicNodeMaterial } from "builtin/three";
-import { tripClock } from "./lib/trip.js";
+import { tripClock, shown } from "./lib/trip.js";
 import { riseR, resetR, endFade, backOut, colours, breath, mirrorTurn, kickAt, lit, shade } from "./field-lib.js";
 
 export function material(ctx) {
@@ -25,6 +25,8 @@ export function material(ctx) {
   const beadCol = shade(mix(mix(K.H, vec3(0), step(0.6, v)), K.H2, step(0.8, v)), vL).mul(vhop.mul(vL).mul(0.3).add(1));
   const stemCol = shade(vec3(0.9, 0.9, 0.9), vL).mul(step(0.5, v.mul(vh).mul(2.5).fract()));
   m.colorNode = select(part.greaterThan(0.5), beadCol, stemCol);
+  m.opacityNode = varying(shown(c, "stalks", r.div(90)));
+  m.alphaTest = 0.5;
   m.fog = false;
   return m;
 }

@@ -2,7 +2,7 @@
 // rim, a black line, the body, a darker core ring, a hot centre. They circle the centre and bob on the half-beat.
 import { positionLocal, normalView, attribute, float, vec3, smoothstep, select, mix, varying } from "builtin/tsl";
 import { MeshBasicNodeMaterial } from "builtin/three";
-import { tripClock, HUE } from "./lib/trip.js";
+import { tripClock, HUE, shown } from "./lib/trip.js";
 import { endFade, backOut, family, breath, mirrorTurn, kickAt, lit, shade } from "./field-lib.js";
 
 const V = (h, g = 1) => vec3(h[0] * g, h[1] * g, h[2] * g);
@@ -31,6 +31,8 @@ export function material(ctx) {
   col = mix(col, vec3(0), e(0.86));
   col = mix(col, rimC, e(0.9));
   m.colorNode = shade(col, vL);
+  m.opacityNode = varying(shown(c, "orbs", o.x.div(90)));
+  m.alphaTest = 0.5;
   m.fog = false;
   return m;
 }
