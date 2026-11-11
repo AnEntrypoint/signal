@@ -24,7 +24,7 @@ export function material(ctx) {
   const band = (a, bb) => step(a, r).mul(step(r, bb));
   const tb = mirAng().mul(48), bi = floor(tb);
   const bl = length(vec2(fract(tb).sub(0.5).mul(0.524), r.sub(4.0))), bead = step(bl, 0.16), beadHole = step(0.075, bl);
-  const chase = step(mod(bi.sub(floor(c.beat)).add(gi.mul(5)), 12), 2.5);
+  const chase = step(mod(bi.sub(floor(c.beat).mul(step(0.5, c.live))).add(gi.mul(5)), 12), 2.5);
   const aLine = band(4.22, 4.34).mul(gap), aMain = band(4.46, 5.1).mul(gap);
   const dl = length(vec2(fract(th.mul(48).add(0.5)).sub(0.5).mul(0.626), r.sub(4.78)));
   const tgt = step(dl, 0.12), tring = step(dl, 0.2).sub(tgt);

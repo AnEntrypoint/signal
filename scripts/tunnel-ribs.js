@@ -35,7 +35,7 @@ export function material(ctx) {
   const tube = mix(GRAPH, lit, L).mul(mask);
   // each bead a target (belt, black ring, caps); bead j lights as the chase passes it
   const bj = floor(dg.div(1.5)), bz = abs(fract(dg.div(1.5)).sub(0.5)).mul(1.5);
-  const chase = step(mod(bj.sub(floor(c.beat)).add(vk.mul(2)), 8), 1.5);
+  const chase = step(mod(bj.sub(floor(c.beat).mul(step(0.5, c.live))).add(vk.mul(2)), 8), 1.5);
   const beadLit = mix(F.hot(bj.add(vk)), F.a, step(0.27, bz));
   const beadCol = mix(GRAPH.mul(1.6), beadLit, max(chase, L.mul(0.5))).mul(float(1).sub(step(0.19, bz).mul(step(bz, 0.27))));
   m.colorNode = mix(tube, beadCol, isBead).mul(smoothstep(192, 186, c.sec));
