@@ -8,7 +8,7 @@ export const live = (sec) => smoothstep(SCORE.kickFrom - 0.05, SCORE.kickFrom, s
 // node pick: i is an integer node 0..n-1, vals plain numbers
 export const sel = (i, vals) => { let v = float(vals[0]); for (let k = 1; k < vals.length; k++) v = mix(v, float(vals[k]), step(k - 0.5, i)); return v; };
 // one shared swell per phrase
-export const breath = (sec) => sec.mul(TAU / 12).sin().mul(0.5).add(0.5);
+export const breath = (sec) => sec.mul(TAU / 17).add(1.3).sin().mul(0.5).add(0.5); // the sun's own slow clock, out of step with the field's 12 s
 // the kick as a ripple leaving the pupil on each beat, 9 m a beat outward; 1 as it passes r
 export const ripple = (c, r) => c.beat.sub(float(r).div(9)).fract().mul(-6).exp().mul(live(c.sec));
 export const barStep = (c) => c.bar.floor().add(smoothstep(0, 0.3, c.bar.fract()));
@@ -23,10 +23,10 @@ export function sweep(c, tm) {
 // at(x): x = 0..1 position across the family (inner -> outer); hot(): the accent.
 export function fam(c) {
   const q = c.phrase.floor().add(8).mod(3);
-  const h = float(0.86).add(c.hue.mul(0.35)).add(sel(c.pick(60, 3), [0, 0.1, 0.42])).add(q.mul(0.07));
+  const h = float(0.83).add(c.hue.mul(0.05)).add(sel(c.pick(60, 3), [0, 0.03, 0.06])).add(q.mul(0.015)); // fire: yellow -> orange -> red, the roll only nudges it (creator's ref: picture 2's sun)
   const peak = win(c.sec, SEC.peak);
   const hp = mix(h, float(0.83).add(c.hue.mul(0.08)), peak); // peak: the sun's own run yellow -> orange -> red -> violet -> blue
-  const span = mix(float(0.09), float(0.48), peak);
+  const span = mix(float(0.12), float(0.48), peak);
   const gain = float(0.95).add(smoothstep(155.6, 157.1, c.sec).mul(smoothstep(181, 179.5, c.sec)).mul(0.2));
   const sat = (v) => v.pow(vec3(2.4)); // linear -> keeps the third channel near 0 after sRGB encode, no pastel
   const at = (x) => sat(pal(hp.add(float(x).mul(span)))).mul(gain);
