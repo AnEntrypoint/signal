@@ -89,9 +89,10 @@ export function look(ctx) {
   p = vec2(mix(p.x, p.x.abs().negate(), wMir), p.y);
   // fisheye-dome in flight (by seed): wrapped on a sphere, black outside the dome
   const wDome = wFlight.mul(domeOn);
-  const rd = p.length().div(0.5), th = rd.mul(0.62);
+  // the bend carries out to the screen edge (capped short of the pole): no circle cut onto black
+  const rd = p.length().div(0.5), th = rd.mul(0.62).min(1.35);
   p = mix(p, p.div(rd.max(0.001)).mul(th.tan().div(float(0.62).tan()).mul(0.5)), wDome);
-  const domeMask = mix(float(1), smoothstep(1.0, 0.985, rd), wDome);
+  const domeMask = float(1);
 
   const uW = p.div(asp).add(0.5);
   const ub = mix(uW, bendUv(c, uW, aspect), on); // the bent camera (gated: idle stays straight)
