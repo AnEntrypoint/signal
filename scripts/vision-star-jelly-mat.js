@@ -125,7 +125,7 @@ export function material(ctx) {
     const nD = pk(6, 3).mul(12).add(36);
     for (let r = 0; r < 2; r++) {
       const Rr = 41 + r * 5.5, N = r ? nD.add(12) : nD, sgn = r ? -1 : 1;
-      const a = atan2(p.x, p.y).add(c.real.mul(sense * sgn).mul(TAU / (r ? 64 : 90)));
+      const a = atan2(p.x, p.y).add(c.real.mul(sense).mul(sgn).mul(TAU / (r ? 64 : 90)));
       const cell = a.div(TAU).mul(N);
       const ia = cell.floor(), fa = cell.fract().sub(0.5);
       const d = vec2(fa.mul(TAU * Rr).div(N), rr.sub(Rr)).length();
