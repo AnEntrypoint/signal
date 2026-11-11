@@ -30,8 +30,8 @@ export function material(ctx) {
   const kLive = smoothstep(k0.sub(0.05), k0, c.sec).mul(smoothstep(k1.add(0.05), k1, c.sec));
   const kick = float(1).sub(beat.fract()).pow(5).mul(kLive).mul(step(SCORE.firstBeat, sec));
   const P = (a, b, xa, xb) => smoothstep(a, b, u).mul(smoothstep(xb, xa, u)); // in over a..b, out over xa..xb
-  const ex = smoothstep(1.0, 0.975, u);                      // the being itself leaves last
-  const cul = smoothstep(0.83, 0.9, u).mul(smoothstep(0.96, 0.93, u));
+  const ex = float(1).sub(smoothstep(0.975, 1.0, u));                      // the being itself leaves last
+  const cul = smoothstep(0.83, 0.9, u).mul(float(1).sub(smoothstep(0.93, 0.96, u)));
   const peak = climb(c).max(0.7).mul(cul);                   // the culmination: overtones climbing, late in the slot
   const turn = c.dir.mul(c.rnd(205).step(0.5).mul(2).sub(1)); // this being's own turning sense
   const shown = (d) => visionShown(ctx, c, d);
@@ -80,7 +80,7 @@ export function material(ctx) {
   const breath = sec.mul(TAU / 5).sin().mul(peak.mul(0.07).add(0.025));
   // the kick's light: a thin ring leaving the eye on each kick, crossing the scene in one beat
   const kr = c.beat.fract().mul(52);
-  const kickLight = smoothstep(2.2, 0, r.sub(kr).abs()).mul(kick).mul(1.6);
+  const kickLight = float(1).sub(smoothstep(0, 2.2, r.sub(kr).abs())).mul(kick).mul(1.6);
 
   const m = new MeshBasicNodeMaterial();
   m.side = DoubleSide;
@@ -151,7 +151,7 @@ export function material(ctx) {
     const b2 = beads(48, n1.div(2), rot.mul(1.6), 0.4);
     const lit1 = maskBeads(P(0.4, 0.56, 0.96, 0.98), b1.k), lit2 = maskBeads(P(0.78, 0.9, 0.955, 0.975), b2.k);
     const orbit = line(r.sub(50), 0.12).mul(maskDraw(pIn, top));
-    const travel = smoothstep(0.12, 0, top.sub(c.bar.fract()).abs());
+    const travel = float(1).sub(smoothstep(0, 0.12, top.sub(c.bar.fract()).abs()));
     const glow = float(0.45).add(travel.mul(1.4)).add(kickLight).add(peak.mul(0.6));
     col = mid.mul(b1.m.mul(lit1)).mul(glow).add(hot.mul(b2.m.mul(lit2)).mul(glow)).add(body.mul(orbit).mul(0.6));
     col = mix(col, w.col.mul(peak.mul(0.5).add(0.75)), w.m);
@@ -209,7 +209,7 @@ export function material(ctx) {
     const onDisc = step(r, R * 1.12);
     const moon = float(1).sub(free).mul(onDisc);                     // the black moon itself, opaque where it lies on the sun
     const corona = line(md.sub(R * 1.05), 0.05).mul(onDisc).mul(step(0.02, pE)).mul(step(pE, 0.98));
-    const contact = smoothstep(1.2, 0, length(vec2(p.x.sub(mx.sub(side.mul(R * 1.05))), p.y))).mul(step(0.02, pE)).mul(step(pE, 0.6));
+    const contact = float(1).sub(smoothstep(0, 1.2, length(vec2(p.x.sub(mx.sub(side.mul(R * 1.05))), p.y)))).mul(step(0.02, pE)).mul(step(pE, 0.6));
     // the first stroke: a hairline circle drawn round from the top, both sides at once, its nib bright
     const pS = smoothstep(0.0, 0.08, u).mul(ex);
     const stroke = line(r.sub(R * 1.16), 0.07).mul(maskDraw(pS, top));
@@ -221,7 +221,7 @@ export function material(ctx) {
     const bA = beads(R * 0.66, c.pick(201, 3).mul(4).add(8).mul(2), rot, 0.22);
     const bB = beads(R * 0.94, c.pick(201, 3).mul(4).add(8).mul(3), rot.mul(-1.3), 0.17);
     const rim = line(r.sub(R), 0.07);
-    const sweep = smoothstep(0.1, 0, top.sub(c.sec.div(6).fract()).abs()); // a mirrored light falling top to bottom, once per 4 bars
+    const sweep = float(1).sub(smoothstep(0, 0.1, top.sub(c.sec.div(6).fract()).abs())); // a mirrored light falling top to bottom, once per 4 bars
     const glowD = float(0.32).add(sweep.mul(1.1)).add(kickLight).add(peak.mul(0.9));
     let disc = mid.mul(rings).mul(glowD).add(hot.mul(bA.m.add(bB.m)).mul(glowD.add(0.3))).add(hot.mul(rim).mul(float(1).add(peak)));
     const discCover = rings.add(bA.m).add(bB.m).add(rim).clamp(0, 1).mul(step(r, R + 0.2));
@@ -243,7 +243,7 @@ export function material(ctx) {
     const iris = mix(irisRings, irisSpiral, eyeVar).mul(step(ir, 1.85)).mul(step(0.85, ir));
     const irisRim = line(ir.sub(1.95), 0.07);
     const pupil = step(ir, 0.8);
-    const glint = smoothstep(0.28, 0.15, length(p.sub(vec2(0.3, 0.32))));
+    const glint = float(1).sub(smoothstep(0.15, 0.28, length(p.sub(vec2(0.3, 0.32)))));
     const eyeGlow = float(0.6).add(kickLight.mul(0.6)).add(peak.mul(0.8));
     const eyeCol = hot.mul(iris.add(irisRim).clamp(0, 1)).mul(eyeGlow).add(vec3(1).mul(glint).mul(2));
     disc = mix(disc, eyeCol, open).add(hot.mul(lidLine.add(outline.mul(step(0.99, pLid))).clamp(0, 1)).mul(1.2));
@@ -268,11 +268,11 @@ export function material(ctx) {
     const rayLong = step(0.5, ri.mod(2));                        // every other ray a bead row
     const rayLine = line(rq, 0.06).mul(step(0, ru)).mul(step(ru, 1));
     const rbq = ru.mul(7).fract().sub(0.5).mul(r1.sub(r0).div(7));
-    const rayBead = smoothstep(0.3, 0.22, vec2(rq, rbq).length()).mul(step(0, ru)).mul(step(ru, 1));
+    const rayBead = float(1).sub(smoothstep(0.22, 0.3, vec2(rq, rbq).length())).mul(step(0, ru)).mul(step(ru, 1));
     const rayShape = mix(rayLine, rayBead, rayLong);
     const rayM = rayShape.mul(maskDraw(rayP, ru));
     const rayNib = nib(rayP, ru, 0.06).mul(step(rq.abs(), 0.3)).mul(step(rayP, 0.99)).mul(step(0.01, rayP));
-    const rayGlow = float(0.5).add(kickLight).add(smoothstep(0.15, 0, ru.sub(c.beat.fract()).abs()).mul(kick)).add(peak);
+    const rayGlow = float(0.5).add(kickLight).add(float(1).sub(smoothstep(0, 0.15, ru.sub(c.beat.fract()).abs())).mul(kick)).add(peak);
 
     // crown: 2N flame teardrops on a ring at 16.5 m pointing out, lighting top-down; the lower ones drip slowly
     const M = N.mul(2), cv = c.pick(203, 2);
@@ -292,7 +292,7 @@ export function material(ctx) {
     const bulb = vec2(lx, ly.min(0)).length();
     const dropD = select(yy.lessThan(0), bulb.sub(0.55), lx.abs().sub(wdt));
     const dropLine = line(dropD, 0.05).mul(step(yy, 1.02));
-    const dropCore = smoothstep(0.18, 0.08, vec2(lx, ly.add(0.05)).length());
+    const dropCore = float(1).sub(smoothstep(0.08, 0.18, vec2(lx, ly.add(0.05)).length()));
     const pC = smoothstep(0.24, 0.36, u).mul(ex);
     const crownLit = maskBeads(pC, ck);
     const crown = dropLine.add(dropCore).clamp(0, 1).mul(crownLit).mul(float(1).sub(smoothstep(0.6, 1.0, dripT.mul(hang))));

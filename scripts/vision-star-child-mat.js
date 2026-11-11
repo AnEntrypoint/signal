@@ -52,7 +52,7 @@ const dc = P.sub(vec2(0, CY)).length(), dg = P.sub(vec2(0, CY - OFF)).length();
 const ph = c.real.div(9).mul(step(0.5, rn(11)).mul(2).sub(1));
 const fz = dc.sub(150).div(SPG);
 const f = fz.sub(ph), g = dg.sub(150).div(SPG).sub(ph);
-const ground = smoothstep(5.2, 4.2, fz);
+const ground = float(1).sub(smoothstep(4.2, 5.2, fz));
 const lf = stroke(f.add(0.5).fract().sub(0.5).abs().mul(SPG), 0.16), lg = stroke(g.add(0.5).fract().sub(0.5).abs().mul(SPG), 0.16);
 const kb = f.floor(), cres = step(kb.add(0.5), g.floor());
 const odd = kb.mod(2);
@@ -191,7 +191,7 @@ const s4 = ds.x.div(sz).sqrt().add(ds.y.div(sz).sqrt());
 const ps = smoothstep(0.66 + i * 0.02, 0.69 + i * 0.02, u).mul(inv(smoothstep(0.948 - i * 0.003, 0.952 - i * 0.003, u)));
 const shape = step(s4, ps.mul(1.0));
 const tint = i % 2 === 0 ? mix(C2, W, 0.5) : mix(C3, W, 0.45);
-col = col.add(tint.mul(smoothstep(0.85, 0.2, s4)).mul(shape).mul(tw.mul(0.3).add(0.9)));
+col = col.add(tint.mul(float(1).sub(smoothstep(0.2, 0.85, s4))).mul(shape).mul(tw.mul(0.3).add(0.9)));
 cover = cover.max(shape);
 }
 return cutout(col, cover);
@@ -271,7 +271,7 @@ add(C2.mul(0.7), hline);
 cover = cover.max(underBody);
 col = col.mul(inv(underBody));
 const front = c.real.mul(0.6).fract().mul(18);
-const band = smoothstep(1.6, 0, rh.sub(front).abs()).mul(cul);
+const band = float(1).sub(smoothstep(0, 1.6, rh.sub(front).abs())).mul(cul);
 for (let j = 0; j < 5; j++) {
 const off = float((4 - j) * SP).add(cul.mul(0.2).mul(c.real.mul(3.2).sub(j * 1.1).sin()));
 const dj = sd.sub(off).abs();

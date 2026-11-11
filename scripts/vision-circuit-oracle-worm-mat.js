@@ -67,7 +67,7 @@ export function material(ctx) {
   const head = smoothstep(0.875, 0.885, e);
   const eyeC = mix(mix(A, W, stripes(e.mul(60), 1, 0.12)).mul(stripes(e.mul(30), 1, 0.3)), H, step(0.985, e));
   skin = mix(skin, eyeC, head);
-  const run = smoothstep(0.05, 0, uu.sub(c.beat.fract()).abs()).mul(step(0.001, c.kick));
+  const run = float(1).sub(smoothstep(0, 0.05, uu.sub(c.beat.fract()).abs())).mul(step(0.001, c.kick));
   const edge = ca.abs();
   const lit = skin.mul(sa.abs().mul(0.45).add(0.55)).add(mix(A, W, 0.5).mul(smoothstep(0.86, 1, edge)).mul(run.add(0.4)));
   const dark = is(float(n), step(0.5, rn(11)).add(1)).mul(step(uu, smoothstep(0.86, 0.92, u).mul(1.02)));

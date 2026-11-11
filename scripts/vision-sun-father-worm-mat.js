@@ -23,7 +23,7 @@ export function material(ctx) {
   const is = (v, i) => step(float(v).sub(i).abs(), 0.5);
   const mir = c.rnd(212).step(0.5).mul(2).sub(1);
   const here = n === 3 ? step(0.4, c.rnd(213)) : float(1);
-  const g = smoothstep(0.55 + 0.04 * (n - 1), 0.72 + 0.04 * (n - 1), u).mul(smoothstep(0.96, 0.93, u)).mul(here).mul(visionShown(ctx, c, 0));
+  const g = smoothstep(0.55 + 0.04 * (n - 1), 0.72 + 0.04 * (n - 1), u).mul(float(1).sub(smoothstep(0.93, 0.96, u))).mul(here).mul(visionShown(ctx, c, 0));
   const pg = positionGeometry;
   const se = pg.z.mul(g);                                   // where on the full spine this ring sits now
   const cx = C[0] - A[0], cy = C[1] - A[1], cl = Math.hypot(cx, cy), px = -cy / cl, py = cx / cl;
@@ -71,7 +71,7 @@ export function material(ctx) {
   const k0 = c.pick(214, 3).add(n).mod(3).floor(), k1 = k0.add(1).mod(3);
   const k = select(se.lessThan(smoothstep(0.7, 0.86, u)), k1, k0);
   const skin = colA.mul(is(k, 0)).add(colB.mul(is(k, 1))).add(colC.mul(is(k, 2)));
-  const dark = is(c.pick(215, 2).add(1), n).mul(smoothstep(0.85, 0.9, u)).mul(smoothstep(0.96, 0.93, u));
+  const dark = is(c.pick(215, 2).add(1), n).mul(smoothstep(0.85, 0.9, u)).mul(float(1).sub(smoothstep(0.93, 0.96, u)));
   const rim = smoothstep(0.78, 0.97, float(1).sub(face.abs()));
   m.colorNode = skin.mul(float(1).sub(dark)).mul(face.abs().mul(0.7).add(0.3)).mul(c0.kick.mul(0.4).add(1)).add(hot.mul(rim).mul(0.8)).mul(2.0);
   m.opacityNode = step(0.004, g);

@@ -64,7 +64,7 @@ export function material(ctx) {
   const swap = pair ? inv(step(0.5, rn(14))) : step(0.5, rn(14));
   const t1 = 0.78 + pair * 0.03;
   const skin = mix(cStr, mix(cBe, cSc, swap), step(uu, smoothstep(t1, t1 + 0.08, u).mul(1.02)));
-  const run = smoothstep(0.05, 0, uu.sub(c.beat.fract()).abs()).mul(step(0.001, c.kick));   // the kick's light climbs the body
+  const run = float(1).sub(smoothstep(0, 0.05, uu.sub(c.beat.fract()).abs())).mul(step(0.001, c.kick));   // the kick's light climbs the body
   const edge = ca.abs();
   const lit = skin.mul(sa.abs().mul(0.5).add(0.35)).add(mix(C, W, 0.5).mul(smoothstep(0.86, 1, edge)).mul(run.add(0.4)));
   const dark = is(float(n), step(0.5, rn(14).mul(2).fract()).add(1)).mul(step(uu, smoothstep(0.85, 0.9, u).mul(1.02)));

@@ -88,7 +88,7 @@ export function material(ctx) {
   const stroke = (d, w) => inv(smoothstep(float(w), aa.add(w), d));
   const live = visionShown(ctx, c, 0);
   const kickOn = step(0.001, c.kick);
-  const kl = smoothstep(2.5, 0, rr.sub(c.beat.fract().mul(56)).abs()).mul(kickOn);   // the kick: a ripple outward
+  const kl = float(1).sub(smoothstep(0, 2.5, rr.sub(c.beat.fract().mul(56)).abs())).mul(kickOn);   // the kick: a ripple outward
   const cul = io(0.85, 0.89, 0.93, 0.95).mul(climb(c).mul(0.4).add(0.6));
   const flipV = step(0.5, rn(9));
   const m = new MeshBasicNodeMaterial();
@@ -170,7 +170,7 @@ export function material(ctx) {
     const pa = io(0.52, 0.6, 0.83, 0.87);
     const au = petals(rr, an, 12, float(36), float(24).mul(pa), rot.mul(-0.6).add(0.5));
     const aur = stroke(au.ex.abs(), 0.12).mul(step(0, au.t)).mul(step(au.t, 1));
-    const glow = smoothstep(9, 0, rr.sub(44).abs()).mul(0.12).mul(pL);
+    const glow = float(1).sub(smoothstep(0, 9, rr.sub(44).abs())).mul(0.12).mul(pL);
     const col = A.mul(l1.add(l2)).mul(0.8).add(mix(B, W, 0.3).mul(b1.mul(k1)).mul(float(0.7).add(c.kick.mul(0.6))))
       .add(mix(H, W, f2.floor().mod(2).mul(0.6)).mul(b2.mul(k2)).mul(0.8)).add(B.mul(aur).mul(0.45)).add(A.mul(glow))
       .mul(step(rr, 60));
@@ -288,7 +288,7 @@ export function material(ctx) {
     // dew at each petal's tip, laid in order round the ring
     const dd = vec2(pt.ap.mul(pt.arc), rk.sub(Lo.add(r0 + 0.9))).length();
     const dew = inv(smoothstep(0.55, 0.65, dd)).mul(maskBeads(pDew, pt.id.div(N).fract().mul(0.7).add(k * 0.06))).mul(step(0.9, op));
-    col = mix(col, mix(H, W, smoothstep(0.35, 0, dd)), dew);
+    col = mix(col, mix(H, W, float(1).sub(smoothstep(0, 0.35, dd))), dew);
     cover = cover.max(dew);
   }
   // THE GATE: bindu, then the arch drawing itself up both sides with a nib, its lining beads, the seed-pod crown

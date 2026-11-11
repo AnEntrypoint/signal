@@ -69,7 +69,7 @@ export function material(ctx) {
   // the comet head: hot rings, brightest at the cap
   const headM = smoothstep(0.86, 0.9, uu);
   const headC = mix(H, W, capx.mul(0.6)).mul(stripes(s, 0.9, 0.08).mul(0.5).add(0.6));
-  const run = smoothstep(0.05, 0, uu.sub(c.beat.fract()).abs()).mul(step(0.001, c.kick));
+  const run = float(1).sub(smoothstep(0, 0.05, uu.sub(c.beat.fract()).abs())).mul(step(0.001, c.kick));
   const edge = ca.abs();
   const lit = mix(skin, headC, headM).mul(sa.abs().mul(0.45).add(0.55)).add(mix(A, W, 0.5).mul(smoothstep(0.86, 1, edge)).mul(run.add(0.4)));
   const darkOne = pk(17, 2).add(1).add(top * 2);

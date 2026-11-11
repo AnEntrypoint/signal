@@ -124,8 +124,8 @@ export function material(ctx) {
     const vias = stroke(v1.sub(vr).abs(), w).max(stroke(v2.sub(vr).abs(), w)).mul(step(14, r));
     const vdot = inv(smoothstep(vr.mul(0.4), vr.mul(0.4).add(aa), v1.min(v2))).mul(step(14, r));
     const front = c.beat.fract().mul(140);
-    const kl = smoothstep(7, 0, r.sub(front).abs()).mul(kickOn).mul(smoothstep(140, 60, front));
-    const edgeGlow = smoothstep(3, 0, ahead.abs()).mul(step(0.004, grow)).mul(inv(step(0.999, grow)));
+    const kl = float(1).sub(smoothstep(0, 7, r.sub(front).abs())).mul(kickOn).mul(float(1).sub(smoothstep(60, 140, front)));
+    const edgeGlow = float(1).sub(smoothstep(0, 3, ahead.abs())).mul(step(0.004, grow)).mul(inv(step(0.999, grow)));
     const traces = bus.max(spoke).max(jog);
     let col = A.mul(traces).mul(float(0.2).add(kl.mul(0.9)).add(edgeGlow.mul(0.6)));
     col = col.add(B.mul(vias).mul(float(0.35).add(kl))).add(mix(B, H, kl).mul(vdot).mul(float(0.25).add(kl.mul(1.2))));
@@ -185,7 +185,7 @@ export function material(ctx) {
     for (let i = 0; i < 6; i++) {
       const x = 33 + i * 3.1 + (i % 2) * 4;
       const y = c.real.mul(0.5 + i * 0.07).add(i * 17.3).mod(56).sub(28);   // rising, wrapping inside the veil
-      const sz = smoothstep(26, 20, y.abs()).mul(maskBeads(pv, i / 6)).mul(step(i + 0.5, cnt));
+      const sz = float(1).sub(smoothstep(20, 26, y.abs())).mul(maskBeads(pv, i / 6)).mul(step(i + 0.5, cnt));
       const fl = i % 2 ? -1 : 1;
       const a = vec2(x, y), b = vec2(x + 3.2 * fl, y), e = vec2(x + 5.4 * fl, y.add(2.2));
       const g1 = seg(qm, a, b), g2 = seg(qm, b, e);
@@ -250,9 +250,9 @@ export function material(ctx) {
   const line = stroke(d, 0.17).mul(drawn);
   const head = nib(pd, s, 1.4).mul(stroke(d, 0.55)).mul(step(pd, SMAX)).mul(step(0.1, pd));
   const cur = c.real.mul(float(5).add(rn(12).mul(5))).mod(SMAX + 25);
-  const flow = smoothstep(2.2, 0, s.sub(cur).abs()).mul(line);
+  const flow = float(1).sub(smoothstep(0, 2.2, s.sub(cur).abs())).mul(line);
   const kp = c.beat.fract().mul(SMAX * 1.15);
-  const pulse = smoothstep(1.6, 0, s.sub(kp).abs()).mul(line).mul(kickOn);
+  const pulse = float(1).sub(smoothstep(0, 1.6, s.sub(kp).abs())).mul(line).mul(kickOn);
   let vRing = float(0), vDot = float(0), vBody = float(0);
   for (const [x, y, sv] of VIAS) {
     const dv = qm.sub(vec2(x, y)).length(), got = step(sv, pd);

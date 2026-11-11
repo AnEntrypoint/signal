@@ -132,14 +132,14 @@ export function look(ctx) {
   const hexD = (n) => { const q = kq.mul(n), R = vec2(1, 1.732), h = R.mul(0.5);
     return q.mod(R).sub(h).length().min(q.sub(h).mod(R).sub(h).length()); };
   const KMASKS = [
-    smoothstep(0.3, 0.27, cellD(9).length().sub(breath.mul(0.06))),                                    // dots, breathing
+    float(1).sub(smoothstep(0.27, 0.3, cellD(9).length().sub(breath.mul(0.06)))),                                    // dots, breathing
     band(kr2.mul(6).sub(sec.mul(0.3)), breath.mul(0.05).add(0.2)),                                      // iris rings flowing out
     band(ka2.div(TAU).mul(sym).add(kr2.mul(4)).sub(sec.mul(0.12)), float(0.22)),                        // spiral arms, sym-fold
     band(kq.x.add(kq.y).mul(7).add(kq.y.mul(5).add(sec).sin().mul(0.35)).sub(sec.mul(0.2)), float(0.21)), // op-art stripes, wavering
-    smoothstep(0.3, 0.27, hexD(8).add(kr2.mul(0.18)).sub(breath.mul(0.05))),                           // hex beads, smaller to the rim
-    smoothstep(0.02, 0, cellD(13).length().sub(kr2.mul(4).sub(sec.mul(0.8)).sin().mul(0.5).add(0.5).mul(0.46))), // halftone wave
+    float(1).sub(smoothstep(0.27, 0.3, hexD(8).add(kr2.mul(0.18)).sub(breath.mul(0.05)))),                           // hex beads, smaller to the rim
+    float(1).sub(smoothstep(0, 0.02, cellD(13).length().sub(kr2.mul(4).sub(sec.mul(0.8)).sin().mul(0.5).add(0.5).mul(0.46)))), // halftone wave
     band(kr2.mul(3.2).sub(ka2.mul(sym).add(kRot).cos().mul(0.28)).sub(sec.mul(0.18)), float(0.23)),      // nested petals
-    smoothstep(1.03, 0.97, cellD(6).x.abs().div(breath.mul(0.05).add(0.11)).add(cellD(6).y.mul(cellD(6).y).mul(4.4))), // pupil slits
+    float(1).sub(smoothstep(0.97, 1.03, cellD(6).x.abs().div(breath.mul(0.05).add(0.11)).add(cellD(6).y.mul(cellD(6).y).mul(4.4)))), // pupil slits
   ];
   const kPick = (salt) => pi.add(c.seed.mul(0.37)).add(salt).mul(91.7).sin().mul(43758.5453).fract().mul(KMASKS.length).floor();
   const kMask = (salt) => { const i = kPick(salt); return KMASKS.reduce((acc, m, j) => acc.add(m.mul(on1(i.sub(j).abs().lessThan(0.5)))), float(0)); };
@@ -157,7 +157,7 @@ export function look(ctx) {
   // into the centre over the phrase's last two bars, so the clean world is back by the change, and the next mode opens out
   // of the centre over the first two.
   const pfr = sec.sub(SEC.peak[0]).div(12).fract();
-  const pOpen = smoothstep(0, 0.25, pfr).mul(smoothstep(1, 0.75, pfr));   // two bars each way
+  const pOpen = smoothstep(0, 0.25, pfr).mul(float(1).sub(smoothstep(0.75, 1, pfr)));   // two bars each way
   const pR = pOpen.mul(1.15).add(petal.mul(pOpen));
   const pWin = smoothstep(pR, pR.sub(0.06), apr);
   const kmix = aWin.mul(0.95).mul(wAsc).add(pk.mul(pWin).mul(wPeak)).clamp(0, 1);
@@ -246,14 +246,14 @@ export function look(ctx) {
   col = mix(col, hueRot(col, ph.mul(0.45)), wBloom.add(wAsc).clamp(0, 1));
 
   // ---- things in front: depth-parallax dust (3 depths), sparkle stars, cell-lattice behind ----
-  const black = smoothstep(0.06, 0.01, luma(col)); // only where the frame is black
+  const black = float(1).sub(smoothstep(0.01, 0.06, luma(col))); // only where the frame is black
   const cellH = (id, s) => id.dot(vec2(12.9898, 78.233)).add(s).add(c.seed.mul(0.137)).sin().mul(43758.5453).fract();
   const dust = (scale, spd, dim, salt) => {
     const dq = p0.mul(scale).add(vec2(0, sec.mul(spd)));
     const id = dq.floor(), f = dq.fract().sub(0.5);
     const h = cellH(id, salt), h2 = cellH(id, salt + 3.1);
     const d = f.sub(vec2(h, h2).sub(0.5).mul(0.4)).length(), rad = h2.mul(0.12).add(0.16);
-    const disc = smoothstep(rad, rad.sub(0.02), d).mul(0.25).add(smoothstep(0.03, 0.0, d.sub(rad).add(0.03).abs()).mul(0.6));
+    const disc = smoothstep(rad, rad.sub(0.02), d).mul(0.25).add(float(1).sub(smoothstep(0.0, 0.03, d.sub(rad).add(0.03).abs())).mul(0.6));
     return pal(fam.add(h.mul(0.18))).mul(disc).mul(on1(h.greaterThan(0.72))).mul(dim);
   };
   const dustCol = dust(3, 0.02, 0.35, 1).add(dust(5.5, 0.045, 0.2, 2)).add(dust(9, 0.09, 0.1, 3));
@@ -261,14 +261,14 @@ export function look(ctx) {
   // sparkle-stars: small 4-point glints twinkling on the off-beat (the snare's place)
   const sq = p0.mul(14), sidd = sq.floor(), sf = sq.fract().sub(0.5), sh = cellH(sidd, 9.7);
   const so = sf.sub(vec2(sh, cellH(sidd, 4.2)).sub(0.5).mul(0.5));
-  const star = smoothstep(0.02, 0, so.x.abs()).mul(smoothstep(0.35, 0, so.y.abs())).add(smoothstep(0.02, 0, so.y.abs()).mul(smoothstep(0.35, 0, so.x.abs())));
+  const star = float(1).sub(smoothstep(0, 0.02, so.x.abs())).mul(float(1).sub(smoothstep(0, 0.35, so.y.abs()))).add(float(1).sub(smoothstep(0, 0.02, so.y.abs())).mul(float(1).sub(smoothstep(0, 0.35, so.x.abs()))));
   const tw = c.half.mul(0.8).add(0.2);
   col = col.add(pal(fam.add(0.35).add(sh.mul(0.3))).mul(star).mul(on1(sh.greaterThan(0.93))).mul(tw).mul(2).mul(wSpark).mul(black));
   // cell-lattice: the frame's black mirrored into a lattice of beaded cells, graphite, lit where the hand passes
   const lq = vec2(p0.x.abs(), p0.y).mul(sym.mul(0.9)), lf = lq.fract().sub(0.5);
-  const latLine = smoothstep(0.035, 0.0, lf.x.abs().max(lf.y.abs()).sub(0.47).abs());
+  const latLine = float(1).sub(smoothstep(0.0, 0.035, lf.x.abs().max(lf.y.abs()).sub(0.47).abs()));
   const bead = lf.abs().sub(0.5).length();
-  const beadRing = smoothstep(0.03, 0.0, bead.sub(0.1).abs());
+  const beadRing = float(1).sub(smoothstep(0.0, 0.03, bead.sub(0.1).abs()));
   const latCol = vec3(0.02, 0.02, 0.04).mul(latLine).add(pal(fam).mul(beadRing).mul(sweep.mul(1.4).add(0.08)));
   col = col.add(latCol.mul(wLat).mul(black));
 
@@ -315,7 +315,7 @@ export function look(ctx) {
   // eased in and out over a bar so the pull never pops. Everything else plays sharp.
   const phF = c.phrase.floor(), phu = c.phrase.fract();
   const pullOn = step(0.66, phF.add(c.seed).mul(12.9898).sin().mul(43758.5453).fract())
-    .mul(smoothstep(0, 0.125, phu)).mul(smoothstep(1, 0.875, phu));
+    .mul(smoothstep(0, 0.125, phu)).mul(float(1).sub(smoothstep(0.875, 1, phu)));
   const dofW = on.mul(pullOn.mul(hasSubject).max(vis));
   return vignette(mix(graded, focused, dofW), ctx.param("vignette", 0.35), { color: [0, 0, 0] });
 }

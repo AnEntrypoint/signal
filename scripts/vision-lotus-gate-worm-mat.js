@@ -54,13 +54,13 @@ export function material(ctx) {
   const row = s.div(2.6).floor();
   const hd = vec2(s.div(2.6).fract().sub(0.5).mul(2.6), ang.div(TAU).mul(7).add(row.mul(0.5)).fract().sub(0.5).mul(rf.mul(TAU / 7))).length();
   const hr = rf.mul(0.36).min(0.75);
-  const cHo = B.mul(smoothstep(0.14, 0.04, hd.sub(hr).abs())).add(mix(H, W, step(row.mod(4), 0.5).mul(0.5)).mul(inv(smoothstep(hr.mul(0.4), hr.mul(0.5), hd))));
+  const cHo = B.mul(float(1).sub(smoothstep(0.04, 0.14, hd.sub(hr).abs()))).add(mix(H, W, step(row.mod(4), 0.5).mul(0.5)).mul(inv(smoothstep(hr.mul(0.4), hr.mul(0.5), hd))));
   const t = ang.div(TAU).mul(4);
   const cSc = mix(B, W, 0.2).mul(stripes(s.mul(0.32).add(t), 1, 0.07).mul(stripes(s.mul(0.32).sub(t), 1, 0.07)));
   const swap = pair ? inv(step(0.5, rn(8))) : step(0.5, rn(8));
   const t1 = 0.8 + pair * 0.03;
   const skin = mix(cStr, mix(cHo, cSc, swap), step(uu, smoothstep(t1, t1 + 0.08, u).mul(1.02)));
-  const run = smoothstep(0.05, 0, uu.sub(c.beat.fract()).abs()).mul(step(0.001, c.kick));   // the kick's light climbs the stem
+  const run = float(1).sub(smoothstep(0, 0.05, uu.sub(c.beat.fract()).abs())).mul(step(0.001, c.kick));   // the kick's light climbs the stem
   const edge = ca.abs();
   const lit = skin.mul(sa.abs().mul(0.45).add(0.55)).add(mix(A, W, 0.4).mul(smoothstep(0.86, 1, edge)).mul(run.add(0.45)));
   const dark = is(float(n), step(0.5, rn(13)).add(1)).mul(step(uu, smoothstep(0.85, 0.91, u).mul(1.02)));

@@ -92,10 +92,10 @@ export function material(ctx) {
       const on = step(j, nM.sub(0.5)).mul(maskIris(smoothstep(0.4 + j * 0.03, 0.46 + j * 0.03, u), rq.div(sz.mul(2.4))));
       const dome = step(rq, sz).mul(step(th, 1.6));
       const stripe = step(th.mul(sz).div(0.8).add(t.mul(0.3)).fract(), 0.5).mul(step(sz.mul(0.55), rq));
-      const rim = smoothstep(0.35, 0, rq.sub(sz).abs()).mul(step(th, 1.6));
+      const rim = float(1).sub(smoothstep(0, 0.35, rq.sub(sz).abs())).mul(step(th, 1.6));
       const tx = q.x.abs(), ts = q.y.negate();
-      const ten = smoothstep(0.25, 0, tx.sub(sz.mul(0.4)).sub(ts.mul(0.4).sub(t.mul(2)).add(j).sin().mul(0.5)).abs()).mul(step(0, ts)).mul(step(ts, sz.mul(1.4)))
-        .max(smoothstep(0.22, 0, tx.sub(ts.mul(0.5).sub(t.mul(1.6)).sin().mul(0.4)).abs()).mul(step(0, ts)).mul(step(ts, sz.mul(1.8))));
+      const ten = float(1).sub(smoothstep(0, 0.25, tx.sub(sz.mul(0.4)).sub(ts.mul(0.4).sub(t.mul(2)).add(j).sin().mul(0.5)).abs())).mul(step(0, ts)).mul(step(ts, sz.mul(1.4)))
+        .max(float(1).sub(smoothstep(0, 0.22, tx.sub(ts.mul(0.5).sub(t.mul(1.6)).sin().mul(0.4)).abs())).mul(step(0, ts)).mul(step(ts, sz.mul(1.8))));
       col = col.mul(inv(dome.mul(on))).add(mix(A, W, 0.3).mul(dome.mul(stripe).mul(0.4).add(rim.mul(0.6)).add(ten.mul(0.35))).mul(on).mul(cover));
     }
     return cutout(col, cover);
@@ -116,7 +116,7 @@ export function material(ctx) {
       const dn = p.dot(n).sub(h).abs(), dt = p.dot(tt).abs();
       line = line.max(smoothstep(blur.add(0.08), 0.0, dn).mul(smoothstep(half.add(0.3), half, dt)));
       const va = a.add(mm.mul(PI / 8));
-      tips = tips.max(smoothstep(1.1, 0.4, p.sub(vec2(va.cos(), va.sin()).mul(R)).length()));
+      tips = tips.max(float(1).sub(smoothstep(0.4, 1.1, p.sub(vec2(va.cos(), va.sin()).mul(R)).length())));
     }
     const pr = io(0.4, 0.52, 0.95, 0.975);
     const draw = maskClock(pr, atan2(p.x, p.y));
@@ -132,7 +132,7 @@ export function material(ctx) {
       const d = vec2(fa.mul(TAU * Rr).div(N), rr.sub(Rr)).length();
       const k = ia.div(N).fract();
       const pb = io(0.46 + r * 0.04, 0.56 + r * 0.04, 0.95 - r * 0.005, 0.97);
-      const dot = smoothstep(0.75, 0.45, d).mul(maskBeads(pb, k));
+      const dot = float(1).sub(smoothstep(0.45, 0.75, d)).mul(maskBeads(pb, k));
       col = col.add(mix(r ? B : A, W, 0.3).mul(dot).mul(float(0.22).add(cul.mul(0.25))));
     }
     m.colorNode = col;
@@ -209,7 +209,7 @@ export function material(ctx) {
   const qs = pb.sub(vec2(0, SY));
   const rs = qs.length();
   const front = c.beat.fract().mul(34);
-  const kl = smoothstep(2.4, 0, rs.sub(front).abs()).mul(step(0.001, c.kick)).mul(smoothstep(34, 16, front));
+  const kl = float(1).sub(smoothstep(0, 2.4, rs.sub(front).abs())).mul(step(0.001, c.kick)).mul(float(1).sub(smoothstep(16, 34, front)));
 
   // the dark dome, filling behind the arcs from the crown outward
   const rb = pb.length();
@@ -304,7 +304,7 @@ export function material(ctx) {
     const thread = j === 0 ? maskDraw(smoothstep(0.0, 0.08, u).mul(tX), s.div(L)) : float(0);
     const line = stroke(lineD, 0.045).mul(step(0, s)).mul(step(s, L)).mul(maskDraw(pt, s.div(L)).max(thread));
     const nb = j === 0 ? nib(smoothstep(0.0, 0.08, u), s.div(L), 0.03).mul(step(lineD, 0.25)).mul(step(u, 0.09)) : float(0);
-    const run = smoothstep(1.6, 0, s.sub(c.beat.fract().mul(L)).abs()).mul(step(0.001, c.kick));
+    const run = float(1).sub(smoothstep(0, 1.6, s.sub(c.beat.fract().mul(L)).abs())).mul(step(0.001, c.kick));
     const blit = float(0.75).add(run.mul(0.8)).add(cul.mul(w).mul(0.7));
     add(B.mul(0.55), line);
     add(W.mul(1.3), nb);

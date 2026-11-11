@@ -49,12 +49,12 @@ export function material(ctx) {
 
   // presence: its own tide, and everyone in around a scene change (seamD = seconds to the nearest drop)
   const tide = t.mul(TAU / (31 + n * 7)).add(ph(11)).sin().mul(0.6).add(t.mul(TAU / (53 + n * 5)).add(ph(12)).sin().mul(0.4)).mul(0.5).add(0.5);
-  const near = smoothstep(16, 2, c.seamD);
+  const near = float(1).sub(smoothstep(2, 16, c.seamD));
   const show = smoothstep(0.35, 0.75, tide).max(near).mul(c.on.max(0.35));
   // head first out of the dark: the body exists where s < show; the edge tapers so nothing pops
   const len = smoothstep(show, show.sub(0.08), s);
   const swell = s.mul(22).sub(t.mul(5.5)).sin().mul(0.28).add(1);            // peristalsis, head -> tail
-  const kickRun = smoothstep(0.07, 0, s.sub(c.beat.fract().mul(1.2)).abs()).mul(c.kick.max(0).min(1));
+  const kickRun = float(1).sub(smoothstep(0, 0.07, s.sub(c.beat.fract().mul(1.2)).abs())).mul(c.kick.max(0).min(1));
   const r = float(2.2).add(rn(13).mul(1.6)).mul(inv(s).clamp(0, 1).pow(0.4).mul(0.85).add(0.15)).mul(s.mul(40).clamp(0, 1).sqrt())
     .mul(swell).mul(kickRun.mul(0.35).add(1)).mul(len)
     .mul(smoothstep(8, 26, P.length()).mul(0.5).add(0.5));   // thins as it passes close: never fills the lens
@@ -77,12 +77,12 @@ export function material(ctx) {
   const t3 = ang.div(TAU).mul(8);
   const cSc = mix(A, H, s).mul(stripes(sl.mul(0.35).add(t3), 1, 0.07).mul(stripes(sl.mul(0.35).sub(t3), 1, 0.07)));
   const bd = vec2(sl.div(1.6).fract().sub(0.5), ang.div(TAU).mul(10).add(sl.div(1.6).floor().mul(0.5)).fract().sub(0.5)).length();
-  const cBe = mix(B, H, step(sl.div(1.6).floor().mod(3), 0.5)).mul(smoothstep(0.42, 0.34, bd)).mul(step(0.16, bd).mul(0.75).add(0.25));
+  const cBe = mix(B, H, step(sl.div(1.6).floor().mod(3), 0.5)).mul(float(1).sub(smoothstep(0.34, 0.42, bd))).mul(step(0.16, bd).mul(0.75).add(0.25));
   const skin = cStr.mul(is(skinPick, 0)).add(cSc.mul(is(skinPick, 1))).add(cBe.mul(is(skinPick, 2)));
   const facing = nrm.z.abs();                                 // camera space: +z faces the eye
-  const rim = smoothstep(0.25, 0.0, facing);
+  const rim = float(1).sub(smoothstep(0.0, 0.25, facing));
   const glow = mix(B, W, 0.15).mul(kickRun.mul(0.6)).add(H.mul(rim).mul(0.5));
-  const shade = facing.mul(0.6).add(0.4).mul(smoothstep(1, 0.6, s).mul(0.6).add(0.4));
+  const shade = facing.mul(0.6).add(0.4).mul(float(1).sub(smoothstep(0.6, 1, s)).mul(0.6).add(0.4));
   // near the eye it goes dark, not white: the skin fades to opaque black inside ~16 m (camera-space distance;
   // the object rides the camera, so |surface| is the view distance), and no channel exceeds the palette's 1
   const dist = P.add(nrm.mul(r)).length();

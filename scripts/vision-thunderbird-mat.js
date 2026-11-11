@@ -55,7 +55,7 @@ export function material(ctx) {
   const dot = (d, r) => inv(smoothstep(float(r).sub(aa), r, d));
   const e = vec2(q.x, q.y.sub(EY)), rr = e.length(), ax = q.x.abs();
   const front = c.beat.fract().mul(30);
-  const kl = smoothstep(2.4, 0, rr.sub(front).abs()).mul(kickOn).mul(smoothstep(30, 14, front));
+  const kl = float(1).sub(smoothstep(0, 2.4, rr.sub(front).abs())).mul(kickOn).mul(float(1).sub(smoothstep(14, 30, front)));
   const dq = P.div(fwidth(P.x).max(0.0001)).floor();
   const dith = dq.x.add(dq.y).mod(2);                                    // 2x2 ordered dither (checker) for shadows
   const m = new MeshBasicNodeMaterial();
@@ -85,7 +85,7 @@ export function material(ctx) {
     const nf2 = step(0.5, rn(10));
     const yg = y0.add(dy.mul(0.65)).add(s.sub(0.65).mul(26)), d3 = q.y.sub(yg).sub(zig(ax, h1.mul(9), 3)).abs().div(1.4);
     bolt = bolt.max(stroke(d3, 0.11).mul(step(0.65, s)).mul(maskDraw(bd.mul(1.5).sub(0.5), s)).mul(nf2));
-    const nearB = smoothstep(22, 0, q.y.sub(yb).abs()).mul(lOn);
+    const nearB = float(1).sub(smoothstep(0, 22, q.y.sub(yb).abs())).mul(lOn);
     // cloud scrolls: spiral glyphs in rows, drifting apart from the centre line, each placed in turn outward
     const pc = io(0.5, 0.64, 0.945, 0.965), rows2 = step(0.5, rn(9));
     let clouds = float(0);
@@ -165,7 +165,7 @@ export function material(ctx) {
         const d = vec2(ax.sub(x0).sub(ph.cos().mul(1.4)).sub(ox), q.y.sub(y0).sub(oy));
         const lx = d.x.mul(tilt.cos()).sub(d.y.mul(tilt.sin())), ly = d.x.mul(tilt.sin()).add(d.y.mul(tilt.cos()));
         const t = ly.div(L.max(0.01)).add(0.5);
-        const hw = smoothstep(1, 0.45, t).mul(smoothstep(0, 0.2, t)).mul(2.0);
+        const hw = float(1).sub(smoothstep(0.45, 1, t)).mul(smoothstep(0, 0.2, t)).mul(2.0);
         const inT = step(0, t).mul(step(t, 1)).mul(step(0.01, L));
         return { lx, t, hw, inT, body: step(lx.abs(), hw).mul(inT) };
       };
@@ -260,7 +260,7 @@ export function material(ctx) {
   // the illusion: light swells outward through the rows (or spirals inward), streaming rings leave the fixed pupil
   const swell = rr.mul(2.2).sub(c.real.mul(5)).sin().mul(0.5).add(0.5);
   const spir = ang.mul(6).add(rr.mul(0.9)).add(c.real.mul(1.2).mul(isense)).fract();
-  const wave = mix(swell, smoothstep(0.5, 0, spir.sub(0.5).abs()), ill);
+  const wave = mix(swell, float(1).sub(smoothstep(0, 0.5, spir.sub(0.5).abs())), ill);
   rows.forEach(([r, n0, rad, sR], k) => {
     const n = nAdd.add(n0);
     const loc = ang.add(spin.mul(sR)).mul(n).fract().sub(0.5).mul(TAU * r).div(n);
@@ -287,7 +287,7 @@ export function material(ctx) {
     const g = growFn(fi), Lc = Lfn(fi).mul(g);
     const t = r.sub(R0).div(Lc.max(0.01));
     const inT = step(0, t).mul(step(t, 1)).mul(step(0.001, g)).mul(inFan);
-    const hw = r.mul(DA).mul(0.4).mul(smoothstep(1, 0.5, t)).mul(smoothstep(0, 0.12, t));
+    const hw = r.mul(DA).mul(0.4).mul(float(1).sub(smoothstep(0.5, 1, t))).mul(smoothstep(0, 0.12, t));
     const rt = Lc.add(R0 + 0.8), dr = r.sub(rt);
     return {
       fi, t, inFan,
@@ -310,7 +310,7 @@ export function material(ctx) {
   const wv = pk(2, 2);
   const Lw = (fi) => { const t = fi.div(NF - 1); return mix(t.mul(0.8).add(0.1).mul(PI).sin().mul(8).add(10.5), float(19.5).sub(t.mul(10)), wv); };
   const wing = fan(wr, wf, NF, A1.sub(A0).div(NF), Lw, (fi) => smoothstep(0, 1, pw.mul(NF + 1.5).sub(fi).div(1.5).clamp(0, 1)), pDots);
-  const band = smoothstep(0.16, 0, wing.t.sub(c.real.div(2.6).sub(wing.fi.mul(0.07)).fract().mul(1.3)).abs());
+  const band = float(1).sub(smoothstep(0, 0.16, wing.t.sub(c.real.div(2.6).sub(wing.fi.mul(0.07)).fract().mul(1.3)).abs()));
   const wcol = mix(A, B, wing.t.clamp(0, 1));
   const wlit = float(0.8).add(kl.mul(0.5)).add(cul.mul(0.3));
   body(wing.inside);

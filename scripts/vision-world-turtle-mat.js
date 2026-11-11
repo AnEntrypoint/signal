@@ -75,7 +75,7 @@ export function material(ctx) {
     const finger = stripes(psi.div(sp.mul(2)), 1, 0.05).mul(22);
     const cover = step(de, Rg.add(finger)).mul(step(0.004, grow));
     const front = c.beat.fract().mul(130);
-    const kl = smoothstep(6, 0, r.sub(front).abs()).mul(kickOn).mul(smoothstep(130, 60, front));
+    const kl = float(1).sub(smoothstep(0, 6, r.sub(front).abs())).mul(kickOn).mul(float(1).sub(smoothstep(60, 130, front)));
     const f = psw.div(sp).add(0.5).fract().sub(0.5).abs().mul(sp);
     const lines = stroke(f.div(fwidth(psw).max(0.02).mul(1.2).div(aa)), 0.22).mul(out);
     // op-art swell: the bands near the shell widen into black/white stripes
@@ -93,7 +93,7 @@ export function material(ctx) {
     const brad = h.mul(7).fract().mul(1.4).add(0.6);
     const bq = vec2(ph2.div(9).fract().sub(0.5).mul(9), psw.sub(li.mul(sp)));
     const bub = stroke(bq.length().sub(brad).abs(), 0.18).max(stroke(bq.sub(brad.mul(0.4)).length(), 0.2))
-      .mul(step(0.62, h)).mul(smoothstep(-12, -24, P.y)).mul(maskBeads(pB, h.sub(0.62).div(0.38))).mul(out);
+      .mul(step(0.62, h)).mul(float(1).sub(smoothstep(-24, -12, P.y))).mul(maskBeads(pB, h.sub(0.62).div(0.38))).mul(out);
     col = mix(col, mix(mix(H, H2, step(0.81, h)), W, 0.2).mul(float(0.9).add(kl)), bub);
     // fish: two mirrored schools of two-stroke glyphs circling in arcs
     const pF = io(0.55, 0.68, 0.94, 0.955);
@@ -108,7 +108,7 @@ export function material(ctx) {
       const X = xt.div(3.4), Y = yr.div(3.4), fy = inv(X.mul(X)).mul(0.36);
       const d = Y.sub(fy).abs().min(Y.add(fy).abs()).mul(3.4);
       const g = stroke(d, 0.16).mul(step(-1, X)).mul(step(X, 1.45));
-      const arc = smoothstep(1.25, 0.95, th.abs());
+      const arc = float(1).sub(smoothstep(0.95, 1.25, th.abs()));
       const order = kIdx.mul(0.37).add(j * 0.5).fract();
       fish = fish.max(g.mul(arc).mul(maskBeads(pF, order)));
     });
@@ -133,7 +133,7 @@ export function material(ctx) {
     const ac = ad.sub(kd.mul(TAU).div(nD));
     const bd = vec2(ac.mul((R1 + R2) / 2), r.sub((R1 + R2) / 2)).length();
     const front = c.beat.fract().mul(40);
-    const kl = smoothstep(3, 0, r.sub(front).abs()).mul(kickOn).mul(smoothstep(40, 30, front));
+    const kl = float(1).sub(smoothstep(0, 3, r.sub(front).abs())).mul(kickOn).mul(float(1).sub(smoothstep(30, 40, front)));
     const bead = stroke(bd, 0.55).mul(maskBeads(pD, kd.div(nD).fract()));
     // thirteen moon scutes, the other way
     const am = a.sub(c.real.mul(TAU / 44).mul(sense(4)));
@@ -206,7 +206,7 @@ export function material(ctx) {
   const stroke = (d, w) => inv(smoothstep(float(w), aa.add(w), d));
   const ax = p.x.abs(), q0 = p.sub(vec2(0, SY)), rr = q0.length();
   const front = c.beat.fract().mul(32);
-  const kl = smoothstep(2, 0, rr.sub(front).abs()).mul(kickOn).mul(smoothstep(32, 18, front));
+  const kl = float(1).sub(smoothstep(0, 2, rr.sub(front).abs())).mul(kickOn).mul(float(1).sub(smoothstep(18, 32, front)));
   let col = vec3(0), cover = float(0);
   const lay = (body, lit) => { col = mix(col, lit, body); cover = cover.max(body); };
 
@@ -226,7 +226,7 @@ export function material(ctx) {
     const row = s.div(1.5).floor();
     const bead = stroke(vec2(sc, tc).length(), 0.4).mul(step(t.abs(), w.sub(0.35))).mul(maskBeads(pr, s.div(L).add(0.05)));
     const rim = stroke(t.abs().sub(w).abs(), 0.1);
-    const kb = smoothstep(2.5, 0, vec2(ax, p.y).sub(vec2(0, SY)).length().sub(front).abs()).mul(kickOn);
+    const kb = float(1).sub(smoothstep(0, 2.5, vec2(ax, p.y).sub(vec2(0, SY)).length().sub(front).abs())).mul(kickOn);
     lay(body, A.mul(is(row.mod(3), 2)).add(H.mul(is(row.mod(3), 0))).add(H2.mul(is(row.mod(3), 1))).mul(bead).mul(float(0.9).add(kb.mul(0.8))).add(mix(A, W, 0.3).mul(rim).mul(0.8)));
   });
   // tail
