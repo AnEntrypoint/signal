@@ -115,7 +115,10 @@ export function shown(c, name, d = 0) {
   // within its turn each piece closes along its own radius, outside in. Before the drop the layers leave in order,
   // after it the next scene's layers arrive in order; about a third of them stand through the drop itself.
   const turn = ((String(name).split("").reduce((q, ch) => q * 31 + ch.charCodeAt(0), 7) % 997) / 997);
-  const seamGate = smoothstep(0, 0.06, mix(float(0.55), float(1.25), c.seamD.div(SCORE.deck.seam).clamp(0, 1))
+  // 2026-11-11 (lanmower saw a whole scene flip in one frame at the drop): the scene clock jumps at the seam,
+  // so NOTHING may stand on it. Every piece is out by the seam itself and the next scene builds out of the dark;
+  // the companion worms and the bend carry the eye across that half-second.
+  const seamGate = smoothstep(0, 0.06, mix(float(-0.1), float(1.25), c.seamD.div(SCORE.deck.seam).clamp(0, 1))
     .sub(pieceLag(name).div(SCORE.piece ?? 2.25).mul(0.25).add(float(d).clamp(0, 1).mul(0.35)).add(turn * 0.45))); // the heart of every layer stands through the drop: never an empty frame
   const lag = float(d).clamp(0, 1).mul(SCORE.wipe).add(pieceLag(name));
   let v = float(0);
@@ -147,6 +150,9 @@ export function lens(c, key) {
   let v = float(0);
   // 2026-11-11 (lanmower: more view distortion, no hard cuts): one bend drifts into the next over 8 s
   for (const name in SCORE.lens) v = v.add(win(c.sec, SEC[name], 8).mul(SCORE.lens[name][key]));
+  // the scene clock jumps at a dealt seam: the scene's own bend eases out before it and back in after it,
+  // so the view never snaps from one bend to another
+  v = v.mul(smoothstep(0.3, 4, c.seamD));
   return v.add(key === "hyper" ? 0.22 : 0);   // the hyperbolic slide never fully lets go
 }
 // THE BENT CAMERA. bendUv(c, uv, aspect): where on the undistorted frame this screen pixel reads from.
