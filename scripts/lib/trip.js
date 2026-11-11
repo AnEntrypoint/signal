@@ -20,16 +20,45 @@ export const KICK_RUNS = (() => { const r = []; let a = -1; ENERGY.bars.forEach(
 export { SCORE };
 export const SEC = SCORE.sections;
 export const BPS = SCORE.bpm / 60;
+// the deck on the CPU: the same dealing the shaders decode. deckOf(seed) -> 0..11 (0 for seed 0: as written).
+export const DECK_PERMS = [[0, 1, 2], [0, 2, 1], [1, 0, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0]];
+export function deckOf(seed) { if (!seed) return 0; const x = Math.sin((seed + 1) * 61.7) * 43758.5453; const d = Math.floor((x - Math.floor(x)) * 12); return d === 0 ? 7 : d; }
+// real track seconds -> scene seconds under deck d
+export function sceneTime(t, d) {
+  if (!d || t == null) return t;
+  const D = SCORE.deck, p = DECK_PERMS[d % 6], sw = Math.floor(d / 6);
+  for (let i = 0; i < 3; i++) { const a = D.long[i]; if (t >= a && t < a + D.longLen) return D.long[p[i]] + (t - a); }
+  for (let i = 0; i < 2; i++) { const a = D.short[i]; if (t >= a && t < a + D.shortLen) return (sw ? D.short[1 - i] : a) + (t - a); }
+  return t;
+}
 
 export function tripClock(ctx) {
   const t0 = ctx.param("t0", 0), on = ctx.param("on", 0);
   const rolled = time.sub(t0).add(3600).mod(3600).min(SCORE.duration);
-  const sec = select(on.greaterThan(0.5), rolled, time.mod(SCORE.duration));
-  const beat = sec.sub(SCORE.firstBeat).mul(BPS);
+  const real = select(on.greaterThan(0.5), rolled, time.mod(SCORE.duration));
+  // THE DECK: the roll's dealt order of scenes (params.dk, from the director; 0 = as written). sec is SCENE time:
+  // what every layer, lens and window reads; real is the track's own time: beat, kick and vision slots.
+  const dk = ctx.param("dk", 0).mul(on.greaterThan(0.5).select(1, 0));
+  const D = SCORE.deck, pi = dk.mod(6), sw = dk.div(6).floor();
+  let sec = real, seamD = float(99);
+  const longSrc = (i) => { let v = float(D.long[DECK_PERMS[5][i]]); for (let k = 4; k >= 0; k--) v = select(pi.lessThan(k + 0.5), float(D.long[DECK_PERMS[k][i]]), v); return v; };
+  D.long.forEach((a, i) => {
+    const inS = step(a, real).mul(float(1).sub(step(a + D.longLen, real)));
+    sec = sec.add(inS.mul(longSrc(i).sub(a)));
+    seamD = seamD.min(real.sub(a).abs()).min(real.sub(a + D.longLen).abs());
+  });
+  D.short.forEach((a, i) => {
+    const inS = step(a, real).mul(float(1).sub(step(a + D.shortLen, real)));
+    const src = select(sw.greaterThan(0.5), float(D.short[1 - i]), float(a));
+    sec = sec.add(inS.mul(src.sub(a)));
+    seamD = seamD.min(real.sub(a).abs()).min(real.sub(a + D.shortLen).abs());
+  });
+  seamD = select(dk.greaterThan(0.5), seamD, float(99));
+  const beat = real.sub(SCORE.firstBeat).mul(BPS);
   // the kick only where the measured track has one: the director (stage.js) hands the current/next kick run
   // as params k0 / k1 (seconds, from KICK_RUNS); idle or none: no kick at all
   const k0 = ctx.param("k0", -1), k1 = ctx.param("k1", -1);
-  const live = smoothstep(k0.sub(0.05), k0, sec).mul(smoothstep(k1.add(0.05), k1, sec));
+  const live = smoothstep(k0.sub(0.05), k0, real).mul(smoothstep(k1.add(0.05), k1, real));
   const env = (b, k) => b.fract().mul(k).negate().exp().mul(live);
   // THE ROLL'S SEED: a new integer every roll (0 idle), the same on every machine in the room.
   // c.rnd(n): 0..1, fixed for this roll, different per channel n. Channels 1-9 are the spine's; a piece uses 10+.
@@ -40,7 +69,7 @@ export function tripClock(ctx) {
   const pick = (n, k) => rnd(n).mul(k).floor().min(k - 1);
   return {
     seed, rnd, pick, hue: rnd(1), dir: rnd(2).step(0.5).mul(2).sub(1),
-    sec, beat, on, live, bar: beat.div(4), phrase: beat.div(32),
+    sec, real, seamD, beat, on, live, bar: beat.div(4), phrase: beat.div(32),
     kick: env(beat, 4.5), half: env(beat.div(2).add(0.5), 6), barHit: env(beat.div(4), 6),
     bass: audioSpectrum(0.08), high: audioSpectrum(0.75),
   };
@@ -88,12 +117,14 @@ function pieceLag(name) {
   return r.mul(SCORE.piece ?? 2.25);
 }
 export function shown(c, name, d = 0) {
+  // a dealt seam: pieces leave before it and arrive after it, never all at once (40% stand at the seam itself)
+  const seamGate = step(pieceLag(name).div(SCORE.piece ?? 2.25), mix(float(0.4), float(1), c.seamD.div(SCORE.deck.seam).clamp(0, 1)));
   const lag = float(d).clamp(0, 1).mul(SCORE.wipe).add(pieceLag(name));
   let v = float(0);
   for (const [a, b] of SCORE.layers[name]) {
     v = v.add(smoothstep(a, a + 0.2, c.sec.sub(lag)).mul(smoothstep(b + 0.2, b, c.sec.sub(lag))));
   }
-  return v.clamp(0, 1);
+  return v.clamp(0, 1).mul(seamGate);
 }
 // A lens number ("bulge" | "swirl" | "fold" | "hyper" | "droste") at this moment, eased 1.5 s across section lines.
 export function lens(c, key) {

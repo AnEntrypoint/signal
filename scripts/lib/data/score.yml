@@ -28,6 +28,16 @@ layout:
 # (discarded, so what is behind it shows). Each show and hide is a wipe travelling out from the composition
 # centre over `wipe` seconds, so a layer uncovers the next instead of everything standing at once.
 wipe: 3
+# THE DECK: each roll deals the middle of the trip in its own order. The three 24 s scenes that start at these
+# seconds (bloom, flight, ascent) play in any of their 6 orders; the two 12 s ones (deep, reset) may swap. Hex
+# stays put (its fill is the track's fill), and so do seed, pulse, peak and return. All on the 12 s phrase grid, so
+# the beat never slips. At each seam the scene leaving comes apart piece by piece and the next builds itself in.
+deck:
+  long: [24.35, 60.35, 108.35]
+  longLen: 24
+  short: [48.35, 96.35]
+  shortLen: 12
+  seam: 2.5     # seconds either side of a seam over which pieces leave / arrive
 piece: 2.25   # each fragment's own extra delay, 0..this many seconds (1.5 bars): layers change over piece by piece
 layers:
   eye:      [[3.35, 57.35], [108.35, 195]]      # lids open at 3.35; cut away as we pass the pupil; back for ascent
