@@ -6,3 +6,10 @@ vision-contour-oracle:
   physics: none
   primitive: {depth: 10, height: 40, kind: box, width: 70}
   tags: [blueprint]
+vision-many-armed:
+  feetPosition: {x: 0, y: 600, z: 0}
+  id: vision-many-armed
+  material: {kind: scripted, script: engine/blueprint}
+  physics: none
+  primitive: {depth: 10, height: 40, kind: box, width: 70}
+  tags: [blueprint]
