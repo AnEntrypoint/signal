@@ -1,34 +1,12 @@
-// THE LOTUS GATE: a thousand-petal lotus opening ring by ring around a pointed arched doorway in its heart; through
-// the door a small starfield and a second, distant lotus with its own door show (the droste: the whole repeats).
-// ONE SCENE, FIVE LAYERS at five depths, one script (params.layer, baked), each on its OWN motion:
-//   "world" z -30  SCROLLS    black water under a dark sky: lily pads (concentric bead discs) float sideways on rows
-//                             that widen toward you, dragonflies (four-stroke glyphs) hover, petals drift up. It
-//                             grows from the lotus outward as one giant blossom outline, scalloped by a bead front.
-//   "ring"  z -12  TURNS      the halo: two line circles, two bead rings counter-turning, twelve aura petals (additive)
-//   "being" z   0  BREATHES   bindu, the arch drawing itself, petal rings opening one by one, alternately unscrewing
-//                             clockwise / counter-clockwise, each ring breathing in its own sense
-//   "veil"  z +10  DRIFTS     great black petals adrift up the sides, hiding the halo and the stems behind them
-//   "fore"  z +22  UNDULATES  the near water's swell along the bottom, buds surfacing on it, pollen sparks rising
-//   the STEMS are real 3D tubes winding in depth: scripts/vision-lotus-gate-worm-geo.js / -worm-mat.js
-// being / veil / fore / world are CUTOUT (alphaTest, depth-writing): a near shape hides what is behind it.
-// THE SCORE (u = 0..1): 0 bindu / .02 arch draws / .08 door lining beads / .1-.3 rings open / .25 world blooms /
-// .4 halo lines, .44 bead rings, .52 aura / .5 dew on the tips, .55 doorway stars + droste lotus, .58 seed-pod crown,
-// .6 dragonflies, .62 rising petals, .65 bindu star / .55 stems, .62 veil petals, .66 near water and buds /
-// .85 culmination: counter-rotation LOCK (all rings align into one star) or FIGURE/GROUND flip, the door's lotus zooms /
-// .93.. everything leaves last-in first-out through its own mask.
-// Seed channels 420..439: 0 hue family, 1 petal count, 2 ring sense, 3 door content, 4 dragonflies, 5 halo speed,
-// 6 water scroll sense, 7 stem count, 8 stem skin, 9 illusion variant, 10 fifth ring, 12 veil phase, 13 dark stem,
-// 17 hot accent.
+// THE LOTUS GATE: petal rings opening round a pointed arch door; layers world/ring/being/veil/fore by params.layer; seed ch 420-439, 440-443 (petal gates).
 import { MeshBasicNodeMaterial, AdditiveBlending, DoubleSide } from "builtin/three";
 import { positionGeometry, float, vec2, vec3, smoothstep, step, mix, atan2, fwidth } from "builtin/tsl";
-import { tripClock, visionShown, visionU, climb, maskDraw, maskBeads, maskClock, nib , inv } from "./lib/trip.js";
+import { tripClock, visionShown, visionU, climb, maskDraw, maskBeads, maskClock, nib, inv, is } from "./lib/trip.js";
 
 const TAU = 6.28318, PI = 3.14159;
 const DEPTH = { world: 104, ring: 86, being: 74, veil: 64, fore: 52 };
 const CY = -2, HW = 4.2, YL = CY - 7, YS = CY + 1, RA = 6.5, AXC = HW - RA, APEX = YS + Math.sqrt(RA * RA - AXC * AXC);
 const NR = 5;
-const is = (v, i) => step(v.sub(i).abs(), 0.5);
-const inv = (x) => float(1).sub(x);
 const hash = (x) => float(x).mul(12.9898).sin().mul(43758.5453).fract();
 function seg(p, a, b) {
   const bx = b[0] - a[0], by = b[1] - a[1], bb = bx * bx + by * by;
@@ -69,7 +47,7 @@ function leaf(x, y, len, wid) {
   return { t, ex, inside: step(0, ex).mul(step(0, t)).mul(step(t, 1)) };
 }
 
-export function material(ctx) {
+function build(ctx) {
   const layer = ctx.params.layer ?? "being";
   const c = tripClock(ctx);
   const hold = ctx.param("hold", -1), u = hold.greaterThan(-0.5).select(hold, visionU(ctx, c));
@@ -91,14 +69,17 @@ export function material(ctx) {
   const kl = float(1).sub(smoothstep(0, 2.5, rr.sub(c.beat.fract().mul(56)).abs())).mul(kickOn);   // the kick: a ripple outward
   const cul = io(0.85, 0.89, 0.93, 0.95).mul(climb(c).mul(0.4).add(0.6));
   const flipV = step(0.5, rn(9));
+  const low = ctx.quality === "low", slot = ctx.param("vw1", -1).sub(ctx.param("vw0", -1)).max(1);
   const m = new MeshBasicNodeMaterial();
   m.side = DoubleSide;
 
   // ------------------------------------------------------------------ WORLD: water and sky (scrolls)
   if (layer === "world") {
     // coverage: one giant blossom outline growing from the lotus, its front a scalloped row of beads
-    const grow = io(0.25, 0.45, 0.88, 0.985), Rg = grow.mul(grow).mul(190); // squared: the blossom spends its exit inside the frame, closing back into the lotus, not popping
-    const shape = an.mul(4).cos().abs().mul(0.22).add(0.78);
+    const cv = pk(23, 3), close = smoothstep(inv(float(6).div(slot)), 1, u);
+    const grow = smoothstep(0, 0.32, u), Rg = grow.mul(grow).mul(190).mul(inv(close.mul(close).mul(0.86)));
+    const lobes = float(4).add(is(cv, 1).mul(2)), tw = an.add(close.mul(close).mul(is(cv, 2)).mul(2.4));
+    const shape = tw.mul(lobes).cos().abs().mul(float(0.22).add(close.mul(0.25).mul(is(cv, 1)))).add(0.78);
     const lead = rr.sub(Rg.mul(shape));
     const fb = vec2(an.mul(rr).div(3.2).fract().sub(0.5).mul(3.2), lead.sub(2.2)).length();
     const front = inv(smoothstep(1.0, 1.0 + 0.1, fb)).mul(step(0, lead));
@@ -117,17 +98,17 @@ export function material(ctx) {
     const pa = atan2(ly, lx), adot = pa.div(TAU).mul(cnt).fract().sub(0.5).mul(rho).mul(TAU).div(cnt);
     const dot = inv(smoothstep(rs.mul(0.28), rs.mul(0.34), vec2(adot, rho.div(rs).fract().sub(0.5).mul(rs)).length()));
     const pad = step(rho, pr).mul(inv(notch)).mul(has).mul(step(0.0001, v));
-    const padP = io(0.3, 0.5, 0.88, 0.93);
+    const padP = io(0.3, 0.5, 2, 3);
     const padOn = pad.mul(maskBeads(padP, hash(cid.add(ri.mul(5))).mul(0.6).add(rr.div(200))));
     let col = mix(A, B, rj.mod(2)).mul(dot).mul(0.55).add(A.mul(stroke(rho.sub(pr).abs(), 0.08)).mul(0.5)).mul(padOn);
     col = col.add(B.mul(kl).mul(padOn).mul(0.4));
     // the water line: a dashed bead row
     const wl = stroke(vec2(q.x.div(2.4).fract().sub(0.5).mul(2.4), q.y.sub(Wy)).length(), 0.28);
-    col = col.add(mix(A, W, 0.3).mul(wl).mul(0.7).mul(step(rr.div(170), io(0.3, 0.42, 0.88, 0.93))));
+    col = col.add(mix(A, W, 0.3).mul(wl).mul(0.7).mul(step(rr.div(170), io(0.3, 0.42, 2, 3))));
     // the sky: petals drifting up (placed in lanes, mirrored), dragonflies hovering
     const above = step(Wy + 1, q.y);
     let sky = vec3(0, 0, 0);
-    for (let j = 0; j < 5; j++) {
+    for (let j = 0; j < (low ? 3 : 5); j++) {
       const x0 = 40 + j * 13, rise = c.real.mul(0.6 + 0.12 * j).add(j * 23).mod(78);
       const px = ax.sub(x0).sub(c.real.mul(0.5).add(j).sin().mul(3)), py = q.y.sub(rise.add(Wy - 4));
       const tl = c.real.mul(0.5).add(j * 1.7).sin().mul(0.35), cs = tl.cos(), sn = tl.sin();
@@ -214,7 +195,7 @@ export function material(ctx) {
     const swell = (x) => float(x).mul(0.07).sub(c.real.mul(1.1)).sin().mul(2.2).add(float(x).mul(0.15).add(c.real.mul(0.7)).sin().mul(1.1));
     const yw = swell(q.x).add(-52).add(pW.mul(9));
     let col = vec3(0, 0, 0), cover = float(0);
-    for (let j = 0; j < 4; j++) {
+    for (let j = 0; j < (low ? 3 : 4); j++) {
       const xb = 30 + j * 20, pb = io(0.68 + j * 0.025, 0.74 + j * 0.025, 0.80 + j * 0.012, 0.83 + j * 0.012);
       const bx = ax.sub(xb).sub(c.real.mul(0.9).add(j).sin().mul(0.8));
       const by = q.y.sub(swell(q.x.sign().mul(xb)).add(-52).add(pW.mul(9)).sub(2).add(inv(pb).mul(12)));
@@ -340,5 +321,31 @@ export function material(ctx) {
   m.colorNode = col;
   m.opacityNode = cover.mul(live);
   m.alphaTest = 0.5;
+  return m;
+}
+
+const GL = { world: [6, 85, 0, 0.3], ring: [3.5, 42, 0.42, 0.55, 0.9, 0.98], being: [2.4, 22, -1, 0, 0.92, 0.99], veil: [4.5, 50, 0.58, 0.72, 0.86, 0.93], fore: [4.5, 60, 0.68, 0.8, 0.8, 0.88] };
+export function material(ctx) {
+  const m = build(ctx), layer = ctx.params.layer ?? "being", L = GL[layer] ?? GL.being;
+  const c = tripClock(ctx), hold = ctx.param("hold", -1), u = hold.greaterThan(-0.5).select(hold, visionU(ctx, c));
+  const Q = positionGeometry.xy.mul(74 / (DEPTH[layer] ?? 74)).sub(vec2(0, CY));
+  const v = c.pick(440, 3), fat = c.rnd(441).mul(0.2).add(0.38), slot = ctx.param("vw1", -1).sub(ctx.param("vw0", -1)).max(1);
+  const cells = (cs, p, salt) => {
+    const rr = Q.length(), rf = rr.div(cs), ri = rf.floor(), n = ri.add(0.5).mul(PI).floor().max(1).mul(2);
+    const af = atan2(Q.x, Q.y).div(TAU).add(0.5).add(ri.mod(2).mul(0.5).div(n)).fract().mul(n), ai = af.floor();
+    const lx = af.fract().sub(0.5), ly = rf.fract();
+    const h = ri.mul(12.9898).add(ai.mul(78.233)).add(salt).sin().mul(43758.5453).fract();
+    const kr = rr.div(L[1]).clamp(0, 1);
+    const k = kr.mul(0.85).add(h.mul(0.15)).mul(is(v, 0)).add(h.mul(is(v, 1))).add(ai.mul(0.618).add(ri.mul(0.31)).fract().mul(0.6).add(kr.mul(0.4)).mul(is(v, 2)));
+    const lp = float(p).sub(k.mul(0.75)).div(0.25).clamp(0, 1);
+    const t = ly.div(lp.max(0.01)), wid = t.clamp(0, 1).mul(PI).sin().max(0).pow(0.6).mul(fat).mul(lp.mul(0.4).add(0.6));
+    return step(lx.abs(), wid).mul(step(t, 1)).max(step(0.999, lp)).mul(step(0.001, lp));
+  };
+  const cs = c.rnd(442).mul(0.45).add(0.8).mul(L[0]);
+  const gin = L[2] < 0 ? float(1) : cells(cs, smoothstep(L[2], L[3], u), 1.7);
+  const gout = cells(cs.mul(1.2), inv(layer === "world" ? smoothstep(inv(float(0.4).div(slot)), 1, u) : smoothstep(L[4], L[5], u)), 5.3);
+  const g = gin.mul(gout);
+  m.colorNode = m.colorNode.mul(g);
+  m.opacityNode = m.opacityNode.mul(g);
   return m;
 }
