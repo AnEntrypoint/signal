@@ -46,7 +46,7 @@ export function material(ctx) {
     const rad = cell.mul(float(0.3).sub(is(km, 2).mul(0.14)));
     const dot = mix(stroke(dm, rad), stroke(dm.sub(rad).abs(), cell.mul(0.05)), is(km, 1));
     const pupil = stroke(dm, rad.mul(0.42)).mul(is(km, 0)).mul(io(0.6, 0.76, 2, 3));   // late: the dots open as eyes
-    const Rg = io(0.13, 0.45, 0.93, 0.99).mul(210);                  // the ripple front leaves the egg, and at the end is drawn back into it
+    const Rg = ssRaw(0.13, 0.45, u).mul(210).min(inv(ssRaw(0.925, 0.995, u)).mul(78));                  // the ripple front leaves the egg, and at the end is drawn back into it
     const front = c.beat.fract().mul(130);
     const kl = inv(ssRaw(0, 6, r.sub(front).abs())).mul(kickOn).mul(inv(ssRaw(60, 130, front)));
     const edge = inv(ssRaw(0, 9, Rg.sub(r).abs()));
@@ -132,9 +132,9 @@ export function material(ctx) {
   const NW = pk(8, 3).add(6), w0 = rn(9).mul(TAU);
   const wk = atan2(e.x, e.y).add(PI).add(w0).div(TAU).mul(NW).floor();
   const wc = wk.add(0.5).mul(TAU).div(NW).sub(PI).sub(w0), dir = vec2(wc.sin(), wc.cos());
-  // one by one round the egg (seeded start and turn), each fragment its own beat of the exit: .87 to .94, gone by .99
+  // one by one round the egg (seeded start and turn), each fragment its own beat of the exit: .84 to .93, gone by .98
   const rank = wk.mul(sense(10)).add(rn(10).mul(NW).floor()).add(NW.mul(4)).mod(NW);
-  const st = rank.div(NW).mul(0.07).add(0.87), dk = ssRaw(st, st.add(0.05), u);
+  const st = rank.div(NW).mul(0.1).add(0.84), dk = ssRaw(st, st.add(0.05), u);
   const pw = e.sub(dir.mul(dk.mul(dk).mul(46)));
   const inW = step(pw.x.mul(dir.y).sub(pw.y.mul(dir.x)).abs(), pw.dot(dir).mul(float(PI).div(NW).tan()));
   // LATE: the crack. Above it the cap is one rigid piece that lifts; the gap between shows what is inside
