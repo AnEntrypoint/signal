@@ -46,7 +46,7 @@ export const BEINGS = [
   { id: 'sky-whale', name: 'the sky whale', built: true },
   { id: 'eclipse-wolves', name: 'the eclipse wolves', built: true },
   { id: 'bee-queen', name: 'the bee queen', built: true },
-  { id: 'time-keeper', name: 'the time keeper', built: false },
+  { id: 'time-keeper', name: 'the time keeper', built: true },
   { id: 'zodiac-wheel', name: 'the zodiac wheel', built: false },
   { id: 'hummingbird', name: 'the hummingbird', built: false },
 ].map((b, k) => ({ ...b, k, centre: { x: 0, y: 320 + k * 100, z: 0 } }))
