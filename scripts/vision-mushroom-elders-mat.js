@@ -143,11 +143,20 @@ export function material(ctx) {
   // mycelium: threads sagging between the feet, drawn along their length, and the ground's bead line
   const pM = io(0.3, 0.45, 0.85, 0.885);
   const sag = select(ax.lessThan(16), ax.div(16), ax.sub(16).div(11.5).min(1)).mul(PI).sin();
-  let dm = float(99);
-  for (let k = 0; k < 3; k++) dm = dm.min(y0.add(sag.mul(2 + k * 2.3)).add(0.9 + k * 0.8).add(ax.mul(1.1).add(k * 2).sin().mul(0.25)).abs());
-  const al = ax.div(34), mIn = maskDraw(pM, mix(al, inv(al), step(0.5, rn(14)))).mul(step(ax, 34));
-  const nb = vec2(ax.div(2.6).fract().sub(0.5).mul(2.6), dm).length(), gb = vec2(ax.div(1.5).fract().sub(0.5).mul(1.5), y0).length();
-  lay(sk(dm, 0.3).max(sk(gb, 0.3)).mul(mIn), mix(B, W, 0.2).mul(sk(dm, 0.1)).add(H2.mul(sk(nb, 0.27))).add(A.mul(sk(gb, 0.17))));
+  // each thread creeps out from the elders' feet (x 0, 16, 27.5), its own pace, a lit tip leading; no straight-edged wipe
+  const fx = ax.min(ax.sub(16).abs()).min(ax.sub(27.5).abs()), sd2 = rn(14);
+  let col_m = vec3(0), cov_m = float(0);
+  for (let k = 0; k < 3; k++) {
+    const dk = y0.add(sag.mul(2 + k * 2.3)).add(0.9 + k * 0.8).add(ax.mul(1.1).add(k * 2).sin().mul(0.25)).abs();
+    const reach = pM.mul(1.35).sub(sd2.add(k * 0.37).fract().mul(0.35)).clamp(0, 1).mul(9.5), ahead = reach.sub(fx);
+    const on = step(0, ahead).mul(step(ax, 34)), tip = inv(ss(0, 1.4, ahead.abs())).mul(step(0.05, reach)).mul(step(ax, 34));
+    const nb = vec2(ax.div(2.6).fract().sub(0.5).mul(2.6), dk).length();
+    cov_m = cov_m.max(sk(dk, 0.3).mul(on));
+    col_m = col_m.add(mix(B, W, 0.2).mul(sk(dk, 0.1)).add(H2.mul(sk(nb, 0.27))).mul(on)).add(H.mul(sk(dk, 0.32)).mul(tip));
+  }
+  const gb = vec2(ax.div(1.5).fract().sub(0.5).mul(1.5), y0).length();
+  const gOn = maskBeads(pM.mul(1.2).clamp(0, 1), fx.div(9.5).add(hash(ax.div(1.5).floor(), 21).mul(0.15)).clamp(0, 1)).mul(step(ax, 34));
+  lay(cov_m.max(sk(gb, 0.3).mul(gOn)), col_m.add(A.mul(sk(gb, 0.17)).mul(gOn)));
 
   // stem: grows up from the ground line, bead studs in staggered rows, the kick running up them
   const hw = R.mul(0.17).mul(inv(ss(0, 0.5, y0.div(capY))).mul(0.6).add(1)), ds = x.abs().sub(hw);
