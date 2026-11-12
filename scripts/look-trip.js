@@ -227,7 +227,8 @@ export function look(ctx) {
   const sdir = vec2(sa.sin(), sa.cos()).div(asp);
   const avg = S(sdir.mul(0.08).add(0.5)).add(S(sdir.mul(0.2).add(0.5))).add(S(sdir.mul(0.34).add(0.5)));
   const avgN = avg.div(avg.x.max(avg.y).max(avg.z).max(0.03));
-  col = mix(col, avgN.mul(luma(col)).mul(2.2), wSlice.mul(0.75));
+  // a being on stage keeps its own colours: the wedge recolour cut a hard straight seam through its middle
+  col = mix(col, avgN.mul(luma(col)).mul(2.2), wSlice.mul(0.75).mul(float(1).sub(vis)));
 
   // graphite-and-gold: near-black embossed, only a travelling window lit gold
   const emb = l0.sub(L(ub.add(px.mul(1.5)))).mul(1.6);
