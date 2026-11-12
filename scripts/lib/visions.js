@@ -32,10 +32,10 @@ export const BEINGS = [
   { id: 'phoenix',        name: 'the phoenix', built: true },
   { id: 'cosmic-egg',     name: 'the cosmic egg', built: true },
   { id: 'eye-pyramid',    name: 'the eye pyramid', built: true },
-  { id: 'chakra-sage',    name: 'the chakra sage', built: false },
+  { id: 'chakra-sage',    name: 'the chakra sage', built: true },
   { id: 'mushroom-elders',name: 'the mushroom elders', built: true },
-  { id: 'psyche-moth',    name: 'the psyche moth', built: false },
-  { id: 'antler-god',     name: 'the antler god', built: false },
+  { id: 'psyche-moth',    name: 'the psyche moth', built: true },
+  { id: 'antler-god',     name: 'the antler god', built: true },
 ].map((b, k) => ({ ...b, k, centre: { x: 0, y: 320 + k * 100, z: 0 } }))
 
 function rnd(seed, n) { const x = Math.sin((seed + 1) * (n * 7.1234 + 3.1)) * 15731.743; return x - Math.floor(x) }
