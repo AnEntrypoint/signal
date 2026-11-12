@@ -1,6 +1,5 @@
-// THE ECLIPSE WOLVES: two mirrored neon wolf heads howling up at a central eclipse; a sun and a moon orbit the black disc and the wolves chase them.
-// Layers (params.layer): world z-30 striped snow hills, op-art pines, aurora bead ribbons (scroll) / ring z-12 orbit of phase moons (counter-turns) /
-// being z0 corona, sun, moon, wolves, fur flames (breathes) / veil z+10 the black disc grows and shrinks, black pines sweep / fore z+22 snow beads, spark stars.
+// THE ECLIPSE WOLVES: mirrored neon wolves howl at a beaded eclipse; sun and moon orbit it.
+// world -30 hills/pines/aurora, ring -12 phase moons, being 0, veil +10 black disc+pines, fore +22 snow/stars.
 import { MeshBasicNodeMaterial, AdditiveBlending, DoubleSide } from "builtin/three";
 import { positionGeometry, float, vec2, vec3, smoothstep as ss, step, mix, atan2 as atan2raw, fwidth } from "builtin/tsl";
 import { tripClock, visionShown, visionU, climb, maskDraw, maskBeads, maskIris, maskClock, inv, is, sgn, segH, strokeAA, ioU, NEON } from "./lib/trip.js";
