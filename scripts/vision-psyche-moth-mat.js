@@ -63,12 +63,12 @@ export function material(ctx) {
 
   // ------------------------------------------------------------------ RING: two rings of feather fans (counter-turn)
   if (layer === "ring") {
-    const p = P.mul(74 / 86).sub(vec2(0, HY)), stroke = strokeAA(fwidth(p.x).mul(1.2).max(0.01)), r = p.length(), a = atan2(p.x, p.y);
+    const p = P.sub(vec2(0, HY)), stroke = strokeAA(fwidth(p.x).mul(1.2).max(0.01)), r = p.length(), a = atan2(p.x, p.y);
     const nF = pk(7, 3).add(5);
     // on the kicked bars the fans rock back and forth by the bar: a layer reversal, not a flash
     const sway = inv(c.beat.div(8).fract().sub(0.5).abs().mul(2)).mul(0.25).mul(kickOn);
     let col = vec3(0);
-    [[19, 7.5, 1], [27.5, 6.5, -1]].forEach(([r0, len, s], j) => {
+    [[24, 7, 1], [31, 7.5, -1]].forEach(([r0, len, s], j) => {
       const pF = io(0.45 + j * 0.06, 0.58 + j * 0.06, 0.88 - j * 0.02, 0.92 - j * 0.02), n = nF.add(j * 2);
       const x = a.add(t.mul(TAU / 80 * s).mul(sense(8))).add(sway.mul(s)).div(TAU).add(0.5).mul(n), k = x.floor(), f5 = x.fract().mul(1.3).sub(0.15).mul(5);
       const arc = float(TAU / 6.5).div(n), tl = f5.fract().sub(0.5).mul(arc).mul(r).abs();
