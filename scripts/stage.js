@@ -4,6 +4,18 @@ import { SCORE, cineTime, cameraAt } from './lib/cine.js'
 import { trackOf, trackParams, IDENTITY } from './lib/tracks.js'
 import { BEINGS, dealVisions } from './lib/visions.js'
 import { dealDeck } from './lib/deck.js'
+import ROWS from './lib/data/beings.yml'
+
+// A BEING'S ROWS: built for the roll that deals it, struck when the roll moves on. A being whose rows still stand in
+// the scene files is left as it stands (state.staged marks the ones built here).
+const BLANK = { k0: -1, k1: -1, on: 0, seed: 0, t0: 0, vw0: -1, vw1: -1 }
+function ensure(ctx, b) {
+  if (!ROWS[b.id] || ctx.query({ tags: ['vision-' + b.id] }).length) return
+  for (const r of ROWS[b.id]) ctx.spawn(r.id, { tags: ['trip', 'vision-' + b.id], castShadow: false, receiveShadow: false, visible: false, feetPosition: { x: 0, y: b.centre.y, z: r.z }, primitive: r.primitive, material: { kind: 'scripted', script: r.mat, params: { ...BLANK, ...r.mp } }, state: { staged: true } })
+}
+function strike(ctx, b) {
+  for (const o of ctx.query({ tags: ['vision-' + b.id] })) if (o.state?.staged) ctx.destroy(o.id)
+}
 
 // the kick run that holds t, else the next one: [k0, k1] seconds; [-1, -1] idle or past the last
 function kickRun(t, c) {
@@ -27,6 +39,7 @@ function push(ctx, t0, on, seed, k, vs, t = cineTime(ctx)) {
   // each vision being learns its slot this roll: params.vw0 / vw1 seconds, -1 when not dealt
   const dealt = {}
   for (const v of dealVisions(on ? seed : 0)) dealt[v.being.id] = v.slot
+  for (const b of BEINGS) { if (dealt[b.id] || ctx.world.state.visionTest?.being === b.id) ensure(ctx, b); else strike(ctx, b) }
   for (const b of BEINGS) {
     const w = dealt[b.id] ?? [-1, -1]
     for (const o of ctx.query({ tags: ['vision-' + b.id] })) {
@@ -64,6 +77,7 @@ function stageBeing(ctx, vs, seed, t) {
 // its 24 s slot starting at ctx.now() == at, so a camera at centre + (0, 0, 64) watches it build. The roll is untouched.
 function holdTest(ctx, vt) {
   const b = BEINGS.find((x) => x.id === vt.being); if (!b) return
+  ensure(ctx, b)
   for (const o of ctx.query({ tags: ['vision-' + b.id] })) {
     const h = ctx.getObject(o.id); if (!h) continue
     const p = h.material?.params
