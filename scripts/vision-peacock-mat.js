@@ -85,13 +85,13 @@ export function material(ctx) {
   // ------------------------------------------------------------------ VEIL: black feather blades, a hand fan folding and spreading
   if (layer === "veil") {
     const aa = fwidth(P.x).mul(1.2).max(0.01), st = strokeAA(aa);
-    const q = vec2(P.x.abs(), P.y.add(11.8)), r = q.length(), a = atan2(q.x, q.y), K = low ? 4 : 5, L = 31;
+    const q = vec2(P.x.abs(), P.y.add(2.5)), r = q.length(), a = atan2(q.x, q.y), K = low ? 4 : 5, L = 31;
     const s = T.mul(0.3).add(rn(12).mul(TAU)).sin().mul(0.5).add(0.5).mul(0.72).add(0.28);
-    const D = s.mul(1.75 / K), k = a.div(D).floor().clamp(0, K - 1);
+    const D = s.mul(1.9 / K), k = a.div(D).floor().clamp(0, K - 1);
     const da = a.sub(k.add(0.5).mul(D)).add(T.mul(0.11).sin().mul(0.05)).clamp(-1.5, 1.5);
     const x = r.mul(da.sin()), y = r.mul(da.cos()), h = y.div(L);
     // on the kick the blades thin: what they hid shows through
-    const w = h.mul(inv(h)).clamp(1e-4, 1).sqrt().mul(h.clamp(0, 1).mul(0.8).add(0.4)).mul(9.2).mul(inv(c.kick.mul(0.45)));
+    const w = h.mul(inv(h)).clamp(1e-4, 1).sqrt().mul(h.clamp(0, 1).mul(0.8).add(0.4)).mul(4.6).mul(inv(c.kick.mul(0.45)));
     const d = x.abs().sub(w).max(y.negate()).max(y.sub(L));
     const pin = io(0.6, 0.74, 0.85, 0.895), pj = pin.mul(2).sub(k.div(K)).clamp(0, 1);
     const run = inv(ss(0, 0.07, h.sub(c.beat.div(2).fract()).abs())).mul(kOn);
