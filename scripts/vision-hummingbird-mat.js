@@ -58,7 +58,7 @@ export function material(ctx) {
       const yTop = float(48), yb = hk.mul(38).add(beaded ? 6 : -4).negate().add(cl.mul(4).negate());
       const len = yTop.sub(yb), t = yTop.sub(P.y).div(len);
       const sway = P.y.mul(0.07).add(T.mul(0.45 + j * 0.2)).add(hk.mul(6)).sin().mul(sw).mul(cl.mul(0.5).add(1)).mul(inv(t.clamp(0, 1)).mul(0.3).add(0.7));
-      const lx = X.div(sp).fract().sub(0.5).mul(sp).add(hk.sub(0.5).mul(sp * 0.3)).sub(sway);
+      const lx = X.div(sp).fract().sub(0.5).mul(sp).add(hk.sub(0.5).mul(float(sp).mul(0.3))).sub(sway);
       const wk = hk.mul(5.3).fract().mul(0.5).add(0.75).mul(w).mul(inv(t.clamp(0, 1).mul(0.55)));
       const pV = grow.mul(1.7).sub(hk.mul(0.7)).clamp(0, 1);
       const tipD = vec2(lx, P.y.sub(yb)).length();
