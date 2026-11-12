@@ -9,7 +9,7 @@ const TAU = 6.28318, S3 = 1.7320508;
 const atan2 = (y, x) => atan2raw(y, x.add(1e-5));
 const hash = (k, o = 0) => k.mul(12.9898 + o).add(o * 3.1).sin().mul(43758.5453).fract();
 const h2 = (id, o = 0) => hash(id.x.add(id.y.mul(57.31)), o);
-const fm = (x, y) => x.sub(x.div(y).floor().mul(y));          // floor-mod, safe for negatives
+const fm = (x, y) => x.sub(x.div(y).floor().mul(y));
 // pointy-top hex cells, centre spacing s: g local (cell units), id the centre (cell units), e 0 centre .. .5 rim
 const hexCell = (p, s) => {
   const qq = p.div(s), R = vec2(1, S3), Hh = vec2(0.5, S3 / 2);
@@ -50,9 +50,9 @@ export function material(ctx) {
     const line = inv(ss(float(0.07), fw.add(0.07), dE.abs()));
     const Zc = hc.id.y.mul(s).sub(T.mul(spd).mul(sg)), vc = float(260).div(Zc.abs().max(2.9));
     const hk = h2(hc.id.add(vec2(step(0, P.y).mul(31), 0)), 3);
-    const ord = vc.div(90).clamp(0, 1).mul(0.75).add(hk.mul(0.25));   // the comb is built from her outward, cell by cell
+    const ord = vc.div(90).clamp(0, 1).mul(0.75).add(hk.mul(0.25));
     const cell = maskBeads(pC.mul(cl.mul(0.1).add(1)), ord).mul(on(pC)).mul(ss(4, 16, P.y.abs()));
-    const front = inv(c.beat.fract()).mul(60).add(3);                  // a lit row rolls toward the eye on each kick
+    const front = inv(c.beat.fract()).mul(60).add(3);
     const kr = inv(ss(0, 5, Zc.abs().sub(front).abs())).mul(kOn);
     const honey = step(0.9, hk).mul(inv(ss(float(0.2), fw.add(0.2), float(0.62).sub(dE))));
     const depthL = ss(2, 50, v).mul(0.7).add(0.3);
@@ -89,7 +89,7 @@ export function material(ctx) {
     const head = st(vec2(bx.sub(1.75), by).length().sub(0.45), 0);
     const join = maskBeads(pR, fm(k.div(N).mul(sn), float(1))).mul(on(pR));
     let colR = mix(H, BG, stripe).mul(body).add(mix(A, W, 0.4).mul(wing)).add(H2.mul(head)).mul(join).mul(lit);
-    // the waggle figure-eight behind her: beads running the dance path, lighting in turn; on the kick they go hollow
+    // the waggle figure-eight: beads run the dance path, lit in turn; hollow on the kick
     let bd = float(0);
     const nL = low ? 12 : 20, sL = sense(8);
     for (let i = 0; i < nL; i++) {
@@ -111,7 +111,7 @@ export function material(ctx) {
     const act = step(hk, ss(10, 45, P.length()).mul(0.35).add(0.28));
     const cyc = T.mul(0.11).add(hk.mul(TAU * 3)).sin().mul(0.5).add(0.5);
     const pj = pV.mul(1.6).sub(hk.mul(0.6)).clamp(0, 1);
-    const capR = ss(0.15, 0.75, cyc).mul(ss(0, 1, pj)).mul(inv(c.kick.mul(0.55)));   // the kick uncaps them
+    const capR = ss(0.15, 0.75, cyc).mul(ss(0, 1, pj)).mul(inv(c.kick.mul(0.55)));
     const dE = capR.mul(0.48).sub(hc.e).mul(s), fw = fwidth(dE).max(0.01);
     const cap = inv(ss(float(0), fw, dE.negate())).mul(act).mul(on(pj)).mul(step(0.02, capR));
     const rimL = inv(ss(float(0.12), fw.add(0.12), dE.abs())), inner = inv(ss(float(0.08), fw.add(0.08), dE.sub(s.mul(capR).mul(0.14)).abs()));
@@ -149,13 +149,13 @@ export function material(ctx) {
   const aa = fwidth(p.x).mul(1.2).max(0.008), st = strokeAA(aa);
   const ax = p.x.abs(), q = vec2(ax, p.y), sw = pk(9, 2);
 
-  // the seat: hex cells round her heart, lit one by one in a spiral from the seed cell; the highs widen it
+  // seat: cells spiral out from the seed; the highs widen it
   const sp = pk(3, 3).mul(0.4).add(3.3), hc = hexCell(p.sub(vec2(0, 2)), sp);
   const rid = hc.id.length(), aid = atan2(hc.id.x.mul(sense(4)), hc.id.y).div(TAU).add(0.5);
   const dE = float(0.5).sub(hc.e).mul(sp), hk = h2(hc.id, 2);
   const pSd = io(0.015, 0.07, 0.95, 0.975), pS = io(0.1, 0.3, 0.91, 0.95), Rs = cl.mul(1.8).add(4.6);
   const ord = rid.sub(1).add(aid).div(Rs).clamp(0, 1);
-  const rip = inv(ss(0, 0.8, rid.sub(c.beat.fract().mul(9)).abs())).mul(kOn);   // on the kick a ripple of filled cells runs out
+  const rip = inv(ss(0, 0.8, rid.sub(c.beat.fract().mul(9)).abs())).mul(kOn);
   const seat = step(0.5, rid).mul(step(rid, Rs)).mul(maskBeads(pS, ord)).mul(on(pS));
   const rim = st(dE.abs(), 0.11), inner = st(dE.sub(sp.mul(0.24)).abs(), 0.06).mul(step(0.5, hk));
   const fillH = st(float(0.32).sub(dE), 0).mul(step(0.84, hk).max(rip));
@@ -163,7 +163,7 @@ export function material(ctx) {
   const seed = step(rid, 0.5).mul(maskIris(pSd, hc.e.mul(2))).mul(on(pSd));
   lay(seed, H.mul(0.75).add(W.mul(st(dE.sub(sp.mul(0.24)).abs(), 0.08))).add(W.mul(st(hc.e.mul(sp), 0.35))).mul(lit));
 
-  // four wings, line-art: they unfold from along her body, then their veins draw in one by one; the kick flashes them
+  // wings unfold, then veins draw in one by one; the kick flashes them
   const pW = io(mix(0.6, 0.54, sw), mix(0.72, 0.66, sw), 0.84, 0.88);
   [[3.5, 4, 0.42, 24, 8.5], [3.2, 0.2, -0.38, 18, 6.5]].forEach(([rx, ry, th0, L, Wd], j) => {
     const pj = pW.mul(1.5).sub(j * 0.5).clamp(0, 1);
@@ -199,7 +199,7 @@ export function material(ctx) {
   lay(st(ab, 0).mul(stk).max(sting), mix(BG.add(A.mul(st(f.sub(0.5).abs().mul(per), 0.08))), sc.mul(0.8).add(W.mul(bead)), hotS)
     .add(mix(A, W, 0.3).mul(st(ab.abs(), 0.16))).mul(lit));
 
-  // the thorax: concentric fur, ringed by two rows of beads lit top-down on both sides; on the kick alternate beads go hollow
+  // thorax: fur rings, two bead rows lit top-down; the kick swaps hollow/filled
   const pT = io(0.38, 0.47, 0.88, 0.91), tq = vec2(ax, p.y.sub(2)), tr = tq.length(), tth = atan2(ax, tq.y);
   lay(st(tr.sub(5.2), 0).mul(maskIris(pT.mul(2).clamp(0, 1), tr.div(5.2))).mul(on(pT)),
     BG.add(B.mul(st(float(0.65).sub(fm(tr, float(1.3)).sub(0.65).abs()), 0.09))).add(W.mul(st(tr.sub(5.2).abs(), 0.12))).mul(lit));
