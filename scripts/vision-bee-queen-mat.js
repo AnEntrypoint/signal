@@ -1,10 +1,6 @@
-// THE BEE QUEEN: a mirrored queen-bee mask-figure of neon line-art enthroned in the heart of a honeycomb.
-// Layers (params.layer): world z-30 endless comb in perspective (floor + ceiling) with honey drips falling / ring z-12 a wheel of
-// worker glyphs on a waggle figure-eight, counter-turning / being z0 seat, abdomen, thorax, eyes, antennae, wings, crown (breathes) /
-// veil z+10 black wax caps closing and opening over the comb / fore z+22 pollen and six-petal rosettes drifting.
-// Pacing: one hex cell alone (iris) u0-.1, seat cells spiral out .1-.3, comb .3-.5, abdomen stripes stack .3-.4, thorax beads .38-.47,
-// workers join .42-.55, head lid + eyes cell by cell .45-.57, antennae (nib) / wings (vein by vein) in seeded order .54-.73,
-// drips .5-.62, caps .62-.76, rosettes bloom .66-.8, crown .73-.79; LIFO exit .8-1, the comb last.
+// THE BEE QUEEN: a mirrored queen-bee mask of neon line-art in the heart of a honeycomb. world z-30 comb in perspective + honey drips /
+// ring z-12 worker glyphs on a waggle wheel / being z0 (breathes) / veil z+10 black wax caps / fore z+22 pollen + rosettes.
+// Arrival: one hex cell, seat spiral .1-.3, comb .3-.5, abdomen, thorax, workers, eyes, antennae/wings (seeded order), drips, caps, rosettes, crown .79; LIFO exit, comb last.
 import { MeshBasicNodeMaterial, AdditiveBlending, DoubleSide } from "builtin/three";
 import { positionGeometry, float, vec2, vec3, smoothstep as ss, step, mix, atan2 as atan2raw, fwidth } from "builtin/tsl";
 import { tripClock, visionShown, visionU, climb, maskDraw, maskBeads, maskIris, maskLid, nib, inv, is, sgn, segH, strokeAA, ioU, NEON } from "./lib/trip.js";
@@ -43,7 +39,7 @@ export function material(ctx) {
   let col = vec3(0), cover = float(0);
   const lay = (b, l) => { col = mix(col, l, b); cover = cover.max(b); };
 
-  // ------------------------------------------------------------------ WORLD: the endless comb, floor and ceiling meeting at her
+  // WORLD: the endless comb, floor and ceiling meeting at her
   if (layer === "world") {
     const uEnd = inv(float(0.4).div(ctx.param("vw1", -1).sub(ctx.param("vw0", -1)).max(1))).min(0.999);
     const pC = ss(0.3, 0.5, u).mul(inv(ss(0.94, uEnd, u)));
@@ -76,7 +72,7 @@ export function material(ctx) {
     return cutout(col.mul(cul.mul(0.3).add(0.45)), cover);
   }
 
-  // ------------------------------------------------------------------ RING: the waggle wheel (turns; the dance path counter-runs)
+  // RING: the waggle wheel (turns; the dance path counter-runs)
   if (layer === "ring") {
     const p = P, r = p.length(), a0 = atan2(p.x, p.y), sn = sense(6);
     const pR = io(0.42, 0.55, 0.87, 0.9), pL = io(0.46, 0.56, 0.86, 0.89);
@@ -107,7 +103,7 @@ export function material(ctx) {
     return m;
   }
 
-  // ------------------------------------------------------------------ VEIL: black wax caps closing and opening over the comb
+  // VEIL: black wax caps closing and opening over the comb
   if (layer === "veil") {
     const pV = io(0.62, 0.76, 0.82, 0.86), s = pk(8, 2).mul(4).add(12);
     const Pv = P.add(vec2(T.mul(0.9).mul(sense(9)), T.mul(0.1).sin().mul(4)));
@@ -123,7 +119,7 @@ export function material(ctx) {
     return cutout(col, cover);
   }
 
-  // ------------------------------------------------------------------ FORE: pollen and six-petal rosettes drifting up
+  // FORE: pollen and six-petal rosettes drifting up
   if (layer === "fore") {
     const aa = fwidth(P.x).mul(1.2).max(0.01), st = strokeAA(aa);
     const pF = io(0.66, 0.8, 0.8, 0.84);
@@ -148,7 +144,7 @@ export function material(ctx) {
     return cutout(col.mul(cul.mul(0.3).add(0.8)), cover);
   }
 
-  // ------------------------------------------------------------------ THE BEING (breathes)
+  // THE BEING (breathes)
   const p = P.div(T.mul(TAU / 8).sin().mul(0.012).add(1));
   const aa = fwidth(p.x).mul(1.2).max(0.008), st = strokeAA(aa);
   const ax = p.x.abs(), q = vec2(ax, p.y), sw = pk(9, 2);
