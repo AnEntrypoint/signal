@@ -15,7 +15,7 @@ export function material(ctx) {
   const uu = positionGeometry.y, ca = positionGeometry.x, sa = positionGeometry.z, t = c.real;
   const r0 = [2.6, 2.2, 2.0, 2.8][k], z0 = [5, -6, 15, -20][k];
   // LIFO: the far pair arrives last and leaves first
-  const grow = io(0.52 + k * 0.04, 0.72 + k * 0.03, 0.93 - k * 0.012, 0.965 - k * 0.012);
+  const grow = io(0.52 + k * 0.04, 0.72 + k * 0.03, 0.951 - k * 0.008, 0.975 - k * 0.008);
   const tip = inv(smoothstep(grow.sub(0.07), grow, uu));
   const rad = inv(uu).max(1e-4).sqrt().mul(r0).mul(tip.clamp(0, 1).max(1e-4).sqrt()).mul(live).mul(step(0.002, grow));
   // the head's path; the body is the path's recent past (uu 0 head .. 1 tail)
