@@ -167,10 +167,10 @@ export function material(ctx) {
     const q = vec2(ax.sub(ex), p.y.sub(ey)), Re = cl.mul(0.1).add(0.9).mul(er), e = q.length().div(Re);
     const pE = io(0.58, 0.68, 0.85, 0.89).mul(1.5).sub(is(eo, j).mul(0.5)).clamp(0, 1);
     const eye = step(e, 1).mul(maskIris(pE, e)).mul(on(pE));
-    const e2 = q.sub(vec2(t.mul(0.4).add(j).sin(), t.mul(0.31).cos()).mul(Re * 0.1)).length().div(Re);
+    const e2 = q.sub(vec2(t.mul(0.4).add(j).sin(), t.mul(0.31).cos()).mul(er * 0.1)).length().div(Re);
     const eLit = H.mul(stroke(e.sub(0.86).abs().mul(Re), 0.3)).add(W.mul(stroke(e.sub(0.63).abs().mul(Re), 0.2)))
       .add(mix(H2, A, j).mul(ss(0.2, 0.24, e2)).mul(inv(ss(0.44, 0.48, e2))).mul(kl.add(1)))
-      .add(W.mul(stroke(q.sub(vec2(-0.1, 0.1).mul(Re)).length(), Re * 0.05)));
+      .add(W.mul(stroke(q.sub(vec2(-0.1, 0.1).mul(Re)).length(), er * 0.05)));
     lay(wing, mix(lit, eLit.mul(cul.mul(0.3).add(0.9)), eye));
   });
   // SCALES blow off the folding wings: beads streaming out along the hinge rays
