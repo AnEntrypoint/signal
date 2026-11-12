@@ -178,7 +178,7 @@ export function material(ctx) {
   const Tn = k.floor().add(0.5).sub(clm).add(phi), sN = Tn.mul(2).div(turns).add(1).mul(0.5);
   const bw = ssRaw(0, 0.12, sN).mul(inv(ssRaw(0.975, 1, sN))).mul(0.24).max(0.001);
   const v = k.fract().sub(0.5).div(bw).abs();
-  const pS = io(0.32, 0.48, 0.86, 0.92);
+  const pS = io(0.32, 0.48, 0.83, 0.93);
   const sBody = step(v, 1).mul(step(xn.abs(), 0.999)).mul(step(0, sN)).mul(step(sN, 1)).mul(maskDraw(pS, sN)).mul(whole);
   const run = inv(ssRaw(0, 0.05, sN.sub(c.beat.div(4).fract()).abs())).mul(kickOn);   // the kick is a light running up the body
   const eye = stroke(vec2(sN.sub(0.955).mul(60), v.mul(1.6)).length(), 0.5);
