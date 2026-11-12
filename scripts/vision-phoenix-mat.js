@@ -31,8 +31,8 @@ export function material(ctx) {
 
   // ------------------------------------------------------------------ WORLD: the sun behind, embers rising (scrolls)
   if (layer === "world") {
-    const uEnd = inv(float(0.4).div(ctx.param("vw1", -1).sub(ctx.param("vw0", -1)).max(1))).min(0.999);
-    const gone = inv(ss(uEnd, float(1.0005), u));
+    // the sun sets at exit: rays draw back into the disc, arcs un-draw from the crown, ember columns die one by one
+    const gone = inv(ss(0.84, 0.985, u));
     const q = P.sub(vec2(0, -12)), r = q.length(), a = atan2(q.x, q.y);
     // rays: the sun rises, alternate rays reaching further; they turn slowly
     const nR = pk(5, 3).mul(8).add(24), pR = ss(0.25, 0.45, u).mul(gone);
