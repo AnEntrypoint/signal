@@ -1,11 +1,7 @@
-// THE TIME KEEPER: a line-art hourglass with a serene face in each bulb (the lower one inverted), bead sand falling grain by grain,
-// framed by meshed outlined cogs turning in opposite senses, a pendulum beneath.
-// Layers (params.layer): world z-30 growth rings + dotted spiral arms (expand, arms turn) / ring z-12 clock of 12 beads + two hands
-// (counter-turning) / being z0 (breathes) / veil z+10 black cogs rolling in, teeth occluding / fore z+22 numeral cartouches + small cogs (drift).
-// Pacing: one falling grain alone u0-.1, glass draws from the neck .1-.22, sand bead by bead .14-.8 (follows climb), cogs one by one by
-// clock sweep from their meshing tooth .24-.6, ring beads .3-.44, faces line by line .36-.56, world rings grow out .42-.58, veil cogs roll in
-// .56-.7, pendulum .62-.7, fore .66-.78. LIFO exit .8-1, world last. Kick (only where the track kicks): sand swaps colour, a cog steps a tooth,
-// the bob swaps hollow/filled, the ring's bead of the beat lights.
+// THE TIME KEEPER: a line-art hourglass, a serene face in each bulb (the lower inverted), bead sand falling grain by grain, meshed cogs, a pendulum.
+// Layers: world z-30 growth rings + dotted spiral arms / ring z-12 twelve beads + two counter-turning hands / being z0 / veil z+10 black cogs
+// rolling in / fore z+22 numeral cartouches + cogs. One grain alone u0-.1, glass .1-.22, sand .14-.8 (climb), cogs .24-.6, ring .3-.44,
+// faces .36-.56, world .42-.58, veil .56-.7, pendulum .62-.7, fore .66-.78; LIFO exit .8-1, world last. Kick: sand swaps colour, a cog steps a tooth.
 import { MeshBasicNodeMaterial, AdditiveBlending, DoubleSide } from "builtin/three";
 import { positionGeometry, float, vec2, vec3, smoothstep as ss, step, mix, atan2 as atan2raw, fwidth } from "builtin/tsl";
 import { tripClock, visionShown, visionU, climb, maskDraw, maskBeads, maskIris, maskClock, nib, inv, is, sgn, smin, segH, capsule, strokeAA, ioU, NEON } from "./lib/trip.js";
@@ -15,7 +11,7 @@ const atan2 = (y, x) => atan2raw(y, x.add(1e-5));
 const hash = (k, o = 0) => k.mul(12.9898 + o).add(o * 3.1).sin().mul(43758.5453).fract();
 // a meshed cog chain (right half; the left is its mirror): two seeded layouts, pitch radius R, N = 2R teeth
 const chain = (x0, y0, Rs, angs) => {
-  const g = [{ x: x0, y: y0, R: Rs[0], N: Rs[0] * 2, ph: 0, k: 1, c: 0 }];
+  const g = [{ x: x0, y: y0, R: Rs[0], N: Rs[0] * 2, k: 1, c: 0 }];
   for (let i = 1; i < Rs.length; i++) {
     const p = g[i - 1], f = (angs[i - 1] * PI) / 180, R = Rs[i], N = R * 2, d = p.R + R;
     // contact at angle f from p: p's tooth there, my gap at f+PI; theta_i = -theta_p*Np/N + c
@@ -104,7 +100,7 @@ export function material(ctx) {
     const hands = hand(0.05, 26, float(0.35), sn).add(hand(0.11, 20, float(0.55), sn.negate()));
     const lit = cul.mul(0.6).add(0.55);
     m.colorNode = mix(B, W, 0.25).mul(rim).add(A.mul(ticks).mul(0.7)).add(mix(H, W, now).mul(bead).mul(lit.add(now))).add(H2.mul(halo))
-      .add(mix(A, W, 0.4).mul(hands.min(1)).mul(lit)).mul(1);
+      .add(mix(A, W, 0.4).mul(hands.min(1)).mul(lit));
     m.opacityNode = live;
     m.transparent = true; m.blending = AdditiveBlending; m.depthWrite = false;
     return m;
@@ -139,7 +135,7 @@ export function material(ctx) {
     for (let j = 0; j < (low ? 4 : 7); j++) {
       const vy = 0.5 + (j % 3) * 0.25, x0 = ((j * 31.7 + 9) % 54) - 27;
       const y = T.mul(vy).add(rn(20 + j).mul(85)).add(42).mod(85).sub(42);
-      const x = x0 + 0, ctr = vec2(T.mul(0.13 + j * 0.02).add(j).sin().mul(2.5).add(x), y);
+      const ctr = vec2(T.mul(0.13 + j * 0.02).add(j).sin().mul(2.5).add(x0), y);
       const pj = pin.mul(2).sub(j * 0.13).clamp(0, 1);
       const q0 = P.sub(ctr), ro = T.mul(0.2).add(j * 1.7).sin().mul(0.4), cs = ro.cos(), sn = ro.sin();
       const q = vec2(q0.x.mul(cs).sub(q0.y.mul(sn)), q0.x.mul(sn).add(q0.y.mul(cs)));
@@ -153,11 +149,10 @@ export function material(ctx) {
       // a pill cartouche: its outline drawn by a nib round the rim, a numeral of beads and bars inside
       const L = 1.6 + (j % 2) * 0.8, d = capsule(q, [-L, 0], [L, 0], 1.25);
       const inside = st(d, 0).mul(maskDraw(pj, ang)).mul(on(pj));
-      const nn = (j % 4) + 1, sx = q.x.add(nn * 0.5).div(1).fract().sub(0.5), kx = q.x.add(nn * 0.5).floor();
+      const nn = (j % 4) + 1, sx = q.x.add(nn * 0.5).fract().sub(0.5), kx = q.x.add(nn * 0.5).floor();
       const glyph = st(vec2(sx, q.y).length(), 0.28).mul(step(kx.abs().add(0.5), nn * 0.5 + 0.6)).mul(step(q.x.abs(), nn * 0.5));
-      const bar = st(q.y.abs(), 0.07).mul(step(0.55, q.y.abs().add(0.5))).mul(0);
       const rim = st(d.abs(), 0.1);
-      lay(inside, BG.add(mix([H, B, H2][j % 3], W, 0.15).mul(rim.add(glyph).add(bar).min(1)).mul(cul.mul(0.3).add(0.8))));
+      lay(inside, BG.add(mix([H, B, H2][j % 3], W, 0.15).mul(rim.add(glyph).min(1)).mul(cul.mul(0.3).add(0.8))));
     }
     return out();
   }
@@ -198,7 +193,7 @@ export function material(ctx) {
   const bq = vec2(p.x.sub(cx), p.y.sub(cy)).length(), cax = cx.abs();
   const inL = step(vec2(cax.div(7.6), cy.add(4).div(8.2)).length(), 1).mul(step(cy, 4.2));
   const inU = step(vec2(cax.div(7.6), cy.sub(14).div(8.2)).length(), 1).mul(step(6, cy));
-  const cone = step(cy, S.mul(10.5).sub(12.5).sub(cax.mul(0.85)).add(cax.mul(0).add(0.2)));
+  const cone = step(cy, S.mul(10.5).sub(12.5).sub(cax.mul(0.85)).add(0.2));
   const bed = step(cy, inv(S).mul(14).add(6.2).sub(inv(cax.div(7.6).clamp(0, 1)).mul(1.8).mul(S.mul(4).min(1))));
   const sandIn = inL.mul(cone).add(inU.mul(bed).mul(step(0.002, S))).min(1).mul(on(S)).mul(step(0.12, u));
   const hollow = c.bar.floor().mod(2).mul(kOn);                      // bead hollow/filled swap on the bar, only under a kick
@@ -222,7 +217,7 @@ export function material(ctx) {
   const sd = sense(12);
   for (let i = 0; i < 4; i++) {
     const L0 = LAY[0][i], L1 = LAY[1][i], v = (k) => mix(float(L0[k]), float(L1[k]), lyt);
-    const N0 = v("N"), N = v("N"), R = v("R");
+    const N = v("N"), R = v("R");
     const th0 = T.mul(0.22).mul(sd).add(step0.mul(TAU).div(mix(float(LAY[0][0].N), float(LAY[1][0].N), lyt)));
     const th = th0.mul(v("k")).add(v("c"));
     const G = cog(q, vec2(v("x"), v("y")), R, N, th);
