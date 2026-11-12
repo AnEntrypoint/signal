@@ -33,7 +33,7 @@ export const BEINGS = [
   { id: 'cosmic-egg',     name: 'the cosmic egg', built: true },
   { id: 'eye-pyramid',    name: 'the eye pyramid', built: true },
   { id: 'chakra-sage',    name: 'the chakra sage', built: false },
-  { id: 'mushroom-elders',name: 'the mushroom elders', built: false },
+  { id: 'mushroom-elders',name: 'the mushroom elders', built: true },
   { id: 'psyche-moth',    name: 'the psyche moth', built: false },
   { id: 'antler-god',     name: 'the antler god', built: false },
 ].map((b, k) => ({ ...b, k, centre: { x: 0, y: 320 + k * 100, z: 0 } }))
