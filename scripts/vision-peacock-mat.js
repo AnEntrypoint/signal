@@ -4,7 +4,7 @@
 // the other way / being z0 (breathes) / veil z+10 black feather blades folding and spreading like a hand fan / fore z+22
 // loose feathers drifting down. Pacing: crest beads alone u0-.07, neck beads climb .07-.2, head .17, crest stalks .22,
 // breast .2-.3, fan row by row .26-.72 (clock sweep outward, spine by nib, eye by iris), barbs .36-.8, wheel .5-.64,
-// blades .6-.74, feathers .66-.8; LIFO exit .8-1, the barbs last.
+// blades .6-.74, feathers .66-.8; LIFO exit .83-.98, the barbs last.
 import { MeshBasicNodeMaterial, DoubleSide } from "builtin/three";
 import { positionGeometry, float, vec2, vec3, smoothstep as ss, step, mix, atan2 as atan2raw, fwidth } from "builtin/tsl";
 import { tripClock, visionShown, visionU, climb, maskDraw, maskBeads, maskIris, inv, is, sgn, segH, strokeAA, ioU, NEON } from "./lib/trip.js";
@@ -28,7 +28,7 @@ export function material(ctx) {
   const H = hotC(hot), H2 = hotC(hot.add(pk(2, 3)).add(1).mod(4));
   const P = positionGeometry.xy, T = c.real;
   const kOn = step(0.001, c.kick), cl = climb(c);
-  const cul = io(0.7, 0.8, 0.86, 0.92).mul(cl.mul(0.4).add(0.6));
+  const cul = io(0.7, 0.8, 0.88, 0.93).mul(cl.mul(0.4).add(0.6));
   const on = (p) => step(0.004, p);
   // accents, all gated by the kick being on: a blink rippling outward, rings thinning to line-art every other pair of bars
   const blinkAt = (R) => inv(ss(0, 4, float(R).sub(c.beat.fract().mul(44)).abs())).mul(kOn);
@@ -49,8 +49,8 @@ export function material(ctx) {
   if (layer === "world") {
     const q = P.sub(vec2(0, -21)), r = q.length().max(0.01), a = atan2(q.x, q.y).div(TAU);
     const aaP = fwidth(P.x).mul(1.2).max(0.02), sn = sense(3);
-    const uEnd = inv(float(0.4).div(ctx.param("vw1", -1).sub(ctx.param("vw0", -1)).max(1))).clamp(0.95, 0.999);
-    const G = mix(ss(0.36, 0.8, u).mul(cl.mul(0.3).add(0.7)), float(1), ss(0.74, 0.84, u)).mul(inv(ss(0.93, uEnd, u)));
+    const uEnd = inv(float(0.4).div(ctx.param("vw1", -1).sub(ctx.param("vw0", -1)).max(1))).clamp(0.955, 0.999);
+    const G = mix(ss(0.36, 0.8, u).mul(cl.mul(0.3).add(0.7)), float(1), ss(0.74, 0.84, u)).mul(inv(ss(0.945, uEnd, u)));
     const N1 = pk(4, 3).mul(12).add(150), N2 = N1.add(pk(5, 2).mul(2)).add(6);
     const ray = (x, N) => { const e = N.mul(aaP).div(r.mul(TAU)).mul(0.7).min(0.25); return ss(float(0.25).sub(e), e.add(0.25), x.fract().sub(0.5).abs()); };
     const zr = r.div(13).sub(T.mul(0.07)).add(64), zone = zr.floor();
@@ -72,12 +72,12 @@ export function material(ctx) {
     const N = pk(7, 3).mul(2).add(12), R = 25, e = float(R * TAU * 0.3).div(N);
     const a = a0.add(T.mul(TAU / 90).mul(sn)), k = a.div(TAU).mul(N).add(0.5).floor(), ac = a.sub(k.mul(TAU).div(N));
     const dn = tear(r.mul(ac.sin()), r.mul(ac.cos()).sub(R).mul(sense(8)), e);
-    const pR = io(0.5, 0.64, 0.86, 0.91), pe = pR.mul(2).sub(k.div(N).mul(sn).add(rn(9)).fract()).clamp(0, 1);
+    const pR = io(0.5, 0.64, 0.88, 0.92), pe = pR.mul(2).sub(k.div(N).mul(sn).add(rn(9)).fract()).clamp(0, 1);
     lay(strokeAA(aa.div(e))(dn, 1).mul(maskIris(pe, dn)).mul(on(pe)), eye(dn, aa.div(e), blinkAt(22)).mul(cul.mul(0.3).add(0.6)));
     const nD = pk(10, 3).mul(6).add(36), ad = a0.sub(T.mul(TAU / 60).mul(sn)), kd = ad.div(TAU).mul(nD).add(0.5).floor();
     const adc = ad.sub(kd.mul(TAU).div(nD));
     const bd = vec2(r.mul(adc.sin()), r.mul(adc.cos()).sub(33)).length();
-    const pD = io(0.56, 0.68, 0.85, 0.9);
+    const pD = io(0.56, 0.68, 0.875, 0.91);
     lay(st(bd, 0.5).mul(maskBeads(pD, kd.div(nD).add(0.5).fract())).mul(on(pD)), mix(H, mix(B, W, 0.3), step(0.5, kd.add(64).mod(3))).mul(blinkAt(30).add(0.7)));
     return cutout(col, cover);
   }
@@ -93,7 +93,7 @@ export function material(ctx) {
     // on the kick the blades thin: what they hid shows through
     const w = h.mul(inv(h)).clamp(1e-4, 1).sqrt().mul(h.clamp(0, 1).mul(0.8).add(0.4)).mul(9.2).mul(inv(c.kick.mul(0.45)));
     const d = x.abs().sub(w).max(y.negate()).max(y.sub(L));
-    const pin = io(0.6, 0.74, 0.82, 0.87), pj = pin.mul(2).sub(k.div(K)).clamp(0, 1);
+    const pin = io(0.6, 0.74, 0.85, 0.895), pj = pin.mul(2).sub(k.div(K)).clamp(0, 1);
     const run = inv(ss(0, 0.07, h.sub(c.beat.div(2).fract()).abs())).mul(kOn);
     const beads = st(vec2(x, y.div(2.2).fract().sub(0.5).mul(2.2)).length(), 0.3).mul(step(0.12, h)).mul(step(h, 0.9));
     lay(st(d, 0).mul(maskDraw(pj, h)).mul(on(pj)),
@@ -104,7 +104,7 @@ export function material(ctx) {
   // ------------------------------------------------------------------ FORE: loose feathers drifting down, each with its eye
   if (layer === "fore") {
     const aa = fwidth(P.x).mul(1.2).max(0.01);
-    const pin = io(0.66, 0.8, 0.8, 0.85);
+    const pin = io(0.66, 0.8, 0.83, 0.87);
     for (let j = 0; j < (low ? 3 : 5); j++) {
       const sz = 1 + (j % 3) * 0.25, aL = aa.div(sz), st = strokeAA(aL);
       const yj = inv(T.mul(0.02 * (1 + j * 0.17)).add(j * 0.37).fract()).mul(60).sub(30);
@@ -130,7 +130,7 @@ export function material(ctx) {
   const fv = vec2(ax, p.y.add(14)), r = fv.length(), a = atan2(fv.x, fv.y);
   const spread = rn(13).mul(0.2).add(1.62), nb = pk(14, 3), nR = low ? 3 : 4;
   const late = inv(step(0, p.x.mul(sense(15)))).mul(0.22);              // one wing leads the other
-  const G = mix(ss(0.26, 0.7, u).mul(cl.mul(0.25).add(0.75)), float(1), ss(0.72, 0.8, u)).mul(inv(ss(0.86, 0.95, u))).mul(nR - 0.05);
+  const G = mix(ss(0.26, 0.7, u).mul(cl.mul(0.25).add(0.75)), float(1), ss(0.72, 0.8, u)).mul(inv(ss(0.89, 0.945, u))).mul(nR - 0.05);
   const lit = cul.mul(0.4).add(0.75);
   for (let j = nR - 1; j >= 0; j--) {                                    // outer rows first, so inner eyes sit over outer spines
     const [R, n0] = ROWS[j], n = nb.add(n0), D = spread.div(n);
@@ -151,27 +151,27 @@ export function material(ctx) {
 
   // the breast: a teardrop of scale arcs opening from its heart
   const bn = vec2(p.x.div(4.3), p.y.add(20.5).div(6.6)).length(), sdB = bn.sub(1).mul(4.3);
-  const pB = io(0.2, 0.3, 0.95, 0.98);
+  const pB = io(0.2, 0.3, 0.94, 0.955);
   const sy = p.y.div(1.5), rowB = sy.floor(), sx = p.x.div(1.7).add(rowB.mul(0.5));
   const arc = st(vec2(sx.fract().sub(0.5), sy.fract().sub(1)).length().sub(0.56).abs().mul(1.5), 0.09);
   lay(st(sdB, 0).mul(maskIris(pB, bn)).mul(on(pB)),
     BG.add(mix(A, B, rowB.add(64).mod(2)).mul(arc).mul(lit)).add(mix(A, W, 0.5).mul(st(sdB.abs(), 0.12))));
   // neck beads climbing; on the kick their colours step up the neck
   const yb = p.y.add(15.6).div(1.15), kb = yb.floor(), okN = step(0, kb).mul(step(kb, 5.5));
-  const pN = io(0.07, 0.2, 0.955, 0.985);
+  const pN = io(0.07, 0.2, 0.945, 0.96);
   const nd = vec2(p.x, yb.fract().sub(0.5).mul(1.15)).length().sub(inv(kb.div(14)).mul(0.56));
   lay(st(nd, 0).mul(okN).mul(maskBeads(pN, kb.div(6))).mul(on(pN)),
     mix(H, mix(A, W, 0.45), step(0.5, kb.add(c.beat.floor().mul(kOn)).mod(2))).add(W.mul(st(nd.add(0.38), 0)).mul(0.5)));
   // head, eyes, beak
-  const hd = vec2(p.x, p.y.add(7)).length(), pH = io(0.17, 0.24, 0.965, 0.99);
+  const hd = vec2(p.x, p.y.add(7)).length(), pH = io(0.17, 0.24, 0.955, 0.968);
   const beak = st(ax.sub(p.y.add(9.2).mul(0.5)).max(p.y.add(7.9)), 0).mul(step(-9.2, p.y));
   lay(st(hd.sub(1.75), 0).max(beak).mul(maskIris(pH, hd.div(2.3))).mul(on(pH)),
     BG.add(mix(A, W, 0.5).mul(st(hd.sub(1.75).abs(), 0.11))).add(W.mul(st(vec2(ax.sub(0.75), p.y.add(6.7)).length(), 0.3))).add(H2.mul(beak)));
   // crest: stalks draw down from the beads; the three beads are the seed, first in and last out
-  const pS = io(0.22, 0.27, 0.97, 0.99), ord = pk(16, 2), side = step(0.85, ax);
+  const pS = io(0.22, 0.27, 0.96, 0.972), ord = pk(16, 2), side = step(0.85, ax);
   const sg = segH(vec2(ax, p.y), vec2(1.7, -3.5), vec2(0.3, -5.4)), sc = segH(vec2(ax, p.y), vec2(0, -3), vec2(0, -5.3));
   lay(st(sg.d, 0.07).mul(maskDraw(pS, sg.h)).max(st(sc.d, 0.07).mul(maskDraw(pS, sc.h))).mul(on(pS)), mix(B, W, 0.5));
-  const pC = io(0, 0.07, 0.975, 0.998), dC = vec2(ax.sub(1.7), p.y.add(3.5)).length().min(vec2(p.x, p.y.add(3)).length());
+  const pC = io(0, 0.07, 0.965, 0.98), dC = vec2(ax.sub(1.7), p.y.add(3.5)).length().min(vec2(p.x, p.y.add(3)).length());
   const rad = pC.mul(2).sub(mix(side, inv(side), ord).mul(0.9)).clamp(0, 1).mul(0.55);
   lay(st(dC.sub(rad), 0).mul(on(rad)), mix(H2, W, st(dC, 0.2)).mul(c.kick.mul(0.5).add(1)));
   return cutout(col, cover);
