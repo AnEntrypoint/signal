@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "basedOnSpecVersion": 697,
-  "updatedAt": "2026-11-12T13:31:39.615Z",
+  "basedOnSpecVersion": 704,
+  "updatedAt": "2026-11-12T13:42:23.164Z",
   "summary": "Signal Stage is a walkable 3D motion-graphics stage whose multiplayer roll launches a synchronized, seeded music trip. A shared director maps selected audio onto the canonical show clock, drives shaders and camera, and deals vision beings into the view only for their slots.",
   "scriptPaths": [],
   "places": [
@@ -23,7 +23,7 @@
   "shared": [
     "scripts/lib/cine.js - CPU score clock, track-time lookup, section lookup and seeded camera path; used by player, camera, HUD and stage.",
     "scripts/lib/deck.js - cached deterministic per-seed scene-deck deal and track-to-scene-time mapping; used by cine.js and stage.js.",
-    "scripts/lib/visions.js - registry of 36 beings (33 built/dealable, 3 built:false), cached seeded slot deal, timing/shots and energy lookup; used by cine.js and stage.js.",
+    "scripts/lib/visions.js - registry of 36 beings, all built/dealable, cached seeded slot deal, timing/shots and energy lookup; used by cine.js and stage.js.",
     "scripts/lib/data/beings.yml - per-being stage rows: geometry/material stems, params, layer suffixes and home depth; stage.js builds a dealt or held being.",
     "scripts/lib/tracks.js - built-in tracks plus normalized paid own-track, seed selection, piecewise track/canonical clock mapping, shader params and track energy; used by cine.js, stage.js and ui.js.",
     "scripts/lib/data/score.yml and shots.yml - canonical sections, layers, lens, maths, deck and authored camera keys; energy.yml holds canonical track data and vision slots.",
@@ -38,7 +38,7 @@
     "scripts/lib/trip.js exports KICK_RUNS, SEC, BPS, tripClock, win, pal, stripes, HUE, shown, lens, bendUv, visionShown and shared vision-shader primitives.",
     "scripts/field-lib.js exports RADIUS, growR, riseR, resetR, endFade, backOut, base, hot, FAMILY, family, colours, breath, seamHold, held.",
     "scripts/tunnel-lib.js exports Z0, FEET, BOUNDS, tun, inside, camDepth, v3, BLUE, base, hot, GRAPH, mirAng; tunnel-core.js, tunnel-gates.js and tunnel-ribs.js export material.",
-    "Vision *-geo modules export geometry/collider (some spine/ring constants); *-mat modules export material, including the newly dealt bee-queen and time-keeper; worm geo/material pairs provide animated depth-winding bodies."
+    "Vision *-geo modules export geometry/collider (some spine/ring constants); *-mat modules export material; worm geo/material pairs provide animated depth-winding bodies."
   ],
   "ownership": [
     "scripts/player.js - local movement intent/velocity and viewer body's state.ownSong upload metadata; ordinary cine input writes shared world.state.cine.",
@@ -69,7 +69,7 @@
     "scripts/tunnel-* - wall, core, dust, gates, ribs and knot share geometry kinds and tunnel-lib.js spatial/color helpers; materials vary motif and seeded palette; wall holds at scene seams.",
     "scripts/chamber-* - room, circuit, hands, hex, Lissajous, solids and bilateral mask share chamber shader helpers and scored cutouts; room uses a seam hold.",
     "scripts/sun-disc.js, sun-drips.js and sun-halo.js - sun-eye layers share sun-lib.js but vary disc, hanging-drip and depth-halo imagery; disc uses a seam hold.",
-    "scripts/vision-*-geo.js / -mat.js - 33 of 36 registered beings are built/dealable; newly enabled scarab, eclipse-wolves, bee-queen and time-keeper join octopus-oracle and sky-whale; jaguar-shaman, zodiac-wheel and hummingbird remain built:false.",
+    "scripts/vision-*-geo.js / -mat.js - all 36 registered beings are built and dealable; newly enabled jaguar-shaman, zodiac-wheel and hummingbird join the previously enabled beings.",
     "Vision worm geo/material pairs plus scripts/companion-worm-geo.js - unit-tube geometry bent by shader paths; per-being materials vary appearance, geo resolution scales by ctx.lod."
   ],
   "probableOrphans": [],
@@ -78,7 +78,7 @@
     "tracks.js deals built-ins by seed modulo four (zero/missing uses fromage); trackOf(c) prefers c.track when it has music. Preserve source-track time versus canonical scene-clock distinction.",
     "Paid own-track metadata is carried in shared c.track from the buyer's body state; anchors map start, drop/vision windows and end onto canonical time, while BPM, firstBeat and bars remain source-track values.",
     "Non-fromage and paid tracks map piecewise through selected anchors onto canonical anchors; shader params ta1..ta4 and tdur must match tracks.js, with fb/bps retaining track beat. Convert kick runs to canonical seconds before stage propagation.",
-    "score.yml remains the canonical show/deck and vision-slot timeline regardless of selected audio duration or BPM; idle materials receive IDENTITY params. dealVisions filters BEINGS by built.",
-    "The vision registry has 36 entries; jaguar-shaman, zodiac-wheel and hummingbird are built:false, while scarab, eclipse-wolves, bee-queen and time-keeper are built:true and can be dealt."
+    "score.yml remains the canonical show/deck and vision-slot timeline regardless of selected audio duration or BPM; idle materials receive IDENTITY params. All 36 registry entries are now built:true and dealVisions filters by built.",
+    "Hummingbird's being.yml row sets h82/w114; its material divides its bird coordinates by 1.6, so changes to either size affect the apparent scale."
   ]
 }
