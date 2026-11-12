@@ -2,7 +2,7 @@
 // Layers (params.layer): world z-30 op-art dunes + dripping sun-eye (scrolls) / ring z-12 ray fan (counter-rotates) /
 // being z0 the pyramid (breathes) / veil z+10 black nearer pyramids (slide sideways) / fore z+22 flame tears + squares (drift up).
 // Masks: courses stack (stair), lids open, rays grow from the apex, flames kindle from their base. Roll channels 980..999.
-// Pacing: base courses alone u0-.15, whole by .5, late detail .6-.8, LIFO exit .8-1; the dunes stay lit to the seam.
+// Pacing: base courses alone u0-.15, whole by .5, late detail .6-.8, LIFO exit .72-1: sky, drips, sun lids, then dunes sink, then the courses unstack.
 import { MeshBasicNodeMaterial, AdditiveBlending, DoubleSide } from "builtin/three";
 import { positionGeometry, float, vec2, vec3, smoothstep as ss, step, mix, atan2 as atan2raw, fwidth, select } from "builtin/tsl";
 import { tripClock, visionShown, visionU, climb, maskLid, maskDraw, maskClock, maskBeads, inv, is, rbox, strokeAA, ioU, NEON } from "./lib/trip.js";
@@ -40,7 +40,7 @@ export function material(ctx) {
     const aa = fwidth(P.x).mul(1.2).max(0.03), sk = strokeAA(aa);
     const uEnd = inv(float(0.4).div(ctx.param("vw1", -1).sub(ctx.param("vw0", -1)).max(1))).min(0.999);
     const gone = inv(ss(uEnd, float(1.0005), u));
-    const pw = (a, b) => ss(a, b, u).mul(gone);
+    const pw = (a, b) => { const e = 0.72 + (0.66 - b) * 0.3; return ss(a, b, u).mul(inv(ss(e, e + 0.07, u))).mul(gone); };   // LIFO: last in leaves first, before the courses unstack
     const dir = sense(4);
     const S = P.sub(vec2(dir.mul(44), 21)), rs = S.length();
     // sky: rings spreading out of the sun
