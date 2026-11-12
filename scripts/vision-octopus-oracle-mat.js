@@ -194,7 +194,7 @@ export function material(ctx) {
   });
 
   // MANTLE: the dome; its stripes ring outward from the eye, appearing ring by ring as the iris of the whole body opens
-  const md = smin(vec2(q.x.div(9), p.y.sub(6).div(11)).length().sub(1).mul(9), capsule(q, [0, -1], [0, -4], 5.2), 2);
+  const md = smk(vec2(q.x.div(9), p.y.sub(6).div(11)).length().sub(1).mul(9), capsule(q, [0, -1], [0, -4], 5.2), float(2));
   const pM = io(0.13, 0.26, 0.93, 0.965);
   const mant = st(md, 0).mul(maskIris(pM, e.div(17))).mul(on(pM));
   const ring = band(e.mul(0.55).sub(T.mul(0.12).mul(sense(8))));
