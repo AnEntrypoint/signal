@@ -95,7 +95,7 @@ export function material(ctx) {
     const hand = (rate, len, w, sd) => {
       const t = T.mul(rate).mul(sd).add(rn(8 + rate).mul(TAU)), dir = vec2(t.sin(), t.cos());
       const s = segH(P, vec2(0, 0), dir.mul(len));
-      return st(s.d, w).mul(maskDraw(pH, s.h)).mul(on(pH)).add(nib(pH, s.h, 0.04).mul(st(s.d, w.mul(3))).mul(step(pH, 0.99)));
+      return st(s.d, w).mul(maskDraw(pH, s.h)).mul(on(pH)).add(nib(pH, s.h, 0.04).mul(st(s.d, w.mul(3))).mul(step(pH, 0.99)).mul(on(pH)));
     };
     const hands = hand(0.05, 26, float(0.35), sn).add(hand(0.11, 20, float(0.55), sn.negate()));
     const lit = cul.mul(0.6).add(0.55);
@@ -208,7 +208,7 @@ export function material(ctx) {
   const yy = p.y.add(T.mul(7)).div(1.3), sy = yy.fract().sub(0.5).mul(1.3);
   const strm = st(vec2(p.x, sy).length(), 0.3).mul(step(p.y, 5.5)).mul(step(S.mul(10.5).sub(12.5), p.y)).mul(step(0.01, S)).mul(step(S, 0.99));
   lay(strm, mix(H, H2, tick));
-  lay(glass.add(caps).min(1).add(nib(pG, sG, 0.03).mul(st(dG.abs(), 0.5)).mul(step(pG, 0.99))).min(1), mix(A, W, 0.35).mul(lit).add(H.mul(nib(pG, sG, 0.03))));
+  lay(glass.add(caps).min(1).add(nib(pG, sG, 0.03).mul(st(dG.abs(), 0.5)).mul(step(pG, 0.99)).mul(on(pG))).min(1), mix(A, W, 0.35).mul(lit).add(H.mul(nib(pG, sG, 0.03))));
 
   // the cogs: a meshed chain each side, arriving one by one swept in from the tooth where they mesh with the last
   const lyt = pk(9, 2), ord = pk(11, 2);
