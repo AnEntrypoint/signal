@@ -216,7 +216,7 @@ export function material(ctx) {
   const moon = st(md.sub(2.1), 0).mul(outside).mul(on(pMoon));
   lay(moon, BG.add(moonC.mul(step(2.0, shd))).add(mix(moonC, W, 0.5).mul(st(md.sub(2.1).abs(), 0.08))));
 
-  // the eclipse: black disc, its rim drawn round, the corona beads lit one by one round the clock from one seed bead
+  // eclipse: black disc, rim drawn round, corona beads lit round the clock from one seed bead
   const N = pk(4, 3).mul(6).add(24), rc = 6.6, kf = ea.div(TAU).add(0.5).mul(N), k = kf.add(0.5).floor().mod(N);
   const bd = vec2(kf.sub(kf.add(0.5).floor()).div(N).mul(TAU * rc), er.sub(rc)).length();
   const ks = rn(15).mul(N).floor(), sc = sense(16), rank = k.sub(ks).mul(sc).add(N).mod(N).div(N);
