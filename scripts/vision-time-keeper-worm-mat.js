@@ -48,7 +48,7 @@ export function material(ctx) {
     const bd = vec2(sf.sub(1.5).abs().min(sf.add(1.5).abs()), ang.div(TAU).mul(4).fract().sub(0.5).mul(rf.mul(TAU / 4))).length();
     const bead = inv(smoothstep(0.42, 0.52, bd.min(sf.abs().add(9))));
     const base = mix(A, B, step(0.5, seg.mod(2))).mul(0.55);
-    skin = base.add(mix(W, H, 0.3).mul(inv(smoothstep(0.08, 0.16, sf.abs())))).add(H2.mul(bead).mul(step(sf.abs(), 1)).mul(0));
+    skin = base.add(mix(W, H, 0.3).mul(inv(smoothstep(0.08, 0.16, sf.abs())))).add(H2.mul(bead).mul(0.8));
     skin = mix(skin, mix(H, H2, c.beat.floor().mod(2).mul(kOn)), ticks.mul(0.9));
   } else {
     // world-locked: the body slides through a still field of chevron stripes, the field running against the swim

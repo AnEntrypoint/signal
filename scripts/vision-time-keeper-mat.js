@@ -49,7 +49,7 @@ export function material(ctx) {
   const cutout = (col, cover) => { m.colorNode = col; m.opacityNode = cover.mul(live).clamp(0, 1); m.alphaTest = 0.5; return m; };
   const lay0 = () => { let col = vec3(0), cover = float(0); return { lay: (b, lit) => { col = mix(col, lit, b); cover = cover.max(b); }, out: () => cutout(col, cover) }; };
 
-  // ------------------------------------------------------------------ WORLD: growth rings expanding, dotted spiral arms
+  // WORLD: growth rings expanding, dotted spiral arms
   if (layer === "world") {
     const aa = fwidth(P.x).mul(1.2).max(0.02), st = strokeAA(aa);
     const r = P.length(), a = atan2(P.y, P.x);
@@ -77,7 +77,7 @@ export function material(ctx) {
     return out();
   }
 
-  // ------------------------------------------------------------------ RING: twelve beads, two hands turning against each other
+  // RING: twelve beads, two hands turning against each other
   if (layer === "ring") {
     const aa = fwidth(P.x).mul(1.2).max(0.01), st = strokeAA(aa);
     const r = P.length(), a0 = atan2(P.x, P.y), sn = sense(6);
@@ -106,7 +106,7 @@ export function material(ctx) {
     return m;
   }
 
-  // ------------------------------------------------------------------ VEIL: black cogs roll in from the edges, teeth occluding
+  // VEIL: black cogs roll in from the edges, teeth occluding
   if (layer === "veil") {
     const aa = fwidth(P.x).mul(1.2).max(0.01), st = strokeAA(aa);
     const { lay, out } = lay0();
@@ -127,7 +127,7 @@ export function material(ctx) {
     return out();
   }
 
-  // ------------------------------------------------------------------ FORE: numeral cartouches and small cogs drifting up
+  // FORE: numeral cartouches and small cogs drifting up
   if (layer === "fore") {
     const aa = fwidth(P.x).mul(1.2).max(0.01), st = strokeAA(aa);
     const pin = io(0.66, 0.78, 0.8, 0.84);
@@ -157,7 +157,7 @@ export function material(ctx) {
     return out();
   }
 
-  // ------------------------------------------------------------------ THE BEING (breathes)
+  // THE BEING (breathes)
   const p = P.div(T.mul(TAU / 10).sin().mul(0.012).add(1));
   const aa = fwidth(p.x).mul(1.2).max(0.008), st = strokeAA(aa);
   const ax = p.x.abs(), q = vec2(ax, p.y);
