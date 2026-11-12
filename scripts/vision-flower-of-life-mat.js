@@ -71,7 +71,7 @@ export function material(ctx) {
     const b = vec2(kf.mul(TAU).div(n).mul(rc), r.sub(rc)).length();
     const dot = mix(sk(b, 0.5), sk(b.sub(0.8).abs(), 0.1), step(0.5, par));
     const ord = i.mul(pk(11, 3).add(1)).div(5).add(rn(12)).fract();
-    const pR = io(0.45, 0.58, 0.885, 0.93).mul(2).sub(ord).clamp(0, 1);
+    const pR = io(0.33, 0.44, 0.885, 0.93).mul(2).sub(ord).clamp(0, 1);
     const msk = maskClock(pR, a.mul(par)).mul(step(0.002, pR)).mul(step(R0, r)).mul(step(r, R0 + 5 * sp));
     const i3 = i.mod(3), dc = A.mul(is(i3, 0)).add(mix(H, W, 0.15).mul(is(i3, 1))).add(B.mul(is(i3, 2)));
     m.colorNode = dc.mul(dot).mul(msk).mul(float(0.6).add(cl.mul(ss(0.6, 0.8, u)).mul(0.4)).add(ripple(r, 44, 3).mul(0.9)));
@@ -153,7 +153,7 @@ export function material(ctx) {
   let col = mix(H, H2, ss(R, 2.4 * R, rr)).mul(band).mul(pet).mul(cl.mul(0.55).add(0.3));
   col = col.add(arcs.mul(float(0.85).add(kl.mul(1.1)))).add(W.mul(tip));
   // the bounding circle, compass-swept
-  const pB = io(0.43, 0.48, 0.9, 0.915), bd = rr.sub(3 * R + 0.8).abs();
+  const pB = io(0.4, 0.45, 0.9, 0.915), bd = rr.sub(3 * R + 0.8).abs();
   const bnd = maskClock(pB, atan2(p.x, p.y).mul(sn)).mul(step(0.002, pB));
   col = col.add(mix(A, W, 0.3).mul(sk(bd, 0.1)).mul(bnd)); cover = cover.max(sk(bd, 0.3).mul(bnd));
   // Metatron's cube: three turned frames, each ruling its lines outward from the axes, one family after another
@@ -171,7 +171,7 @@ export function material(ctx) {
   }
   col = col.add(mix(H2, W, 0.25).mul(met).mul(0.9)).add(W.mul(nodes).mul(maskIris(pm, hx.div(2.3 * R))).mul(step(0.004, pm)));
   // the eye in the middle circle: vesica lids open; on the kick pupil and iris trade light for dark
-  const pe = io(0.5, 0.58, 0.875, 0.895), sd = vesica(p, 2.5, pe.mul(1.3).max(0.01));
+  const pe = io(0.42, 0.49, 0.875, 0.895), sd = vesica(p, 2.5, pe.mul(1.3).max(0.01));
   const body = sk(sd, 0).mul(step(0.004, pe));
   const ei = p.sub(vec2(t.mul(0.5).sin().mul(0.5), t.mul(0.37).sin().mul(0.15))), er = ei.length();
   const spk = sk(atan2(ei.x, ei.y).div(TAU).mul(16).fract().sub(0.5).abs().sub(0.25).mul(er).mul(TAU / 16), 0);
