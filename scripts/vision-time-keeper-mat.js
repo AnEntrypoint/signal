@@ -9,12 +9,10 @@ import { tripClock, visionShown, visionU, climb, maskDraw, maskBeads, maskIris, 
 const TAU = 6.28318, PI = 3.14159;
 const atan2 = (y, x) => atan2raw(y, x.add(1e-5));
 const hash = (k, o = 0) => k.mul(12.9898 + o).add(o * 3.1).sin().mul(43758.5453).fract();
-// a meshed cog chain (right half; the left is its mirror): two seeded layouts, pitch radius R, N = 2R teeth
 const chain = (x0, y0, Rs, angs) => {
   const g = [{ x: x0, y: y0, R: Rs[0], N: Rs[0] * 2, k: 1, c: 0 }];
   for (let i = 1; i < Rs.length; i++) {
     const p = g[i - 1], f = (angs[i - 1] * PI) / 180, R = Rs[i], N = R * 2, d = p.R + R;
-    // contact at angle f from p: p's tooth there, my gap at f+PI; theta_i = -theta_p*Np/N + c
     const c = ((f + PI) * N + f * p.N - PI) / N;
     g.push({ x: p.x + Math.cos(f) * d, y: p.y + Math.sin(f) * d, R, N, k: -p.k * p.N / N, c: -p.c * p.N / N + c, f: f + PI });
   }
@@ -22,7 +20,6 @@ const chain = (x0, y0, Rs, angs) => {
   return g;
 };
 const LAY = [chain(17.5, 13, [6, 4, 5, 3], [-70, -110, -20]), chain(15, 19, [4, 6, 3, 5], [-30, -100, -120])];
-// a cog's signed distance: pitch circle R with N trapezoid teeth, turned by th
 const cog = (q, ctr, R, N, th) => {
   const d = q.sub(ctr), r = d.length(), a = atan2(d.y, d.x).sub(th);
   const tooth = ss(-0.3, 0.3, a.mul(N).cos());
@@ -49,13 +46,11 @@ export function material(ctx) {
   const cutout = (col, cover) => { m.colorNode = col; m.opacityNode = cover.mul(live).clamp(0, 1); m.alphaTest = 0.5; return m; };
   const lay0 = () => { let col = vec3(0), cover = float(0); return { lay: (b, lit) => { col = mix(col, lit, b); cover = cover.max(b); }, out: () => cutout(col, cover) }; };
 
-  // WORLD: growth rings expanding, dotted spiral arms
   if (layer === "world") {
     const aa = fwidth(P.x).mul(1.2).max(0.02), st = strokeAA(aa);
     const r = P.length(), a = atan2(P.y, P.x);
     const pW = io(0.42, 0.58, 0.94, 0.995).add(cl.mul(0.06).mul(on(u.sub(0.42)))).min(1);
     const { lay, out } = lay0();
-    // tree rings: each ring wobbles on its own, the whole field breathing outward
     const sp = 5.5, rr = r.sub(T.mul(0.35));
     const k = rr.div(sp).floor();
     const wob = a.mul(3).add(hash(k, 2).mul(TAU)).sin().mul(0.7).add(a.mul(5).sub(hash(k, 5).mul(TAU)).sin().mul(0.35));
@@ -64,7 +59,6 @@ export function material(ctx) {
     const kk = rr.add(wob).div(sp).floor();
     const rc = mix(A, B, step(0.5, hash(kk, 7))).mul(0.55).add(H2.mul(0.5).mul(step(0.85, hash(kk, 3))));
     lay(ring, rc.mul(cul.mul(0.4).add(0.45)));
-    // dotted spiral arms, turning against the ring's breath
     const arms = pk(3, 3).add(3), lr = r.max(1).log();
     const sA = a.mul(arms).div(TAU).sub(lr.mul(1.3).mul(sense(4))).add(T.mul(0.012).mul(sense(5)));
     const along = lr.mul(9), cell = along.floor();
@@ -77,7 +71,6 @@ export function material(ctx) {
     return out();
   }
 
-  // RING: twelve beads, two hands turning against each other
   if (layer === "ring") {
     const aa = fwidth(P.x).mul(1.2).max(0.01), st = strokeAA(aa);
     const r = P.length(), a0 = atan2(P.x, P.y), sn = sense(6);
@@ -106,7 +99,6 @@ export function material(ctx) {
     return m;
   }
 
-  // VEIL: black cogs roll in from the edges, teeth occluding
   if (layer === "veil") {
     const aa = fwidth(P.x).mul(1.2).max(0.01), st = strokeAA(aa);
     const { lay, out } = lay0();
@@ -127,7 +119,6 @@ export function material(ctx) {
     return out();
   }
 
-  // FORE: numeral cartouches and small cogs drifting up
   if (layer === "fore") {
     const aa = fwidth(P.x).mul(1.2).max(0.01), st = strokeAA(aa);
     const pin = io(0.66, 0.78, 0.8, 0.84);
@@ -146,7 +137,6 @@ export function material(ctx) {
         lay(inside, BG.add(mix(H2, W, 0.2).mul(st(g.d.abs(), 0.08).add(st(g.r.sub(0.6).abs(), 0.07)).min(1))));
         continue;
       }
-      // a pill cartouche: its outline drawn by a nib round the rim, a numeral of beads and bars inside
       const L = 1.6 + (j % 2) * 0.8, d = capsule(q, [-L, 0], [L, 0], 1.25);
       const inside = st(d, 0).mul(maskDraw(pj, ang)).mul(on(pj));
       const nn = (j % 4) + 1, sx = q.x.add(nn * 0.5).fract().sub(0.5), kx = q.x.add(nn * 0.5).floor();
@@ -157,7 +147,6 @@ export function material(ctx) {
     return out();
   }
 
-  // THE BEING (breathes)
   const p = P.div(T.mul(TAU / 10).sin().mul(0.012).add(1));
   const aa = fwidth(p.x).mul(1.2).max(0.008), st = strokeAA(aa);
   const ax = p.x.abs(), q = vec2(ax, p.y);
@@ -165,7 +154,6 @@ export function material(ctx) {
   const lit = cul.mul(0.5).add(0.8);
   const up = step(5, p.y);                                          // which bulb
 
-  // the glass: two bulbs tapering to the neck, drawn out from the neck by a nib, then the caps
   const ell = (cy) => vec2(q.x.div(8.5), p.y.sub(cy).div(9)).length().sub(1).mul(8.5);
   const dU = smin(ell(14), capsule(q, [0, 12], [0, 5], 0.6), 2.2), dL = smin(ell(-4), capsule(q, [0, -2], [0, 5], 0.6), 2.2);
   const dG = dU.min(dL);
@@ -176,7 +164,6 @@ export function material(ctx) {
   const pC = io(0.2, 0.25, 0.92, 0.95);
   const caps = st(cap(23.4).min(cap(-13.4)).abs(), 0.12).mul(maskDraw(pC, ax.div(11))).mul(on(pC));
 
-  // the faces: one in the upper bulb, its inverted twin in the lower, line by line; the sand later buries/uncovers them
   const fy = mix(float(10).sub(p.y), p.y, up), f = vec2(ax, fy);
   const pF = io(0.36, 0.56, 0.86, 0.9).mul(6);
   const fl = (k, d, s) => st(d, 0.11).mul(maskDraw(pF.sub(k).clamp(0, 1), s)).mul(on(pF.sub(k)));
@@ -187,7 +174,6 @@ export function material(ctx) {
     .add(fl(4, lips.d, lips.s)).add(st(dot3, 0.55).mul(maskIris(pF.sub(5).clamp(0, 1), dot3.div(0.55))).mul(on(pF.sub(5)))).min(1);
   lay(face, mix(mix(B, W, 0.55), H2, inv(up).mul(0.6)).mul(lit));
 
-  // the sand: beads on a hex lattice, each in or out by its own centre: the lower cone rises grain by grain, the upper bed sinks
   const S = ss(0.14, 0.8, u).mul(cl.mul(0.25).add(0.75)).add(ss(0.6, 0.8, u).mul(0.25)).min(1).mul(inv(ss(0.9, 0.96, u)));
   const row = p.y.div(1.05).floor(), bx = p.x.div(1.1).add(row.mul(0.5)), cx = bx.floor().add(0.5).sub(row.mul(0.5)).mul(1.1), cy = row.add(0.5).mul(1.05);
   const bq = vec2(p.x.sub(cx), p.y.sub(cy)).length(), cax = cx.abs();
@@ -200,7 +186,6 @@ export function material(ctx) {
   const bead = st(bq, 0.42).mul(inv(hollow.mul(st(bq, 0.2))));
   const sandC = mix(H, H2, tick).mul(lit).add(W.mul(st(bq, 0.14)).mul(0.5));
   lay(bead.mul(sandIn), sandC);
-  // the falling stream and, before the glass, the seed: one grain falling alone
   const fallT = T.mul(0.55).fract(), gy = mix(float(13), float(-12), fallT.mul(fallT));
   const g1 = vec2(p.x, p.y.sub(gy)).length();
   const pS = io(0, 0.02, 0.95, 0.98);
@@ -210,7 +195,6 @@ export function material(ctx) {
   lay(strm, mix(H, H2, tick));
   lay(glass.add(caps).min(1).add(nib(pG, sG, 0.03).mul(st(dG.abs(), 0.5)).mul(step(pG, 0.99)).mul(on(pG))).min(1), mix(A, W, 0.35).mul(lit).add(H.mul(nib(pG, sG, 0.03))));
 
-  // the cogs: a meshed chain each side, arriving one by one swept in from the tooth where they mesh with the last
   const lyt = pk(9, 2), ord = pk(11, 2);
   const g = ss(0.24, 0.6, u).add(cl.mul(0.08).mul(on(u.sub(0.24)))).min(1).mul(inv(ss(0.88, 0.94, u))).mul(4);
   const step0 = c.beat.floor().add(ss(0, 0.18, c.beat.fract())).mul(kOn);  // one tooth per kick
@@ -232,7 +216,6 @@ export function material(ctx) {
     lay(body, BG.add(mix(ci, W, 0.25).mul(st(G.d.abs(), 0.17)).mul(lit)).add(mix(B, W, 0.3).mul(inner.add(beads).min(1)).mul(0.75)));
   }
 
-  // the pendulum: the rod lowers from its pivot under the base, then the bob opens; it swings on the beat's half-time
   const pP = io(0.62, 0.7, 0.84, 0.88);
   const sw = c.beat.mul(PI / 2).sin().mul(0.38), dir = vec2(sw.sin(), sw.cos().negate());
   const rod = segH(p, vec2(0, -14), dir.mul(7.2).add(vec2(0, -14)));
