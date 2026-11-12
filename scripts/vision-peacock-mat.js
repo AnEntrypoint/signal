@@ -158,12 +158,12 @@ export function material(ctx) {
     BG.add(mix(A, B, rowB.add(64).mod(2)).mul(arc).mul(lit)).add(mix(A, W, 0.5).mul(st(sdB.abs(), 0.12))));
   // neck beads climbing; on the kick their colours step up the neck
   const yb = p.y.add(15.6).div(1.15), kb = yb.floor(), okN = step(0, kb).mul(step(kb, 5.5));
-  const pN = io(0.07, 0.2, 0.945, 0.96);
+  const pN = io(0.13, 0.24, 0.945, 0.96);
   const nd = vec2(p.x, yb.fract().sub(0.5).mul(1.15)).length().sub(inv(kb.div(14)).mul(0.56));
   lay(st(nd, 0).mul(okN).mul(maskBeads(pN, kb.div(6))).mul(on(pN)),
     mix(H, mix(A, W, 0.45), step(0.5, kb.add(c.beat.floor().mul(kOn)).mod(2))).add(W.mul(st(nd.add(0.38), 0)).mul(0.5)));
   // head, eyes, beak
-  const hd = vec2(p.x, p.y.add(7)).length(), pH = io(0.17, 0.24, 0.955, 0.968);
+  const hd = vec2(p.x, p.y.add(7)).length(), pH = io(0.2, 0.26, 0.955, 0.968);
   const beak = st(ax.sub(p.y.add(9.2).mul(0.5)).max(p.y.add(7.9)), 0).mul(step(-9.2, p.y));
   lay(st(hd.sub(1.75), 0).max(beak).mul(maskIris(pH, hd.div(2.3))).mul(on(pH)),
     BG.add(mix(A, W, 0.5).mul(st(hd.sub(1.75).abs(), 0.11))).add(W.mul(st(vec2(ax.sub(0.75), p.y.add(6.7)).length(), 0.3))).add(H2.mul(beak)));
