@@ -924,3 +924,168 @@ eye-pyramid:
   p: {}
   s: -worm-4
   z: 0
+flower-of-life:
+- g: world-turtle
+  m: flower-of-life
+  mp: {layer: being}
+  p: {h: 50, layer: being, w: 70}
+  s: ''
+  z: 0
+- g: world-turtle
+  m: flower-of-life
+  mp: {layer: fore}
+  p: {h: 85, layer: fore, w: 150}
+  s: -fore
+  z: 22
+- g: world-turtle
+  m: flower-of-life
+  mp: {layer: ring}
+  p: {h: 80, layer: ring, w: 80}
+  s: -ring
+  z: -12
+- g: world-turtle
+  m: flower-of-life
+  mp: {layer: veil}
+  p: {h: 84, layer: veil, w: 120}
+  s: -veil
+  z: 10
+- g: world-turtle
+  m: flower-of-life
+  mp: {layer: world}
+  p: {h: 180, layer: world, w: 320}
+  s: -world
+  z: -30
+- g: world-turtle-worm
+  m: flower-of-life-worm
+  mp: {n: 1}
+  p: {}
+  s: -worm-1
+  z: 0
+- g: world-turtle-worm
+  m: flower-of-life-worm
+  mp: {n: 2}
+  p: {}
+  s: -worm-2
+  z: 0
+- g: world-turtle-worm
+  m: flower-of-life-worm
+  mp: {n: 3}
+  p: {}
+  s: -worm-3
+  z: 0
+- g: world-turtle-worm
+  m: flower-of-life-worm
+  mp: {n: 4}
+  p: {}
+  s: -worm-4
+  z: 0
+cosmic-egg:
+- g: world-turtle
+  m: cosmic-egg
+  mp: {layer: being}
+  p: {h: 50, layer: being, w: 70}
+  s: ''
+  z: 0
+- g: world-turtle
+  m: cosmic-egg
+  mp: {layer: fore}
+  p: {h: 85, layer: fore, w: 150}
+  s: -fore
+  z: 22
+- g: world-turtle
+  m: cosmic-egg
+  mp: {layer: ring}
+  p: {h: 80, layer: ring, w: 80}
+  s: -ring
+  z: -12
+- g: world-turtle
+  m: cosmic-egg
+  mp: {layer: veil}
+  p: {h: 84, layer: veil, w: 120}
+  s: -veil
+  z: 10
+- g: world-turtle
+  m: cosmic-egg
+  mp: {layer: world}
+  p: {h: 180, layer: world, w: 320}
+  s: -world
+  z: -30
+- g: world-turtle-worm
+  m: cosmic-egg-worm
+  mp: {n: 1}
+  p: {}
+  s: -worm-1
+  z: 0
+- g: world-turtle-worm
+  m: cosmic-egg-worm
+  mp: {n: 2}
+  p: {}
+  s: -worm-2
+  z: 0
+- g: world-turtle-worm
+  m: cosmic-egg-worm
+  mp: {n: 3}
+  p: {}
+  s: -worm-3
+  z: 0
+- g: world-turtle-worm
+  m: cosmic-egg-worm
+  mp: {n: 4}
+  p: {}
+  s: -worm-4
+  z: 0
+phoenix:
+- g: world-turtle
+  m: phoenix
+  mp: {layer: being}
+  p: {h: 50, layer: being, w: 70}
+  s: ''
+  z: 0
+- g: world-turtle
+  m: phoenix
+  mp: {layer: fore}
+  p: {h: 85, layer: fore, w: 150}
+  s: -fore
+  z: 22
+- g: world-turtle
+  m: phoenix
+  mp: {layer: ring}
+  p: {h: 80, layer: ring, w: 80}
+  s: -ring
+  z: -12
+- g: world-turtle
+  m: phoenix
+  mp: {layer: veil}
+  p: {h: 84, layer: veil, w: 120}
+  s: -veil
+  z: 10
+- g: world-turtle
+  m: phoenix
+  mp: {layer: world}
+  p: {h: 180, layer: world, w: 320}
+  s: -world
+  z: -30
+- g: world-turtle-worm
+  m: phoenix-worm
+  mp: {n: 1}
+  p: {}
+  s: -worm-1
+  z: 0
+- g: world-turtle-worm
+  m: phoenix-worm
+  mp: {n: 2}
+  p: {}
+  s: -worm-2
+  z: 0
+- g: world-turtle-worm
+  m: phoenix-worm
+  mp: {n: 3}
+  p: {}
+  s: -worm-3
+  z: 0
+- g: world-turtle-worm
+  m: phoenix-worm
+  mp: {n: 4}
+  p: {}
+  s: -worm-4
+  z: 0
