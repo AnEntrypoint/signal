@@ -181,7 +181,7 @@ export function material(ctx) {
   const inU = step(vec2(cax.div(7.6), cy.sub(14).div(8.2)).length(), 1).mul(step(6, cy));
   const cone = step(cy, S.mul(10.5).sub(12.5).sub(cax.mul(0.85)).add(0.2));
   const bed = step(cy, inv(S).mul(14).add(6.2).sub(inv(cax.div(7.6).clamp(0, 1)).mul(1.8).mul(S.mul(4).min(1))));
-  const sandIn = inL.mul(cone).add(inU.mul(bed).mul(step(0.002, S))).min(1).mul(on(S)).mul(step(0.12, u));
+  const sandIn = inL.mul(cone).add(inU.mul(bed).mul(step(hash(cx.mul(7.3).add(cy.mul(1.7)), 9).mul(0.98).add(0.01), ss(0.12, 0.34, u)))).min(1).mul(on(S)).mul(step(0.12, u));
   const hollow = c.bar.floor().mod(2).mul(kOn);                      // bead hollow/filled swap on the bar, only under a kick
   const bead = st(bq, 0.42).mul(inv(hollow.mul(st(bq, 0.2))));
   const sandC = mix(H, H2, tick).mul(lit).add(W.mul(st(bq, 0.14)).mul(0.5));
