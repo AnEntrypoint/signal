@@ -1,9 +1,8 @@
 // THE OCTOPUS ORACLE: a mirrored octopus of neon line-art, one concentric eye in its striped dome, eight arms curling in pairs.
 // Layers (params.layer): world z-30 kelp ribbons + plankton rows + rippled seabed (scrolls) / ring z-12 two bubble helices (counter-turn) /
 // being z0 eye, mantle, arms, suckers (breathes) / veil z+10 black ink clouds (bloom and drift) / fore z+22 fish glyphs + bubbles (drift).
-// Pacing: the closed lid's line alone u0-.04, the eye opens .04-.13, mantle stripes ring out from the eye .13-.26, arm pairs uncurl
-// one by one .27-.55 (seeded order), suckers light bead by bead after each, seabed + kelp .38-.58, bubble wheel .5-.62, rim beads, plankton,
-// ink .6-.76, fish .68-.8; LIFO exit .8-1: fish, ink, plankton, wheel, suckers, arms tip-first, mantle, the lid shuts, the sea last.
+// Pacing: lid line alone u0-.04, eye opens -.13, mantle rings out from the eye -.26, arm pairs uncurl .27-.55 (seeded order), suckers
+// bead by bead after each, seabed+kelp .38-.58, bubble wheel .5, plankton, ink .6, fish .68; LIFO exit .8-1, the sea last.
 import { MeshBasicNodeMaterial, AdditiveBlending, DoubleSide } from "builtin/three";
 import { positionGeometry, float, vec2, vec3, smoothstep as ss, step, mix, atan2 as atan2raw, fwidth } from "builtin/tsl";
 import { tripClock, visionShown, visionU, climb, maskDraw, maskBeads, maskIris, maskLid, maskClock, inv, is, sgn, smin, segH, capsule, strokeAA, ioU, NEON } from "./lib/trip.js";
@@ -31,8 +30,7 @@ export function material(ctx) {
   const rn = (n) => c.rnd(1180 + n), pk = (n, k) => c.pick(1180 + n, k), sense = (n) => sgn(rn(n));
   const { BLU, VIO, PNK, ORA, YEL, GRN, W, BG } = NEON;
   const fam = pk(0, 3), hot = pk(1, 4);
-  // palette families: abyss (blue/violet), bloom (violet/pink-ish), lagoon (teal/green)
-  const TEAL = vec3(0.005, 0.55, 0.75);
+    const TEAL = vec3(0.005, 0.55, 0.75);
   const A = BLU.mul(is(fam, 0)).add(VIO.mul(is(fam, 1))).add(TEAL.mul(is(fam, 2)));
   const B = VIO.mul(is(fam, 0)).add(mix(PNK, VIO, 0.55).mul(is(fam, 1))).add(BLU.mul(is(fam, 2)));
   const hotC = (k) => [PNK, ORA, YEL, GRN].reduce((a, v, i) => a.add(v.mul(is(k, i))), vec3(0));
@@ -97,8 +95,8 @@ export function material(ctx) {
       const rb = cs.mul(0.3).mul(ss(9, 14, r)).mul(inv(ss(30, 37, r)));
       const order = w.floor().div(N).fract();
       const show = maskBeads(pR.mul(1.15).sub(j * 0.15).clamp(0, 1), order).mul(on(pR)).mul(step(0.05, rb));
-      // kick: one helix fills while the other stays hollow
-      const fill = step(0.35, kk).mul(j === 0 ? 1 : 0).add(j === 1 ? inv(step(0.35, kk)).mul(0) : 0);
+      // kick: hollow and filled swap between the helices
+      const fill = j ? inv(step(0.35, kk)) : step(0.35, kk);
       const ring = st(d.sub(rb).abs(), 0.09).add(st(vec2(w.fract().sub(0.36), v.fract().sub(0.62)).length().mul(cs), rb.mul(0.18))).add(st(d, rb).mul(fill).mul(0.6));
       lit = lit.add((j ? mix(H2, W, 0.25) : mix(B, W, 0.3)).mul(ring.min(1)).mul(show));
     });
