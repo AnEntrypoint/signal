@@ -165,7 +165,7 @@ export function material(ctx) {
   }
 
   // body: a column of flame teardrops licking upward out of the ember, one after another
-  const by = P.y.sub(EY + 2.2).div(3.1), bk = by.floor(), fb = by.fract(), pB = io(0.12, 0.26, 0.955, 0.98);
+  const by = P.y.sub(EY + 2.2).div(3.1), bk = by.floor(), fb = by.fract(), pB = io(0.16, 0.28, 0.955, 0.98);
   const bt = tear(inv(fb).mul(3.1), P.x.add(t.mul(2.5).add(bk).sin().mul(fb.mul(fb)).mul(0.3)), 3.1, bk.add(0.5).div(5).clamp(0, 1).mul(PI).sin().mul(0.9).add(1.1));
   const bodyOn = fill(bt.d).mul(step(0, bk)).mul(step(bk, 4.5)).mul(step(fb, pB.mul(5).sub(bk).clamp(0, 1).mul(1.01)));
   lay(bodyOn, mix(A, H, step(0.5, bk.mod(2))).mul(inv(fb).mul(0.45)).add(mix(B, W, 0.4).mul(sk(bt.d.abs(), 0.1)).mul(kl.add(0.9))).add(W.mul(sk(bt.d.add(0.55).abs(), 0.07))));
