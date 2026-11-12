@@ -45,7 +45,7 @@ export function material(ctx) {
     const s = uu.mul(LEN), g = 3.1, row = s.div(g).floor();
     const d = vec2(s.div(g).fract().sub(0.5).mul(g), ang.div(TAU).mul(4).add(row.mul(0.5)).fract().sub(0.5).mul(rf.mul(TAU / 4))).length();
     const R = rf.mul(0.5).min(1.05), tog = low ? float(0) : c.beat.sub(uu.mul(3)).floor().mod(2).abs().mul(kOn);
-    const ring = smoothstep(0.24, 0.16, d.sub(R).abs().max(0.16).min(0.24).mul(-1).add(0.4));
+    const ring = inv(smoothstep(0.16, 0.26, d.sub(R).abs()));
     const disc = inv(smoothstep(R, R.add(0.1), d)), dot = inv(smoothstep(R.mul(0.4), R.mul(0.4).add(0.1), d));
     const spot = mix(ring.max(dot), disc.mul(inv(dot)), tog);
     skin = mix(BG.add(A.mul(0.16)), mix(n === 1 ? H : H2, W, step(row.mod(3), 0.5).mul(0.4)), spot);
