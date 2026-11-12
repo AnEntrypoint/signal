@@ -85,8 +85,8 @@ export function material(ctx) {
     const nH = pk(12, 2).add(1), hollow = kickOn.mul(step(0.5, c.beat.div(4).fract()));
     let col = vec3(0), cover = float(0);
     for (let j = 0; j < (low ? 1 : 2); j++) {
-      const sz = 1.05 + j * 0.3, dir = sense(7).mul(j ? -1 : 1);
-      const yj = t.mul(0.014 * (1 + j * 0.4)).mul(dir).add(rn(14).add(j * 0.45)).fract().mul(72).sub(36);
+      const sz = 1.6 + j * 0.5, dir = sense(7).mul(j ? -1 : 1);
+      const yj = t.mul(0.09 * (1 + j * 0.4)).mul(dir).add(rn(14).mul(TAU)).add(j * 2.4).sin().mul(11).add(1);
       const xj = t.mul(0.11).add(j * 2).sin().mul(6).add(15 + j * 11);
       const an = t.mul(0.2).add(j).sin().mul(0.15).add(j ? 0.5 : -0.3), cs = an.cos(), sn = an.sin();
       const q0 = vec2(ax.sub(xj), P.y.sub(yj)).div(sz), q = vec2(q0.x.mul(cs).sub(q0.y.mul(sn)), q0.x.mul(sn).add(q0.y.mul(cs)));
