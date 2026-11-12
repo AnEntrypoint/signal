@@ -32,7 +32,10 @@ function setAll(p, t0, on, seed, k, deal, tr) {
 function push(ctx, t0, on, seed, k, vs, t = cineTime(ctx)) {
   const deal = dealDeck(on ? seed : 0)
   const tr = trackOf(ctx.world.state.cine)
+  // a bench-held being keeps its own clock: the roll's push used to fight holdTest's, a frame of black each time
+  const held = ctx.world.state.visionTest?.being, isHeld = (o) => held && o.tags?.includes('vision-' + held)
   for (const o of ctx.query({ tags: ['trip'] })) {
+    if (isHeld(o)) continue
     const h = ctx.getObject(o.id)
     if (h?.material?.params) setAll(h.material.params, t0, on, seed, k, deal, tr)
   }
@@ -41,6 +44,7 @@ function push(ctx, t0, on, seed, k, vs, t = cineTime(ctx)) {
   for (const v of dealVisions(on ? seed : 0)) dealt[v.being.id] = v.slot
   for (const b of BEINGS) { if (dealt[b.id] || ctx.world.state.visionTest?.being === b.id) ensure(ctx, b); else strike(ctx, b) }
   for (const b of BEINGS) {
+    if (b.id === held) continue
     const w = dealt[b.id] ?? [-1, -1]
     for (const o of ctx.query({ tags: ['vision-' + b.id] })) {
       const h = ctx.getObject(o.id)
