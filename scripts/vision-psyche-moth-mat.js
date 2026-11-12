@@ -41,7 +41,7 @@ export function material(ctx) {
     const mq = P.sub(vec2(0, 8)).div(27), md = mq.length();
     // the moon waxes from a crescent (its own shadow slides off) and wanes the same way at the seam
     const pM = io(0.28, 0.42, 2, 3).min(inv(ss(uEnd, float(1.0005), u)));
-    const moon = step(md, 1).mul(maskEclipse(pM, mq.x, mq.y, sense(3))).mul(on(pM));
+    const moon = step(md, 1).mul(maskEclipse(pM.mul(sense(3)), mq.x, mq.y)).mul(on(pM));
     const crater = stroke(mq.sub(vec2(0.32, 0.3)).length().sub(0.2).abs().mul(27), 0.12).add(stroke(mq.add(vec2(0.4, 0.1)).length().sub(0.12).abs().mul(27), 0.12));
     const mCol = mix(B, W, 0.5).mul(band(mq.y.mul(6).add(t.mul(0.1).mul(sense(4)))).mul(0.16).add(0.07).add(stroke(md.sub(0.97).abs().mul(27), 0.25).mul(0.7)).add(crater.mul(0.3)));
     const S = pk(5, 3).mul(2).add(14), sc = vec2(t.mul(0.8).mul(sense(6)), t.mul(0.3)), q = P.add(sc).div(S), R2 = vec2(1, 1.732);
