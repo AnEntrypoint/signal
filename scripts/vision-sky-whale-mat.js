@@ -188,7 +188,7 @@ export function material(ctx) {
   // the spine: one line drawn nose to tail by a nib
   const pS = io(0.1, 0.2, 0.94, 0.97), su = inv(t).div(1.06);
   const nibOn = inv(ss(0, 0.025, su.sub(pS).abs())).mul(step(pS, 0.99));
-  lay(st(dv.abs(), nibOn.mul(0.35).add(0.15)).mul(maskDraw(pS, su)).mul(on(pS)), mix(H, W, nibOn.mul(0.6).add(0.15)));
+  lay(st(dv.abs(), nibOn.mul(0.35).add(0.15)).mul(step(t, 1)).mul(step(-0.06, t)).mul(maskDraw(pS, su)).mul(on(pS)), mix(H, W, nibOn.mul(0.6).add(0.15)));
 
   // barnacles: a row of beads lighting nose to tail
   const pB = io(0.5, 0.6, 0.89, 0.92), bi = p.x.add(8).div(2.2).floor().clamp(0, 8);
