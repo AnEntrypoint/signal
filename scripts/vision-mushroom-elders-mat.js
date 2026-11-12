@@ -55,6 +55,12 @@ export function material(ctx) {
     const sd = vec2(ai.fract().sub(0.5).mul(0.03).mul(r), sr.fract().sub(0.5).mul(up.sqrt().mul(1.8).add(0.5))).length();
     const star = sk(sd, hs.mul(0.5).add(0.2)).mul(step(0.35, hs)).mul(step(0.5, up)).mul(maskBeads(pS.mul(1.3), up.div(130).add(hs.mul(0.3))));
     col = col.add(mix(mix(A, B, hs), H2, step(0.88, hs)).mul(star).mul(0.8));
+    // the outer sky: rings of spores 6 m apart, beads 6 m apart along each ring, neighbours counter-rotating, so the corners hold
+    const rr = up.div(6).floor(), dir = rr.mod(2).mul(2).sub(1), a2 = th.mul(r).div(6).add(c.real.mul(0.25).mul(dir)), ak2 = a2.floor(), h2 = hash(ak2, rr.add(40));
+    const sd2 = vec2(a2.fract().sub(0.5).mul(6), up.div(6).fract().sub(0.5).mul(6)).length();
+    const st2 = sk(sd2, h2.mul(0.45).add(0.25)).mul(step(0.45, h2)).mul(ss(22, 48, up)).mul(maskBeads(pS.mul(1.2).sub(0.1).clamp(0, 1), up.div(140).add(h2.mul(0.25)).clamp(0, 1)));
+    const tw = inv(ss(0, 1.5, rr.sub(c.beat.fract().mul(12)).abs())).mul(kickOn);   // a kick walks the outer rings outward
+    col = col.add(mix(mix(B, A, h2), H, step(0.85, h2)).mul(st2).mul(tw.mul(0.6).add(0.6)));
     return cutout(col, float(1));
   }
 
@@ -83,15 +89,19 @@ export function material(ctx) {
     let col = vec3(0), cover = float(0);
     for (let j = 0; j < (low ? 1 : 2); j++) {
       const cw = 3.4 - j * 1.1, xi = P.x.div(cw).add(j * 0.37), ci = xi.floor(), lx = xi.fract().sub(0.5).mul(cw), h = hash(ci, j + 3);
-      const tp = mix(float(-30), h.mul(9).sub(17 + j * 1.5), pG.mul(1.5).sub(h.mul(7).fract().mul(0.5)).clamp(0, 1));   // blades grow up
+      const tp = mix(float(-30), h.mul(9).sub(17 + j * 1.5).add(cl.mul(3)), pG.mul(1.5).sub(h.mul(7).fract().mul(0.5)).clamp(0, 1));   // blades grow up
       const t = P.y.add(30).div(tp.add(30).max(0.01)).clamp(0, 1);
       const bend = c.real.mul(0.7 + j * 0.3).add(h.mul(TAU)).add(P.x.mul(0.06)).sin().mul(0.8).add(sw.mul(0.35)).mul(t).mul(t);
-      const dx = lx.sub(bend).abs().sub(inv(t).mul(1.3 - j * 0.3)), in_ = sk(dx, 0).mul(step(P.y, tp));
+      const dx = lx.sub(bend).abs().sub(inv(t).mul(1.55 - j * 0.35).add(0.12)), in_ = sk(dx, 0).mul(step(P.y, tp));
       const rim = sk(dx.abs(), 0.09).mul(step(P.y, tp));
       // the bar swaps which blades are solid black and which only an outline: what hides the elders changes
-      const solid = step(0.5, ci.add(c.bar.floor().mul(kickOn)).div(2).fract());
+      const solid = step(0.25, ci.add(c.bar.floor().mul(kickOn)).div(4).fract());   // three in four blades solid; the bar walks the hollow one
       col = mix(col, BG.add(mix(A, B, h).mul(rim).mul(0.9)), in_); cover = cover.max(mix(rim, in_, solid));
     }
+    // the turf: a black mound rising with the grass, its lit crest line; it swallows the elders' feet and the lower mycelium
+    const crest = mix(float(-44), P.x.mul(0.21).add(c.real.mul(0.2).mul(sw)).sin().mul(1.4).add(P.x.mul(0.07).sin().mul(1.6)).sub(19.5), pG.mul(1.3).clamp(0, 1));
+    const turf = step(P.y, crest), cr = sk(P.y.sub(crest).abs(), 0.1).mul(step(0.05, pG));
+    col = mix(col, BG, turf).add(mix(A, B, 0.5).mul(cr).mul(0.8)); cover = cover.max(turf).max(cr);
     // fern curls: the stalk rises, then the fiddlehead unrolls from the outside in
     const ax = P.x.abs(), sd = step(0, P.x).mul(2).sub(1), pF = io(0.64, 0.78, 0.82, 0.87);
     const q = vec2(ax.sub(27), P.y.add(3)), r = q.length(), th = atan2(q.y, q.x).add(c.real.mul(0.5).add(sd).sin().mul(0.25));
@@ -175,7 +185,7 @@ export function material(ctx) {
   const dd = vec2(cell.fract().sub(0.5).div(nk).mul(PI).mul(el).mul(Rw), el.mul(4.5).fract().sub(0.5).mul(R).mul(0.8 / 4.5)).length();
   const k3 = kr.add(idx).mod(3), dotC = mix(H.mul(is(k3, 0)).add(H2.mul(is(k3, 1))).add(mix(B, W, 0.5).mul(is(k3, 2))), W, cul.mul(0.6));
   let cc = BG.add(A.mul(0.16)).add(mix(B, W, 0.4).mul(sk(el.sub(1).abs().mul(R).mul(0.6), 0.14)));
-  cc = mix(cc, dotC, sk(dd, R.mul(0.055)));
+  cc = mix(cc, dotC.mul(c.kick.mul(kickOn).mul(0.45).add(1)), sk(dd, R.mul(0.055).mul(c.kick.mul(kickOn).mul(0.18).add(1))));
   const gy = qy.add(0.1).negate().div(0.26), gw = inv(gy.mul(0.72)).max(0.05), gx = qx.div(gw);
   const gill = sk(gx.abs().sub(1).mul(Rw).mul(0.5), 0).mul(step(0, gy)).mul(sk(gy.sub(1).mul(R).mul(0.2), 0));
   const gs = sk(gx.mul(3.5).add(c.bar.floor().mul(0.5).mul(kickOn)).fract().sub(0.5).abs().sub(0.25).mul(gw).mul(Rw).div(3.5), 0);   // flips on the bar
