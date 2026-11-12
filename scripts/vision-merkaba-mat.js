@@ -158,7 +158,7 @@ export function material(ctx) {
   let zb = float(-1e3);
   const put = (b, z, lit) => { const t = b.mul(step(zb, z)); col = mix(col, lit, t); cover = cover.max(t); zb = mix(zb, z, t); };
   const kf = c.beat.floor().mod(8);
-  [[VA, gate(0.12, 0.38, 0.9, 0.945), CA], [VB, gate(0.38, 0.6, 0.87, 0.915), CB]].forEach(([V, g, C], t) => {
+  [[VA, gate(0.14, 0.38, 0.9, 0.945), CA], [VB, gate(0.38, 0.6, 0.87, 0.915), CB]].forEach(([V, g, C], t) => {
     // edges: each draws itself from its first vertex behind a bright nib; the same clock runs back to undraw them
     EDGE.forEach(([a, b, o0, o1]) => {
       const pS = g.sub(ord.mul(o1 - o0).add(o0)).clamp(0, 1);
