@@ -11,7 +11,7 @@ import ROWS from './lib/data/beings.yml'
 const BLANK = { k0: -1, k1: -1, on: 0, seed: 0, t0: 0, vw0: -1, vw1: -1 }
 function ensure(ctx, b) {
   if (!ROWS[b.id] || ctx.query({ tags: ['vision-' + b.id] }).length) return
-  for (const r of ROWS[b.id]) ctx.spawn(r.id, { tags: ['trip', 'vision-' + b.id], castShadow: false, receiveShadow: false, visible: false, feetPosition: { x: 0, y: b.centre.y, z: r.z }, primitive: r.primitive, material: { kind: 'scripted', script: r.mat, params: { ...BLANK, ...r.mp } }, state: { staged: true } })
+  for (const r of ROWS[b.id]) ctx.spawn('vision-' + b.id + r.s, { tags: ['trip', 'vision-' + b.id], castShadow: false, receiveShadow: false, visible: false, feetPosition: { x: 0, y: b.centre.y, z: r.z }, primitive: { kind: 'scripted', script: 'scripts/vision-' + r.g + '-geo.js', params: r.p }, material: { kind: 'scripted', script: 'scripts/vision-' + r.m + '-mat.js', params: { ...BLANK, ...r.mp } }, state: { staged: true } })
 }
 function strike(ctx, b) {
   for (const o of ctx.query({ tags: ['vision-' + b.id] })) if (o.state?.staged) ctx.destroy(o.id)

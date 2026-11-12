@@ -1,1130 +1,871 @@
 # every being's stage rows: the director (stage.js) builds a dealt being from these for its roll and strikes it after,
-# so a join carries only the beings on stage. z = the layer's depth offset at home.
+# so a join carries only the beings on stage. s: id suffix, z: depth offset at home, g/m: the geometry and material
+# scripts' stems (scripts/vision-<stem>-geo.js / -mat.js), p / mp: their params.
 circuit-oracle:
-- id: vision-circuit-oracle
-  mat: scripts/vision-circuit-oracle-mat.js
+- g: circuit-oracle
+  m: circuit-oracle
   mp: {layer: being}
-  primitive:
-    kind: scripted
-    params: {h: 90, w: 90}
-    script: scripts/vision-circuit-oracle-geo.js
+  p: {h: 90, w: 90}
+  s: ''
   z: 0
-- id: vision-circuit-oracle-fore
-  mat: scripts/vision-circuit-oracle-mat.js
+- g: circuit-oracle
+  m: circuit-oracle
   mp: {layer: fore}
-  primitive:
-    kind: scripted
-    params: {h: 85, w: 150}
-    script: scripts/vision-circuit-oracle-geo.js
+  p: {h: 85, w: 150}
+  s: -fore
   z: 22
-- id: vision-circuit-oracle-ring
-  mat: scripts/vision-circuit-oracle-mat.js
+- g: circuit-oracle
+  m: circuit-oracle
   mp: {layer: ring}
-  primitive:
-    kind: scripted
-    params: {h: 130, w: 130}
-    script: scripts/vision-circuit-oracle-geo.js
+  p: {h: 130, w: 130}
+  s: -ring
   z: -12
-- id: vision-circuit-oracle-veil
-  mat: scripts/vision-circuit-oracle-mat.js
+- g: circuit-oracle
+  m: circuit-oracle
   mp: {layer: veil}
-  primitive:
-    kind: scripted
-    params: {h: 72, w: 120}
-    script: scripts/vision-circuit-oracle-geo.js
+  p: {h: 72, w: 120}
+  s: -veil
   z: 10
-- id: vision-circuit-oracle-world
-  mat: scripts/vision-circuit-oracle-mat.js
+- g: circuit-oracle
+  m: circuit-oracle
   mp: {layer: world}
-  primitive:
-    kind: scripted
-    params: {h: 180, w: 320}
-    script: scripts/vision-circuit-oracle-geo.js
+  p: {h: 180, w: 320}
+  s: -world
   z: -30
-- id: vision-circuit-oracle-worm-1
-  mat: scripts/vision-circuit-oracle-worm-mat.js
+- g: circuit-oracle-worm
+  m: circuit-oracle-worm
   mp: {n: 1}
-  primitive:
-    kind: scripted
-    params: {}
-    script: scripts/vision-circuit-oracle-worm-geo.js
+  p: {}
+  s: -worm-1
   z: 0
-- id: vision-circuit-oracle-worm-2
-  mat: scripts/vision-circuit-oracle-worm-mat.js
+- g: circuit-oracle-worm
+  m: circuit-oracle-worm
   mp: {n: 2}
-  primitive:
-    kind: scripted
-    params: {}
-    script: scripts/vision-circuit-oracle-worm-geo.js
+  p: {}
+  s: -worm-2
   z: 0
-- id: vision-circuit-oracle-worm-3
-  mat: scripts/vision-circuit-oracle-worm-mat.js
+- g: circuit-oracle-worm
+  m: circuit-oracle-worm
   mp: {n: 3}
-  primitive:
-    kind: scripted
-    params: {}
-    script: scripts/vision-circuit-oracle-worm-geo.js
+  p: {}
+  s: -worm-3
   z: 0
-- id: vision-circuit-oracle-worm-4
-  mat: scripts/vision-circuit-oracle-worm-mat.js
+- g: circuit-oracle-worm
+  m: circuit-oracle-worm
   mp: {n: 4}
-  primitive:
-    kind: scripted
-    params: {}
-    script: scripts/vision-circuit-oracle-worm-geo.js
+  p: {}
+  s: -worm-4
   z: 0
 contour-oracle:
-- id: vision-contour-oracle
-  mat: scripts/vision-contour-oracle-mat.js
+- g: contour-oracle
+  m: contour-oracle
   mp: {layer: being}
-  primitive:
-    kind: scripted
-    params: {h: 100, w: 110}
-    script: scripts/vision-contour-oracle-geo.js
+  p: {h: 100, w: 110}
+  s: ''
   z: 0
-- id: vision-contour-oracle-fore
-  mat: scripts/vision-contour-oracle-mat.js
+- g: contour-oracle
+  m: contour-oracle
   mp: {layer: fore}
-  primitive:
-    kind: scripted
-    params: {h: 85, w: 150}
-    script: scripts/vision-contour-oracle-geo.js
+  p: {h: 85, w: 150}
+  s: -fore
   z: 22
-- id: vision-contour-oracle-ring
-  mat: scripts/vision-contour-oracle-mat.js
+- g: contour-oracle
+  m: contour-oracle
   mp: {layer: ring}
-  primitive:
-    kind: scripted
-    params: {h: 120, w: 120}
-    script: scripts/vision-contour-oracle-geo.js
+  p: {h: 120, w: 120}
+  s: -ring
   z: -12
-- id: vision-contour-oracle-veil
-  mat: scripts/vision-contour-oracle-mat.js
+- g: contour-oracle
+  m: contour-oracle
   mp: {layer: veil}
-  primitive:
-    kind: scripted
-    params: {h: 110, w: 190}
-    script: scripts/vision-contour-oracle-geo.js
+  p: {h: 110, w: 190}
+  s: -veil
   z: 10
-- id: vision-contour-oracle-world
-  mat: scripts/vision-contour-oracle-mat.js
+- g: contour-oracle
+  m: contour-oracle
   mp: {layer: world}
-  primitive:
-    kind: scripted
-    params: {h: 270, w: 480}
-    script: scripts/vision-contour-oracle-geo.js
+  p: {h: 270, w: 480}
+  s: -world
   z: -30
-- id: vision-contour-oracle-worm-1
-  mat: scripts/vision-contour-oracle-worm-mat.js
+- g: contour-oracle-worm
+  m: contour-oracle-worm
   mp: {n: 1}
-  primitive:
-    kind: scripted
-    params: {n: 1}
-    script: scripts/vision-contour-oracle-worm-geo.js
+  p: {n: 1}
+  s: -worm-1
   z: 0
-- id: vision-contour-oracle-worm-2
-  mat: scripts/vision-contour-oracle-worm-mat.js
+- g: contour-oracle-worm
+  m: contour-oracle-worm
   mp: {n: 2}
-  primitive:
-    kind: scripted
-    params: {n: 2}
-    script: scripts/vision-contour-oracle-worm-geo.js
+  p: {n: 2}
+  s: -worm-2
   z: 0
-- id: vision-contour-oracle-worm-3
-  mat: scripts/vision-contour-oracle-worm-mat.js
+- g: contour-oracle-worm
+  m: contour-oracle-worm
   mp: {n: 3}
-  primitive:
-    kind: scripted
-    params: {n: 3}
-    script: scripts/vision-contour-oracle-worm-geo.js
+  p: {n: 3}
+  s: -worm-3
   z: 0
-- id: vision-contour-oracle-worm-4
-  mat: scripts/vision-contour-oracle-worm-mat.js
+- g: contour-oracle-worm
+  m: contour-oracle-worm
   mp: {n: 4}
-  primitive:
-    kind: scripted
-    params: {n: 4}
-    script: scripts/vision-contour-oracle-worm-geo.js
+  p: {n: 4}
+  s: -worm-4
   z: 0
 giving-hands:
-- id: vision-giving-hands
-  mat: scripts/vision-giving-hands-mat.js
+- g: giving-hands
+  m: giving-hands
   mp: {layer: being}
-  primitive:
-    kind: scripted
-    params: {h: 100, w: 180}
-    script: scripts/vision-giving-hands-geo.js
+  p: {h: 100, w: 180}
+  s: ''
   z: 0
-- id: vision-giving-hands-fore
-  mat: scripts/vision-giving-hands-mat.js
+- g: giving-hands
+  m: giving-hands
   mp: {layer: fore}
-  primitive:
-    kind: scripted
-    params: {h: 85, w: 150}
-    script: scripts/vision-giving-hands-geo.js
+  p: {h: 85, w: 150}
+  s: -fore
   z: 22
-- id: vision-giving-hands-ring
-  mat: scripts/vision-giving-hands-mat.js
+- g: giving-hands
+  m: giving-hands
   mp: {layer: ring}
-  primitive:
-    kind: scripted
-    params: {h: 120, w: 210}
-    script: scripts/vision-giving-hands-geo.js
+  p: {h: 120, w: 210}
+  s: -ring
   z: -12
-- id: vision-giving-hands-veil
-  mat: scripts/vision-giving-hands-mat.js
+- g: giving-hands
+  m: giving-hands
   mp: {layer: veil}
-  primitive:
-    kind: scripted
-    params: {h: 85, w: 150}
-    script: scripts/vision-giving-hands-geo.js
+  p: {h: 85, w: 150}
+  s: -veil
   z: 10
-- id: vision-giving-hands-world
-  mat: scripts/vision-giving-hands-mat.js
+- g: giving-hands
+  m: giving-hands
   mp: {layer: world}
-  primitive:
-    kind: scripted
-    params: {h: 180, w: 320}
-    script: scripts/vision-giving-hands-geo.js
+  p: {h: 180, w: 320}
+  s: -world
   z: -30
-- id: vision-giving-hands-worm-1
-  mat: scripts/vision-giving-hands-worm-mat.js
+- g: giving-hands-worm
+  m: giving-hands-worm
   mp: {n: 1}
-  primitive: {kind: scripted, script: scripts/vision-giving-hands-worm-geo.js}
+  p: {}
+  s: -worm-1
   z: 0
-- id: vision-giving-hands-worm-2
-  mat: scripts/vision-giving-hands-worm-mat.js
+- g: giving-hands-worm
+  m: giving-hands-worm
   mp: {n: 2}
-  primitive: {kind: scripted, script: scripts/vision-giving-hands-worm-geo.js}
+  p: {}
+  s: -worm-2
   z: 0
-- id: vision-giving-hands-worm-3
-  mat: scripts/vision-giving-hands-worm-mat.js
+- g: giving-hands-worm
+  m: giving-hands-worm
   mp: {n: 3}
-  primitive: {kind: scripted, script: scripts/vision-giving-hands-worm-geo.js}
+  p: {}
+  s: -worm-3
   z: 0
-- id: vision-giving-hands-worm-4
-  mat: scripts/vision-giving-hands-worm-mat.js
+- g: giving-hands-worm
+  m: giving-hands-worm
   mp: {n: 4}
-  primitive: {kind: scripted, script: scripts/vision-giving-hands-worm-geo.js}
+  p: {}
+  s: -worm-4
   z: 0
 lotus-gate:
-- id: vision-lotus-gate
-  mat: scripts/vision-lotus-gate-mat.js
+- g: lotus-gate
+  m: lotus-gate
   mp: {layer: being}
-  primitive:
-    kind: scripted
-    params: {h: 110, w: 110}
-    script: scripts/vision-lotus-gate-geo.js
+  p: {h: 110, w: 110}
+  s: ''
   z: 0
-- id: vision-lotus-gate-fore
-  mat: scripts/vision-lotus-gate-mat.js
+- g: lotus-gate
+  m: lotus-gate
   mp: {layer: fore}
-  primitive:
-    kind: scripted
-    params: {h: 85, w: 150}
-    script: scripts/vision-lotus-gate-geo.js
+  p: {h: 85, w: 150}
+  s: -fore
   z: 22
-- id: vision-lotus-gate-ring
-  mat: scripts/vision-lotus-gate-mat.js
+- g: lotus-gate
+  m: lotus-gate
   mp: {layer: ring}
-  primitive:
-    kind: scripted
-    params: {h: 130, w: 130}
-    script: scripts/vision-lotus-gate-geo.js
+  p: {h: 130, w: 130}
+  s: -ring
   z: -12
-- id: vision-lotus-gate-veil
-  mat: scripts/vision-lotus-gate-mat.js
+- g: lotus-gate
+  m: lotus-gate
   mp: {layer: veil}
-  primitive:
-    kind: scripted
-    params: {h: 96, w: 130}
-    script: scripts/vision-lotus-gate-geo.js
+  p: {h: 96, w: 130}
+  s: -veil
   z: 10
-- id: vision-lotus-gate-world
-  mat: scripts/vision-lotus-gate-mat.js
+- g: lotus-gate
+  m: lotus-gate
   mp: {layer: world}
-  primitive:
-    kind: scripted
-    params: {h: 180, w: 320}
-    script: scripts/vision-lotus-gate-geo.js
+  p: {h: 180, w: 320}
+  s: -world
   z: -30
-- id: vision-lotus-gate-worm-1
-  mat: scripts/vision-lotus-gate-worm-mat.js
+- g: lotus-gate-worm
+  m: lotus-gate-worm
   mp: {n: 1}
-  primitive:
-    kind: scripted
-    params: {}
-    script: scripts/vision-lotus-gate-worm-geo.js
+  p: {}
+  s: -worm-1
   z: 0
-- id: vision-lotus-gate-worm-2
-  mat: scripts/vision-lotus-gate-worm-mat.js
+- g: lotus-gate-worm
+  m: lotus-gate-worm
   mp: {n: 2}
-  primitive:
-    kind: scripted
-    params: {}
-    script: scripts/vision-lotus-gate-worm-geo.js
+  p: {}
+  s: -worm-2
   z: 0
-- id: vision-lotus-gate-worm-3
-  mat: scripts/vision-lotus-gate-worm-mat.js
+- g: lotus-gate-worm
+  m: lotus-gate-worm
   mp: {n: 3}
-  primitive:
-    kind: scripted
-    params: {}
-    script: scripts/vision-lotus-gate-worm-geo.js
+  p: {}
+  s: -worm-3
   z: 0
-- id: vision-lotus-gate-worm-4
-  mat: scripts/vision-lotus-gate-worm-mat.js
+- g: lotus-gate-worm
+  m: lotus-gate-worm
   mp: {n: 4}
-  primitive:
-    kind: scripted
-    params: {}
-    script: scripts/vision-lotus-gate-worm-geo.js
+  p: {}
+  s: -worm-4
   z: 0
 many-armed:
-- id: vision-many-armed
-  mat: scripts/vision-many-armed-mat.js
+- g: many-armed
+  m: many-armed
   mp: {layer: being}
-  primitive:
-    kind: scripted
-    params: {h: 80, w: 96}
-    script: scripts/vision-many-armed-geo.js
+  p: {h: 80, w: 96}
+  s: ''
   z: 0
-- id: vision-many-armed-fore
-  mat: scripts/vision-many-armed-mat.js
+- g: many-armed
+  m: many-armed
   mp: {layer: fore}
-  primitive:
-    kind: scripted
-    params: {h: 85, w: 150}
-    script: scripts/vision-many-armed-geo.js
+  p: {h: 85, w: 150}
+  s: -fore
   z: 22
-- id: vision-many-armed-ring
-  mat: scripts/vision-many-armed-mat.js
+- g: many-armed
+  m: many-armed
   mp: {layer: ring}
-  primitive:
-    kind: scripted
-    params: {h: 100, w: 110}
-    script: scripts/vision-many-armed-geo.js
+  p: {h: 100, w: 110}
+  s: -ring
   z: -12
-- id: vision-many-armed-veil
-  mat: scripts/vision-many-armed-mat.js
+- g: many-armed
+  m: many-armed
   mp: {layer: veil}
-  primitive:
-    kind: scripted
-    params: {h: 96, w: 180}
-    script: scripts/vision-many-armed-geo.js
+  p: {h: 96, w: 180}
+  s: -veil
   z: 10
-- id: vision-many-armed-world
-  mat: scripts/vision-many-armed-mat.js
+- g: many-armed
+  m: many-armed
   mp: {layer: world}
-  primitive:
-    kind: scripted
-    params: {h: 180, w: 320}
-    script: scripts/vision-many-armed-geo.js
+  p: {h: 180, w: 320}
+  s: -world
   z: -30
-- id: vision-many-armed-worm-1
-  mat: scripts/vision-many-armed-worm-mat.js
+- g: many-armed-worm
+  m: many-armed-worm
   mp: {n: 1}
-  primitive:
-    kind: scripted
-    params: {n: 1}
-    script: scripts/vision-many-armed-worm-geo.js
+  p: {n: 1}
+  s: -worm-1
   z: 0
-- id: vision-many-armed-worm-2
-  mat: scripts/vision-many-armed-worm-mat.js
+- g: many-armed-worm
+  m: many-armed-worm
   mp: {n: 2}
-  primitive:
-    kind: scripted
-    params: {n: 2}
-    script: scripts/vision-many-armed-worm-geo.js
+  p: {n: 2}
+  s: -worm-2
   z: 0
-- id: vision-many-armed-worm-3
-  mat: scripts/vision-many-armed-worm-mat.js
+- g: many-armed-worm
+  m: many-armed-worm
   mp: {n: 3}
-  primitive:
-    kind: scripted
-    params: {n: 3}
-    script: scripts/vision-many-armed-worm-geo.js
+  p: {n: 3}
+  s: -worm-3
   z: 0
-- id: vision-many-armed-worm-4
-  mat: scripts/vision-many-armed-worm-mat.js
+- g: many-armed-worm
+  m: many-armed-worm
   mp: {n: 4}
-  primitive:
-    kind: scripted
-    params: {n: 4}
-    script: scripts/vision-many-armed-worm-geo.js
+  p: {n: 4}
+  s: -worm-4
   z: 0
 moon-mother:
-- id: vision-moon-mother
-  mat: scripts/vision-moon-mother-mat.js
+- g: moon-mother
+  m: moon-mother
   mp: {layer: being}
-  primitive:
-    kind: scripted
-    params: {h: 40, w: 64}
-    script: scripts/vision-moon-mother-geo.js
+  p: {h: 40, w: 64}
+  s: ''
   z: 0
-- id: vision-moon-mother-fore
-  mat: scripts/vision-moon-mother-mat.js
+- g: moon-mother
+  m: moon-mother
   mp: {layer: fore}
-  primitive:
-    kind: scripted
-    params: {h: 85, layer: fore, w: 150}
-    script: scripts/vision-moon-mother-geo.js
+  p: {h: 85, layer: fore, w: 150}
+  s: -fore
   z: 22
-- id: vision-moon-mother-ring
-  mat: scripts/vision-moon-mother-mat.js
+- g: moon-mother
+  m: moon-mother
   mp: {layer: ring}
-  primitive:
-    kind: scripted
-    params: {h: 100, w: 100}
-    script: scripts/vision-moon-mother-geo.js
+  p: {h: 100, w: 100}
+  s: -ring
   z: -12
-- id: vision-moon-mother-veil
-  mat: scripts/vision-moon-mother-mat.js
+- g: moon-mother
+  m: moon-mother
   mp: {layer: veil}
-  primitive:
-    kind: scripted
-    params: {h: 56, w: 90}
-    script: scripts/vision-moon-mother-geo.js
+  p: {h: 56, w: 90}
+  s: -veil
   z: 10
-- id: vision-moon-mother-world
-  mat: scripts/vision-moon-mother-mat.js
+- g: moon-mother
+  m: moon-mother
   mp: {layer: world}
-  primitive:
-    kind: scripted
-    params: {h: 180, layer: world, w: 320}
-    script: scripts/vision-moon-mother-geo.js
+  p: {h: 180, layer: world, w: 320}
+  s: -world
   z: -30
-- id: vision-moon-mother-worm-1
-  mat: scripts/vision-moon-mother-worm-mat.js
+- g: moon-mother-worm
+  m: moon-mother-worm
   mp: {n: 1}
-  primitive:
-    kind: scripted
-    params: {}
-    script: scripts/vision-moon-mother-worm-geo.js
+  p: {}
+  s: -worm-1
   z: 0
-- id: vision-moon-mother-worm-2
-  mat: scripts/vision-moon-mother-worm-mat.js
+- g: moon-mother-worm
+  m: moon-mother-worm
   mp: {n: 2}
-  primitive:
-    kind: scripted
-    params: {}
-    script: scripts/vision-moon-mother-worm-geo.js
+  p: {}
+  s: -worm-2
   z: 0
-- id: vision-moon-mother-worm-3
-  mat: scripts/vision-moon-mother-worm-mat.js
+- g: moon-mother-worm
+  m: moon-mother-worm
   mp: {n: 3}
-  primitive:
-    kind: scripted
-    params: {}
-    script: scripts/vision-moon-mother-worm-geo.js
+  p: {}
+  s: -worm-3
   z: 0
-- id: vision-moon-mother-worm-4
-  mat: scripts/vision-moon-mother-worm-mat.js
+- g: moon-mother-worm
+  m: moon-mother-worm
   mp: {n: 4}
-  primitive:
-    kind: scripted
-    params: {}
-    script: scripts/vision-moon-mother-worm-geo.js
+  p: {}
+  s: -worm-4
   z: 0
 ouroboros:
-- id: vision-ouroboros
-  mat: scripts/vision-ouroboros-mat.js
+- g: ouroboros
+  m: ouroboros
   mp: {layer: being}
-  primitive:
-    kind: scripted
-    params: {h: 76, w: 76}
-    script: scripts/vision-ouroboros-geo.js
+  p: {h: 76, w: 76}
+  s: ''
   z: 0
-- id: vision-ouroboros-fore
-  mat: scripts/vision-ouroboros-mat.js
+- g: ouroboros
+  m: ouroboros
   mp: {layer: fore}
-  primitive:
-    kind: scripted
-    params: {h: 85, w: 150}
-    script: scripts/vision-ouroboros-geo.js
+  p: {h: 85, w: 150}
+  s: -fore
   z: 22
-- id: vision-ouroboros-ring
-  mat: scripts/vision-ouroboros-mat.js
+- g: ouroboros
+  m: ouroboros
   mp: {layer: ring}
-  primitive:
-    kind: scripted
-    params: {h: 84, w: 84}
-    script: scripts/vision-ouroboros-geo.js
+  p: {h: 84, w: 84}
+  s: -ring
   z: -12
-- id: vision-ouroboros-veil
-  mat: scripts/vision-ouroboros-mat.js
+- g: ouroboros
+  m: ouroboros
   mp: {layer: veil}
-  primitive:
-    kind: scripted
-    params: {h: 92, w: 150}
-    script: scripts/vision-ouroboros-geo.js
+  p: {h: 92, w: 150}
+  s: -veil
   z: 10
-- id: vision-ouroboros-world
-  mat: scripts/vision-ouroboros-mat.js
+- g: ouroboros
+  m: ouroboros
   mp: {layer: world}
-  primitive:
-    kind: scripted
-    params: {h: 180, w: 320}
-    script: scripts/vision-ouroboros-geo.js
+  p: {h: 180, w: 320}
+  s: -world
   z: -30
-- id: vision-ouroboros-worm-1
-  mat: scripts/vision-ouroboros-worm-mat.js
+- g: ouroboros-worm
+  m: ouroboros-worm
   mp: {n: 1}
-  primitive: {kind: scripted, script: scripts/vision-ouroboros-worm-geo.js}
+  p: {}
+  s: -worm-1
   z: 0
-- id: vision-ouroboros-worm-2
-  mat: scripts/vision-ouroboros-worm-mat.js
+- g: ouroboros-worm
+  m: ouroboros-worm
   mp: {n: 2}
-  primitive: {kind: scripted, script: scripts/vision-ouroboros-worm-geo.js}
+  p: {}
+  s: -worm-2
   z: 0
-- id: vision-ouroboros-worm-3
-  mat: scripts/vision-ouroboros-worm-mat.js
+- g: ouroboros-worm
+  m: ouroboros-worm
   mp: {n: 3}
-  primitive: {kind: scripted, script: scripts/vision-ouroboros-worm-geo.js}
+  p: {}
+  s: -worm-3
   z: 0
-- id: vision-ouroboros-worm-4
-  mat: scripts/vision-ouroboros-worm-mat.js
+- g: ouroboros-worm
+  m: ouroboros-worm
   mp: {n: 4}
-  primitive: {kind: scripted, script: scripts/vision-ouroboros-worm-geo.js}
+  p: {}
+  s: -worm-4
   z: 0
 owl-mask:
-- id: vision-owl-mask
-  mat: scripts/vision-owl-mask-mat.js
+- g: owl-mask
+  m: owl-mask
   mp: {layer: being}
-  primitive:
-    kind: scripted
-    params: {h: 96, w: 170}
-    script: scripts/vision-owl-mask-geo.js
+  p: {h: 96, w: 170}
+  s: ''
   z: 0
-- id: vision-owl-mask-fore
-  mat: scripts/vision-owl-mask-mat.js
+- g: owl-mask
+  m: owl-mask
   mp: {layer: fore}
-  primitive:
-    kind: scripted
-    params: {h: 85, w: 150}
-    script: scripts/vision-owl-mask-geo.js
+  p: {h: 85, w: 150}
+  s: -fore
   z: 22
-- id: vision-owl-mask-ring
-  mat: scripts/vision-owl-mask-mat.js
+- g: owl-mask
+  m: owl-mask
   mp: {layer: ring}
-  primitive:
-    kind: scripted
-    params: {h: 112, w: 200}
-    script: scripts/vision-owl-mask-geo.js
+  p: {h: 112, w: 200}
+  s: -ring
   z: -12
-- id: vision-owl-mask-veil
-  mat: scripts/vision-owl-mask-mat.js
+- g: owl-mask
+  m: owl-mask
   mp: {layer: veil}
-  primitive:
-    kind: scripted
-    params: {h: 85, w: 150}
-    script: scripts/vision-owl-mask-geo.js
+  p: {h: 85, w: 150}
+  s: -veil
   z: 10
-- id: vision-owl-mask-world
-  mat: scripts/vision-owl-mask-mat.js
+- g: owl-mask
+  m: owl-mask
   mp: {layer: world}
-  primitive:
-    kind: scripted
-    params: {h: 180, w: 320}
-    script: scripts/vision-owl-mask-geo.js
+  p: {h: 180, w: 320}
+  s: -world
   z: -30
-- id: vision-owl-mask-worm-1
-  mat: scripts/vision-owl-mask-worm-mat.js
+- g: owl-mask-worm
+  m: owl-mask-worm
   mp: {n: 1}
-  primitive:
-    kind: scripted
-    params: {}
-    script: scripts/vision-owl-mask-worm-geo.js
+  p: {}
+  s: -worm-1
   z: 0
-- id: vision-owl-mask-worm-2
-  mat: scripts/vision-owl-mask-worm-mat.js
+- g: owl-mask-worm
+  m: owl-mask-worm
   mp: {n: 2}
-  primitive:
-    kind: scripted
-    params: {}
-    script: scripts/vision-owl-mask-worm-geo.js
+  p: {}
+  s: -worm-2
   z: 0
-- id: vision-owl-mask-worm-3
-  mat: scripts/vision-owl-mask-worm-mat.js
+- g: owl-mask-worm
+  m: owl-mask-worm
   mp: {n: 3}
-  primitive:
-    kind: scripted
-    params: {}
-    script: scripts/vision-owl-mask-worm-geo.js
+  p: {}
+  s: -worm-3
   z: 0
 star-child:
-- id: vision-star-child
-  mat: scripts/vision-star-child-mat.js
+- g: star-child
+  m: star-child
   mp: {layer: being}
-  primitive:
-    kind: scripted
-    params: {h: 40, w: 64}
-    script: scripts/vision-star-child-geo.js
+  p: {h: 40, w: 64}
+  s: ''
   z: 0
-- id: vision-star-child-fore
-  mat: scripts/vision-star-child-mat.js
+- g: star-child
+  m: star-child
   mp: {layer: fore}
-  primitive:
-    kind: scripted
-    params: {h: 85, w: 150}
-    script: scripts/vision-star-child-geo.js
+  p: {h: 85, w: 150}
+  s: -fore
   z: 22
-- id: vision-star-child-ring
-  mat: scripts/vision-star-child-mat.js
+- g: star-child
+  m: star-child
   mp: {layer: ring}
-  primitive:
-    kind: scripted
-    params: {h: 56, w: 56}
-    script: scripts/vision-star-child-geo.js
+  p: {h: 56, w: 56}
+  s: -ring
   z: -12
-- id: vision-star-child-veil
-  mat: scripts/vision-star-child-mat.js
+- g: star-child
+  m: star-child
   mp: {layer: veil}
-  primitive:
-    kind: scripted
-    params: {h: 56, w: 90}
-    script: scripts/vision-star-child-geo.js
+  p: {h: 56, w: 90}
+  s: -veil
   z: 10
-- id: vision-star-child-world
-  mat: scripts/vision-star-child-mat.js
+- g: star-child
+  m: star-child
   mp: {layer: world}
-  primitive:
-    kind: scripted
-    params: {h: 180, w: 320}
-    script: scripts/vision-star-child-geo.js
+  p: {h: 180, w: 320}
+  s: -world
   z: -30
-- id: vision-star-child-worm-1
-  mat: scripts/vision-star-child-worm-mat.js
+- g: star-child-worm
+  m: star-child-worm
   mp: {n: 1}
-  primitive:
-    kind: scripted
-    params: {}
-    script: scripts/vision-star-child-worm-geo.js
+  p: {}
+  s: -worm-1
   z: 0
-- id: vision-star-child-worm-2
-  mat: scripts/vision-star-child-worm-mat.js
+- g: star-child-worm
+  m: star-child-worm
   mp: {n: 2}
-  primitive:
-    kind: scripted
-    params: {}
-    script: scripts/vision-star-child-worm-geo.js
+  p: {}
+  s: -worm-2
   z: 0
-- id: vision-star-child-worm-3
-  mat: scripts/vision-star-child-worm-mat.js
+- g: star-child-worm
+  m: star-child-worm
   mp: {n: 3}
-  primitive:
-    kind: scripted
-    params: {}
-    script: scripts/vision-star-child-worm-geo.js
+  p: {}
+  s: -worm-3
   z: 0
-- id: vision-star-child-worm-4
-  mat: scripts/vision-star-child-worm-mat.js
+- g: star-child-worm
+  m: star-child-worm
   mp: {n: 4}
-  primitive:
-    kind: scripted
-    params: {}
-    script: scripts/vision-star-child-worm-geo.js
+  p: {}
+  s: -worm-4
   z: 0
 star-jelly:
-- id: vision-star-jelly
-  mat: scripts/vision-star-jelly-mat.js
+- g: star-jelly
+  m: star-jelly
   mp: {layer: being}
-  primitive:
-    kind: scripted
-    params: {h: 72, w: 100}
-    script: scripts/vision-star-jelly-geo.js
+  p: {h: 72, w: 100}
+  s: ''
   z: 0
-- id: vision-star-jelly-fore
-  mat: scripts/vision-star-jelly-mat.js
+- g: star-jelly
+  m: star-jelly
   mp: {layer: fore}
-  primitive:
-    kind: scripted
-    params: {h: 85, w: 150}
-    script: scripts/vision-star-jelly-geo.js
+  p: {h: 85, w: 150}
+  s: -fore
   z: 22
-- id: vision-star-jelly-ring
-  mat: scripts/vision-star-jelly-mat.js
+- g: star-jelly
+  m: star-jelly
   mp: {layer: ring}
-  primitive:
-    kind: scripted
-    params: {h: 110, w: 110}
-    script: scripts/vision-star-jelly-geo.js
+  p: {h: 110, w: 110}
+  s: -ring
   z: -12
-- id: vision-star-jelly-veil
-  mat: scripts/vision-star-jelly-mat.js
+- g: star-jelly
+  m: star-jelly
   mp: {layer: veil}
-  primitive:
-    kind: scripted
-    params: {h: 100, w: 150}
-    script: scripts/vision-star-jelly-geo.js
+  p: {h: 100, w: 150}
+  s: -veil
   z: 10
-- id: vision-star-jelly-world
-  mat: scripts/vision-star-jelly-mat.js
+- g: star-jelly
+  m: star-jelly
   mp: {layer: world}
-  primitive:
-    kind: scripted
-    params: {h: 180, w: 320}
-    script: scripts/vision-star-jelly-geo.js
+  p: {h: 180, w: 320}
+  s: -world
   z: -30
-- id: vision-star-jelly-worm-1
-  mat: scripts/vision-star-jelly-worm-mat.js
+- g: star-jelly-worm
+  m: star-jelly-worm
   mp: {n: 1}
-  primitive:
-    kind: scripted
-    params: {}
-    script: scripts/vision-star-jelly-worm-geo.js
+  p: {}
+  s: -worm-1
   z: 0
-- id: vision-star-jelly-worm-2
-  mat: scripts/vision-star-jelly-worm-mat.js
+- g: star-jelly-worm
+  m: star-jelly-worm
   mp: {n: 2}
-  primitive:
-    kind: scripted
-    params: {}
-    script: scripts/vision-star-jelly-worm-geo.js
+  p: {}
+  s: -worm-2
   z: 0
-- id: vision-star-jelly-worm-3
-  mat: scripts/vision-star-jelly-worm-mat.js
+- g: star-jelly-worm
+  m: star-jelly-worm
   mp: {n: 3}
-  primitive:
-    kind: scripted
-    params: {}
-    script: scripts/vision-star-jelly-worm-geo.js
+  p: {}
+  s: -worm-3
   z: 0
-- id: vision-star-jelly-worm-4
-  mat: scripts/vision-star-jelly-worm-mat.js
+- g: star-jelly-worm
+  m: star-jelly-worm
   mp: {n: 4}
-  primitive:
-    kind: scripted
-    params: {}
-    script: scripts/vision-star-jelly-worm-geo.js
+  p: {}
+  s: -worm-4
   z: 0
 sun-father:
-- id: vision-sun-father
-  mat: scripts/vision-sun-father-mat.js
+- g: sun-father
+  m: sun-father
   mp: {layer: being}
-  primitive:
-    kind: scripted
-    params: {h: 70, w: 70}
-    script: scripts/vision-sun-father-geo.js
+  p: {h: 70, w: 70}
+  s: ''
   z: 0
-- id: vision-sun-father-fore
-  mat: scripts/vision-sun-father-mat.js
+- g: sun-father
+  m: sun-father
   mp: {layer: fore}
-  primitive:
-    kind: scripted
-    params: {h: 85, w: 150}
-    script: scripts/vision-sun-father-geo.js
+  p: {h: 85, w: 150}
+  s: -fore
   z: 22
-- id: vision-sun-father-ring
-  mat: scripts/vision-sun-father-mat.js
+- g: sun-father
+  m: sun-father
   mp: {layer: ring}
-  primitive:
-    kind: scripted
-    params: {h: 112, w: 112}
-    script: scripts/vision-sun-father-geo.js
+  p: {h: 112, w: 112}
+  s: -ring
   z: -12
-- id: vision-sun-father-veil
-  mat: scripts/vision-sun-father-mat.js
+- g: sun-father
+  m: sun-father
   mp: {layer: veil}
-  primitive:
-    kind: scripted
-    params: {h: 84, w: 70}
-    script: scripts/vision-sun-father-geo.js
+  p: {h: 84, w: 70}
+  s: -veil
   z: 10
-- id: vision-sun-father-world
-  mat: scripts/vision-sun-father-mat.js
+- g: sun-father
+  m: sun-father
   mp: {layer: world}
-  primitive:
-    kind: scripted
-    params: {h: 180, w: 320}
-    script: scripts/vision-sun-father-geo.js
+  p: {h: 180, w: 320}
+  s: -world
   z: -30
-- id: vision-sun-father-worm-1
-  mat: scripts/vision-sun-father-worm-mat.js
+- g: sun-father-worm
+  m: sun-father-worm
   mp: {n: 1}
-  primitive:
-    kind: scripted
-    params: {rings: 72, sides: 12}
-    script: scripts/vision-sun-father-worm-geo.js
+  p: {rings: 72, sides: 12}
+  s: -worm-1
   z: 0
-- id: vision-sun-father-worm-2
-  mat: scripts/vision-sun-father-worm-mat.js
+- g: sun-father-worm
+  m: sun-father-worm
   mp: {n: 2}
-  primitive:
-    kind: scripted
-    params: {rings: 72, sides: 12}
-    script: scripts/vision-sun-father-worm-geo.js
+  p: {rings: 72, sides: 12}
+  s: -worm-2
   z: 0
-- id: vision-sun-father-worm-3
-  mat: scripts/vision-sun-father-worm-mat.js
+- g: sun-father-worm
+  m: sun-father-worm
   mp: {n: 3}
-  primitive:
-    kind: scripted
-    params: {rings: 72, sides: 12}
-    script: scripts/vision-sun-father-worm-geo.js
+  p: {rings: 72, sides: 12}
+  s: -worm-3
   z: 0
 thunderbird:
-- id: vision-thunderbird
-  mat: scripts/vision-thunderbird-mat.js
+- g: thunderbird
+  m: thunderbird
   mp: {layer: being}
-  primitive:
-    kind: scripted
-    params: {h: 40, w: 64}
-    script: scripts/vision-thunderbird-geo.js
+  p: {h: 40, w: 64}
+  s: ''
   z: 0
-- id: vision-thunderbird-fore
-  mat: scripts/vision-thunderbird-mat.js
+- g: thunderbird
+  m: thunderbird
   mp: {layer: fore}
-  primitive:
-    kind: scripted
-    params: {h: 85, w: 150}
-    script: scripts/vision-thunderbird-geo.js
+  p: {h: 85, w: 150}
+  s: -fore
   z: 22
-- id: vision-thunderbird-ring
-  mat: scripts/vision-thunderbird-mat.js
+- g: thunderbird
+  m: thunderbird
   mp: {layer: ring}
-  primitive:
-    kind: scripted
-    params: {h: 48, w: 48}
-    script: scripts/vision-thunderbird-geo.js
+  p: {h: 48, w: 48}
+  s: -ring
   z: -12
-- id: vision-thunderbird-veil
-  mat: scripts/vision-thunderbird-mat.js
+- g: thunderbird
+  m: thunderbird
   mp: {layer: veil}
-  primitive:
-    kind: scripted
-    params: {h: 56, w: 90}
-    script: scripts/vision-thunderbird-geo.js
+  p: {h: 56, w: 90}
+  s: -veil
   z: 10
-- id: vision-thunderbird-world
-  mat: scripts/vision-thunderbird-mat.js
+- g: thunderbird
+  m: thunderbird
   mp: {layer: world}
-  primitive:
-    kind: scripted
-    params: {h: 180, w: 320}
-    script: scripts/vision-thunderbird-geo.js
+  p: {h: 180, w: 320}
+  s: -world
   z: -30
-- id: vision-thunderbird-worm-1
-  mat: scripts/vision-thunderbird-worm-mat.js
+- g: thunderbird-worm
+  m: thunderbird-worm
   mp: {n: 1}
-  primitive:
-    kind: scripted
-    params: {}
-    script: scripts/vision-thunderbird-worm-geo.js
+  p: {}
+  s: -worm-1
   z: 0
-- id: vision-thunderbird-worm-2
-  mat: scripts/vision-thunderbird-worm-mat.js
+- g: thunderbird-worm
+  m: thunderbird-worm
   mp: {n: 2}
-  primitive:
-    kind: scripted
-    params: {}
-    script: scripts/vision-thunderbird-worm-geo.js
+  p: {}
+  s: -worm-2
   z: 0
-- id: vision-thunderbird-worm-3
-  mat: scripts/vision-thunderbird-worm-mat.js
+- g: thunderbird-worm
+  m: thunderbird-worm
   mp: {n: 3}
-  primitive:
-    kind: scripted
-    params: {}
-    script: scripts/vision-thunderbird-worm-geo.js
+  p: {}
+  s: -worm-3
   z: 0
-- id: vision-thunderbird-worm-4
-  mat: scripts/vision-thunderbird-worm-mat.js
+- g: thunderbird-worm
+  m: thunderbird-worm
   mp: {n: 4}
-  primitive:
-    kind: scripted
-    params: {}
-    script: scripts/vision-thunderbird-worm-geo.js
+  p: {}
+  s: -worm-4
   z: 0
 twin-serpents:
-- id: vision-twin-serpents
-  mat: scripts/vision-twin-serpents-mat.js
+- g: twin-serpents
+  m: twin-serpents
   mp: {layer: being}
-  primitive:
-    kind: scripted
-    params: {h: 100, layer: being, w: 72}
-    script: scripts/vision-twin-serpents-geo.js
+  p: {h: 100, layer: being, w: 72}
+  s: ''
   z: 0
-- id: vision-twin-serpents-fore
-  mat: scripts/vision-twin-serpents-mat.js
+- g: twin-serpents
+  m: twin-serpents
   mp: {layer: fore}
-  primitive:
-    kind: scripted
-    params: {h: 85, layer: fore, w: 150}
-    script: scripts/vision-twin-serpents-geo.js
+  p: {h: 85, layer: fore, w: 150}
+  s: -fore
   z: 22
-- id: vision-twin-serpents-ring
-  mat: scripts/vision-twin-serpents-mat.js
+- g: twin-serpents
+  m: twin-serpents
   mp: {layer: ring}
-  primitive:
-    kind: scripted
-    params: {h: 96, layer: ring, w: 96}
-    script: scripts/vision-twin-serpents-geo.js
+  p: {h: 96, layer: ring, w: 96}
+  s: -ring
   z: -12
-- id: vision-twin-serpents-veil
-  mat: scripts/vision-twin-serpents-mat.js
+- g: twin-serpents
+  m: twin-serpents
   mp: {layer: veil}
-  primitive:
-    kind: scripted
-    params: {h: 95, layer: veil, w: 140}
-    script: scripts/vision-twin-serpents-geo.js
+  p: {h: 95, layer: veil, w: 140}
+  s: -veil
   z: 10
-- id: vision-twin-serpents-world
-  mat: scripts/vision-twin-serpents-mat.js
+- g: twin-serpents
+  m: twin-serpents
   mp: {layer: world}
-  primitive:
-    kind: scripted
-    params: {h: 180, layer: world, w: 320}
-    script: scripts/vision-twin-serpents-geo.js
+  p: {h: 180, layer: world, w: 320}
+  s: -world
   z: -30
-- id: vision-twin-serpents-worm-1
-  mat: scripts/vision-twin-serpents-worm-mat.js
+- g: twin-serpents-worm
+  m: twin-serpents-worm
   mp: {n: 1}
-  primitive:
-    kind: scripted
-    params: {n: 1}
-    script: scripts/vision-twin-serpents-worm-geo.js
+  p: {n: 1}
+  s: -worm-1
   z: 0
-- id: vision-twin-serpents-worm-2
-  mat: scripts/vision-twin-serpents-worm-mat.js
+- g: twin-serpents-worm
+  m: twin-serpents-worm
   mp: {n: 2}
-  primitive:
-    kind: scripted
-    params: {n: 2}
-    script: scripts/vision-twin-serpents-worm-geo.js
+  p: {n: 2}
+  s: -worm-2
   z: 0
-- id: vision-twin-serpents-worm-3
-  mat: scripts/vision-twin-serpents-worm-mat.js
+- g: twin-serpents-worm
+  m: twin-serpents-worm
   mp: {n: 3}
-  primitive:
-    kind: scripted
-    params: {n: 3}
-    script: scripts/vision-twin-serpents-worm-geo.js
+  p: {n: 3}
+  s: -worm-3
   z: 0
-- id: vision-twin-serpents-worm-4
-  mat: scripts/vision-twin-serpents-worm-mat.js
+- g: twin-serpents-worm
+  m: twin-serpents-worm
   mp: {n: 4}
-  primitive:
-    kind: scripted
-    params: {n: 4}
-    script: scripts/vision-twin-serpents-worm-geo.js
+  p: {n: 4}
+  s: -worm-4
   z: 0
 weaver:
-- id: vision-weaver
-  mat: scripts/vision-weaver-mat.js
+- g: weaver
+  m: weaver
   mp: {layer: being}
-  primitive:
-    kind: scripted
-    params: {h: 70, w: 90}
-    script: scripts/vision-weaver-geo.js
+  p: {h: 70, w: 90}
+  s: ''
   z: 0
-- id: vision-weaver-fore
-  mat: scripts/vision-weaver-mat.js
+- g: weaver
+  m: weaver
   mp: {layer: fore}
-  primitive:
-    kind: scripted
-    params: {h: 85, w: 150}
-    script: scripts/vision-weaver-geo.js
+  p: {h: 85, w: 150}
+  s: -fore
   z: 22
-- id: vision-weaver-ring
-  mat: scripts/vision-weaver-mat.js
+- g: weaver
+  m: weaver
   mp: {layer: ring}
-  primitive:
-    kind: scripted
-    params: {h: 112, w: 120}
-    script: scripts/vision-weaver-geo.js
+  p: {h: 112, w: 120}
+  s: -ring
   z: -12
-- id: vision-weaver-veil
-  mat: scripts/vision-weaver-mat.js
+- g: weaver
+  m: weaver
   mp: {layer: veil}
-  primitive:
-    kind: scripted
-    params: {h: 84, w: 150}
-    script: scripts/vision-weaver-geo.js
+  p: {h: 84, w: 150}
+  s: -veil
   z: 10
-- id: vision-weaver-world
-  mat: scripts/vision-weaver-mat.js
+- g: weaver
+  m: weaver
   mp: {layer: world}
-  primitive:
-    kind: scripted
-    params: {h: 180, w: 320}
-    script: scripts/vision-weaver-geo.js
+  p: {h: 180, w: 320}
+  s: -world
   z: -30
-- id: vision-weaver-worm-1
-  mat: scripts/vision-weaver-worm-mat.js
+- g: weaver-worm
+  m: weaver-worm
   mp: {n: 1}
-  primitive:
-    kind: scripted
-    params: {n: 1}
-    script: scripts/vision-weaver-worm-geo.js
+  p: {n: 1}
+  s: -worm-1
   z: 0
-- id: vision-weaver-worm-2
-  mat: scripts/vision-weaver-worm-mat.js
+- g: weaver-worm
+  m: weaver-worm
   mp: {n: 2}
-  primitive:
-    kind: scripted
-    params: {n: 2}
-    script: scripts/vision-weaver-worm-geo.js
+  p: {n: 2}
+  s: -worm-2
   z: 0
-- id: vision-weaver-worm-3
-  mat: scripts/vision-weaver-worm-mat.js
+- g: weaver-worm
+  m: weaver-worm
   mp: {n: 3}
-  primitive:
-    kind: scripted
-    params: {n: 3}
-    script: scripts/vision-weaver-worm-geo.js
+  p: {n: 3}
+  s: -worm-3
   z: 0
-- id: vision-weaver-worm-4
-  mat: scripts/vision-weaver-worm-mat.js
+- g: weaver-worm
+  m: weaver-worm
   mp: {n: 4}
-  primitive:
-    kind: scripted
-    params: {n: 4}
-    script: scripts/vision-weaver-worm-geo.js
+  p: {n: 4}
+  s: -worm-4
   z: 0
 world-tree:
-- id: vision-world-tree
-  mat: scripts/vision-world-tree-mat.js
+- g: world-tree
+  m: world-tree
   mp: {layer: being}
-  primitive:
-    kind: scripted
-    params: {h: 72, w: 110}
-    script: scripts/vision-world-tree-geo.js
+  p: {h: 72, w: 110}
+  s: ''
   z: 0
-- id: vision-world-tree-fore
-  mat: scripts/vision-world-tree-mat.js
+- g: world-tree
+  m: world-tree
   mp: {layer: fore}
-  primitive:
-    kind: scripted
-    params: {h: 85, w: 150}
-    script: scripts/vision-world-tree-geo.js
+  p: {h: 85, w: 150}
+  s: -fore
   z: 22
-- id: vision-world-tree-ring
-  mat: scripts/vision-world-tree-mat.js
+- g: world-tree
+  m: world-tree
   mp: {layer: ring}
-  primitive:
-    kind: scripted
-    params: {h: 40, w: 76}
-    script: scripts/vision-world-tree-geo.js
+  p: {h: 40, w: 76}
+  s: -ring
   z: -12
-- id: vision-world-tree-veil
-  mat: scripts/vision-world-tree-mat.js
+- g: world-tree
+  m: world-tree
   mp: {layer: veil}
-  primitive:
-    kind: scripted
-    params: {h: 56, w: 90}
-    script: scripts/vision-world-tree-geo.js
+  p: {h: 56, w: 90}
+  s: -veil
   z: 10
-- id: vision-world-tree-world
-  mat: scripts/vision-world-tree-mat.js
+- g: world-tree
+  m: world-tree
   mp: {layer: world}
-  primitive:
-    kind: scripted
-    params: {h: 180, w: 320}
-    script: scripts/vision-world-tree-geo.js
+  p: {h: 180, w: 320}
+  s: -world
   z: -30
-- id: vision-world-tree-worm-1
-  mat: scripts/vision-world-tree-worm-mat.js
+- g: world-tree-worm
+  m: world-tree-worm
   mp: {n: 1}
-  primitive:
-    kind: scripted
-    params: {}
-    script: scripts/vision-world-tree-worm-geo.js
+  p: {}
+  s: -worm-1
   z: 0
-- id: vision-world-tree-worm-2
-  mat: scripts/vision-world-tree-worm-mat.js
+- g: world-tree-worm
+  m: world-tree-worm
   mp: {n: 2}
-  primitive:
-    kind: scripted
-    params: {}
-    script: scripts/vision-world-tree-worm-geo.js
+  p: {}
+  s: -worm-2
   z: 0
-- id: vision-world-tree-worm-3
-  mat: scripts/vision-world-tree-worm-mat.js
+- g: world-tree-worm
+  m: world-tree-worm
   mp: {n: 3}
-  primitive:
-    kind: scripted
-    params: {}
-    script: scripts/vision-world-tree-worm-geo.js
+  p: {}
+  s: -worm-3
   z: 0
-- id: vision-world-tree-worm-4
-  mat: scripts/vision-world-tree-worm-mat.js
+- g: world-tree-worm
+  m: world-tree-worm
   mp: {n: 4}
-  primitive:
-    kind: scripted
-    params: {}
-    script: scripts/vision-world-tree-worm-geo.js
+  p: {}
+  s: -worm-4
   z: 0
 world-turtle:
-- id: vision-world-turtle
-  mat: scripts/vision-world-turtle-mat.js
+- g: world-turtle
+  m: world-turtle
   mp: {layer: being}
-  primitive:
-    kind: scripted
-    params: {h: 50, layer: being, w: 70}
-    script: scripts/vision-world-turtle-geo.js
+  p: {h: 50, layer: being, w: 70}
+  s: ''
   z: 0
-- id: vision-world-turtle-fore
-  mat: scripts/vision-world-turtle-mat.js
+- g: world-turtle
+  m: world-turtle
   mp: {layer: fore}
-  primitive:
-    kind: scripted
-    params: {h: 85, layer: fore, w: 150}
-    script: scripts/vision-world-turtle-geo.js
+  p: {h: 85, layer: fore, w: 150}
+  s: -fore
   z: 22
-- id: vision-world-turtle-ring
-  mat: scripts/vision-world-turtle-mat.js
+- g: world-turtle
+  m: world-turtle
   mp: {layer: ring}
-  primitive:
-    kind: scripted
-    params: {h: 80, layer: ring, w: 80}
-    script: scripts/vision-world-turtle-geo.js
+  p: {h: 80, layer: ring, w: 80}
+  s: -ring
   z: -12
-- id: vision-world-turtle-veil
-  mat: scripts/vision-world-turtle-mat.js
+- g: world-turtle
+  m: world-turtle
   mp: {layer: veil}
-  primitive:
-    kind: scripted
-    params: {h: 84, layer: veil, w: 120}
-    script: scripts/vision-world-turtle-geo.js
+  p: {h: 84, layer: veil, w: 120}
+  s: -veil
   z: 10
-- id: vision-world-turtle-world
-  mat: scripts/vision-world-turtle-mat.js
+- g: world-turtle
+  m: world-turtle
   mp: {layer: world}
-  primitive:
-    kind: scripted
-    params: {h: 180, layer: world, w: 320}
-    script: scripts/vision-world-turtle-geo.js
+  p: {h: 180, layer: world, w: 320}
+  s: -world
   z: -30
-- id: vision-world-turtle-worm-1
-  mat: scripts/vision-world-turtle-worm-mat.js
+- g: world-turtle-worm
+  m: world-turtle-worm
   mp: {n: 1}
-  primitive:
-    kind: scripted
-    params: {}
-    script: scripts/vision-world-turtle-worm-geo.js
+  p: {}
+  s: -worm-1
   z: 0
-- id: vision-world-turtle-worm-2
-  mat: scripts/vision-world-turtle-worm-mat.js
+- g: world-turtle-worm
+  m: world-turtle-worm
   mp: {n: 2}
-  primitive:
-    kind: scripted
-    params: {}
-    script: scripts/vision-world-turtle-worm-geo.js
+  p: {}
+  s: -worm-2
   z: 0
-- id: vision-world-turtle-worm-3
-  mat: scripts/vision-world-turtle-worm-mat.js
+- g: world-turtle-worm
+  m: world-turtle-worm
   mp: {n: 3}
-  primitive:
-    kind: scripted
-    params: {}
-    script: scripts/vision-world-turtle-worm-geo.js
+  p: {}
+  s: -worm-3
   z: 0
-- id: vision-world-turtle-worm-4
-  mat: scripts/vision-world-turtle-worm-mat.js
+- g: world-turtle-worm
+  m: world-turtle-worm
   mp: {n: 4}
-  primitive:
-    kind: scripted
-    params: {}
-    script: scripts/vision-world-turtle-worm-geo.js
+  p: {}
+  s: -worm-4
   z: 0
