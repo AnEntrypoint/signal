@@ -5,8 +5,7 @@
 // Pacing: stamen bead alone u0-.11, petals open one by one (iris) .11-.27, beaks draw in with a nib .24-.32, eye-iris + head .32-.39,
 // body clock-sweep .37-.46, gorget beads light from the beak .43-.52, wing blades fan in .49-.62, tail teardrops .58-.66,
 // wreath clock .4-.56, garden hangs down .36-.6, veil leaves unfurl .6-.74, pollen bursts .66-.78; LIFO exit .8-1, garden last.
-// Kick (only where the track has one): the wing fan steps to the next ghost blade, gorget beads chase a colour, wreath flowers
-// swap hollow/filled, veil leaves lift to uncover, a light runs down the vines, the stamen swaps hollow/filled.
+// Kick only where the track has one: wing fan steps, gorget colour chase, wreath hollow/filled, veil lifts, vine light, stamen swap.
 import { MeshBasicNodeMaterial, DoubleSide } from "builtin/three";
 import { positionGeometry, float, vec2, vec3, smoothstep as ss, step, mix, atan2 as atan2raw, fwidth } from "builtin/tsl";
 import { tripClock, visionShown, visionU, climb, maskDraw, maskBeads, maskIris, maskClock, inv, is, sgn, smin, segH, capsule, strokeAA, ioU, NEON } from "./lib/trip.js";

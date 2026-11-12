@@ -4,9 +4,11 @@
 // on the worm's own uv); 3-4 are locked to world space, read in reverse, so the body slides back through its pattern.
 import { MeshBasicNodeMaterial, DoubleSide } from "builtin/three";
 import { positionGeometry, float, vec2, vec3, smoothstep, step, mix, atan2 as atan2raw } from "builtin/tsl";
-import { tripClock, visionShown, visionU, climb, stripes, inv, is, sgn, ioU, NEON } from "./lib/trip.js";
+import { tripClock, visionShown, visionU, climb, inv, is, sgn, ioU, NEON } from "./lib/trip.js";
 const atan2 = (y, x) => atan2raw(y, x.add(1e-5));
 const TAU = 6.28318, LEN = 64;
+// a soft-edged stripe of period 1/n, edges always low->high
+const stripes = (x, n, w) => { const f = x.mul(n).fract(); return smoothstep(0.5 - w, 0.5, f).mul(float(1).sub(smoothstep(1 - w, 1, f))); };
 export function material(ctx) {
   const n = Math.max(1, Math.round(ctx.params.n ?? 1)), frontW = n % 2, pair = n > 2 ? 1 : 0;
   const c = tripClock(ctx), u = visionU(ctx, c), live = visionShown(ctx, c, 0), io = ioU(u), low = ctx.quality === "low";
