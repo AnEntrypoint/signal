@@ -150,7 +150,7 @@ export function material(ctx) {
 
   // ------------------------------------------------------------------ BEING: the mirrored birds and the knot-lotus
   const brt = T.mul(TAU / 9).sin().mul(0.012).add(1).add(cul.mul(0.035));
-  const p = P.div(brt.mul(0.62)), aa = fwidth(p.x).mul(1.2).max(0.01), st = strokeAA(aa);
+  const p = P.div(brt.mul(1.6)), aa = fwidth(p.x).mul(1.2).max(0.01), st = strokeAA(aa);
   const q = vec2(p.x.abs(), p.y);
 
   // wings: a fan of ghosted blades from the shoulder; one is the wing now, stepping round (on the kick it steps too)
