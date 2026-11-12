@@ -327,7 +327,10 @@ export function look(ctx) {
   // racks to a subject: what sits well IN FRONT of it softens (a worm swimming past the glass); the subject and everything
   // behind it stay sharp, so no layer goes soft just for being far
   // a hard rule: nothing at or past 60% of the subject's distance is ever touched, so the subject can never go soft
-  const nearOnly = float(1).sub(smoothstep(focusD.mul(0.3), focusD.mul(0.55), dz)).mul(step(0.5, dz));
+  // a pull with no being only softens what truly brushes the glass (a worm a few metres off): mid-distance ground
+  // cartouches blurred to flat grey slabs in the return (roll review 11-12), so the plane stops at 8-14 m there
+  const n0 = mix(focusD.mul(0.3).min(8), focusD.mul(0.3), vis), n1 = mix(focusD.mul(0.55).min(14), focusD.mul(0.55), vis);
+  const nearOnly = float(1).sub(smoothstep(n0, n1, dz)).mul(step(0.5, dz));
   const dofW = on.mul(pullOn.mul(hasSubject).max(vis)).mul(float(1).sub(kmix)).mul(nearOnly);
   return vignette(mix(graded, focused, dofW), ctx.param("vignette", 0.35), { color: [0, 0, 0] });
 }
