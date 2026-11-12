@@ -4,7 +4,7 @@
 // 4's bands run backwards down the body, against its swim.
 import { MeshBasicNodeMaterial, DoubleSide } from "builtin/three";
 import { positionGeometry, float, vec2, vec3, smoothstep, step, mix, atan2 as atan2raw } from "builtin/tsl";
-import { tripClock, visionShown, visionU, climb, stripes, inv, is, sgn, ioU, NEON } from "./lib/trip.js";
+import { tripClock, visionShown, visionU, climb, inv, is, sgn, ioU, NEON } from "./lib/trip.js";
 const atan2 = (y, x) => atan2raw(y, x.add(1e-5));
 const TAU = 6.28318, LEN = 64;
 export function material(ctx) {
@@ -59,7 +59,7 @@ export function material(ctx) {
     // bands running backwards down the body, against the swim
     const sr = s.add(c.real.mul(9));
     const k3 = sr.mul(0.3).floor().mod(3);
-    skin = B.mul(is(k3, 0)).add(H.mul(is(k3, 1))).add(mix(A, W, 0.4).mul(is(k3, 2))).mul(stripes(sr, 0.3, 0.04));
+    skin = B.mul(is(k3, 0)).add(H.mul(is(k3, 1))).add(mix(A, W, 0.4).mul(is(k3, 2))).mul(step(0.18, sr.mul(0.3).fract()));
   }
   const run = low ? float(0) : inv(smoothstep(0, 0.05, uu.sub(c.beat.fract()).abs())).mul(kOn);
   m.colorNode = skin.mul(sa.abs().mul(0.45).add(0.55)).add(mix(A, W, 0.5).mul(smoothstep(0.86, 1, ca.abs())).mul(run.add(0.45)));

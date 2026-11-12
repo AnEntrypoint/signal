@@ -193,6 +193,6 @@ export function material(ctx) {
   const halo = st(rl.sub(3.5).abs(), 0.09);
   const core = seat.max(halo).max(ray).mul(maskIris(pK, rl.div(7.4))).mul(on(pK));
   lay(st(rl, 3.5).mul(on(pK)).mul(maskIris(pK, rl.div(7.4))), BG);
-  lay(core, mix(W, H2, st(rl, 2.9).oneMinus()));
+  lay(core, mix(H2, W, st(rl, 2.9)));
   return cutout(col, cover);
 }
