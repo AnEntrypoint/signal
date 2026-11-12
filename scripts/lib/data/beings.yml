@@ -1918,7 +1918,7 @@ hummingbird:
 - g: world-turtle
   m: hummingbird
   mp: {layer: being}
-  p: {h: 50, w: 70}
+  p: {h: 82, w: 114}
   s: ''
   z: 0
 - g: world-turtle
