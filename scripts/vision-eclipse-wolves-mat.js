@@ -55,7 +55,7 @@ export function material(ctx) {
       const l = vec2(qx.fract().sub(0.5).mul(g), off.sub(row.mul(g))).length();
       const rad = inv(row.abs().div(3.5)).clamp(0, 1).mul(0.36 * g);
       const k = P.x.abs().div(160);
-      const dot = st(l.sub(rad), 0).mul(step(0.05, rad)).mul(maskBeads(pA.mul(1.3).sub(j * 0.3).clamp(0, 1), k));
+      const dot = st(l.sub(rad), 0).mul(step(0.05, rad)).mul(maskBeads(pA.mul(1.3).sub(j * 0.3).clamp(0, 1), k)).mul(on(pA.mul(1.3).sub(j * 0.3)));
       lay(dot, mix(GRN, A, row.abs().div(3.5).clamp(0, 1)).mul(mix(float(0.55), float(1), hash(id, j))).mul(cul.mul(0.6).add(0.5)));
     });
     // three hill lines, far to near; each line draws itself out from the middle with a nib, its striped snow beneath it
@@ -99,7 +99,7 @@ export function material(ctx) {
     const phs = k.div(N).add(rn(5)).fract(), ox = phs.mul(2).sub(1).mul(2.2 * mr);
     const lit = step(mr, vec2(q.x.sub(ox), q.y).length());
     const rank = k.div(N).mul(so).add(1).fract();
-    const mOn = maskBeads(pM, rank);
+    const mOn = maskBeads(pM, rank).mul(on(pM));
     const disc = st(md.sub(mr), 0).mul(mOn), rim = st(md.sub(mr).abs(), 0.12).mul(mOn);
     const filled = inv(odd.mul(step(0.5, rn(6))));                // on half the rolls the kick hollows the moons on odd beats
     const ad = a0.add(T.mul(TAU / 45).mul(so)), nd = N.mul(4), kd = ad.div(TAU).add(0.5).mul(nd), bd = vec2(kd.sub(kd.add(0.5).floor()).div(nd).mul(TAU * 26), r.sub(26)).length();
@@ -144,7 +144,7 @@ export function material(ctx) {
       const yf = inv(T.mul(v).mul(hk.mul(0.6).add(0.7)).add(hk.mul(3.7)).fract()).mul(96).sub(48);
       const xf = kx.add(0.5).mul(g).sub(j * 0.5 * g).add(T.mul(0.6).add(hk.mul(9)).sin().mul(1.4));
       const d = P.sub(vec2(xf, yf)).length(), rr = hk.mul(0.4).add(rb);
-      const flake = st(d.sub(rr), 0).mul(maskBeads(pin, hk)).mul(step(hk, low ? 0.4 : 0.65));
+      const flake = st(d.sub(rr), 0).mul(maskBeads(pin, hk)).mul(on(pin)).mul(step(hk, low ? 0.4 : 0.65));
       lay(flake, mix(W, A, hk.mul(0.5)).add(H.mul(st(d.sub(rr.mul(0.45)).abs(), 0.06))));
     });
     for (let j = 0; j < (low ? 3 : 5); j++) {
@@ -221,7 +221,7 @@ export function material(ctx) {
   const bd = vec2(kf.sub(kf.add(0.5).floor()).div(N).mul(TAU * rc), er.sub(rc)).length();
   const ks = rn(15).mul(N).floor(), sc = sense(16), rank = k.sub(ks).mul(sc).add(N).mod(N).div(N);
   const isSeed = step(rank, 0.001);
-  const br = cl.mul(0.12).add(0.45);
+  const br = cl.mul(0.12).add(0.45).add(isSeed.mul(0.4));
   const pSeed = io(0.0, 0.04, 0.985, 0.995), pB = io(0.05, 0.18, 0.97, 0.985);
   const bOn = mix(maskBeads(pB, rank.sub(0.001)).mul(step(0.004, pB)), maskIris(pSeed, bd.div(br)), isSeed);
   const bead = st(bd.sub(br), 0).mul(bOn);
@@ -231,7 +231,7 @@ export function material(ctx) {
   // flame rays of the corona: teardrops pointing out, hollow/filled swapping on the kick
   const pR = io(0.58, 0.66, 0.89, 0.91), nr = N.div(2), kr = ea.div(TAU).add(0.5).mul(nr), rq = vec2(kr.sub(kr.add(0.5).floor()).div(nr).mul(TAU * 9), er.sub(8.6));
   const rd = tear(rq, cl.mul(0.15).add(0.45), float(2.4).add(cl.mul(1.2)));
-  const rOn = maskBeads(pR, kr.add(0.5).floor().mod(nr).div(nr).mul(sc).add(1).fract());
+  const rOn = maskBeads(pR, kr.add(0.5).floor().mod(nr).div(nr).mul(sc).add(1).fract()).mul(on(pR));
   const fillR = mix(st(rd, 0), st(rd.abs(), 0.1), odd.mul(inv(step(0.5, rn(17)))).max(inv(odd).mul(step(0.5, rn(17)))));
   lay(st(rd, 0).mul(rOn), BG.add(mix(H2, A, 0.3).mul(fillR)));
   return cutout(col, cover);
