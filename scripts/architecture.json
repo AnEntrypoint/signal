@@ -1,34 +1,34 @@
 {
   "schemaVersion": 1,
-  "basedOnSpecVersion": 625,
-  "updatedAt": "2026-11-12T10:24:40.911Z",
+  "basedOnSpecVersion": 628,
+  "updatedAt": "2026-11-12T12:59:36.596Z",
   "summary": "Signal Stage is a walkable 3D motion-graphics stage whose multiplayer roll launches a synchronized, seeded music trip. A shared director maps selected audio onto the canonical show clock, drives shaders and the camera, and deals vision beings onto the stage only for their slots.",
   "scriptPaths": [],
   "places": [
     "places/main/config.yaml (main, 3D) - black-void stage configuration, spawn/environment and place-wide scripts/look-trip.js post-processing.",
     "places/main/cells/x0z0.scene#director - field/eye/serpents composition and scripts/stage.js; field origin and portal at (0,15,-34).",
     "places/main/cells/x0z-1.scene and x0z-3.scene - sun-eye, tunnel along -Z, chamber and far tunnel-knot stage pieces.",
-    "places/main/cells/x0y2z0.scene through x0y16z0.scene - high-altitude vision-home grid; saved being assemblies were removed and rows are built by the director only when dealt.",
+    "places/main/cells/x0y2z0.scene through x0y16z0.scene - high-altitude vision-home grid; director constructs beings only when dealt or held.",
     "places/main/cells/objects.scene - three companion-worm meshes attached to the camera for the shared cinematic view.",
-    "places/main/cells/ - 25 scene cells around the main composition; cells x0y15z0 and x0y16z0 are part of the former being-home area."
+    "places/main/cells/ - 25 scene cells around the main composition; x0y15z0 and x0y16z0 belong to the former being-home area."
   ],
   "roots": [
     "world.config.yaml - multiplayer services, player/camera templates, movement and cine/ownSong actions, own-track buyable, arrival, lighting, HUD and nametag.",
     "templates/player.js#player composes humanoid-locomotion.js with scripts/player.js; templates/camera.js#camera runs scripts/camera.js.",
     "places/main/cells/x0z0.scene#director - scripts/stage.js synchronizes track/audio and distributes roll/deal parameters.",
     "scripts/ui.js - viewer-local ROLL/CUT and cinematic status HUD, track name/BPM, and own-song selection/upload UI.",
-    "places/main/config.yaml atmosphere.look - installs scripts/look-trip.js as the full-screen post-processing look.",
+    "places/main/config.yaml atmosphere.look installs scripts/look-trip.js as full-screen post-processing.",
     "scripts/buyables/own-track.js - purchase callback turns the buyer's uploaded and measured song into the room's next synchronized roll."
   ],
   "shared": [
     "scripts/lib/cine.js - CPU score clock, track-time lookup, section lookup and seeded camera path; used by player, camera, HUD and stage.",
     "scripts/lib/deck.js - cached deterministic per-seed scene-deck deal and track-to-scene-time mapping; used by cine.js and stage.js.",
-    "scripts/lib/visions.js - 24-being registry, cached seeded slot deal, vision timing/shots and measured-energy lookup; used by cine.js and stage.js.",
-    "scripts/lib/data/beings.yml - per-being stage rows: geometry/material stems, params, layer suffixes and home depth; consumed by stage.js when it builds a dealt being.",
+    "scripts/lib/visions.js - registry of 36 beings (24 built/dealable, 12 registered but built:false), cached seeded slot deal, timing/shots and energy lookup; used by cine.js and stage.js.",
+    "scripts/lib/data/beings.yml - per-being stage rows: geometry/material stems, params, layer suffixes and home depth; stage.js builds a dealt or held being.",
     "scripts/lib/tracks.js - built-in tracks plus normalized paid own-track, seed selection, piecewise track/canonical clock mapping, shader params and track energy; used by cine.js, stage.js and ui.js.",
     "scripts/lib/data/score.yml and shots.yml - canonical sections, layers, lens, maths, deck and authored camera keys; energy.yml holds canonical track data and vision slots.",
-    "scripts/lib/data/tracks/{where-the-sun-dont-shine,can-you-hear-it,metamoist}.yml - measured audio timing, bars, drops and vision windows for the moonshine tracks; score.yml supplies fromage.",
-    "scripts/lib/trip.js and family helpers field-lib.js, eye-lib.js, tunnel-lib.js, chamber-lib.js, chamber-fx.js, sun-lib.js, serpents-data.js/serpents-curve.js - shared shader clocks/primitives and family placement, spatial, timing and color math."
+    "scripts/lib/data/tracks/{where-the-sun-dont-shine,can-you-hear-it,metamoist}.yml - measured moonshine-track timing, bars, drops and vision windows; score.yml supplies fromage.",
+    "scripts/lib/trip.js and field-lib.js, eye-lib.js, tunnel-lib.js, chamber-lib.js/chamber-fx.js, sun-lib.js, serpents-data.js/serpents-curve.js - shared shader clocks/primitives and family placement, spatial, timing and color helpers."
   ],
   "notableExports": [
     "scripts/player.js exports onInput, update; scripts/camera.js exports finiteNumber, update; scripts/stage.js exports update; scripts/look-trip.js exports look; scripts/ui.js exports default, pickSong.",
@@ -37,29 +37,30 @@
     "scripts/lib/tracks.js exports TRACKS, trackFor, toCanon, trackParams, IDENTITY, trackEnergyAt, ownTrack, trackOf, CANON; scripts/lib/visions.js exports BEINGS, dealVisions, visionAt, visionShot, energyAt.",
     "scripts/lib/trip.js exports KICK_RUNS, SEC, BPS, tripClock, win, pal, stripes, HUE, shown, lens, bendUv, visionShown and shared vision-shader primitives.",
     "scripts/field-lib.js exports RADIUS, growR, riseR, resetR, endFade, backOut, base, hot, FAMILY, family, colours, breath, seamHold, held.",
-    "Vision *-geo modules export geometry/collider (some also spine/ring constants); *-mat modules export material. Worm geo/material pairs provide animated depth-winding bodies.",
-    "scripts/tunnel-lib.js exports Z0, FEET, BOUNDS, tun, inside, camDepth, v3, BLUE, base, hot, GRAPH, mirAng; tunnel-core.js, tunnel-gates.js and tunnel-ribs.js export material."
+    "scripts/tunnel-lib.js exports Z0, FEET, BOUNDS, tun, inside, camDepth, v3, BLUE, base, hot, GRAPH, mirAng; tunnel-core.js, tunnel-gates.js and tunnel-ribs.js export material.",
+    "Vision *-geo modules export geometry/collider (some spine/ring constants); *-mat modules export material; worm geo/material pairs provide animated depth-winding bodies."
   ],
   "ownership": [
     "scripts/player.js - local movement intent/velocity and viewer body's state.ownSong upload metadata; ordinary cine input writes shared world.state.cine.",
-    "scripts/buyables/own-track.js - on successful purchase writes shared world.state.cine={start,by,seed,track,who}; emits room-wide purchase flash and sound.",
-    "scripts/stage.js on #director - shared audio session, roll parameter propagation to trip-tagged materials/look, vision visibility/camera attachment, dynamic being spawn/strike, and bench visionTest hold.",
+    "scripts/buyables/own-track.js - successful purchase writes shared world.state.cine={start,by,seed,track,who}; emits room-wide purchase flash and sound.",
+    "scripts/stage.js on #director - shared audio session, roll parameter propagation to trip-tagged materials/look, vision visibility/camera attachment, dynamic being spawn/strike, and bench visionTest(s) holds.",
     "scripts/camera.js / templates/camera.js - viewer-local camera pose/FOV and seeded authored shot path/move.",
-    "scripts/humanoid-locomotion.js owns avatar gait/sit state; scripts/ui.js owns viewer-local HUD/song-selection status; ui/nametag.js owns viewer-local name presentation; place/world configs own environment and services."
+    "scripts/humanoid-locomotion.js owns avatar gait/sit state; scripts/ui.js owns viewer-local HUD/song-selection status; ui/nametag.js owns viewer-local name presentation.",
+    "Place/world configs own environment and services; scripts/lib/visions.js owns the being registry and deterministic deal cache."
   ],
   "flows": [
     "P/Y cine action or HUD sendAction('cine') → scripts/player.js onInput → world.state.cine={start: now+300ms,by,seed} or null; non-buyers cannot cut an active paid-song roll, while its buyer can.",
-    "scripts/ui.js file picker → browser decodes and measures audio (BPM, first beat, per-bar energy and timeline anchors), uploads it and sends ownSong action data → scripts/player.js validates URL, stores self.state.ownSong and proposes own-track purchase.",
-    "world.config.yaml buyables.own-track → scripts/buyables/own-track.js onPurchase reads buyer.state.ownSong → shared world.state.cine with track metadata, buyer and scheduled start; room-wide flash/sound are emitted.",
-    "world.state.cine → scripts/ui.js render → viewer-local ROLL/CUT and rolling progress/section label plus selected track name/BPM and buyer attribution.",
-    "world.state.cine → scripts/lib/tracks.js trackOf/ownTrack (or seed-based trackFor) → scripts/lib/cine.js maps track time to canonical show seconds; stage.js plays selected shared audio at c.start and clears/stages the next roll after it ends.",
-    "tracks.js maps track time through its vision-window anchors onto the canonical show clock → cine.js camera/deck timing and trip.js shader scene timing; track-specific beat/BPM remain on the track clock.",
-    "track bar-energy data → tracks.js kick runs converted to canonical time → stage.js supplies k0/k1; trackParams supplies tdur, ta1..ta4, fb and bps to trip-tagged materials and look.",
-    "stage.js → trip-tagged material/look params t0/on/seed, track clock params, kick bounds k0/k1 and dealt scene mappings ds0..ds3/dr0..dr3; look also receives current vision slot v0/v1 and focus depth vd.",
-    "stage.js + vision-<id> tags → scripts/lib/data/beings.yml rows spawn the selected being's geometry/material layers when dealt; assembly attaches to camera before its slot at depth 74 with layer offsets, then stage destroys it after its slot.",
-    "cine.js cameraAt → scripts/camera.js viewer camera; dealt beings and companion worms join the camera view rather than replacing it with separate vision shots; stage computes shot-dependent fit scale for attached layers.",
-    "trip.js tripClock/shown/lens/mask helpers → field, eye, serpents, tunnel, chamber, vision assemblies and look-trip shader timing/cutouts; shown() gives each layer's 14 radius bands a seeded shuffled arrival order.",
-    "world.state.visionTest bench hold → stage.js retains the held being's own parameters and skips roll writes to its trip-tagged material and held vision layers, preventing the shared roll clock from fighting the test clock."
+    "scripts/ui.js file picker → browser decodes/measures audio, uploads it and sends ownSong data → scripts/player.js validates URL, stores self.state.ownSong and proposes an own-track purchase.",
+    "world.config.yaml buyables.own-track → scripts/buyables/own-track.js onPurchase reads buyer.state.ownSong → shared world.state.cine with track metadata, buyer and scheduled start; emits room-wide flash/sound.",
+    "world.state.cine → scripts/ui.js render → viewer-local ROLL/CUT and rolling progress/section label, selected track name/BPM and buyer attribution.",
+    "world.state.cine → scripts/lib/tracks.js trackOf/ownTrack or trackFor → scripts/lib/cine.js maps track time to canonical show seconds; stage.js plays selected shared audio and clears/stages the next roll.",
+    "tracks.js maps source track time through vision-window anchors to canonical time → cine.js camera/deck timing and trip.js shader scene timing; track BPM/beat remain source-track values.",
+    "Track bar-energy data → tracks.js kick runs converted to canonical time → stage.js supplies k0/k1; trackParams supplies tdur, ta1..ta4, fb and bps to trip-tagged materials/look.",
+    "stage.js → trip-tagged material/look params t0/on/seed, track-clock params, kick bounds and dealt scene mappings; look also receives current vision slot v0/v1 and focus depth vd.",
+    "stage.js + vision-<id> tags → beings.yml rows spawn each dealt being's geometry/material layers; assembly attaches to camera at depth 74 with layer offsets, then stage destroys it after its slot.",
+    "cine.js cameraAt → scripts/camera.js viewer camera; dealt beings and companion worms join camera view rather than replacing it with separate vision shots; stage computes shot-dependent fit scale.",
+    "trip.js tripClock/shown/lens/mask helpers → field, eye, serpents, tunnel, chamber, visions and look-trip shader timing/cutouts; shown() gives each layer's 14 radius bands a seeded shuffled arrival order.",
+    "world.state.visionTests[being]={at,seed} (and legacy visionTest={being,at,seed}) → stage.js holds multiple beings independently at home, preserves their test clocks and skips roll writes for held vision materials/layers; holds expire after 30 s."
   ],
   "behaviorFamilies": [
     "scripts/field-* - mandala, stalks, orbs and glyph/cartouche field layers share field-lib.js placement/timing; motifs vary, with seam holds on the mandala.",
@@ -68,16 +69,16 @@
     "scripts/tunnel-* - wall, core, dust, gates, ribs and knot share geometry kinds and tunnel-lib.js spatial/color helpers; materials vary motif and seeded palette; wall holds at scene seams.",
     "scripts/chamber-* - room, circuit, hands, hex, Lissajous, solids and bilateral mask share chamber shader helpers and scored cutouts; room uses a seam hold.",
     "scripts/sun-disc.js, sun-drips.js and sun-halo.js - sun-eye layers share sun-lib.js but vary disc, hanging-drip and depth-halo imagery; disc uses a seam hold.",
-    "scripts/vision-*-geo.js / -mat.js - 24 dealt beings share trip clocks, layer offsets and camera attachment; configured motifs and seeded entrance/exit masks vary; chakra sage, cosmic egg and mushroom elders add their own music-reactive and staged-growth motifs.",
-    "scripts/companion-worm-geo.js, vision-*-worm-geo.js and corresponding worm materials - camera-attached and vision-being worms share unit-tube geometry bent by shader paths; geo resolution scales by ctx.lod."
+    "scripts/vision-*-geo.js / -mat.js - 24 built/dealt beings share trip clocks, layer offsets and camera attachment; motifs and seeded entrance/exit masks vary; recent entries are registered but not dealt until marked built.",
+    "Vision worm geo/material pairs plus scripts/companion-worm-geo.js - unit-tube geometry bent by shader paths; per-being materials vary appearance, geo resolution scales by ctx.lod."
   ],
   "probableOrphans": [],
   "migrationNotes": [
     "world.state.cine is the synchronized start/cut source; ordinary starts are scheduled 300 ms ahead and paid-song starts further ahead. cineTime() is canonical show seconds; trackTime() is seconds on the selected audio track.",
-    "tracks.js deals built-ins by seed modulo four (zero/missing uses fromage); trackOf(c) prefers c.track when it has music. Preserve the distinction between source-track time and the canonical scene clock.",
-    "Paid own-track metadata is carried in shared c.track from the buyer's body state; anchors map its start, drop/vision windows and end onto canonical time, while BPM, firstBeat and bars remain source-track values.",
-    "Non-fromage and paid tracks map piecewise through selected anchors onto canonical anchors; shader params ta1..ta4 and tdur must match tracks.js, with fb/bps retaining the track's own beat. Track kicks are converted to canonical seconds before stage supplies k0/k1.",
-    "score.yml remains the canonical show/deck and vision-slot timeline regardless of selected audio duration or BPM; idle materials receive tracks.js IDENTITY params. Stage must keep visionTest-held beings out of both roll-time trip material pushes and normal dealt-being timing writes.",
-    "Chakra sage color energy now scales from bass and rising overtones; worm 2 stripes run against its swim, worms 3-4 remain world-locked, and bass thickens them. Cosmic egg shell fragments exit in seeded angular order; mushroom turf and mycelium grow in staged relation to grass and elder roots."
+    "tracks.js deals built-ins by seed modulo four (zero/missing uses fromage); trackOf(c) prefers c.track when it has music. Preserve source-track time versus canonical scene-clock distinction.",
+    "Paid own-track metadata is carried in shared c.track from the buyer's body state; anchors map start, drop/vision windows and end onto canonical time, while BPM, firstBeat and bars remain source-track values.",
+    "Non-fromage and paid tracks map piecewise through selected anchors onto canonical anchors; shader params ta1..ta4 and tdur must match tracks.js, with fb/bps retaining track beat. Convert kick runs to canonical seconds before stage propagation.",
+    "score.yml remains the canonical show/deck and vision-slot timeline regardless of selected audio duration or BPM; idle materials receive IDENTITY params. dealVisions filters BEINGS by built, so built:false registry additions do not enter rolls.",
+    "Stage accepts multiple world.state.visionTests holds and the legacy single visionTest; held beings retain their home/test clock and are excluded from trip roll writes. The jaguar shaman material layers and worm material are in scripts/vision-jaguar-shaman-mat.js and scripts/vision-jaguar-shaman-worm-mat.js."
   ]
 }
