@@ -177,6 +177,21 @@ export function material(ctx) {
   const inNeck = step(sLo, s).mul(step(s, sHi)).mul(step(0, rowT)).mul(step(rowT, 4.9));
   const pFur = g.sub(8).div(3).clamp(0, 1);
   const fur = st(td, 0).mul(inNeck).mul(maskBeads(pFur, rw.add(hash(cid, 2).mul(0.6)).div(5.6))).mul(on(pFur));
+  // the head as a body, not just a line (roll review 11-12: outlines alone did not read as wolves): the outline's
+  // polygon fills black with op-art contour stripes running in from its edge, laid once the drawing is done
+  const POLY = [[3.6, -18], [2.6, -7.5], [4.6, -4.2], [8.2, -1.2], [4.2, -0.8], [3.2, 1], [2.4, 6], [0.9, 11.5], [-0.7, 5], [-2.6, 9.2], [-4.2, 3], [-5.4, -8], [-6.2, -18]];
+  let cross = float(0), dE = float(99);
+  POLY.forEach(([x0, y0], i) => {
+    const [x1, y1] = POLY[(i + 1) % POLY.length];
+    const dy = Math.abs(y1 - y0) < 1e-4 ? 1e-4 : y1 - y0;
+    const xi = L.y.sub(y0).mul((x1 - x0) / dy).add(x0);
+    cross = cross.add(step(L.y, y0).sub(step(L.y, y1)).abs().mul(step(L.x, xi)));
+    dE = dE.min(segH(L, vec2(x0, y0), vec2(x1, y1)).d);
+  });
+  const inHead = cross.mod(2), pFill = ss(0.55, 1, pw);
+  const stripes = band(dE.mul(0.9).sub(T.mul(0.35).mul(sense(13))));
+  const headBody = inHead.mul(maskBeads(pFill, inv(dE.div(6).clamp(0, 1)))).mul(on(pFill));
+  lay(headBody, BG.add(mix(A.mul(0.55), H.mul(0.8), stripes).mul(inv(ss(4, 9, dE)).mul(0.7).add(0.3))));
   lay(fur, BG.add(mix(mix(H, H2, step(0.5, rw.mod(2))), A, ss(-1, 1, tq.y).mul(0.4)).mul(st(td.abs(), 0.1).add(st(td.add(fr.mul(0.45)), 0).mul(0.6)))));
   WOLF.slice(0, low ? 10 : 12).forEach(([s0, a0, s1, a1, o]) => {
     const pS = g.sub(o).clamp(0, 1);
