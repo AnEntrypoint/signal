@@ -150,7 +150,7 @@ export function material(ctx) {
   const pSun = io(0.72, 0.8, 0.84, 0.88);
   const arm = stroke(sa.mul(2).add(sr.mul(0.5)).sub(c.real.mul(0.3).mul(sense(16))).fract().sub(0.5).abs().mul(1.7), 0.17).mul(step(sr, 2.7)).max(stroke(sr, 0.55));
   const ray = low ? float(0) : stroke(sa.mul(12).fract().sub(0.5).abs().mul(sr).mul(TAU / 12), 0.1).mul(step(3.2, sr)).mul(step(sr, sa.mul(12).floor().add(24).mod(2).mul(1.6).add(4.6).add(cul.mul(2))));
-  lay(step(sr, 2.9).max(ray).mul(maskIris(pSun, sr.div(8))), mix(H, W, 0.45).mul(arm).add(mix(H2, W, 0.3).mul(ray)).mul(climb(c).mul(0.5).add(0.8)));
+  lay(step(sr, 2.9).max(ray).mul(maskIris(pSun, sr.div(8))).mul(step(0.001, pSun)), mix(H, W, 0.45).mul(arm).add(mix(H2, W, 0.3).mul(ray)).mul(climb(c).mul(0.5).add(0.8)));
 
   // the shells: three bead rows round a core, each row beading in from the bottom of the egg to the top, turning against its neighbour
   const s = d.mul(4).floor().min(3), f = d.mul(4).fract();
@@ -180,13 +180,13 @@ export function material(ctx) {
   const sBody = step(v, 1).mul(step(xn.abs(), 0.999)).mul(step(0, sN)).mul(step(sN, 1)).mul(maskDraw(pS, sN)).mul(whole);
   const run = inv(ssRaw(0, 0.05, sN.sub(c.beat.div(4).fract()).abs())).mul(kickOn);   // the kick is a light running up the body
   const eye = stroke(vec2(sN.sub(0.955).mul(60), v.mul(1.6)).length(), 0.5);
-  lay(sBody, mix(mix(W, B, 0.2).mul(stripes(Tn, 14, 0.06)).mul(inv(v.mul(v)).max(0).sqrt().mul(0.5).add(0.5)).mul(float(0.9).add(run)), H2, ssRaw(0.74, 0.86, v)).add(H.mul(eye).mul(2)));
+  lay(sBody, mix(mix(mix(W, B, 0.2), H, run.mul(0.8)).mul(stripes(Tn, 14, 0.06)).mul(inv(v.mul(v)).max(0).sqrt().mul(0.5).add(0.5)).mul(0.92), H2, ssRaw(0.74, 0.86, v)).add(H.mul(eye).mul(2)));
 
   // the crack: white line-art travelling across the egg, then a branch zigzagging down
-  const pC = io(0.6, 0.7, 0.89, 0.93), on = step(d, 1).mul(whole);
+  const pC = io(0.6, 0.7, 0.89, 0.93), pB = io(0.66, 0.76, 0.88, 0.92), on = step(d, 1).mul(whole).mul(step(0.001, pC));
   let crack = stroke(q.y.sub(yc).abs().mul(0.62), 0.12).mul(maskDraw(pC, pw.x.mul(sense(15)).div(EA).add(1).mul(0.5)));
   if (!low) crack = crack.max(stroke(pw.x.sub(1.6).sub(tri(pw.y.div(2.6)).sub(0.5).mul(2.2)).abs().mul(0.62), 0.1)
-    .mul(step(pw.y, yc)).mul(maskDraw(io(0.66, 0.76, 0.88, 0.92), float(Y0).sub(pw.y).div(11))));
+    .mul(step(pw.y, yc)).mul(step(0.001, pB)).mul(maskDraw(pB, float(Y0).sub(pw.y).div(11))));
   lay(crack.mul(on), W);
 
   // the seed: first in, alone; last out
