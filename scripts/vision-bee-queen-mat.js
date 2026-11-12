@@ -180,7 +180,7 @@ export function material(ctx) {
       vn = vn.max(st(sgk.d, 0.09).mul(maskDraw(pk_, sgk.h)).mul(on(pk_)));
     }
     const e2 = vec2(lx.sub(L * 0.3).div(L * 0.3), ly.div(Wd * 0.28)).length().sub(1).mul(Wd * 0.28);
-    vn = vn.max(st(e2.abs(), 0.07).mul(maskDraw(ss(0.85, 1, pv), lx.div(L * 0.6))));
+    vn = vn.max(st(e2.abs(), 0.07).mul(maskDraw(ss(0.85, 1, pv), lx.div(L * 0.6)).mul(on(ss(0.85, 1, pv)))));
     lay(out.max(vn), mix(A, W, 0.2).mul(out).add(mix(mix(B, W, 0.35), W.add(H.mul(0.6)), c.kick).mul(vn)).mul(lit));
   });
 
@@ -232,7 +232,7 @@ export function material(ctx) {
     tA = mix(tA, tt, sel); dA = dA.min(sgA.d); acc += lens[i];
   });
   const club = q.sub(vec2(9.8, 17.2)).length();
-  lay(st(dA, 0.16).mul(maskDraw(pN, tA)).mul(on(pN)).max(st(club.sub(0.6), 0).mul(maskIris(ss(0.9, 1, pN), club.div(0.6)))),
+  lay(st(dA, 0.16).mul(maskDraw(pN, tA)).mul(on(pN)).max(st(club.sub(0.6), 0).mul(maskIris(ss(0.9, 1, pN), club.div(0.6)).mul(on(ss(0.9, 1, pN))))),
     mix(B, W, nib(pN, tA, 0.05).add(0.2)).add(H2.mul(st(club, 0.6))).mul(lit));
 
   // the crown, last: opening from its centre jewel
