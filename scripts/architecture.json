@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "basedOnSpecVersion": 707,
-  "updatedAt": "2026-11-12T15:02:31.970Z",
+  "basedOnSpecVersion": 711,
+  "updatedAt": "2026-11-12T15:16:34.499Z",
   "summary": "Signal Stage is a walkable 3D motion-graphics stage whose multiplayer roll launches a synchronized, seeded music trip. A shared director maps selected audio onto the canonical show clock, drives shaders and camera, and deals vision beings into the view only for their slots.",
   "scriptPaths": [],
   "places": [
@@ -26,8 +26,7 @@
     "scripts/lib/visions.js - registry of 36 beings, all built/dealable, cached seeded slot deal, timing/shots and energy lookup; used by cine.js and stage.js.",
     "scripts/lib/data/beings.yml - per-being stage rows: geometry/material stems, params, layer suffixes and home depth; stage.js builds a dealt or held being.",
     "scripts/lib/tracks.js - built-in tracks plus normalized paid own-track, seed selection, piecewise track/canonical clock mapping, shader params and track energy; used by cine.js, stage.js and ui.js.",
-    "scripts/lib/data/score.yml and shots.yml - canonical sections, layers, lens, maths, deck and authored camera keys; energy.yml holds canonical track data and vision slots.",
-    "scripts/lib/data/tracks/{where-the-sun-dont-shine,can-you-hear-it,metamoist}.yml - measured moonshine-track timing, bars, drops and vision windows; score.yml supplies fromage.",
+    "scripts/lib/data/score.yml and shots.yml - canonical sections, layers, lens, maths, deck and authored camera keys; energy.yml holds canonical track data and vision slots; data/tracks/*.yml holds measured alternate-track timing.",
     "scripts/lib/trip.js and field-lib.js, eye-lib.js, tunnel-lib.js, chamber-lib.js/chamber-fx.js, sun-lib.js, serpents-data.js/serpents-curve.js - shared shader clocks/primitives and family placement, spatial, timing and color helpers."
   ],
   "notableExports": [
@@ -69,7 +68,7 @@
     "scripts/tunnel-* - wall, core, dust, gates, ribs and knot share geometry kinds and tunnel-lib.js spatial/color helpers; materials vary motif and seeded palette; wall holds at scene seams.",
     "scripts/chamber-* - room, circuit, hands, hex, Lissajous, solids and bilateral mask share chamber shader helpers and scored cutouts; room uses a seam hold.",
     "scripts/sun-disc.js, sun-drips.js and sun-halo.js - sun-eye layers share sun-lib.js but vary disc, hanging-drip and depth-halo imagery; disc uses a seam hold.",
-    "scripts/vision-*-geo.js / -mat.js - all 36 registered beings are built and dealable; jaguar-shaman, zodiac-wheel and hummingbird join the enabled roster.",
+    "scripts/vision-*-geo.js / -mat.js - all 36 registered beings are built and dealable; eclipse-wolves now layers a black-filled, op-art contour-striped polygon head beneath the wolf outline.",
     "Vision worm geo/material pairs plus scripts/companion-worm-geo.js - unit-tube geometry bent by shader paths; per-being materials vary appearance, geo resolution scales by ctx.lod."
   ],
   "probableOrphans": [],
@@ -77,8 +76,8 @@
     "world.state.cine is the synchronized start/cut source; ordinary starts are scheduled 300 ms ahead and paid-song starts further ahead. cineTime() is canonical show seconds; trackTime() is seconds on the selected audio track.",
     "tracks.js deals built-ins by seed modulo four (zero/missing uses fromage); trackOf(c) prefers c.track when it has music. Preserve source-track time versus canonical scene-clock distinction.",
     "Paid own-track metadata is carried in shared c.track from the buyer's body state; anchors map start, drop/vision windows and end onto canonical time, while BPM, firstBeat and bars remain source-track values.",
-    "Non-fromage and paid tracks map piecewise through selected anchors onto canonical anchors; shader params ta1..ta4 and tdur must match tracks.js, with fb/bps retaining track beat. Convert kick runs to canonical seconds before stage propagation.",
-    "score.yml remains the canonical show/deck and vision-slot timeline regardless of selected audio duration or BPM; idle materials receive IDENTITY params. All 36 registry entries are now built:true and dealVisions filters by built.",
-    "scripts/lib/data/beings.yml gives eclipse-wolves base-layer p.h/p.w=80/112; scripts/vision-eclipse-wolves-mat.js also multiplies its being-space scale by 1.6. These edits together enlarge its presentation; check both when changing its apparent size."
+    "Track kick runs are converted to canonical seconds before stage propagation; shader params ta1..ta4 and tdur must match tracks.js, with fb/bps retaining track beat. Idle materials receive IDENTITY params.",
+    "score.yml remains the canonical show/deck and vision-slot timeline regardless of selected audio duration or BPM; all 36 registry entries are built:true and dealVisions filters by built.",
+    "scripts/lib/data/beings.yml gives eclipse-wolves base-layer p.h/p.w=80/112 and scripts/vision-eclipse-wolves-mat.js multiplies being-space scale by 1.6; its shader now fills the wolf-head polygon with contour stripes, so check the registration scale and material-space silhouette together."
   ]
 }
