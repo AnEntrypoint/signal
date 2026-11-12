@@ -40,7 +40,7 @@ export const BEINGS = [
   { id: 'sri-yantra', name: 'the sri yantra', built: true },
   { id: 'merkaba', name: 'the star chariot', built: true },
   { id: 'jaguar-shaman', name: 'the jaguar shaman', built: false },
-  { id: 'peacock', name: 'the peacock of a hundred eyes', built: false },
+  { id: 'peacock', name: 'the peacock of a hundred eyes', built: true },
   { id: 'octopus-oracle', name: 'the octopus oracle', built: false },
   { id: 'scarab', name: 'the scarab', built: false },
   { id: 'sky-whale', name: 'the sky whale', built: false },
