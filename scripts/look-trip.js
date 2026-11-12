@@ -172,7 +172,8 @@ export function look(ctx) {
   const pOpen = smoothstep(0, 0.25, pfr).mul(float(1).sub(smoothstep(0.75, 1, pfr)));   // two bars each way
   const pR = pOpen.mul(1.15).add(petal.mul(pOpen));
   const pWin = smoothstep(pR, pR.sub(0.06), apr);
-  const kmix = aWin.mul(wAsc).add(pk.mul(pWin).mul(wPeak)).clamp(0, 1);
+  // a being on stage is never mirrored: the fold made six copies of it (creator #16421: no duplicate versions; #15229: no flat picture warps)
+  const kmix = aWin.mul(wAsc).add(pk.mul(pWin).mul(wPeak)).clamp(0, 1).mul(float(1).sub(vis));
 
   // chromatic aberration: R and B pushed radially, growing toward the edge
   // a being on stage plays clean: no resting fringe on its line-art (the split only rides a real kick, off-vision)
