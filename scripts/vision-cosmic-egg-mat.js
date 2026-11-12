@@ -46,7 +46,7 @@ export function material(ctx) {
     const rad = cell.mul(float(0.3).sub(is(km, 2).mul(0.14)));
     const dot = mix(stroke(dm, rad), stroke(dm.sub(rad).abs(), cell.mul(0.05)), is(km, 1));
     const pupil = stroke(dm, rad.mul(0.42)).mul(is(km, 0)).mul(io(0.6, 0.76, 2, 3));   // late: the dots open as eyes
-    const Rg = io(0.13, 0.45, 2, 3).mul(210);                        // the first ripple's front, leaving the egg
+    const Rg = io(0.13, 0.45, 0.93, 0.99).mul(210);                  // the ripple front leaves the egg, and at the end is drawn back into it
     const front = c.beat.fract().mul(130);
     const kl = inv(ssRaw(0, 6, r.sub(front).abs())).mul(kickOn).mul(inv(ssRaw(60, 130, front)));
     const edge = inv(ssRaw(0, 9, Rg.sub(r).abs()));
@@ -190,7 +190,10 @@ export function material(ctx) {
   lay(crack.mul(on), W);
 
   // the seed: first in, alone; last out
-  const sd = e.length(), pSeed = io(0, 0.05, 0.985, 0.998);
-  lay(stroke(sd, 0.75).mul(maskIris(pSeed, sd.div(0.8))), mix(H, W, 0.6).mul(climb(c).mul(0.4).add(1)));
+  const sd = e.length(), pSeed = io(0, 0.05, 0.985, 0.998), sR = float(0.75).add(io(0.02, 0.12, 0.3, 0.45).mul(0.55));
+  lay(stroke(sd, sR).mul(maskIris(pSeed, sd.div(sR.add(0.05)))), mix(H, W, 0.6).mul(climb(c).mul(0.4).add(1)));
+  // its first breaths: thin rings born at the seed, each widening off it, before the world's ripples take over
+  const pR = io(0.03, 0.07, 0.17, 0.24), rk = sd.mul(0.16).sub(c.real.mul(0.3)), rr = rk.fract();
+  lay(stroke(rr.sub(0.5).abs().div(0.16), 0.07).mul(step(sR.add(0.4), sd)).mul(step(sd, pR.mul(9))).mul(step(0.001, pR)), mix(A, W, 0.3).mul(inv(sd.div(9)).mul(0.9)));
   return cutout(col, cover);
 }

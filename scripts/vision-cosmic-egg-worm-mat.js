@@ -23,7 +23,7 @@ export function material(ctx) {
   const r0 = world ? 1.7 : 2.4;
   const grow = io(0.52 + n * 0.03, 0.78, 0.86 + n * 0.012, 0.94 + n * 0.008);
   const tip = inv(smoothstep(grow.sub(0.07), grow, uu));
-  const rad = inv(uu).max(1e-4).sqrt().mul(r0).mul(tip.clamp(0, 1).max(1e-4).sqrt()).mul(live).mul(step(0.002, grow));
+  const rad = inv(uu).max(1e-4).sqrt().mul(r0).mul(tip.clamp(0, 1).max(1e-4).sqrt()).mul(live).mul(step(0.002, grow)).mul(smoothstep(0, 0.04, uu).max(1e-4).sqrt());   // a rounded head, never an open tube end
   // the head's path; the body trails it by phase
   const dirS = sgn(rn(10 + n)), ph = rn(14 + n).mul(TAU);
   const tau = c.real.mul(0.16 + n * 0.035).mul(dirS).add(ph).sub(uu.mul(1.9).mul(dirS));
