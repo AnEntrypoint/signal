@@ -39,7 +39,7 @@ export const BEINGS = [
   // 11-12 second wave: twelve more. built flips true once each one's scene stands and has been watched
   { id: 'sri-yantra', name: 'the sri yantra', built: true },
   { id: 'merkaba', name: 'the star chariot', built: true },
-  { id: 'jaguar-shaman', name: 'the jaguar shaman', built: false },
+  { id: 'jaguar-shaman', name: 'the jaguar shaman', built: true },
   { id: 'peacock', name: 'the peacock of a hundred eyes', built: true },
   { id: 'octopus-oracle', name: 'the octopus oracle', built: true },
   { id: 'scarab', name: 'the scarab', built: true },
