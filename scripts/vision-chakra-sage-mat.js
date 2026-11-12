@@ -26,7 +26,9 @@ export function material(ctx) {
   const cul = ss(0.7, 0.8, u).mul(inv(ss(0.86, 0.92, u))).mul(climb(c).mul(0.4).add(0.6));
   const m = new MeshBasicNodeMaterial();
   m.side = DoubleSide;
-  const cutout = (col, cover) => { m.colorNode = col; m.opacityNode = cover.mul(live).clamp(0, 1); m.alphaTest = 0.5; return m; };
+  // the music swells it: what the player hears (bass body, rising overtones) lifts every lit layer; black fills stay black
+  const en = float(0.8).add(c.bass.mul(0.22)).add(climb(c).mul(0.28));
+  const cutout = (col, cover) => { m.colorNode = col.mul(en); m.opacityNode = cover.mul(live).clamp(0, 1); m.alphaTest = 0.5; return m; };
 
   // ------------------------------------------------------------------ WORLD: contour-line waves (scrolls), each line pen-drawn
   if (layer === "world") {
@@ -36,7 +38,7 @@ export function material(ctx) {
     const h = P.y.add(w1).add(w2).add(S), g = h.div(sp), li = g.floor(), f = g.fract();
     const fw = fwidth(h).div(sp).mul(1.2).clamp(0.002, 0.5);
     const sw = P.x.mul(0.021).add(P.y.mul(0.03)).sub(t.mul(0.17)).sin().mul(0.5).add(0.5);
-    const wd = sw.mul(sw).mul(0.34).add(0.13);                       // op-art swell: the lines fatten into stripes and thin again
+    const wd = sw.mul(sw).mul(0.34).add(0.13).add(c.bass.mul(0.07));                       // op-art swell: the lines fatten into stripes and thin again
     const band = ss(float(0), fw, f).mul(inv(ss(wd, wd.add(fw), f)));
     const uEnd = inv(float(0.4).div(ctx.param("vw1", -1).sub(ctx.param("vw0", -1)).max(1))).min(0.999);
     const grow = ss(0.2, 0.45, u).mul(inv(ss(uEnd, float(1.0005), u)));
@@ -75,7 +77,7 @@ export function material(ctx) {
     const bead = sk(bd.sub(0.72).abs(), 0.13).mul(open), eye = sk(bd, 0.3).mul(open);
     const rim = sk(dm.sub(3.5).abs(), 0.1).mul(maskDraw(pR, th.abs().div(1.13))).mul(step(0.001, pR));
     const lit = float(0.6).add(cul.mul(0.6));
-    m.colorNode = rc.mul(bead).mul(swap).add(mix(H2, W, 0.2).mul(eye).mul(swap)).add(mix(B, W, 0.4).mul(rim).mul(0.7)).mul(lit);
+    m.colorNode = rc.mul(bead).mul(swap).add(mix(H2, W, 0.2).mul(eye).mul(swap)).add(mix(B, W, 0.4).mul(rim).mul(0.7)).mul(lit).mul(en);
     m.opacityNode = live;
     m.transparent = true; m.blending = AdditiveBlending; m.depthWrite = false;
     return m;

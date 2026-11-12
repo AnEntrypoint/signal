@@ -1,6 +1,7 @@
 // THE CHAKRA SAGE's kundalini worms (params.n 1..4): round opaque bodies that SWIM: every ring of the body follows the path its
 // head took (a slow Lissajous, so they keep turning), with a wave running down the length. 1 and 3 swim in front of the sage,
-// 2 and 4 behind. Skin: 1-2 static on the body (a real worm's), 3-4 locked to world space (the body slides through its stripes).
+// 2 and 4 behind. Skin: 1 static on the body (a real worm's), 2 reversed (its stripes stream tail-to-head against the swim, so they
+// seem to stand still while it goes), 3-4 locked to world space (the body slides through its stripes). Bass thickens every body.
 import { MeshBasicNodeMaterial, DoubleSide } from "builtin/three";
 import { positionGeometry, float, vec2, vec3, smoothstep, step, mix, atan2 as atan2raw } from "builtin/tsl";
 import { tripClock, visionShown, visionU, stripes, inv, is, sgn, ioU, NEON } from "./lib/trip.js";
@@ -23,7 +24,7 @@ export function material(ctx) {
   const grow = io(0.5 + wl * 0.06, 0.78, 0.9 - wl * 0.02, 0.95 - wl * 0.02);
   const exists = n === 4 ? step(0.35, rn(17)) : float(1);
   const tip = inv(smoothstep(grow.sub(0.07), grow, uu));
-  const rad = inv(uu).max(1e-4).sqrt().mul(r0).mul(tip.clamp(0, 1).max(1e-4).sqrt()).mul(live).mul(exists).mul(step(0.002, grow));
+  const rad = inv(uu).max(1e-4).sqrt().mul(r0).mul(tip.clamp(0, 1).max(1e-4).sqrt()).mul(live).mul(exists).mul(step(0.002, grow)).mul(c.bass.mul(0.2).add(0.95));
   // the head's path at time tau; ring uu passed there (uu * lag) seconds ago
   const ph = n * 1.9, dir = sgn(rn(17 + n)), tau = c.real.mul(dir).sub(uu.mul(5.5)).add(rn(18).mul(40));
   const wave = uu.mul(13).sub(c.real.mul(3.2)).add(ph).sin().mul(uu.mul(0.8).add(0.2)).mul(1.5);
@@ -36,7 +37,7 @@ export function material(ctx) {
   m.positionNode = spine.add(vec3(ca.mul(rad).mul(0.3), ca.mul(rad), sa.mul(rad).mul(0.6)).add(vec3(sa.mul(rad).mul(0.9), 0, 0)));
 
   const ang = atan2(sa, ca), rf = inv(uu).max(1e-4).sqrt().mul(r0);
-  const s = wl ? spine.x.mul(0.8).add(spine.y.mul(0.6)) : uu.mul(LEN);
+  const s = wl ? spine.x.mul(0.8).add(spine.y.mul(0.6)) : (n === 2 ? uu.mul(LEN).add(c.real.mul(3.4)) : uu.mul(LEN));
   const sk3 = s.mul(0.4).floor().add(64).mod(3);
   const cStr = A.mul(is(sk3, 0)).add(B.mul(is(sk3, 1))).add(H2.mul(0.85).mul(is(sk3, 2))).mul(stripes(s, 0.4, 0.04));
   const row = s.div(2).floor().add(64);
