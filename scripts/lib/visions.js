@@ -48,7 +48,7 @@ export const BEINGS = [
   { id: 'bee-queen', name: 'the bee queen', built: true },
   { id: 'time-keeper', name: 'the time keeper', built: true },
   { id: 'zodiac-wheel', name: 'the zodiac wheel', built: false },
-  { id: 'hummingbird', name: 'the hummingbird', built: false },
+  { id: 'hummingbird', name: 'the hummingbird', built: true },
 ].map((b, k) => ({ ...b, k, centre: { x: 0, y: 320 + k * 100, z: 0 } }))
 
 function rnd(seed, n) { const x = Math.sin((seed + 1) * (n * 7.1234 + 3.1)) * 15731.743; return x - Math.floor(x) }
