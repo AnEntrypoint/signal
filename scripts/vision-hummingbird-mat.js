@@ -124,7 +124,7 @@ export function material(ctx) {
       const ang = T.mul(TAU / per).add(rn(11 + o).mul(TAU)).sin().mul(0.32).mul(sv).add(base).sub(c.kick.mul(0.14).mul(kOn));
       const s = lens(q.sub(vec2(px, py)), ang, L, Wd, 0.8);
       const fill = st(s.d, 0).mul(s.inr).mul(maskDraw(pj, s.t)).mul(on(pj));
-      const vein = st(s.ac.abs(), 0.07).add(st(s.ac.abs().sub(s.t.mul(L).mul(0.35)).sub(s.t.mul(L).fract().mul(0)).abs().max(0), 0).mul(0)).min(1);
+      const vein = st(s.ac.abs(), 0.07);
       const ribs = st(s.t.mul(L).sub(s.ac.abs().mul(0.8)).div(3.2).fract().sub(0.5).abs().mul(3.2), 0.06).mul(st(s.d, -0.4));
       lay(fill, BG.add(B.mul(0.16).mul(st(s.d.abs(), 0.1).add(vein).add(ribs).min(1))));
     });
@@ -178,7 +178,7 @@ export function material(ctx) {
     const sg = segH(vec2(d.x.mul(ca).add(d.y.mul(sa)), d.y.mul(ca).sub(d.x.mul(sa))), vec2(0, 0), vec2(L, 0));
     const td = sg.d.sub(sg.h.mul(sg.h).mul(1.5).add(0.15));
     const drop = st(td, 0).mul(maskDraw(pi, sg.h)).mul(on(pi));
-    const bulb = st(segH(q, vec2(0, 0), vec2(0, 0)).d.mul(0).add(sg.d).add(sg.h.sub(0.85).abs().mul(3)), 0.6);
+    const bulb = st(sg.d.add(sg.h.sub(0.85).abs().mul(3)), 0.6);
     lay(drop, BG.add(mix(A, B, sg.h).mul(band(sg.h.mul(L * 0.6).sub(T.mul(0.5))).mul(0.8))).add(mix(B, W, 0.5).mul(st(td.abs(), 0.1))).add(H.mul(bulb)));
   });
   // body: head and teardrop torso, contour bands; head opens from the eye (iris), torso by a clock sweep round the breast
@@ -211,7 +211,7 @@ export function material(ctx) {
   const pp = pP.mul(1.45).sub(ord).div(0.45).clamp(0, 1);
   const lp = vec2(r.mul(ac.cos()), r.mul(ac.sin()));
   const outer = lens(lp, 0, cl.mul(0.6).add(6.2), 2.0, 0.85);
-  const knot = lens(lp.sub(vec2(1.3, 0)), ac.mul(0).add(0.0), 4.0, 1.25, 1.1);
+  const knot = lens(lp.sub(vec2(1.3, 0)), 0, 4.0, 1.25, 1.1);
   const pmask = maskIris(pp, r.div(7)).mul(on(pp));
   const pFill = st(outer.d, 0).mul(outer.inr).mul(pmask);
   lay(pFill, BG.add(mix(B, W, 0.45).mul(st(outer.d.abs(), 0.12))).add(H2.mul(st(outer.ac.abs(), 0.05)).mul(step(0.25, outer.t)).mul(step(outer.t, 0.8))));
