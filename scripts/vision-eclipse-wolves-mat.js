@@ -1,9 +1,8 @@
 // THE ECLIPSE WOLVES: two mirrored neon wolf heads howling up at a central eclipse; a sun and a moon orbit the black disc and the wolves chase them.
 // Layers (params.layer): world z-30 striped snow hills, op-art pines, aurora bead ribbons (scroll) / ring z-12 orbit of phase moons (counter-turns) /
 // being z0 corona, sun, moon, wolves, fur flames (breathes) / veil z+10 the black disc grows and shrinks, black pines sweep / fore z+22 snow beads, spark stars.
-// Pacing: one corona bead alone u0-.04, beads light round the clock .05-.18, sun and moon slide out from behind the disc .17-.29, wolf one draws
-// from the eye out .27-.41, wolf two .40-.54, hills .44, pines .5, phase moons .48, veil disc .55, flame rays .58, aurora .6, black pines .66, snow .7;
-// LIFO exit .86-1, the hills undraw last. Kick (only on a kick run): howl arcs leave each mouth, sun and moon swap colours, eyes and phase moons hollow/fill, the veil disc shrinks.
+// Pacing: one corona bead alone, beads round the clock, sun/moon slide off the disc, wolves eye-outward one then the other, then world, ring,
+// veil, aurora, snow by u .8; LIFO exit .86-1, hills last. Kick only: howl arcs, sun/moon swap, eyes and moons hollow/fill, veil disc shrinks.
 import { MeshBasicNodeMaterial, AdditiveBlending, DoubleSide } from "builtin/three";
 import { positionGeometry, float, vec2, vec3, smoothstep as ss, step, mix, atan2 as atan2raw, fwidth } from "builtin/tsl";
 import { tripClock, visionShown, visionU, climb, maskDraw, maskBeads, maskIris, maskClock, inv, is, sgn, segH, strokeAA, ioU, NEON } from "./lib/trip.js";
