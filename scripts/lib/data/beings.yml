@@ -1698,7 +1698,7 @@ eclipse-wolves:
 - g: world-turtle
   m: eclipse-wolves
   mp: {layer: being}
-  p: {h: 50, w: 70}
+  p: {h: 80, w: 112}
   s: ''
   z: 0
 - g: world-turtle

@@ -156,7 +156,7 @@ export function material(ctx) {
   }
 
   // ------------------------------------------------------------------ THE BEING (breathes)
-  const p = P.div(T.mul(TAU / 7).sin().mul(0.013).add(1));
+  const p = P.div(T.mul(TAU / 7).sin().mul(0.013).add(1).mul(1.6));
   const aa = fwidth(p.x).mul(1.2).max(0.008), st = strokeAA(aa);
   const e = p.sub(vec2(0, 7)), er = e.length(), ea = atan2(e.x, e.y), R = 5;
   const outside = step(R, er);
