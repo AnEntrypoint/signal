@@ -143,7 +143,7 @@ export function material(ctx) {
   const top = step(yc.add(lift), pw.y), gap = step(yc, pw.y).mul(inv(top));
   const q = vec2(pw.x, pw.y.sub(lift.mul(top)));
   const h = q.y.div(EB), wx = q.x.div(inv(h.mul(0.22)).mul(EA)), d = vec2(wx, h).length();
-  const whole = inW.mul(inv(gap)).mul(maskIris(inv(ssRaw(st.add(0.015), st.add(0.075), u)), d.mul(0.9)));
+  const whole = inW.mul(inv(gap)).mul(maskIris(inv(ssRaw(st.add(0.01), st.add(0.05), u)), d.mul(0.9)));
   const front = c.beat.fract().mul(1.6);
   const kl = inv(ssRaw(0, 0.12, d.sub(front).abs())).mul(kickOn).mul(inv(ssRaw(0.8, 1.6, front)));
 
