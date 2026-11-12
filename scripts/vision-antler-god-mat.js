@@ -69,7 +69,7 @@ export function material(ctx) {
     // darkness rises with the wood as a jagged treeline, so the frame is the forest's, edge to edge
     const tree = P.x.div(7).fract().sub(0.5).abs().mul(12).add(P.x.div(2.3).fract().sub(0.5).abs().mul(3));
     cover = cover.max(step(P.y.add(tree), grow.mul(160).sub(52)).mul(on(grow)));
-    return cutout(col.mul(cul.mul(0.35).add(0.75)), cover);
+    return cutout(col.mul(cul.mul(0.3).add(0.42)), cover);
   }
 
   // ------------------------------------------------------------------ RING: the wreath (turns; its dots turn the other way)
