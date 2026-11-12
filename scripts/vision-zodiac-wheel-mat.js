@@ -1,11 +1,6 @@
-// THE ZODIAC WHEEL: twelve houses of invented neon glyphs round a calm mirrored sun-face, beaded spokes between,
-// seven planets on their own orbits inside, thirty-six decan dots outside. Layers (params.layer): world z-30 star map
-// turning about a pole with dotted ecliptic rings / ring z-12 decan wheel (counter-turns) / being z0 face, rays, spokes,
-// houses, planets (breathes) / veil z+10 a black clock hand one house wide + planet shadows / fore z+22 flame comets.
-// Pacing: third-eye seed alone u0-.11, face draws .11-.19, eyes open .16, ray beads .2, spokes one by one .25, rims by clock .3,
-// houses round the clock with a nib .36-.58, stars light out from the pole .44, hand .5, planets .56, lines .6, rings .66,
-// comets .68, decans .72-.8; LIFO exit .8-.975, the sky last. Kick: the house under the hand takes a new glyph and colour,
-// ray beads swap hollow/filled, decans and spoke beads step colour, the hand drops its fill on each bar's last beat.
+// THE ZODIAC WHEEL: twelve houses of invented glyphs round a calm mirrored sun-face, beaded spokes, seven planets, 36 decans.
+// world z-30 star map turning about a pole / ring z-12 decan wheel (counter-turns) / being z0 (breathes) / veil z+10 black hand + planet shadows / fore z+22 comets.
+// Seed: the third eye alone; face, eyes, rays, spokes, rims, houses (nib), stars, hand, planets, lines, rings, comets, decans by u .8; LIFO exit, sky last.
 import { MeshBasicNodeMaterial, DoubleSide } from "builtin/three";
 import { positionGeometry, float, vec2, vec3, smoothstep as ss, step, mix, atan2 as atan2raw, fwidth } from "builtin/tsl";
 import { tripClock, visionShown, visionU, climb, maskDraw, maskBeads, maskIris, maskClock, maskLid, nib, inv, is, sgn, segH, strokeAA, ioU, NEON } from "./lib/trip.js";
@@ -33,7 +28,6 @@ export function material(ctx) {
   const kOn = step(0.001, c.kick), cl = climb(c);
   const cul = io(0.66, 0.8, 0.86, 0.93).mul(cl.mul(0.5).add(0.5));
   const on = (p) => step(0.004, p);
-  // the wheel's frame: it turns slowly; houses counted from a seeded start, round the clock either way
   const wsn = sense(3), start = pk(4, 12), dir = sense(5);
   const rot = T.mul(TAU / 150).mul(wsn);
   const rel = (k) => fmod(k.sub(start).mul(dir), 12);
@@ -74,7 +68,7 @@ export function material(ctx) {
     if (!low) {
       const seg = (ca, cb, keep, hk) => {
         const s = segH(pr, star(ca), star(cb)), pj = pL.mul(1.6).sub(hk.mul(0.6)).clamp(0, 1);
-        return st(s.d, 0.07).mul(step(hash(sid(ca), keep), 0.42)).mul(maskDraw(pj, s.h)).mul(on(pj)).mul(step(1.3, s.d.max(0)).max(0).add(1).min(1));
+        return st(s.d, 0.07).mul(step(hash(sid(ca), keep), 0.42)).mul(maskDraw(pj, s.h)).mul(on(pj));
       };
       const X1 = vec2(1, 0), Y1 = vec2(0, 1);
       const ln = seg(cell, cell.add(X1), 3, hash(sid(cell), 6)).max(seg(cell.sub(X1), cell, 3, hash(sid(cell.sub(X1)), 6)))
