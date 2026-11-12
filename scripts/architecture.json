@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "basedOnSpecVersion": 704,
-  "updatedAt": "2026-11-12T13:42:23.164Z",
+  "basedOnSpecVersion": 707,
+  "updatedAt": "2026-11-12T15:02:31.970Z",
   "summary": "Signal Stage is a walkable 3D motion-graphics stage whose multiplayer roll launches a synchronized, seeded music trip. A shared director maps selected audio onto the canonical show clock, drives shaders and camera, and deals vision beings into the view only for their slots.",
   "scriptPaths": [],
   "places": [
@@ -16,7 +16,7 @@
     "world.config.yaml - multiplayer services, player/camera templates, movement and cine/ownSong actions, own-track buyable, arrival, lighting, HUD and nametag.",
     "templates/player.js#player composes humanoid-locomotion.js with scripts/player.js; templates/camera.js#camera runs scripts/camera.js.",
     "places/main/cells/x0z0.scene#director - scripts/stage.js synchronizes track/audio and distributes roll/deal parameters.",
-    "scripts/ui.js - viewer-local ROLL/CUT and cinematic status HUD, track name/BPM, and own-song selection/upload UI.",
+    "scripts/ui.js - viewer-local ROLL/CUT and cinematic status HUD, track name/BPM, own-song selection/upload UI; cinema bars avoid mobile controls/chrome and hide on small screens.",
     "places/main/config.yaml atmosphere.look installs scripts/look-trip.js as full-screen post-processing.",
     "scripts/buyables/own-track.js - purchase callback turns the buyer's uploaded and measured song into the room's next synchronized roll."
   ],
@@ -69,7 +69,7 @@
     "scripts/tunnel-* - wall, core, dust, gates, ribs and knot share geometry kinds and tunnel-lib.js spatial/color helpers; materials vary motif and seeded palette; wall holds at scene seams.",
     "scripts/chamber-* - room, circuit, hands, hex, Lissajous, solids and bilateral mask share chamber shader helpers and scored cutouts; room uses a seam hold.",
     "scripts/sun-disc.js, sun-drips.js and sun-halo.js - sun-eye layers share sun-lib.js but vary disc, hanging-drip and depth-halo imagery; disc uses a seam hold.",
-    "scripts/vision-*-geo.js / -mat.js - all 36 registered beings are built and dealable; newly enabled jaguar-shaman, zodiac-wheel and hummingbird join the previously enabled beings.",
+    "scripts/vision-*-geo.js / -mat.js - all 36 registered beings are built and dealable; jaguar-shaman, zodiac-wheel and hummingbird join the enabled roster.",
     "Vision worm geo/material pairs plus scripts/companion-worm-geo.js - unit-tube geometry bent by shader paths; per-being materials vary appearance, geo resolution scales by ctx.lod."
   ],
   "probableOrphans": [],
@@ -79,6 +79,6 @@
     "Paid own-track metadata is carried in shared c.track from the buyer's body state; anchors map start, drop/vision windows and end onto canonical time, while BPM, firstBeat and bars remain source-track values.",
     "Non-fromage and paid tracks map piecewise through selected anchors onto canonical anchors; shader params ta1..ta4 and tdur must match tracks.js, with fb/bps retaining track beat. Convert kick runs to canonical seconds before stage propagation.",
     "score.yml remains the canonical show/deck and vision-slot timeline regardless of selected audio duration or BPM; idle materials receive IDENTITY params. All 36 registry entries are now built:true and dealVisions filters by built.",
-    "Hummingbird's being.yml row sets h82/w114; its material divides its bird coordinates by 1.6, so changes to either size affect the apparent scale."
+    "scripts/lib/data/beings.yml gives eclipse-wolves base-layer p.h/p.w=80/112; scripts/vision-eclipse-wolves-mat.js also multiplies its being-space scale by 1.6. These edits together enlarge its presentation; check both when changing its apparent size."
   ]
 }
