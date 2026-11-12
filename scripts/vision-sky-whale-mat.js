@@ -156,17 +156,17 @@ export function material(ctx) {
   const pF = mix(fB, fA, ord), pP = mix(fA, fB, ord).mul(1.4).sub(0.4).clamp(0, 1);
   const fr = TL - 2, R0 = vec2(fr, spY(float(fr)));
   const tilt = spY(float(fr)).sub(spY(float(fr + 4))).mul(0.2);
-  const spread = mix(0.06, 0.62, pF);
+  const spread = mix(float(0.06), float(0.62), pF);
   [-1, 1].forEach((s) => {
     const a = tilt.add(PI).add(spread.mul(s));
-    const sg = segH(p, R0, R0.add(vec2(a.cos(), a.sin()).mul(mix(4, 12, pF))));
-    const dl = sg.d.sub(mix(2.3, 0.45, sg.h.mul(sg.h)));
+    const sg = segH(p, R0, R0.add(vec2(a.cos(), a.sin()).mul(mix(float(4), float(12), pF))));
+    const dl = sg.d.sub(mix(float(2.3), float(0.45), sg.h.mul(sg.h)));
     lay(st(dl, 0).mul(on(pF)), BG.add(B.mul(band(sg.h.mul(6).sub(T.mul(0.3)))).mul(0.8)).add(mix(B, W, 0.5).mul(st(dl.abs(), 0.14))));
   });
   const tF = (10 - TL) / BL, F0 = vec2(10, spY(float(10)).sub(hbJ(tF) * 0.72));
-  const fa = mix(PI + 0.25, PI + 1.05, pF).add(T.mul(0.9).sin().mul(0.08));
+  const fa = mix(float(PI + 0.25), float(PI + 1.05), pF).add(T.mul(0.9).sin().mul(0.08));
   const fs = segH(p, F0, F0.add(vec2(fa.cos(), fa.sin()).mul(pF.mul(5.7).add(3.8))));
-  const fd = fs.d.sub(mix(1.5, 0.35, fs.h));
+  const fd = fs.d.sub(mix(float(1.5), float(0.35), fs.h));
   const fbead = st(vec2(fs.h.mul(9).fract().sub(0.5).mul(1.1), fs.d).length(), 0.28);
   lay(st(fd, 0).mul(on(pF)), BG.add(A.mul(band(fs.h.mul(7)))).add(mix(B, W, 0.5).mul(st(fd.abs(), 0.13))).add(H.mul(fbead)));
 
