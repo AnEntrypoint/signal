@@ -1,8 +1,6 @@
 // THE ECLIPSE WOLVES: two mirrored neon wolf heads howling up at a central eclipse; a sun and a moon orbit the black disc and the wolves chase them.
 // Layers (params.layer): world z-30 striped snow hills, op-art pines, aurora bead ribbons (scroll) / ring z-12 orbit of phase moons (counter-turns) /
 // being z0 corona, sun, moon, wolves, fur flames (breathes) / veil z+10 the black disc grows and shrinks, black pines sweep / fore z+22 snow beads, spark stars.
-// Pacing: one corona bead alone, beads round the clock, sun/moon slide off the disc, wolves eye-outward one then the other, then world, ring,
-// veil, aurora, snow by u .8; LIFO exit .86-1, hills last. Kick only: howl arcs, sun/moon swap, eyes and moons hollow/fill, veil disc shrinks.
 import { MeshBasicNodeMaterial, AdditiveBlending, DoubleSide } from "builtin/three";
 import { positionGeometry, float, vec2, vec3, smoothstep as ss, step, mix, atan2 as atan2raw, fwidth } from "builtin/tsl";
 import { tripClock, visionShown, visionU, climb, maskDraw, maskBeads, maskIris, maskClock, inv, is, sgn, segH, strokeAA, ioU, NEON } from "./lib/trip.js";
@@ -15,8 +13,8 @@ const band = (x) => { const e = fwidth(x).mul(0.7).min(0.25); return ss(float(0.
 const tear = (q, r, h) => q.y.lessThan(0).select(q.length().sub(r), q.x.abs().sub(inv(q.y.div(h).clamp(0, 1)).mul(r)).max(q.y.sub(h)));
 // half wolf in its own frame (s across, + = crown; a along, + = toward the snout): [s0, a0, s1, a1, draw order]
 const WOLF = [
-  [3.2, 1, 2.2, 5, 1], [2.2, 5, 1.4, 11.5, 1], [1.4, 11.5, -0.6, 4.5, 2], [-0.6, 4.5, -3.0, 10, 2], [-3.0, 10, -4.2, 3, 3],
-  [3.2, 1, 3.6, -0.5, 4], [3.6, -0.5, 8.8, -2.5, 4], [8.8, -2.5, 3.8, -4.5, 5], [3.8, -4.5, 2.6, -7.5, 6], [-4.2, 3, -5.4, -8, 6],
+  [3.2, 1, 2.4, 6, 1], [2.4, 6, 0.9, 11.5, 1], [0.9, 11.5, -0.7, 5, 2], [-0.7, 5, -2.6, 9.2, 2], [-2.6, 9.2, -4.2, 3, 3],
+  [3.2, 1, 4.2, -0.8, 4], [4.2, -0.8, 8.2, -1.2, 4], [8.2, -1.2, 4.6, -4.2, 5], [4.6, -4.2, 2.6, -7.5, 6], [-4.2, 3, -5.4, -8, 6],
   [2.6, -7.5, 3.6, -18, 7], [-5.4, -8, -6.2, -18, 7],
 ];
 
@@ -185,7 +183,7 @@ export function material(ctx) {
     const pS = g.sub(o).clamp(0, 1);
     const sg = segH(L, vec2(s0, a0), vec2(s1, a1));
     const vis = maskDraw(pS, sg.h).mul(on(pS));
-    const line = st(sg.d, 0.26).mul(vis), inner = st(sg.d.sub(0.75).abs(), 0.08).mul(vis);
+    const line = st(sg.d, 0.17).mul(vis), inner = st(sg.d.sub(0.6).abs(), 0.07).mul(vis);
     const nibD = inv(ss(0, 0.12, sg.h.sub(pS).abs())).mul(st(sg.d, 0.55)).mul(step(pS, 0.99)).mul(on(pS));
     lay(inner.max(line), mix(H, mix(A, W, 0.3).mul(band(sg.h.mul(4).sub(fl)).mul(0.5).add(0.6)), line).mul(cul.mul(0.4).add(0.85)));
     lay(nibD, W);
