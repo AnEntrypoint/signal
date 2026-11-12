@@ -45,7 +45,7 @@ export const BEINGS = [
   { id: 'scarab', name: 'the scarab', built: true },
   { id: 'sky-whale', name: 'the sky whale', built: true },
   { id: 'eclipse-wolves', name: 'the eclipse wolves', built: true },
-  { id: 'bee-queen', name: 'the bee queen', built: false },
+  { id: 'bee-queen', name: 'the bee queen', built: true },
   { id: 'time-keeper', name: 'the time keeper', built: false },
   { id: 'zodiac-wheel', name: 'the zodiac wheel', built: false },
   { id: 'hummingbird', name: 'the hummingbird', built: false },
