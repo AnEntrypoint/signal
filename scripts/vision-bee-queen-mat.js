@@ -51,7 +51,7 @@ export function material(ctx) {
     const Zc = hc.id.y.mul(s).sub(T.mul(spd).mul(sg)), vc = float(260).div(Zc.abs().max(2.9));
     const hk = h2(hc.id.add(vec2(step(0, P.y).mul(31), 0)), 3);
     const ord = vc.div(90).clamp(0, 1).mul(0.75).add(hk.mul(0.25));
-    const cell = maskBeads(pC.mul(cl.mul(0.1).add(1)), ord).mul(on(pC)).mul(ss(4, 16, P.y.abs()));
+    const cell = maskBeads(pC.mul(cl.mul(0.1).add(1)), ord).mul(on(pC)).mul(ss(6, 18, P.y.abs())).mul(inv(ss(0.04, 0.12, fw)));
     const front = inv(c.beat.fract()).mul(60).add(3);
     const kr = inv(ss(0, 5, Zc.abs().sub(front).abs())).mul(kOn);
     const honey = step(0.9, hk).mul(inv(ss(float(0.2), fw.add(0.2), float(0.62).sub(dE))));
