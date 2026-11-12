@@ -2,9 +2,7 @@
 // Layers (params.layer): world z-30 hanging garden of beaded vines (drift outward, striped back row drifts inward) /
 // ring z-12 wreath of small flowers opening in a wave (turns; bead rows counter-turn) / being z0 the birds and the bloom (breathes) /
 // veil z+10 black leaves and broad petals sweeping across / fore z+22 pollen, tiny squares, loose petals drifting out of the bloom.
-// Pacing: stamen bead alone u0-.11, petals open one by one (iris) .11-.27, beaks draw in with a nib .24-.32, eye-iris + head .32-.39,
-// body clock-sweep .37-.46, gorget beads light from the beak .43-.52, wing blades fan in .49-.62, tail teardrops .58-.66,
-// wreath clock .4-.56, garden hangs down .36-.6, veil leaves unfurl .6-.74, pollen bursts .66-.78; LIFO exit .8-1, garden last.
+// Pacing: stamen alone, petals (iris), beaks (nib), eye, body (clock), gorget beads, wing fan, tail, wreath, garden, veil, pollen; LIFO exit, garden last.
 // Kick only where the track has one: wing fan steps, gorget colour chase, wreath hollow/filled, veil lifts, vine light, stamen swap.
 import { MeshBasicNodeMaterial, DoubleSide } from "builtin/three";
 import { positionGeometry, float, vec2, vec3, smoothstep as ss, step, mix, atan2 as atan2raw, fwidth } from "builtin/tsl";
