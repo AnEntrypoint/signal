@@ -14,7 +14,7 @@ const atan2 = (y, x) => atan2raw(y, x.add(1e-5));
 const hash = (k) => float(k).mul(12.9898).sin().mul(43758.5453).fract();
 const on = (p) => step(0.002, p);                                    // a mask at p = 0 shows nothing, not its zero line
 // antialiased half-duty stripes of x (1 near the integers), edge width from the screen derivative
-const band = (x, d = 0.5) => { const fw = fwidth(x).min(0.5); return ss(float(d).sub(fw), float(d).add(fw), x.fract().sub(0.5).abs().mul(2)); };
+const band = (x, d = 0.5) => { const fw = fwidth(x).clamp(1e-4, 0.5); return ss(float(d).sub(fw), float(d).add(fw), x.fract().sub(0.5).abs().mul(2)); };
 // [th0, th1, Rmax, skew, eye x, eye y, eye r]: fore wing, hind wing (angles from straight up, radians)
 const WINGS = [[0.55, 2.0, 31, 1, 14.6, 9, 4.4], [1.75, 2.95, 20, 0, 8.2, -5.6, 3.3]];
 
@@ -132,7 +132,7 @@ export function material(ctx) {
     const g = vec2(P.x.add(t.mul(0.5).mul(dir)), P.y.add(t.mul(0.2))).div(19), id = g.floor(), h = hash(id.x.add(id.y.mul(5.7)));
     const pS = io(0.72, 0.8, 0.8, 0.83), size = t.mul(0.6).add(h.mul(TAU)).sin().abs().mul(h.mul(1.5).add(1)).add(0.01);
     const sq = g.fract().sub(0.5).sub(vec2(h.sub(0.5), hash(h.mul(31)).sub(0.5)).mul(0.5)).mul(19).abs().div(size).add(1e-4);
-    const sd = sq.x.sqrt().add(sq.y.sqrt()), star = inv(ss(inv(fwidth(sd).min(0.5)), float(1), sd)).mul(step(0.55, h)).mul(maskBeads(pS, h.sub(0.55).div(0.45))).mul(on(pS));
+    const sd = sq.x.sqrt().add(sq.y.sqrt()), star = inv(ss(inv(fwidth(sd).clamp(1e-4, 0.5)), float(1), sd)).mul(step(0.55, h)).mul(maskBeads(pS, h.sub(0.55).div(0.45))).mul(on(pS));
     col = mix(col, mix(W, H2, step(0.8, h).mul(0.6)), star);
     return cutout(col, cover.max(step(0.5, star)));
   }
