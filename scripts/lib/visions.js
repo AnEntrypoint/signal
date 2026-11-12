@@ -27,6 +27,15 @@ export const BEINGS = [
   { id: 'weaver',         name: 'the weaver', built: true },
   { id: 'owl-mask',       name: 'the night owl', built: true },
   { id: 'world-turtle',   name: 'the world turtle', built: true },
+  // 11-12 lock-in: eight more. built flips true once each one's scene stands and has been watched
+  { id: 'flower-of-life', name: 'the flower of life', built: false },
+  { id: 'phoenix',        name: 'the phoenix', built: false },
+  { id: 'cosmic-egg',     name: 'the cosmic egg', built: false },
+  { id: 'eye-pyramid',    name: 'the eye pyramid', built: false },
+  { id: 'chakra-sage',    name: 'the chakra sage', built: false },
+  { id: 'mushroom-elders',name: 'the mushroom elders', built: false },
+  { id: 'psyche-moth',    name: 'the psyche moth', built: false },
+  { id: 'antler-god',     name: 'the antler god', built: false },
 ].map((b, k) => ({ ...b, k, centre: { x: 0, y: 320 + k * 100, z: 0 } }))
 
 function rnd(seed, n) { const x = Math.sin((seed + 1) * (n * 7.1234 + 3.1)) * 15731.743; return x - Math.floor(x) }
