@@ -37,7 +37,7 @@ export const BEINGS = [
   { id: 'psyche-moth',    name: 'the psyche moth', built: true },
   { id: 'antler-god',     name: 'the antler god', built: true },
   // 11-12 second wave: twelve more. built flips true once each one's scene stands and has been watched
-  { id: 'sri-yantra', name: 'the sri yantra', built: false },
+  { id: 'sri-yantra', name: 'the sri yantra', built: true },
   { id: 'merkaba', name: 'the star chariot', built: false },
   { id: 'jaguar-shaman', name: 'the jaguar shaman', built: false },
   { id: 'peacock', name: 'the peacock of a hundred eyes', built: false },
