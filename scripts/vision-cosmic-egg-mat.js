@@ -132,7 +132,9 @@ export function material(ctx) {
   const NW = pk(8, 3).add(6), w0 = rn(9).mul(TAU);
   const wk = atan2(e.x, e.y).add(PI).add(w0).div(TAU).mul(NW).floor();
   const wc = wk.add(0.5).mul(TAU).div(NW).sub(PI).sub(w0), dir = vec2(wc.sin(), wc.cos());
-  const st = hs(wk.mod(NW).add(rn(10).mul(7))).mul(0.06).add(0.9), dk = ssRaw(st, st.add(0.07), u);
+  // one by one round the egg (seeded start and turn), each fragment its own beat of the exit: .87 to .94, gone by .99
+  const rank = wk.mul(sense(10)).add(rn(10).mul(NW).floor()).add(NW.mul(4)).mod(NW);
+  const st = rank.div(NW).mul(0.07).add(0.87), dk = ssRaw(st, st.add(0.05), u);
   const pw = e.sub(dir.mul(dk.mul(dk).mul(46)));
   const inW = step(pw.x.mul(dir.y).sub(pw.y.mul(dir.x)).abs(), pw.dot(dir).mul(float(PI).div(NW).tan()));
   // LATE: the crack. Above it the cap is one rigid piece that lifts; the gap between shows what is inside
