@@ -99,8 +99,8 @@ export function material(ctx) {
       col = mix(col, BG.add(mix(A, B, h).mul(rim).mul(0.9)), in_); cover = cover.max(mix(rim, in_, solid));
     }
     // the turf: a black mound rising with the grass, its lit crest line; it swallows the elders' feet and the lower mycelium
-    const crest = mix(float(-44), P.x.mul(0.21).add(c.real.mul(0.2).mul(sw)).sin().mul(1.4).add(P.x.mul(0.07).sin().mul(1.6)).sub(19.5), pG.mul(1.3).clamp(0, 1));
-    const turf = step(P.y, crest), cr = sk(P.y.sub(crest).abs(), 0.1).mul(step(0.05, pG));
+    const crest = mix(float(-90), P.x.mul(0.21).add(c.real.mul(0.2).mul(sw)).sin().mul(1.4).add(P.x.mul(0.07).sin().mul(1.6)).sub(19.5), pG.mul(1.3).clamp(0, 1));
+    const turf = step(P.y, crest).mul(step(0.02, pG)), cr = sk(P.y.sub(crest).abs(), 0.1).mul(step(0.05, pG));
     col = mix(col, BG, turf).add(mix(A, B, 0.5).mul(cr).mul(0.8)); cover = cover.max(turf).max(cr);
     // fern curls: the stalk rises, then the fiddlehead unrolls from the outside in
     const ax = P.x.abs(), sd = step(0, P.x).mul(2).sub(1), pF = io(0.64, 0.78, 0.82, 0.87);
