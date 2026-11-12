@@ -62,10 +62,12 @@ export function material(ctx) {
     const nR = pk(5, 3).add(3), g = dm.negate().div(G).add(1.2), k = g.floor(), fr = g.fract().sub(0.5).mul(G);
     const rowR = float(R).sub(k.sub(0.7).mul(G)), run = t.mul(1.1).mul(k.mod(2).mul(2).sub(1)).mul(sense(4));
     const tt = th.mul(rowR).mul(sx).add(run).div(G), kb = tt.floor();
-    const bd = vec2(tt.fract().sub(0.5).mul(G), fr).length();
     const pR = io(0.3, 0.46, 0.88, 0.93);
     // the iris: inner row first, each row opening from the waist to the tips
     const thc = kb.add(0.5).mul(G).sub(run).div(rowR).abs().div(1.2);
+    // a bead nearing the vesica's seam sinks into it (shrinks to its centre), never a half bead cut on the axis
+    const sink = ss(G * 0.15, G * 0.85, rowR.mul(thc.mul(1.2).cos()).sub(CX)).max(0.02);
+    const bd = vec2(tt.fract().sub(0.5).mul(G), fr).length().div(sink);
     const ord = nR.sub(1).sub(k).add(thc).div(nR);
     const open = maskBeads(pR.mul(1.05), ord).mul(step(-0.5, k)).mul(step(k, nR.sub(0.5))).mul(step(0.001, pR));
     const swap = mix(float(1), is(k.mod(2), c.beat.floor().mod(2)).mul(1.1).add(0.3), kickOn);   // kick: the rows trade light
