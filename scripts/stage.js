@@ -33,7 +33,7 @@ function push(ctx, t0, on, seed, k, vs, t = cineTime(ctx)) {
   const deal = dealDeck(on ? seed : 0)
   const tr = trackOf(ctx.world.state.cine)
   // a bench-held being keeps its own clock: the roll's push used to fight holdTest's, a frame of black each time
-  const held = ctx.world.state.visionTest?.being, isHeld = (o) => held && o.tags?.includes('vision-' + held)
+  const held = holds(ctx), isHeld = (o) => o.tags?.some((g) => g.startsWith('vision-') && held[g.slice(7)])
   for (const o of ctx.query({ tags: ['trip'] })) {
     if (isHeld(o)) continue
     const h = ctx.getObject(o.id)
@@ -42,9 +42,9 @@ function push(ctx, t0, on, seed, k, vs, t = cineTime(ctx)) {
   // each vision being learns its slot this roll: params.vw0 / vw1 seconds, -1 when not dealt
   const dealt = {}
   for (const v of dealVisions(on ? seed : 0)) dealt[v.being.id] = v.slot
-  for (const b of BEINGS) { if (dealt[b.id] || ctx.world.state.visionTest?.being === b.id) ensure(ctx, b); else strike(ctx, b) }
+  for (const b of BEINGS) { if (dealt[b.id] || held[b.id]) ensure(ctx, b); else strike(ctx, b) }
   for (const b of BEINGS) {
-    if (b.id === held) continue
+    if (held[b.id]) continue
     const w = dealt[b.id] ?? [-1, -1]
     for (const o of ctx.query({ tags: ['vision-' + b.id] })) {
       const h = ctx.getObject(o.id)
@@ -65,12 +65,13 @@ function homeZ(id) { return id.endsWith('-world') ? -30 : id.endsWith('-ring') ?
 function stageBeing(ctx, vs, seed, t) {
   // only from 3 s before its slot: earlier, the next being hung cropped over black ~30 s ahead (review, seed 23)
   const cur = seed && t != null && t >= vs[0] - 3 ? dealVisions(seed).find((v) => v.slot[0] === vs[0]) : null
+  const hd = holds(ctx)
   for (const b of BEINGS) {
     const here = cur && cur.being.id === b.id
     for (const o of ctx.query({ tags: ['vision-' + b.id] })) {
       const h = ctx.getObject(o.id); if (!h) continue
       const z = homeZ(o.id)
-      if (ctx.world.state.visionTest?.being === b.id) continue
+      if (hd[b.id]) continue
       if (here) { const f = ctx.self.session.fit ?? 1; h.feetPosition = { attach: 'camera', x: 0, y: 0, depth: (DEPTH - z) * f }; h.scale = f }
       else if (h.feetPosition?.attach || h.visible !== false) { h.feetPosition = { x: 0, y: b.centre.y, z }; h.scale = 1 }
       h.visible = !!here
@@ -79,6 +80,13 @@ function stageBeing(ctx, vs, seed, t) {
 }
 // TEST HOLD (savi's bench): world.state.visionTest = { being, at, seed } stands that being whole at its home,
 // its 24 s slot starting at ctx.now() == at, so a camera at centre + (0, 0, 64) watches it build. The roll is untouched.
+// every hold now standing: { [being]: { at, seed } }. world.state.visionTests[being] = { at, seed } holds many at once
+// (one per helper); the old single world.state.visionTest = { being, at, seed } still works.
+function holds(ctx) {
+  const m = { ...(ctx.world.state.visionTests ?? {}) }, vt = ctx.world.state.visionTest
+  if (vt?.being) m[vt.being] = vt
+  return m
+}
 function holdTest(ctx, vt) {
   const b = BEINGS.find((x) => x.id === vt.being); if (!b) return
   ensure(ctx, b)
@@ -95,6 +103,8 @@ function holdTest(ctx, vt) {
 export function update(ctx, dt) {
   const vt = ctx.world.state.visionTest
   if (vt) { holdTest(ctx, vt); if (ctx.now() - vt.at > 30000) ctx.world.state.visionTest = null }
+  const vts = ctx.world.state.visionTests
+  if (vts) for (const id in vts) { const h = vts[id]; if (!h) continue; holdTest(ctx, { ...h, being: id }); if (ctx.now() - h.at > 30000) { const n = { ...vts }; delete n[id]; ctx.world.state.visionTests = n } }
   const t = cineTime(ctx)
   const c = ctx.world.state.cine
   const k = kickRun(t, c)

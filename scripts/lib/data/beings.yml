@@ -1309,3 +1309,663 @@ antler-god:
   p: {}
   s: -worm-4
   z: 0
+sri-yantra:
+- g: world-turtle
+  m: sri-yantra
+  mp: {layer: being}
+  p: {h: 50, w: 70}
+  s: ''
+  z: 0
+- g: world-turtle
+  m: sri-yantra
+  mp: {layer: fore}
+  p: {h: 85, w: 150}
+  s: '-fore'
+  z: 22
+- g: world-turtle
+  m: sri-yantra
+  mp: {layer: ring}
+  p: {h: 80, w: 80}
+  s: '-ring'
+  z: -12
+- g: world-turtle
+  m: sri-yantra
+  mp: {layer: veil}
+  p: {h: 84, w: 120}
+  s: '-veil'
+  z: 10
+- g: world-turtle
+  m: sri-yantra
+  mp: {layer: world}
+  p: {h: 180, w: 320}
+  s: '-world'
+  z: -30
+- g: world-turtle-worm
+  m: sri-yantra-worm
+  mp: {n: 1}
+  p: {}
+  s: -worm-1
+  z: 0
+- g: world-turtle-worm
+  m: sri-yantra-worm
+  mp: {n: 2}
+  p: {}
+  s: -worm-2
+  z: 0
+- g: world-turtle-worm
+  m: sri-yantra-worm
+  mp: {n: 3}
+  p: {}
+  s: -worm-3
+  z: 0
+- g: world-turtle-worm
+  m: sri-yantra-worm
+  mp: {n: 4}
+  p: {}
+  s: -worm-4
+  z: 0
+merkaba:
+- g: world-turtle
+  m: merkaba
+  mp: {layer: being}
+  p: {h: 50, w: 70}
+  s: ''
+  z: 0
+- g: world-turtle
+  m: merkaba
+  mp: {layer: fore}
+  p: {h: 85, w: 150}
+  s: '-fore'
+  z: 22
+- g: world-turtle
+  m: merkaba
+  mp: {layer: ring}
+  p: {h: 80, w: 80}
+  s: '-ring'
+  z: -12
+- g: world-turtle
+  m: merkaba
+  mp: {layer: veil}
+  p: {h: 84, w: 120}
+  s: '-veil'
+  z: 10
+- g: world-turtle
+  m: merkaba
+  mp: {layer: world}
+  p: {h: 180, w: 320}
+  s: '-world'
+  z: -30
+- g: world-turtle-worm
+  m: merkaba-worm
+  mp: {n: 1}
+  p: {}
+  s: -worm-1
+  z: 0
+- g: world-turtle-worm
+  m: merkaba-worm
+  mp: {n: 2}
+  p: {}
+  s: -worm-2
+  z: 0
+- g: world-turtle-worm
+  m: merkaba-worm
+  mp: {n: 3}
+  p: {}
+  s: -worm-3
+  z: 0
+- g: world-turtle-worm
+  m: merkaba-worm
+  mp: {n: 4}
+  p: {}
+  s: -worm-4
+  z: 0
+jaguar-shaman:
+- g: world-turtle
+  m: jaguar-shaman
+  mp: {layer: being}
+  p: {h: 50, w: 70}
+  s: ''
+  z: 0
+- g: world-turtle
+  m: jaguar-shaman
+  mp: {layer: fore}
+  p: {h: 85, w: 150}
+  s: '-fore'
+  z: 22
+- g: world-turtle
+  m: jaguar-shaman
+  mp: {layer: ring}
+  p: {h: 80, w: 80}
+  s: '-ring'
+  z: -12
+- g: world-turtle
+  m: jaguar-shaman
+  mp: {layer: veil}
+  p: {h: 84, w: 120}
+  s: '-veil'
+  z: 10
+- g: world-turtle
+  m: jaguar-shaman
+  mp: {layer: world}
+  p: {h: 180, w: 320}
+  s: '-world'
+  z: -30
+- g: world-turtle-worm
+  m: jaguar-shaman-worm
+  mp: {n: 1}
+  p: {}
+  s: -worm-1
+  z: 0
+- g: world-turtle-worm
+  m: jaguar-shaman-worm
+  mp: {n: 2}
+  p: {}
+  s: -worm-2
+  z: 0
+- g: world-turtle-worm
+  m: jaguar-shaman-worm
+  mp: {n: 3}
+  p: {}
+  s: -worm-3
+  z: 0
+- g: world-turtle-worm
+  m: jaguar-shaman-worm
+  mp: {n: 4}
+  p: {}
+  s: -worm-4
+  z: 0
+peacock:
+- g: world-turtle
+  m: peacock
+  mp: {layer: being}
+  p: {h: 50, w: 70}
+  s: ''
+  z: 0
+- g: world-turtle
+  m: peacock
+  mp: {layer: fore}
+  p: {h: 85, w: 150}
+  s: '-fore'
+  z: 22
+- g: world-turtle
+  m: peacock
+  mp: {layer: ring}
+  p: {h: 80, w: 80}
+  s: '-ring'
+  z: -12
+- g: world-turtle
+  m: peacock
+  mp: {layer: veil}
+  p: {h: 84, w: 120}
+  s: '-veil'
+  z: 10
+- g: world-turtle
+  m: peacock
+  mp: {layer: world}
+  p: {h: 180, w: 320}
+  s: '-world'
+  z: -30
+- g: world-turtle-worm
+  m: peacock-worm
+  mp: {n: 1}
+  p: {}
+  s: -worm-1
+  z: 0
+- g: world-turtle-worm
+  m: peacock-worm
+  mp: {n: 2}
+  p: {}
+  s: -worm-2
+  z: 0
+- g: world-turtle-worm
+  m: peacock-worm
+  mp: {n: 3}
+  p: {}
+  s: -worm-3
+  z: 0
+- g: world-turtle-worm
+  m: peacock-worm
+  mp: {n: 4}
+  p: {}
+  s: -worm-4
+  z: 0
+octopus-oracle:
+- g: world-turtle
+  m: octopus-oracle
+  mp: {layer: being}
+  p: {h: 50, w: 70}
+  s: ''
+  z: 0
+- g: world-turtle
+  m: octopus-oracle
+  mp: {layer: fore}
+  p: {h: 85, w: 150}
+  s: '-fore'
+  z: 22
+- g: world-turtle
+  m: octopus-oracle
+  mp: {layer: ring}
+  p: {h: 80, w: 80}
+  s: '-ring'
+  z: -12
+- g: world-turtle
+  m: octopus-oracle
+  mp: {layer: veil}
+  p: {h: 84, w: 120}
+  s: '-veil'
+  z: 10
+- g: world-turtle
+  m: octopus-oracle
+  mp: {layer: world}
+  p: {h: 180, w: 320}
+  s: '-world'
+  z: -30
+- g: world-turtle-worm
+  m: octopus-oracle-worm
+  mp: {n: 1}
+  p: {}
+  s: -worm-1
+  z: 0
+- g: world-turtle-worm
+  m: octopus-oracle-worm
+  mp: {n: 2}
+  p: {}
+  s: -worm-2
+  z: 0
+- g: world-turtle-worm
+  m: octopus-oracle-worm
+  mp: {n: 3}
+  p: {}
+  s: -worm-3
+  z: 0
+- g: world-turtle-worm
+  m: octopus-oracle-worm
+  mp: {n: 4}
+  p: {}
+  s: -worm-4
+  z: 0
+scarab:
+- g: world-turtle
+  m: scarab
+  mp: {layer: being}
+  p: {h: 50, w: 70}
+  s: ''
+  z: 0
+- g: world-turtle
+  m: scarab
+  mp: {layer: fore}
+  p: {h: 85, w: 150}
+  s: '-fore'
+  z: 22
+- g: world-turtle
+  m: scarab
+  mp: {layer: ring}
+  p: {h: 80, w: 80}
+  s: '-ring'
+  z: -12
+- g: world-turtle
+  m: scarab
+  mp: {layer: veil}
+  p: {h: 84, w: 120}
+  s: '-veil'
+  z: 10
+- g: world-turtle
+  m: scarab
+  mp: {layer: world}
+  p: {h: 180, w: 320}
+  s: '-world'
+  z: -30
+- g: world-turtle-worm
+  m: scarab-worm
+  mp: {n: 1}
+  p: {}
+  s: -worm-1
+  z: 0
+- g: world-turtle-worm
+  m: scarab-worm
+  mp: {n: 2}
+  p: {}
+  s: -worm-2
+  z: 0
+- g: world-turtle-worm
+  m: scarab-worm
+  mp: {n: 3}
+  p: {}
+  s: -worm-3
+  z: 0
+- g: world-turtle-worm
+  m: scarab-worm
+  mp: {n: 4}
+  p: {}
+  s: -worm-4
+  z: 0
+sky-whale:
+- g: world-turtle
+  m: sky-whale
+  mp: {layer: being}
+  p: {h: 50, w: 70}
+  s: ''
+  z: 0
+- g: world-turtle
+  m: sky-whale
+  mp: {layer: fore}
+  p: {h: 85, w: 150}
+  s: '-fore'
+  z: 22
+- g: world-turtle
+  m: sky-whale
+  mp: {layer: ring}
+  p: {h: 80, w: 80}
+  s: '-ring'
+  z: -12
+- g: world-turtle
+  m: sky-whale
+  mp: {layer: veil}
+  p: {h: 84, w: 120}
+  s: '-veil'
+  z: 10
+- g: world-turtle
+  m: sky-whale
+  mp: {layer: world}
+  p: {h: 180, w: 320}
+  s: '-world'
+  z: -30
+- g: world-turtle-worm
+  m: sky-whale-worm
+  mp: {n: 1}
+  p: {}
+  s: -worm-1
+  z: 0
+- g: world-turtle-worm
+  m: sky-whale-worm
+  mp: {n: 2}
+  p: {}
+  s: -worm-2
+  z: 0
+- g: world-turtle-worm
+  m: sky-whale-worm
+  mp: {n: 3}
+  p: {}
+  s: -worm-3
+  z: 0
+- g: world-turtle-worm
+  m: sky-whale-worm
+  mp: {n: 4}
+  p: {}
+  s: -worm-4
+  z: 0
+eclipse-wolves:
+- g: world-turtle
+  m: eclipse-wolves
+  mp: {layer: being}
+  p: {h: 50, w: 70}
+  s: ''
+  z: 0
+- g: world-turtle
+  m: eclipse-wolves
+  mp: {layer: fore}
+  p: {h: 85, w: 150}
+  s: '-fore'
+  z: 22
+- g: world-turtle
+  m: eclipse-wolves
+  mp: {layer: ring}
+  p: {h: 80, w: 80}
+  s: '-ring'
+  z: -12
+- g: world-turtle
+  m: eclipse-wolves
+  mp: {layer: veil}
+  p: {h: 84, w: 120}
+  s: '-veil'
+  z: 10
+- g: world-turtle
+  m: eclipse-wolves
+  mp: {layer: world}
+  p: {h: 180, w: 320}
+  s: '-world'
+  z: -30
+- g: world-turtle-worm
+  m: eclipse-wolves-worm
+  mp: {n: 1}
+  p: {}
+  s: -worm-1
+  z: 0
+- g: world-turtle-worm
+  m: eclipse-wolves-worm
+  mp: {n: 2}
+  p: {}
+  s: -worm-2
+  z: 0
+- g: world-turtle-worm
+  m: eclipse-wolves-worm
+  mp: {n: 3}
+  p: {}
+  s: -worm-3
+  z: 0
+- g: world-turtle-worm
+  m: eclipse-wolves-worm
+  mp: {n: 4}
+  p: {}
+  s: -worm-4
+  z: 0
+bee-queen:
+- g: world-turtle
+  m: bee-queen
+  mp: {layer: being}
+  p: {h: 50, w: 70}
+  s: ''
+  z: 0
+- g: world-turtle
+  m: bee-queen
+  mp: {layer: fore}
+  p: {h: 85, w: 150}
+  s: '-fore'
+  z: 22
+- g: world-turtle
+  m: bee-queen
+  mp: {layer: ring}
+  p: {h: 80, w: 80}
+  s: '-ring'
+  z: -12
+- g: world-turtle
+  m: bee-queen
+  mp: {layer: veil}
+  p: {h: 84, w: 120}
+  s: '-veil'
+  z: 10
+- g: world-turtle
+  m: bee-queen
+  mp: {layer: world}
+  p: {h: 180, w: 320}
+  s: '-world'
+  z: -30
+- g: world-turtle-worm
+  m: bee-queen-worm
+  mp: {n: 1}
+  p: {}
+  s: -worm-1
+  z: 0
+- g: world-turtle-worm
+  m: bee-queen-worm
+  mp: {n: 2}
+  p: {}
+  s: -worm-2
+  z: 0
+- g: world-turtle-worm
+  m: bee-queen-worm
+  mp: {n: 3}
+  p: {}
+  s: -worm-3
+  z: 0
+- g: world-turtle-worm
+  m: bee-queen-worm
+  mp: {n: 4}
+  p: {}
+  s: -worm-4
+  z: 0
+time-keeper:
+- g: world-turtle
+  m: time-keeper
+  mp: {layer: being}
+  p: {h: 50, w: 70}
+  s: ''
+  z: 0
+- g: world-turtle
+  m: time-keeper
+  mp: {layer: fore}
+  p: {h: 85, w: 150}
+  s: '-fore'
+  z: 22
+- g: world-turtle
+  m: time-keeper
+  mp: {layer: ring}
+  p: {h: 80, w: 80}
+  s: '-ring'
+  z: -12
+- g: world-turtle
+  m: time-keeper
+  mp: {layer: veil}
+  p: {h: 84, w: 120}
+  s: '-veil'
+  z: 10
+- g: world-turtle
+  m: time-keeper
+  mp: {layer: world}
+  p: {h: 180, w: 320}
+  s: '-world'
+  z: -30
+- g: world-turtle-worm
+  m: time-keeper-worm
+  mp: {n: 1}
+  p: {}
+  s: -worm-1
+  z: 0
+- g: world-turtle-worm
+  m: time-keeper-worm
+  mp: {n: 2}
+  p: {}
+  s: -worm-2
+  z: 0
+- g: world-turtle-worm
+  m: time-keeper-worm
+  mp: {n: 3}
+  p: {}
+  s: -worm-3
+  z: 0
+- g: world-turtle-worm
+  m: time-keeper-worm
+  mp: {n: 4}
+  p: {}
+  s: -worm-4
+  z: 0
+zodiac-wheel:
+- g: world-turtle
+  m: zodiac-wheel
+  mp: {layer: being}
+  p: {h: 50, w: 70}
+  s: ''
+  z: 0
+- g: world-turtle
+  m: zodiac-wheel
+  mp: {layer: fore}
+  p: {h: 85, w: 150}
+  s: '-fore'
+  z: 22
+- g: world-turtle
+  m: zodiac-wheel
+  mp: {layer: ring}
+  p: {h: 80, w: 80}
+  s: '-ring'
+  z: -12
+- g: world-turtle
+  m: zodiac-wheel
+  mp: {layer: veil}
+  p: {h: 84, w: 120}
+  s: '-veil'
+  z: 10
+- g: world-turtle
+  m: zodiac-wheel
+  mp: {layer: world}
+  p: {h: 180, w: 320}
+  s: '-world'
+  z: -30
+- g: world-turtle-worm
+  m: zodiac-wheel-worm
+  mp: {n: 1}
+  p: {}
+  s: -worm-1
+  z: 0
+- g: world-turtle-worm
+  m: zodiac-wheel-worm
+  mp: {n: 2}
+  p: {}
+  s: -worm-2
+  z: 0
+- g: world-turtle-worm
+  m: zodiac-wheel-worm
+  mp: {n: 3}
+  p: {}
+  s: -worm-3
+  z: 0
+- g: world-turtle-worm
+  m: zodiac-wheel-worm
+  mp: {n: 4}
+  p: {}
+  s: -worm-4
+  z: 0
+hummingbird:
+- g: world-turtle
+  m: hummingbird
+  mp: {layer: being}
+  p: {h: 50, w: 70}
+  s: ''
+  z: 0
+- g: world-turtle
+  m: hummingbird
+  mp: {layer: fore}
+  p: {h: 85, w: 150}
+  s: '-fore'
+  z: 22
+- g: world-turtle
+  m: hummingbird
+  mp: {layer: ring}
+  p: {h: 80, w: 80}
+  s: '-ring'
+  z: -12
+- g: world-turtle
+  m: hummingbird
+  mp: {layer: veil}
+  p: {h: 84, w: 120}
+  s: '-veil'
+  z: 10
+- g: world-turtle
+  m: hummingbird
+  mp: {layer: world}
+  p: {h: 180, w: 320}
+  s: '-world'
+  z: -30
+- g: world-turtle-worm
+  m: hummingbird-worm
+  mp: {n: 1}
+  p: {}
+  s: -worm-1
+  z: 0
+- g: world-turtle-worm
+  m: hummingbird-worm
+  mp: {n: 2}
+  p: {}
+  s: -worm-2
+  z: 0
+- g: world-turtle-worm
+  m: hummingbird-worm
+  mp: {n: 3}
+  p: {}
+  s: -worm-3
+  z: 0
+- g: world-turtle-worm
+  m: hummingbird-worm
+  mp: {n: 4}
+  p: {}
+  s: -worm-4
+  z: 0

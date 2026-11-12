@@ -36,6 +36,19 @@ export const BEINGS = [
   { id: 'mushroom-elders',name: 'the mushroom elders', built: true },
   { id: 'psyche-moth',    name: 'the psyche moth', built: true },
   { id: 'antler-god',     name: 'the antler god', built: true },
+  // 11-12 second wave: twelve more. built flips true once each one's scene stands and has been watched
+  { id: 'sri-yantra', name: 'the sri yantra', built: false },
+  { id: 'merkaba', name: 'the star chariot', built: false },
+  { id: 'jaguar-shaman', name: 'the jaguar shaman', built: false },
+  { id: 'peacock', name: 'the peacock of a hundred eyes', built: false },
+  { id: 'octopus-oracle', name: 'the octopus oracle', built: false },
+  { id: 'scarab', name: 'the scarab', built: false },
+  { id: 'sky-whale', name: 'the sky whale', built: false },
+  { id: 'eclipse-wolves', name: 'the eclipse wolves', built: false },
+  { id: 'bee-queen', name: 'the bee queen', built: false },
+  { id: 'time-keeper', name: 'the time keeper', built: false },
+  { id: 'zodiac-wheel', name: 'the zodiac wheel', built: false },
+  { id: 'hummingbird', name: 'the hummingbird', built: false },
 ].map((b, k) => ({ ...b, k, centre: { x: 0, y: 320 + k * 100, z: 0 } }))
 
 function rnd(seed, n) { const x = Math.sin((seed + 1) * (n * 7.1234 + 3.1)) * 15731.743; return x - Math.floor(x) }
