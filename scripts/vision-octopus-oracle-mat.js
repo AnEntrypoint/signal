@@ -5,11 +5,12 @@
 // bead by bead after each, seabed+kelp .38-.58, bubble wheel .5, plankton, ink .6, fish .68; LIFO exit .8-1, the sea last.
 import { MeshBasicNodeMaterial, AdditiveBlending, DoubleSide } from "builtin/three";
 import { positionGeometry, float, vec2, vec3, smoothstep as ss, step, mix, atan2 as atan2raw, fwidth } from "builtin/tsl";
-import { tripClock, visionShown, visionU, climb, maskDraw, maskBeads, maskIris, maskLid, maskClock, inv, is, sgn, smin, segH, capsule, strokeAA, ioU, NEON } from "./lib/trip.js";
+import { tripClock, visionShown, visionU, climb, maskDraw, maskBeads, maskIris, maskLid, maskClock, inv, is, sgn, segH, capsule, strokeAA, ioU, NEON } from "./lib/trip.js";
 
 const TAU = 6.28318;
 const atan2 = (y, x) => atan2raw(y, x.add(1e-5));
 const hash = (k, o = 0) => k.mul(12.9898 + o).add(o * 3.1).sin().mul(43758.5453).fract();
+const smk = (a, b, k) => { const h = b.sub(a).div(k.mul(2)).add(0.5).clamp(0, 1); return mix(b, a, h).sub(h.mul(inv(h)).mul(k)); };
 const band = (x) => { const e = fwidth(x).mul(0.7).min(0.25); return ss(float(0.25).sub(e), e.add(0.25), x.fract().sub(0.5).abs()); };
 // one arm (right half; x mirrored): a clothoid that curls tighter toward its tip. Two curls per arm; the seed mixes them.
 const NS = 12;
@@ -89,7 +90,7 @@ export function material(ctx) {
     let lit = vec3(0);
     [[14, 0.6, 1], [11, -0.8, -1]].slice(0, low ? 1 : 2).forEach(([N, tw, sd], j) => {
       const v = lr.mul(N / TAU).sub(T.mul(0.22)).add(j * 0.5);                       // outward: the bubbles rise along the helix
-      const w = a.div(TAU).mul(N).add(lr.mul(N / TAU * tw)).add(T.mul(0.05 * N).mul(sn * sd)).add(j * 0.5);
+      const w = a.div(TAU).mul(N).add(lr.mul(N / TAU * tw)).add(T.mul(0.05 * N).mul(sn.mul(sd))).add(j * 0.5);
       const cs = r.mul(TAU / N);
       const d = vec2(w.fract().sub(0.5), v.fract().sub(0.5)).length().mul(cs);
       const rb = cs.mul(0.3).mul(ss(9, 14, r)).mul(inv(ss(30, 37, r)));
@@ -121,7 +122,7 @@ export function material(ctx) {
       for (let i = 0; i < 5; i++) {
         const ph = T.mul(0.25 + i * 0.05).add(i * 1.26 + j);
         const o = vec2(ph.cos().mul(0.6), ph.mul(1.3).sin().mul(0.42)).mul(Rn);
-        d = smin(d, P.sub(ctr).sub(o).length().sub(Rn.mul(0.42 + 0.08 * (i % 3))), Rn.mul(0.25).add(0.01));
+        d = smk(d, P.sub(ctr).sub(o).length().sub(Rn.mul(0.42 + 0.08 * (i % 3))), Rn.mul(0.25).add(0.01));
       }
       const ink = st(d, 0).mul(on(bl));
       lay(ink, BG.add(mix(B, BG, 0.6).mul(st(d.abs(), 0.12))).add(A.mul(0.12).mul(st(d.add(Rn.mul(0.18)).abs(), 0.08))));
