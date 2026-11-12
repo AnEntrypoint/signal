@@ -11,7 +11,7 @@ export function material(ctx) {
   const c = tripClock(ctx), u = visionU(ctx, c), live = visionShown(ctx, c, 0), io = ioU(u), low = ctx.quality === "low";
   const rn = (k) => c.rnd(1100 + k), pk = (k, m) => c.pick(1100 + k, m);
   const { BLU, VIO, PNK, ORA, YEL, GRN, W, BG } = NEON;
-  const fam = pk(0, 3), hot = pk(1, 4);
+  const fam = pk(0, 3).add(c.seed.div(7).floor()).mod(3), hot = pk(1, 4);
   const A = BLU.mul(is(fam, 0)).add(VIO.mul(is(fam, 1))).add(vec3(0.01, 0.6, 0.75).mul(is(fam, 2)));
   const B = VIO.mul(is(fam, 0)).add(BLU.mul(is(fam, 1))).add(GRN.mul(0.7).mul(is(fam, 2)));
   const hotC = (k) => [PNK, ORA, YEL, GRN].reduce((a, v, i) => a.add(v.mul(is(k, i))), vec3(0));

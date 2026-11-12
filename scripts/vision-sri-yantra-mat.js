@@ -21,7 +21,7 @@ export function material(ctx) {
   const rn = (n) => c.rnd(1100 + n), pk = (n, k) => c.pick(1100 + n, k), sense = (n) => sgn(rn(n));
   const { BLU, VIO, PNK, ORA, YEL, GRN, W, BG } = NEON;
   const CYA = vec3(0.01, 0.6, 0.75);
-  const fam = pk(0, 3), hot = pk(1, 4);
+  const fam = pk(0, 3).add(c.seed.div(7).floor()).mod(3), hot = pk(1, 4);
   const A = BLU.mul(is(fam, 0)).add(VIO.mul(is(fam, 1))).add(CYA.mul(is(fam, 2)));
   const B = VIO.mul(is(fam, 0)).add(BLU.mul(is(fam, 1))).add(GRN.mul(0.7).mul(is(fam, 2)));
   const pickC = (list, k) => list.reduce((a, v, i) => a.add(v.mul(is(k, i))), vec3(0));
