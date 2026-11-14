@@ -1,9 +1,9 @@
-# @lanmower/game-17 — a live multiplayer world on Spawn
+# @lanmower/signal-stage — a live multiplayer world on Spawn
 
 This tree IS the world. A push to main reaches every room open on main with no build and no deploy, and every open page takes it with no reload. Most pushes reach the rooms in seconds; a large change or a large or busy world can take a minute or more. People may be standing in it while you edit. Play it:
-https://www.spawn.co/@lanmower/game-17
+https://www.spawn.co/@lanmower/signal-stage
 
-The game is three.js in files: an object is a row with three.js's geometry and material fields, a behavior is a module with `update(ctx, dt)`, the HUD is HTML in `scripts/ui.js`. `git push` to main lands it, and the push's `remote:` lines carry the verdicts; a fault names the file and the line. `https://www.spawn.co/@lanmower/game-17@dev` is that push in any browser, with no sign-in, and its console prints the game's `console.log` and faults. A push never publishes. To publish, POST https://www.spawn.co/api/games/{appId}/publish with your token and the appId from me; the public page then shows that version until the next publish.
+The game is three.js in files: an object is a row with three.js's geometry and material fields, a behavior is a module with `update(ctx, dt)`, the HUD is HTML in `scripts/ui.js`. `git push` to main lands it, and the push's `remote:` lines carry the verdicts; a fault names the file and the line. `https://www.spawn.co/@lanmower/signal-stage@dev` is that push in any browser, with no sign-in, and its console prints the game's `console.log` and faults. A push never publishes. To publish, POST https://www.spawn.co/api/games/{appId}/publish with your token and the appId from me; the public page then shows that version until the next publish.
 
 ## The tree
 
@@ -22,7 +22,7 @@ The game is three.js in files: an object is a row with three.js's geometry and m
 - Art is a CDN NAME, never bytes in this tree: `model: "/cdn/model-knight.glb"`, `texture: "/cdn/moodboard-pixel/sprite-fox.png"`,
   `clip: "/cdn/sfx-bell.mp3"` — a name the CDN has not cooked is generated on first fetch and is immutable after. Your own art, a `.mp4` video too, goes
   up by its bytes: `PUT https://www.spawn.co/api/sdk/v1/<worldId>/assets/value.<sha256 of the file>.<ext>` + Bearer, Content-Type its type, the file as the
-  body → `{ url }`; the tree references it as `/cdn/value.<sha256>.<ext>` (a `.wav`, `.ogg` or `.flac` goes up as it is and is named `value.<sha256>.mp3`). That PUT carries a body only up to the API's request cap (about 4.5 MB, headers counted); over it the door answers 413 and the bytes go by address: `POST https://www.spawn.co/api/sdk/v1/<worldId>/assets/upload-target` with `{ name, sizeBytes }` for a storage PUT url, PUT the bytes there, then `PUT https://www.spawn.co/api/sdk/v1/<worldId>/assets/<name>` with `{ tempPath }`. A push carrying asset bytes, by its extension, wherever it sits, is refused typed (law.git.asset-kind), like JS that does not parse.
+  body → `{ url }`; the tree references it as `/cdn/value.<sha256>.<ext>` (a `.wav`, `.ogg` or `.flac` goes up as it is and is named `value.<sha256>.mp3`). A clip GLB (no mesh) on bones no known rig names goes up as `clip-<words>-<8 hex of its sha256>[-loop].glb`; a known rig's clip is refused (the library's play on it by address); as `value.` it is a model. That PUT carries a body only up to the API's request cap (about 4.5 MB, headers counted); over it the door answers 413 and the bytes go by address: `POST https://www.spawn.co/api/sdk/v1/<worldId>/assets/upload-target` with `{ name, sizeBytes }` for a storage PUT url, PUT the bytes there, then `PUT https://www.spawn.co/api/sdk/v1/<worldId>/assets/<name>` with `{ tempPath }`. A push carrying asset bytes, by its extension, wherever it sits, is refused typed (law.git.asset-kind), like JS that does not parse.
 - `AGENTS.md`, `CLAUDE.md`, `README.md`, `.spawn/` — for you. The room never receives these exact paths. Write what you learn about THIS world into AGENTS.md, not into your own memory.
 
 ## One placement, whole
@@ -61,20 +61,19 @@ reference and engine-use guide live in the engine repo pinned by `.spawn/engine.
 
 ## The page
 
-`https://www.spawn.co/@lanmower/game-17@dev` is the world at the latest push to main, as a web page. Each page is a player in a room.
+`https://www.spawn.co/@lanmower/signal-stage@dev` is the world at the latest push to main, as a web page. Each page is a player in a room.
 The page marks `<html>` with the class `spawn-world-shown` once the world is drawn, and with the attribute `data-spawn-stood` once it lets go of its own hold (the world standing, a boot fault, or a press on the page): `page.waitForSelector('html.spawn-world-shown')` waits for the world and not for a timer.
-The game's `console.log` and every fault in its scripts, with the script's path, line and column, print in that page's console.
-A screenshot of the page is the frame a player sees, the game's HTML UI and the rail included.
-The page draws with WebGPU. A headless Chromium with no GPU drew it in software, slowly and at a low resolution, with `--enable-unsafe-webgpu --enable-features=Vulkan,WebGPU --use-angle=vulkan --use-vulkan=swiftshader --use-webgpu-adapter=swiftshader --enable-unsafe-swiftshader`.
+The game's `console.log` and every script fault, with its path, line and column, print in that page's console.
+A screenshot of the page is the frame a player sees, its HTML UI and rail included.
+The page draws with WebGPU. A headless Chromium with no GPU drew it in software (slow, low resolution) with `--enable-unsafe-webgpu --enable-features=Vulkan,WebGPU --use-angle=vulkan --use-vulkan=swiftshader --use-webgpu-adapter=swiftshader --enable-unsafe-swiftshader`.
 The page holds the game in a frame at another origin, `iframe[data-spawn-kernel-frame]`, and that frame holds the game's HTML UI (`scripts/ui.js`) in a sandboxed frame at a throwaway origin of its own, `iframe[data-tome-realm="game"]`.
-Neither frame has a fixed `name`, the page's first `iframe` is not the HUD, and the HUD's words are in the inner frame only: a text read or a locator on the top document, or on the outer frame, finds none of them. In Playwright `page.frameLocator('iframe[data-spawn-kernel-frame]').frameLocator('iframe[data-tome-realm="game"]')` is the HUD, `hud.getByRole('button', { name: 'Play again' }).click()` presses its button, a `page.mouse.click` at a HUD button's bounding box lands on it as a person's click does, and a key press reaches the game's actions once a click in the page has given the game the focus.
-In a headed browser a 3D place holds the mouse for the camera's look (pointer lock: on by default in a 3D place, off with the camera's `pointerLock: false`, and off by default in a 2D place). While it holds, the cursor is hidden and a click goes to the world, never to the HUD; Escape from a person's keyboard frees it, and a key an automation sends does not. A `data-modal` element in the HUD frees the mouse while that element stands, so a card's button takes a click, and the lock returns when the card goes. A headless browser never holds the mouse, and every click lands where it is aimed.
+Neither frame has a fixed `name`, the first `iframe` is not the HUD, and the HUD's words are in the inner frame only: a text read or a locator on the top document or the outer frame finds none of them. In Playwright `page.frameLocator('iframe[data-spawn-kernel-frame]').frameLocator('iframe[data-tome-realm="game"]')` is the HUD, `hud.getByRole('button', { name: 'Play again' }).click()` presses its button, a `page.mouse.click` at a HUD button's bounding box lands on it as a person's click does, and a key press reaches the game's actions once a click in the page has given the game the focus.
+In a headed browser a 3D place holds the mouse for the camera's look (pointer lock: on by default in 3D, off in 2D or with the camera's `pointerLock: false`). While it holds, the cursor is hidden and a click goes to the world, never to the HUD; Escape from a person's keyboard frees it, and a key an automation sends does not. A `data-modal` element in the HUD frees the mouse while it stands, so a card's button takes a click. A headless browser never holds the mouse, and every click lands where it is aimed.
 A browser a program drives says so (`navigator.webdriver`), and Spawn counts that page apart from a person's; one that cannot say so ends its user agent with ` SpawnProbe/<name>`.
 
 ## Who writes here
 
-Savi, `exec --persist` and other clones commit to main too: git refuses a push behind their commit (`fetch first`).
-Spawn commits this guide to main too: a push behind that commit lands under Spawn's merge commit, and `git pull` fast-forwards. The server never force-pushes.
+Savi, `exec --persist`, other clones and Spawn commit to main too. A push behind them lands under Spawn's merge commit; one that changes a file they changed is refused `law.git.not-a-descendant`: pull, then push. The server never force-pushes.
 The first line of each commit message lands in the creator's chat and changes list under your name, and Savi reads it at her next step, never the body or `design.md`. It is one plain sentence
 about what changed for the player or the rule the creator set, never a file, a function or a diagnosis; the how goes in the body.
 `git log --notes=spawn` carries the world's own reading of each commit (the clone line below fetches it).
@@ -84,19 +83,19 @@ Agents never wake Savi. There is no door into her chat.
 ## The packaged client
 
 `@spawnco/client` (`bun add -g @spawnco/client`) stands a body in a room from a shell, wearing your name:
-`spawn client join @lanmower/game-17 --ttl 600`, `spawn client leave`. `spawn client exec <file>` or `-e '<code>'` runs an async JS
+`spawn client join @lanmower/signal-stage --ttl 600`, `spawn client leave`. `spawn client exec <file>` or `-e '<code>'` runs an async JS
 body in that room's real engine with `api`, `ctx` and the world's imports; its changes stay in that room unless `--persist` saves
 them into the world's files. `--realm browser` runs in the body's page (join with `--render cpu` or `--render gpu`), where
 `client.capture({ method: "preview_object", params: { object, children } })` draws one object's draft by its fields alone.
 `spawn client --help` and `spawn client exec --help` list every verb and flag.
-`spawn preview`, run inside this clone, stands a body in a room of its own at the version main is at, carries the files of your working tree that differ from `origin/main` into that room, prints the room's page, and lands every save there as you make it, with no push; Ctrl-C ends it, and the world's rooms and history never see the preview's files.
+`spawn preview`, run inside this clone, stands a body in a room of its own at main's version, carries your tree's changes from `origin/main` into it, prints the room's page, and lands every save there as you make it, with no push; Ctrl-C ends it, and the world's rooms and history never see the preview's files.
 
 ## The doors — one token everywhere
 
 Your token is the password on the git remote and the Bearer on every door. Every line here reads `$SPAWN_TOKEN`,
 else the file `spawn login` keeps it in (`~/.spawn/token`); never commit it, never print it. Git with no helper
 asks the person at the screen for a login. The clone, with its helper and the notes:
-`git clone --config credential.helper= --config credential.helper='!f() { echo username=<you>; echo password=${SPAWN_TOKEN:-$(cat "${SPAWN_TOKEN_FILE:-$HOME/.spawn/token}")}; }; f' --config http.proactiveAuth=basic --config remote.origin.fetch='+refs/notes/*:refs/notes/*' https://git.spawn.co/@lanmower/game-17.git`
+`git clone --config credential.helper= --config credential.helper='!f() { echo username=<you>; echo password=${SPAWN_TOKEN:-$(cat "${SPAWN_TOKEN_FILE:-$HOME/.spawn/token}")}; }; f' --config http.proactiveAuth=basic --config remote.origin.fetch='+refs/notes/*:refs/notes/*' https://git.spawn.co/@lanmower/signal-stage.git`
 An existing clone: `git config credential.helper ''` (drops a stored login), `git config --add credential.helper '!f() { echo username=<you>; echo password=${SPAWN_TOKEN:-$(cat "${SPAWN_TOKEN_FILE:-$HOME/.spawn/token}")}; }; f'`,
 `git config http.proactiveAuth basic`, `git config --add remote.origin.fetch '+refs/notes/*:refs/notes/*'`, `git fetch`. `<worldId>` below is the id `me` and `worlds` answer for this world.
 
@@ -105,10 +104,10 @@ An existing clone: `git config credential.helper ''` (drops a stored login), `gi
 - the room's script log (errors name your paths): `curl -H @<(printf 'Authorization: Bearer %s\n' "${SPAWN_TOKEN:-$(cat "${SPAWN_TOKEN_FILE:-$HOME/.spawn/token}")}") https://www.spawn.co/api/sdk/v1/<worldId>/agent/logs`
 - run read-only JS in the live room: `curl -H @<(printf 'Authorization: Bearer %s\n' "${SPAWN_TOKEN:-$(cat "${SPAWN_TOKEN_FILE:-$HOME/.spawn/token}")}") -X POST https://www.spawn.co/api/sdk/v1/<worldId>/agent/exec -H "Content-Type: application/json" -d '{"script":"return api.query({tags:[\"enemy\"]}).length"}'` (409 `no_live_room` when nobody is in it — an open page or a client body is a player in a room; add `"place":"<name>"` to read one place, else it runs where most of the room's players stand and the answer's `place` says where)
 - the reference and skills at this pin over HTTP: `curl -H @<(printf 'Authorization: Bearer %s\n' "${SPAWN_TOKEN:-$(cat "${SPAWN_TOKEN_FILE:-$HOME/.spawn/token}")}") https://www.spawn.co/api/sdk/v1/<worldId>/agent/docs` — The Tome API reference is read by section: the docs door with ?section=<heading> answers that one section in tomeApi with every heading in sections; with no section named it answers the opening and the headings. Every shape in it is exact, and a push in another shape is refused naming the row, the line and the field. That curl is the docs door; the whole reference is also `api-reference.md` at the root of the engine repo above.
-- a browser signed in as you (the url works once, within 5 minutes): `curl -H @<(printf 'Authorization: Bearer %s\n' "${SPAWN_TOKEN:-$(cat "${SPAWN_TOKEN_FILE:-$HOME/.spawn/token}")}") -X POST https://www.spawn.co/api/agent/v1/login-link -H "Content-Type: application/json" -d '{"next":"/@lanmower/game-17@dev"}'` answers `url`.
+- a browser signed in as you (the url works once, within 5 minutes): `curl -H @<(printf 'Authorization: Bearer %s\n' "${SPAWN_TOKEN:-$(cat "${SPAWN_TOKEN_FILE:-$HOME/.spawn/token}")}") -X POST https://www.spawn.co/api/agent/v1/login-link -H "Content-Type: application/json" -d '{"next":"/@lanmower/signal-stage@dev"}'` answers `url`.
 - your inbox (notes, plays, invites, a link's verdict): `curl -H @<(printf 'Authorization: Bearer %s\n' "${SPAWN_TOKEN:-$(cat "${SPAWN_TOKEN_FILE:-$HOME/.spawn/token}")}") "https://www.spawn.co/api/notifications?unread=1"`
 - make a world: `git push -o create` to `https://git.spawn.co/@@<you>/<free-slug>.git`, or `POST https://www.spawn.co/api/agent/v1/games`.
-- the human invites the next agent here: https://www.spawn.co/@lanmower/game-17/code
+- the human invites the next agent here: https://www.spawn.co/@lanmower/signal-stage/code
 
 ## The rail is Spawn's
 
