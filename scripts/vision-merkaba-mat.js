@@ -58,15 +58,15 @@ export function material(ctx) {
     const q0 = P.sub(vec2(0, pk(8, 3).sub(1).mul(46))), r = q0.length();
     const ro = T.mul(TAU / 140).mul(sense(9)), cs = ro.cos(), si = ro.sin();
     const q = vec2(q0.x.mul(cs).sub(q0.y.mul(si)), q0.x.mul(si).add(q0.y.mul(cs)));
-    lay(maskIris(io(0.3, 0.5, 2, 3).mul(inv(ss(uEnd.sub(0.03), uEnd, u))), r.div(210)), BG);
+    lay(maskIris(io(0.36, 0.7, 2, 3).mul(inv(ss(uEnd.sub(0.03), uEnd, u))), r.div(210)), BG);
     const kl = inv(ss(0, 7, r.sub(c.beat.fract().mul(130)).abs())).mul(kOn);
     // hex-packed stars, each a ring with a pupil; they come out from the pole outward
     const g = 6.4, gy = g * 0.866, row = q.y.div(gy).floor(), qx = q.x.div(g).add(row.mul(0.5));
     const hd = hash(qx.floor().add(row.mul(57)), 9);
     const l = vec2(qx.fract().sub(0.5).mul(g), q.y.div(gy).fract().sub(0.5).mul(gy)).length();
     const rad = r.div(120).clamp(0, 1).mul(1.2).add(0.55).add(cl.mul(0.5)).mul(hd.mul(0.5).add(0.75));
-    const pC = io(0.32, 0.62, 2, 3).mul(inv(ss(uEnd.sub(0.07), uEnd.sub(0.03), u)));
-    const dot = st(l.sub(rad), 0).mul(maskBeads(pC, r.div(190).clamp(0, 1).mul(0.7).add(hd.mul(0.3)))).mul(on(pC));
+    const pC = io(0.3, 0.72, 2, 3).mul(inv(ss(uEnd.sub(0.07), uEnd.sub(0.03), u)));
+    const dot = st(l.sub(rad), 0).mul(maskBeads(pC, r.div(190).clamp(0, 1).mul(0.45).add(hd.mul(0.55)))).mul(on(pC));
     const hollow = step(0.45, hd);
     const shape = mix(float(1), inv(st(l.sub(rad.mul(0.62)), 0)).add(st(l.sub(rad.mul(0.28)), 0)), hollow);
     lay(dot, mix(mix(A, B, step(0.5, hd.mul(7).fract())), H2, step(0.9, hd)).mul(shape).mul(kl.mul(1.2).add(1)));
