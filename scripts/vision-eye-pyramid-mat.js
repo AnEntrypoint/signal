@@ -5,7 +5,7 @@
 // Pacing: base courses alone u0-.15, whole by .5, late detail .6-.8, LIFO exit .8-1: flames, veils, rays, sky, drips, sun lids, then dunes sink, then the courses unstack.
 import { MeshBasicNodeMaterial, AdditiveBlending, DoubleSide } from "builtin/three";
 import { positionGeometry, float, vec2, vec3, smoothstep as ss, step, mix, atan2 as atan2raw, fwidth, select } from "builtin/tsl";
-import { tripClock, visionShown, visionU, climb, maskLid, maskDraw, maskClock, maskBeads, inv, is, rbox, strokeAA, ioU, NEON } from "./lib/trip.js";
+import { tripClock, visionShown, visionU, climb, maskLid, maskDraw, maskClock, maskBeads, inv, is, rbox, strokeAA, ioU, NEON, maskIris } from "./lib/trip.js";
 
 const TAU = 6.28318;
 const EY = 15.5, BASE = -20, HP = 30;                               // eye centre y, pyramid base y and height (being metres)
