@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "basedOnSpecVersion": 711,
-  "updatedAt": "2026-11-12T15:16:34.499Z",
+  "basedOnSpecVersion": 729,
+  "updatedAt": "2026-11-14T21:35:23.456Z",
   "summary": "Signal Stage is a walkable 3D motion-graphics stage whose multiplayer roll launches a synchronized, seeded music trip. A shared director maps selected audio onto the canonical show clock, drives shaders and camera, and deals vision beings into the view only for their slots.",
   "scriptPaths": [],
   "places": [
@@ -68,7 +68,7 @@
     "scripts/tunnel-* - wall, core, dust, gates, ribs and knot share geometry kinds and tunnel-lib.js spatial/color helpers; materials vary motif and seeded palette; wall holds at scene seams.",
     "scripts/chamber-* - room, circuit, hands, hex, Lissajous, solids and bilateral mask share chamber shader helpers and scored cutouts; room uses a seam hold.",
     "scripts/sun-disc.js, sun-drips.js and sun-halo.js - sun-eye layers share sun-lib.js but vary disc, hanging-drip and depth-halo imagery; disc uses a seam hold.",
-    "scripts/vision-*-geo.js / -mat.js - all 36 registered beings are built and dealable; eclipse-wolves now layers a black-filled, op-art contour-striped polygon head beneath the wolf outline.",
+    "scripts/vision-*-geo.js / -mat.js - all 36 registered beings are built and dealable; vision materials draw each being's motifs in parameterized world/ring/being/veil layers.",
     "Vision worm geo/material pairs plus scripts/companion-worm-geo.js - unit-tube geometry bent by shader paths; per-being materials vary appearance, geo resolution scales by ctx.lod."
   ],
   "probableOrphans": [],
@@ -78,6 +78,6 @@
     "Paid own-track metadata is carried in shared c.track from the buyer's body state; anchors map start, drop/vision windows and end onto canonical time, while BPM, firstBeat and bars remain source-track values.",
     "Track kick runs are converted to canonical seconds before stage propagation; shader params ta1..ta4 and tdur must match tracks.js, with fb/bps retaining track beat. Idle materials receive IDENTITY params.",
     "score.yml remains the canonical show/deck and vision-slot timeline regardless of selected audio duration or BPM; all 36 registry entries are built:true and dealVisions filters by built.",
-    "scripts/lib/data/beings.yml gives eclipse-wolves base-layer p.h/p.w=80/112 and scripts/vision-eclipse-wolves-mat.js multiplies being-space scale by 1.6; its shader now fills the wolf-head polygon with contour stripes, so check the registration scale and material-space silhouette together."
+    "scripts/lib/trip.js sector masks are sliced around the stage axis (x=0, y=15, along Z) and by depth; seam transitions spread over about five seconds. vision-eye-pyramid/flower-of-life backdrops close inward; sky-whale/scarab fields fray below their crests, while hummingbird, merkaba, time-keeper and sri-yantra motifs arrive in slower bands, stars or beads."
   ]
 }
