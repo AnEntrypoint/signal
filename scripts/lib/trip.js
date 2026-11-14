@@ -145,7 +145,9 @@ export function shown(c, name, d = 0) {
   // ring draws its own seeded turn (per layer, per roll): rings and pieces light one at a time in a shuffled order,
   // a faint pull outward kept so it still grows from its heart, and each eases in over ~1.2 s instead of snapping.
   const band = shuffleBand(c, name, d);
-  const seamO = pieceLag(name).div(SCORE.piece ?? 2.25).mul(0.25).add(band.mul(0.35)).add(turn * 0.45).mul(0.3);
+  // 11-14 (watched seed 36 at the return: black at the seam, then the whole return stood within a second): the
+  // turns now spread over ~80% of the seam (~5 s each way), not ~3 s, so the return builds out of the dark piece by piece
+  const seamO = pieceLag(name).div(SCORE.piece ?? 2.25).mul(0.25).add(band.mul(0.35)).add(turn * 0.45).mul(0.6);
   const seamGate = smoothstep(seamO, seamO.add(0.18), c.seamD.div(SCORE.deck.seam).clamp(0, 1));
   const lag = band.mul(SCORE.wipe).add(pieceLag(name));
   let v = float(0);
