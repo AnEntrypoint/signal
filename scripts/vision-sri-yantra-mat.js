@@ -45,9 +45,10 @@ export function material(ctx) {
     const x = lr.div(sp).sub(T.mul(0.08)), k = x.floor(), fr = x.fract().sub(0.5), par = par2(k);
     const fa = a.div(TAU).mul(N).add(par.mul(0.5)).add(T.mul(0.16).mul(par.mul(2).sub(1)).mul(sn)).fract().sub(0.5);
     const l = vec2(fa, fr).length(), aaC = fwidth(P.x).mul(1.2).div(sp.mul(r)).clamp(0.01, 0.3);
-    const grow = ss(0.32, 0.78, u).add(cl.mul(0.1).mul(on(u.sub(0.36)))).min(1).mul(inv(ss(0.95, 0.997, u)));
+    const grow = ss(0.32, 0.88, u).add(cl.mul(0.1).mul(on(u.sub(0.36)))).min(1).mul(inv(ss(0.95, 0.997, u)));
     const lrc = k.add(0.5).add(T.mul(0.08)).mul(sp), gl = grow.mul(grow).mul(210).add(1).log();
-    const sw = ss(0, sp.mul(2.5), gl.sub(lrc)).mul(on(grow)).mul(step(3.2, r));
+    const ca = a.div(TAU).mul(N).add(par.mul(0.5)).add(T.mul(0.16).mul(par.mul(2).sub(1)).mul(sn)).floor();   // 11-14: each bead its own moment
+    const sw = ss(0, sp.mul(2.5), gl.sub(lrc).sub(hash(ca.add(k.mul(97)), 17).mul(1.6))).mul(on(grow)).mul(step(3.2, r));
     const rad = sw.mul(cl.mul(0.07).add(0.25));
     const hol = par2(par.add(beatN.mul(kOn)));                       // kick: discs and hollow rings swap, ring by ring
     const disc = inv(ss(rad, rad.add(aaC), l)), holw = inv(ss(float(0.07), aaC.add(0.07), l.sub(rad.sub(0.06)).abs())).mul(step(0.1, rad));
