@@ -110,7 +110,12 @@ function pieceLag(name) {
     const seg = oct.div(size * 2).mul(run).floor();
     return seg.div(14).add(lane.mul(0.37).fract().mul(0.25)).fract().mul(SCORE.piece ?? 2.25); }
   else if (kind === 1) id = P.sub(vec3(0, 15, 0)).length().div(size).floor();                 // rings
-  else id = atan(P.x, P.z.sub(P.y.mul(0.3))).div(6.2831853).add(0.5).mul(12 + (h % 4) * 4).floor(); // sectors
+  // sectors round the stage's own axis (x = 0, y = 15, along Z), sliced again in depth.
+  // 11-14 (lanmower: "half of our scene appears black"): the old sectors turned round a vertical axis at the
+  // origin, so the tunnel, eye and chamber (all at -Z) fell into just two sectors split on x = 0: one half
+  // waited up to 4.5 s of scene time (≈30 s in a stretched flight) on black. Now each is cut into 12-24 slices.
+  else id = atan(P.x, P.y.sub(15)).div(6.2831853).add(0.5).mul(12 + (h % 4) * 4).floor()
+    .add(P.z.div(size * 2).floor().mul(7.13));
   const r = id.add(h * 0.731).sin().mul(43758.5453).fract();
   return r.mul(SCORE.piece ?? 2.25);
 }
