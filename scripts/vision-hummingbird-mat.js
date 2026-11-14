@@ -47,7 +47,7 @@ export function material(ctx) {
   // ------------------------------------------------------------------ WORLD: the hanging garden (mirrored, drifting)
   if (layer === "world") {
     const aa = fwidth(P.x).mul(1.2).max(0.02), st = strokeAA(aa), ax = P.x.abs();
-    const grow = el(0.36, 0.6, 0.955, 0.995);
+    const grow = el(0.36, 0.8, 0.955, 0.995);   // 11-14: was a 2-bar curtain
     const front = inv(c.beat.fract()).mul(90).sub(45), kl = inv(ss(0, 5, P.y.sub(front).abs())).mul(kOn);
     const sp0 = pk(4, 3).mul(3).add(16);
     // [spacing, width, drift, sway, row brightness, beaded]
@@ -58,7 +58,7 @@ export function material(ctx) {
       const sway = P.y.mul(0.07).add(T.mul(0.45 + j * 0.2)).add(hk.mul(6)).sin().mul(sw).mul(cl.mul(0.5).add(1)).mul(inv(t.clamp(0, 1)).mul(0.3).add(0.7));
       const lx = X.div(sp).fract().sub(0.5).mul(sp).add(hk.sub(0.5).mul(float(sp).mul(0.3))).sub(sway);
       const wk = hk.mul(5.3).fract().mul(0.5).add(0.75).mul(w).mul(inv(t.clamp(0, 1).mul(0.55)));
-      const pV = grow.mul(1.7).sub(hk.mul(0.7)).clamp(0, 1);
+      const pV = grow.mul(2.4).sub(hk.mul(1.4)).clamp(0, 1);
       const tipD = vec2(lx, P.y.sub(yb)).length();
       const bodyD = lx.abs().sub(wk).max(yb.sub(P.y)).min(tipD.sub(wk.mul(0.9)));
       const body = st(bodyD, 0).mul(maskDraw(pV, t)).mul(step(P.y, yTop)).mul(on(pV));
