@@ -65,7 +65,7 @@ export function material(ctx) {
       // a ridge is a band under its crest, not a wall to the plane's foot (11-14: the sea blacked out half the screen);
       // its underside frays into beads so the far scene shows through below it
       const depth = 6 + j * 2.2, under = P.x.mul(0.7).add(j * 3.1).sin().mul(1.2);
-      const inside = st(dd.negate(), 0).mul(inv(ss(depth - 2, depth + under.x ?? depth, dd))).mul(on(pR));
+      const inside = st(dd.negate(), 0).mul(inv(ss(float(depth - 2), under.add(depth), dd))).mul(on(pR));
       const stripe = band(dd.div(1.3 + j * 0.25).sub(T.mul(0.15)));
       const bc = famC(pm(kStep.add(j), 3), [A, B, H2.mul(0.7)]);
       lay(inside, BG.add(bc.mul(stripe).mul(0.35 + j * 0.08)).add(mix(B, W, 0.4).mul(st(dd.abs(), 0.12 + j * 0.03)).mul(0.7)));
