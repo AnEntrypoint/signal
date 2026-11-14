@@ -56,7 +56,10 @@ export function material(ctx) {
     const uEnd = inv(float(0.4).div(ctx.param("vw1", -1).sub(ctx.param("vw0", -1)).max(1))).min(0.999);
     const lit = mix(float(0.1), float(1), ss(20, 46, h)).mul(ss(0.6, 0.8, u).mul(cl).mul(0.4).add(0.6)).mul(maskIris(pL, h.div(190)));
     col = col.mul(lit).add(mix(B, W, 0.4).mul(sk(h.sub(edge).abs(), 0.35)).mul(step(0.004, pL)).mul(step(pL, 0.996)));
-    return cutout(col, maskIris(ss(0, 0.1, u).mul(inv(ss(uEnd, float(1.0005), u))), h.div(190)));
+    // 11-14 (seed 36: ~2 s of black between the faded lines and the return): the black backdrop closes inward
+    // with the lines (0.95..0.99 of the slot), so what stands behind shows through outside-in, never a black hole
+    void uEnd;
+    return cutout(col, maskIris(ss(0, 0.1, u).mul(inv(ss(0.95, 0.99, u))), h.div(190)));
   }
 
   // ------------------------------------------------------------------ RING: dotted concentric rings (counter-rotate)
