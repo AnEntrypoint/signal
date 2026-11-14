@@ -49,13 +49,13 @@ export function material(ctx) {
   if (layer === "world") {
     const aa = fwidth(P.x).mul(1.2).max(0.02), st = strokeAA(aa);
     const r = P.length(), a = atan2(P.y, P.x);
-    const pW = io(0.42, 0.58, 0.94, 0.995).add(cl.mul(0.06).mul(on(u.sub(0.42)))).min(1);
+    const pW = io(0.4, 0.8, 0.94, 0.995).add(cl.mul(0.06).mul(on(u.sub(0.4)))).min(1);   // 11-14: was a 3 s flood
     const { lay, out } = lay0();
     const sp = 5.5, rr = r.sub(T.mul(0.35));
     const k = rr.div(sp).floor();
     const wob = a.mul(3).add(hash(k, 2).mul(TAU)).sin().mul(0.7).add(a.mul(5).sub(hash(k, 5).mul(TAU)).sin().mul(0.35));
     const rf = rr.add(wob).div(sp).fract().sub(0.5).abs().mul(sp);
-    const ring = st(rf.sub(0.22), 0).mul(maskIris(pW, r.div(150))).mul(on(pW));
+    const ring = st(rf.sub(0.22), 0).mul(maskBeads(pW, r.div(150).clamp(0, 1).mul(0.35).add(hash(k, 11).mul(0.65)))).mul(on(pW));
     const kk = rr.add(wob).div(sp).floor();
     const rc = mix(A, B, step(0.5, hash(kk, 7))).mul(0.55).add(H2.mul(0.5).mul(step(0.85, hash(kk, 3))));
     lay(ring, rc.mul(cul.mul(0.4).add(0.45)));
@@ -64,7 +64,7 @@ export function material(ctx) {
     const along = lr.mul(9), cell = along.floor();
     const dd = vec2(sA.fract().sub(0.5).mul(r.mul(TAU).div(arms).div(r.mul(0.11).max(0.5))), along.fract().sub(0.5)).length();
     const pArm = pW.mul(1.5).sub(0.5).clamp(0, 1);
-    const dot = st(dd, 0.32).mul(maskBeads(pArm, r.div(150))).mul(on(pArm)).mul(step(6, r));
+    const dot = st(dd, 0.32).mul(maskBeads(pArm, r.div(150).clamp(0, 1).mul(0.5).add(hash(cell, 13).mul(0.5)))).mul(on(pArm)).mul(step(6, r));
     const front = c.beat.fract().mul(140);
     const kl = inv(ss(0, 8, r.sub(front).abs())).mul(kOn);
     lay(dot, mix(H, W, step(0.8, hash(cell, 1)).mul(0.5)).mul(cul.mul(0.4).add(0.55).add(kl)));
