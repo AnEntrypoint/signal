@@ -62,7 +62,9 @@ export function material(ctx) {
       const X = P.x.add(T.mul(v).mul(dir));
       const ridge = hz.sub(off).add(X.mul(f).add(j * 1.7).sin().mul(amp)).add(X.mul(f * 2.3).add(j).sin().mul(amp * 0.35)).sub(inv(pj).mul(90));
       const dd = ridge.sub(P.y);
-      const inside = st(dd.negate(), 0).mul(on(pj));
+      // a dune is a band under its crest that frays out below, not a wall to the plane's foot (11-14: half-black screens)
+      const under = P.x.mul(0.6).add(j * 2.3).sin().mul(1.2).add(6 + j * 2.5);
+      const inside = st(dd.negate(), 0).mul(inv(ss(float(4 + j * 2.5), under, dd))).mul(on(pj));
       const per = 0.9 + j * 0.55;
       const stp = band(dd.div(per).sub(T.mul(0.2)));
       const dc = (j % 2 ? B : A).mul(stp).mul(kl.mul(0.6).add(0.7)).add(H2.mul(stp).mul(kl).mul(0.5)).add(mix(B, W, 0.4).mul(st(dd.abs(), 0.14)));
