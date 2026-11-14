@@ -69,7 +69,9 @@ export function material(ctx) {
       const lit = band(f, aa.mul(0.36 - j * 0.07)).max(sk(d, 0.35));
       col = mix(col, [mix(A, B, 0.5), A, mix(B, W, 0.55)][j].mul(lit).mul(0.5 + j * 0.2), sk(d.negate(), 0));
     }
-    return cutout(col, float(1));
+    // 11-14: the black backdrop no longer holds to the slot's last 0.4 s after its pieces have gone; it closes
+    // inward from the rim (0.9..0.975 of the slot) so the scene behind takes over outside-in
+    return cutout(col, maskIris(inv(ss(0.9, 0.975, u)), P.length().div(200)));
   }
 
   // ------------------------------------------------------------------ RING: the ray fan behind the apex (counter-rotates)
