@@ -36,6 +36,11 @@ Current state, run on the server with the captured pool closure and the outer-pa
 - Cold single tab, three runs: body text 2550 characters; one canvas in the outer page (the 300×150 canvas of the outer page, not the 3D world); all four `[data-rail-group]` elements `display:none`; 624 to 665 requests; 9 to 10 frame navigations; `requestfailed` 27, 26 and 36, all `ERR_ABORTED`; `pageErrors: []`; `nonLocal: []`. A first run measured 22 characters because the outer page had not rendered when it was read. The three runs after it all measured 2550.
 - Two tabs loaded at the same time, three runs: `tab0` and `tab1` each have body text 2550, `pageErrors: 0`, `nonLocal: 0`. `requestfailed` per tab: 7 and 7; 7 and 30; 58 and 30.
 - Response-level check on a cold load (`http-errs.js`): one response at status 400 or above, the `503` on `/api/session/grant`. No `404` remains.
+- Every failure, grouped by error and host (`.spawn/local/witness-cold-tab.js`, one cold single-tab run, playwriter headless, cache cleared): `requests 661`, `failedCount 35`, body text 2550, 1 canvas, `pageErrors []`, `nonLocal 0`.
+  - `net::ERR_ABORTED | play.spawn.co (pool module, relative name)`: 33. These are pool modules requested by their relative name (for example `9d5c4347-a9b4420234a28d53.mjs?wave=whole`, `14687fb3-6ccd5d525494356f.mjs`).
+  - `net::ERR_ABORTED | r7ixd6719-playco.spawnfile.io`: 1, the `tome-ui/authored-realm-kept` document.
+  - `net::ERR_ABORTED | play.spawn.co`: 1, a `world-store/values` read.
+  - Every failure is `ERR_ABORTED`. None is a 4xx or 5xx, and none is a network error to a host other than the captured origins.
 
 The `ERR_ABORTED` counts are the documented kernel behaviour below. The bar for the local run is zero page errors and zero non-local requests, and both are met.
 
