@@ -141,6 +141,7 @@ for (const c of boxes.values()) {
 }
 step('pixels-read');
 const top = Object.entries(messages).sort((a, b) => b[1] - a[1]).slice(0, 12).map(([k, v]) => v + 'x ' + k);
-console.log('SUMMARY ' + JSON.stringify({ adapter, scenario, plateHits, transitions, requested, pixels, messages: top }));
+const marks = await p.evaluate(() => ({ shown: document.documentElement.classList.contains('spawn-world-shown'), stood: document.documentElement.hasAttribute('data-spawn-stood') })).catch(() => ({ shown: false, stood: false }));
+console.log('SUMMARY ' + JSON.stringify({ adapter, marks, scenario, plateHits, transitions, requested, pixels, messages: top }));
 await d.close();
 await p.close();
