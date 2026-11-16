@@ -36,6 +36,10 @@ Each change is committed locally. "Verified" means a headless playwriter run on 
 | 30 | OPEN: `/derived/f1.8/l/42379fe1…`. Cause: never captured. Use: not determined. Local answer: none | `docs/LOCAL-RUN.md` (missing world content) | Open: 404 in the headed run |
 | 31 | OPEN: `/worlds/bc986e1b…/summary/806dc1ab…` and `/worlds/bc986e1b…/summary/fb343f7c…`. Cause: never captured. Use: the world's summary document. Local answer: none | `docs/LOCAL-RUN.md` (missing world content) | Open: 404 in the headed run |
 | 32 | OPEN: `/api/telemetry/early-errors`. Cause: never captured. Use: telemetry, not world content. Left as 404: answering it with a body would invent a response | `docs/LOCAL-RUN.md` (missing world content) | Open: 404 in the headed run |
+| 33 | The headed witness reads each screen box once (three identical reads became one) | `.spawn/local/witness-headed.js` (`09b7d3e`) | Verified: `pixels` has one entry for box `[0,0,1042,488]`, `uniqueColors` 14437, `litShare` 1, the same as the three-read run. Step time not separable under load |
+| 34 | The headed witness poll stops at `data-spawn-stood` instead of a fixed 40 s | `.spawn/local/witness-headed.js` (`963aaa8`) | Verified: witness 65.1 s to 43.0 s on the extension route; `transitions` `no-wall`, `requested` renderer counts 0, `adapter` true, unchanged |
+| 35 | The headed witness waits for an animation frame instead of a fixed 8 s settle | `.spawn/local/witness-headed.js` (`4da27fa`) | Verified: witness 38.5 s to 26.1 s on the direct route, frame ready in 4 ms; outcome unchanged. The variant with no wait timed out the screenshot after 30 s and was rejected |
+| 36 | The cold-run timing script: direct CDP attach for the headed browser, browser stop waits for the group to exit | `.spawn/local/measure-loop.sh` (`5c42df0`) | Verified: final cold run `total 39.8 s`, `headed-browser-stop 0.42 s` (2.1 s before), witness outcome unchanged. Details in `docs/LOCAL-RUN.md` (build and check loop) |
 
 Open, not verified:
 
