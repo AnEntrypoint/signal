@@ -28,12 +28,12 @@ Open http://127.0.0.1:4173/. `GET /__health` reports the number of captured URL 
 
 Playwriter, http://127.0.0.1:4173/, two loads in fresh pages (profile cache kept between them):
 
-- Load A: body text 2550 characters; one canvas; all four \`[data-rail-group]\` elements \`display:none\`; 307 requests; 0 page errors; 0 requests to any origin other than 127.0.0.1:4173 (the 10 \`blob:\` URLs created by the page are not network requests); 8 \`requestfailed\`, all \`ERR_ABORTED\`.
-- Load B: body text 2550 characters; one canvas; rail hidden; 243 requests; 0 page errors; 0 non-local requests; 7 \`requestfailed\`, all \`ERR_ABORTED\`.
+- Load A: body text 2550 characters; one canvas; all four `[data-rail-group]` elements `display:none`; 307 requests; 0 page errors; 0 requests to any origin other than 127.0.0.1:4173 (the 10 `blob:` URLs created by the page are not network requests); 8 `requestfailed`, all `ERR_ABORTED`.
+- Load B: body text 2550 characters; one canvas; rail hidden; 243 requests; 0 page errors; 0 non-local requests; 7 `requestfailed`, all `ERR_ABORTED`.
 
 ## What still does not work
 
-- The kernel navigates its session frame several times at startup. Each navigation aborts the previous document's in-flight loads. Five requests end `ERR_ABORTED` on a warm load. This is not fixed.
+- The kernel navigates its session frame several times at startup (session, session with `?standRows=on` or `?oneask=on`, then `about:blank`). Each navigation aborts the previous document's in-flight loads. 7 to 8 requests end `ERR_ABORTED` on each load in a single tab. This is not fixed. With other kernel tabs open on the same server, one check showed 39 and another 165, so measure with one tab open.
 - The 3D world needs WebGL or WebGPU. The playwriter browser runs with `--disable-gpu`, so the world may not draw there.
 - The realtime WebSocket to the local origin fails.
 - The local run shows the captured copy of the world in the snapshot. Commits to this repository do not change what it shows.
