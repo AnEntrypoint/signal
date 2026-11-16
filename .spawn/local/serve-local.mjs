@@ -127,7 +127,7 @@ const server = http.createServer((req, res) => {
     return;
   }
   if (STATIC_ORIGIN_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {
-    const chunk = localPathFor('https://www.spawn.co' + pathname);
+    const chunk = localPathFor('https://www.spawn.co' + pathname + url.search);
     if (!chunk) {
       send(res, 404, 'outer chunk miss: ' + pathname);
       return;
@@ -147,6 +147,10 @@ const server = http.createServer((req, res) => {
   }
   if (pathname === '/favicon.ico') {
     send(res, 204, '');
+    return;
+  }
+  if (pathname === '/ready-plate') {
+    send(res, 200, '', types['.html']);
     return;
   }
   if (pathname === '/kernel-witness') {
@@ -208,6 +212,7 @@ const server = http.createServer((req, res) => {
   } else {
     const local = join(ROOT, pathname);
     if (existsSync(local) && statSync(local).isFile()) target = local;
+    if (!target) target = localPathFor('https://www.spawn.co' + pathname + url.search);
     if (!target) {
       const base = pathname.split('/').filter(Boolean).pop() || '';
       const candidates = [...new Set(fetchLog.values())]
