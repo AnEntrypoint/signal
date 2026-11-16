@@ -39,9 +39,23 @@ Current state, run on the server with the captured pool closure and the outer-pa
 
 The `ERR_ABORTED` counts are the documented kernel behaviour below. The bar for the local run is zero page errors and zero non-local requests, and both are met.
 
-## Note on `/ready-plate`
+## `/ready-plate`: the kernel does not need its content
 
-The kernel calls `/ready-plate?to=…&reads=…` with `scenario: "graphics-wont-start"` and a device report (user agent, `softwareWebGL`, and other fields). The hosted page would receive that report, so the page was not captured. The local server answers `200` with an empty body instead. This is a local stub, not the hosted plate. The page renders without it, and the request is not sent off the machine.
+The outer page calls `/ready-plate?to=…&reads=…` with `scenario: "graphics-wont-start"` and a device report (user agent, `softwareWebGL`, and other fields). The hosted plate would receive that report, so it was not captured. The served answer is `200` with an empty body.
+
+The plate code (`__ready_early-plate.js`) parses the answer as HTML and reads only elements with `data-early-plate` and `data-early-plate-variant`, plus the `spawn-plate-sheet` meta. An empty body therefore yields no plate elements, the same as a `404`.
+
+Verified on a cold single tab: `page.route` answered `/ready-plate` three ways, the cache was cleared before each load, and the page was read after 12 s. Each load had two `/ready-plate` requests.
+
+| Answer to `/ready-plate` | Main body text | Compat wall visible | Main canvases | Kernel frame text / canvases | `requestfailed` | `pageErrors` |
+|---|---|---|---|---|---|---|
+| `200`, empty (served) | 2550 | yes, 416×544 | 1 | 2 / 0 | 11 | 0 |
+| `404` | 2550 | yes, 416×544 | 1 | 2 / 0 | 14 | 0 |
+| `200`, plate fragment | 2598 | yes, 416×544 | 1 | 2 / 0 | 40 | 0 |
+
+Reading the table: the compat wall is already in the captured `/` page (`raw/http/dev-page.body`), so it is visible under all three answers. The fragment adds 48 characters, its own wall text. The kernel frame draws no canvas under any answer. The `requestfailed` counts are single runs and vary between runs; they do not follow the answer.
+
+Conclusion: the kernel does not need the hosted `/ready-plate` content. The fragment is a stand-in cut from the snapshot's own wall, not the hosted plate. The served empty `200` is kept as the local answer; the request does not leave the machine.
 
 ## The 3D world does not draw: WebGPU adapter
 
