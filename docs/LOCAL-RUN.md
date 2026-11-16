@@ -84,6 +84,28 @@ The gm change needed, and the contract it is checked against:
 
 Which flags make a WebGPU adapter appear on this Linux headless Chromium is not verified here. That needs the launch change and a fresh browser, and `--use-angle` was not passed by hand. The item stays open in `docs/PENDING_VALIDATION.md`.
 
+## WebGL2 fallback: checked, not reached
+
+Question: does the kernel have a WebGL2 renderer that draws when WebGPU is missing, and does it draw here?
+
+Source (the captured kernel modules, `assets/play.spawn.co/`):
+
+- A WebGL2 world renderer exists: `engine-stand.mjs` (`_v4_client_pool_08ed00dd-9dbe4fd4465c4429.mjs`). It binds vertex arrays and draws with `bindVertexArray`, `uniformMatrix4fv`, `drawElements` and `drawArrays`, which are WebGL2 calls. Its companion `engine-stand-page.mjs` is `52cbc291`.
+- The session world's own renderer path is WebGPU: it requests `GPU.requestAdapter` and `createRenderPipeline`. The WebGL2 code in the session module is a capability probe. It refuses when no WebGL2 context exists (`if (gl2 === null) return refusal()`), so it is not a renderer.
+- The module that loads `engine-stand.mjs` is not in the captured bins. The session bin maps names to hashes (`"engine-stand.mjs":"08ed00dd-…"`), but I found no string in it that chooses `engine-stand` when `navigator.gpu` is missing. The engine value comes from a protocol message, and its source is not located.
+- The text "No available adapters" is not in the kernel. Chrome logs it.
+
+Runtime (`.spawn/local/witness-renderer.js`, one fresh headless session, cache cleared, 12 s):
+
+- Requested modules: `engine-stand` 0, `engine-stand-page` 0, `engine-film` 0, `engine-film-renderer` 0, the WebGPU pipeline compiler 0, the authored-realm loader 2, the world-stand module `9d5c4347` 3.
+- Frames: the outer page has one canvas, 104×104, a 2D context (the wisp). The session frame has no canvas. The kernel-witness frame has none.
+- Console: `No available adapters` 4 times; `503` 5 times on the grant.
+- Screenshot of the page: the captured compat wall reads "Restart Chrome to play" and "A restart may bring Chrome's graphics back". The world is not visible.
+
+One earlier probe showed two canvases in the session frame (300×150 and 1280×720). A later probe showed none. The session frame is replaced during boot, so its canvas count is not stable across loads, and the probe that saw 1280×720 did not inspect its context.
+
+Result: the captured kernel has a WebGL2 renderer, but in this setup the kernel does not load it, and the 3D world does not draw. Two things would settle the remaining question: the module that chooses `engine-stand` (not in the captured bins), or a WebGPU adapter (the `PLAYWRITER_CHROMIUM_ARGS` change above). The 3D item stays open.
+
 ## Known kernel behaviour: the `ERR_ABORTED` loads
 
 The aborted loads per page load are a known kernel behaviour, not a local-server fault. In the current state they range from 7 to 58 per tab; before the closure capture they were 41 to 82 per tab. They are kept as the captured kernel produces them, and no serve-time patch removes them with the 503 grant in place.
