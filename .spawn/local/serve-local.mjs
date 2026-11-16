@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { createHash } from 'node:crypto';
 import http from 'node:http';
 import { createReadStream, existsSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { extname, join, resolve } from 'node:path';
@@ -23,16 +24,34 @@ const types = {
 };
 
 const fetchLog = new Map();
+const loaded = [];
 for (const name of ['state/fetch-log.jsonl', 'state/local-engine-fetch.jsonl', 'state/local-engine-runtime.jsonl']) {
   const p = join(ROOT, name);
-  if (!existsSync(p)) continue;
-  for (const line of readFileSync(p, 'utf8').split('\n')) {
+  if (!existsSync(p)) {
+    loaded.push({ file: name, present: false });
+    continue;
+  }
+  const text = readFileSync(p, 'utf8');
+  let lines = 0;
+  let mapped = 0;
+  for (const line of text.split('\n')) {
     if (!line.trim()) continue;
+    lines += 1;
     try {
       const r = JSON.parse(line);
-      if (r.file) fetchLog.set(r.url, r.file);
+      if (r.file) {
+        fetchLog.set(r.url, r.file);
+        mapped += 1;
+      }
     } catch {}
   }
+  loaded.push({ file: name, present: true, lines, mapped, sha256: createHash('sha256').update(text).digest('hex') });
+}
+const PINNED_MAPPINGS = fetchLog.size;
+const expectMappings = process.env.EXPECT_MAPPINGS;
+if (expectMappings !== undefined && Number(expectMappings) !== PINNED_MAPPINGS) {
+  console.error(`EXPECT_MAPPINGS=${expectMappings}, but ${PINNED_MAPPINGS} mappings were loaded from ${loaded.map((f) => f.file + (f.present ? ` (${f.lines} lines)` : ' (absent)')).join(', ')}`);
+  process.exit(1);
 }
 
 function flatten(originalUrl) {
@@ -180,7 +199,7 @@ const server = http.createServer((req, res) => {
     return;
   }
   if (pathname === '/__health') {
-    send(res, 200, JSON.stringify({ ok: true, mappings: fetchLog.size, misses: missing.size }), types['.json']);
+    send(res, 200, JSON.stringify({ ok: true, mappings: PINNED_MAPPINGS, loaded, misses: missing.size }), types['.json']);
     return;
   }
   if (pathname === '/__misses') {
