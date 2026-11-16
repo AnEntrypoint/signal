@@ -73,7 +73,12 @@ while (Date.now() - tPoll < 40000) {
     step('wall-state', key);
     prev = key;
   }
-  await new Promise((r) => setTimeout(r, 1000));
+  const stood = await p.evaluate(() => document.documentElement.hasAttribute('data-spawn-stood')).catch(() => false);
+  if (stood) {
+    step('stood', 'after=' + (Date.now() - tPoll) + 'ms');
+    break;
+  }
+  await new Promise((r) => setTimeout(r, 250));
 }
 step('poll-done', 'plateHits=' + plateHits + ' scenario=' + scenario);
 await new Promise((r) => setTimeout(r, 8000));
