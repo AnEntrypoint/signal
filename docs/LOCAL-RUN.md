@@ -17,7 +17,21 @@ Run from `world/signal-stage`:
 SNAPSHOT_ROOT=/workspace/signal PORT=4173 HOST=127.0.0.1 node .spawn/local/serve-local.mjs
 ```
 
-Open http://127.0.0.1:4173/. `GET /__health` reports the number of captured URL mappings and the number of misses since start.
+Open http://127.0.0.1:4173/.
+
+The server reads its mappings once, at startup, from three files in `state/`: `fetch-log.jsonl`, `local-engine-fetch.jsonl` and `local-engine-runtime.jsonl`. The mapping count is pinned at that moment and does not change until a restart. `GET /__health` reports:
+
+- `mappings`: the pinned count of unique URLs.
+- `loaded`: for each file, whether it was present, its line count, how many lines mapped a URL, and its sha256.
+- `misses`: the distinct URLs answered with a 404 since start.
+
+To pin the count for a run, set `EXPECT_MAPPINGS`. The server exits with an error, naming the files it read, if the loaded count differs:
+
+```
+EXPECT_MAPPINGS=4322 SNAPSHOT_ROOT=/workspace/signal PORT=4173 HOST=127.0.0.1 node .spawn/local/serve-local.mjs
+```
+
+The count of 4322 is for the current `state/` files. It changes when a capture appends to `fetch-log.jsonl`; `capture-missing.mjs` appended 38 lines, which is why a server started before that capture reported 4284 mappings and 33 misses.
 
 ## What is removed or changed
 
@@ -83,6 +97,26 @@ The gm change needed, and the contract it is checked against:
 - Check after the change, in a fresh headless session with the variable set: `navigator.gpu.requestAdapter()` returns an adapter (not `null`), and the kernel frame has a canvas (the world draws). Without the variable, the same check returns `null` as measured above.
 
 Which flags make a WebGPU adapter appear on this Linux headless Chromium is not verified here. That needs the launch change and a fresh browser, and `--use-angle` was not passed by hand. The item stays open in `docs/PENDING_VALIDATION.md`.
+
+## The "Restart Chrome to play" wall
+
+The captured `/` page shows this wall. The check that produces it, what it needs, and whether the local run can meet it:
+
+Chain, from the captured outer page (`assets/www.spawn.co/`):
+
+- The outer page reports a scenario to `/ready-plate`: `scenario: "gpu" in navigator ? "graphics-wont-start" : "no-graphics"` (`__lanmower.bin`). So the check is the presence of the WebGPU API object, `navigator.gpu`.
+- For scenario `graphics-wont-start`, the card builder `eC(e)` (`__next_static_immutable_chunks_gy8snau9a8.js`) returns `e$(e)` for a browser in the set Chrome, Edge, Brave, unless an earlier branch applies. `e$` returns `id: "restart-browser"`, heading `Restart ${browser} to play`, and the steps "Press Copy address", "Open a new tab", "Paste it at the top", "Chrome restarts". The address is `chrome://restart`.
+- The Windows and macOS driver branch applies only after a restart was already told. This host is Linux, so the Chrome restart card is what shows.
+- The WebGL2 probe does not decide the scenario. The WebGL context probe (`detectSoftwareWebGLRenderer`) feeds `softwareWebGL` into `classifyCompatVerdict`, which chooses the explanatory line on the card, not the card.
+- The browser version does not gate this card. `classifyCompatVerdict` uses Chrome major below 113 and at or above 121 only for its verdict. This host runs Chrome 155.
+
+Witness (`.spawn/local/witness-wall.js`, the same playwriter headless browser, one fresh page per variant, the reported scenario read from the `/ready-plate` request):
+
+- Baseline: `navigator.gpu` present; reported scenario `graphics-wont-start`; 2 plate requests; the wall visible at 2021 ms with the Chrome restart text.
+- `navigator.gpu` removed: `gpu` absent; reported scenario `no-graphics`; the wall visible at 1014 ms, without the Chrome restart text.
+- Diagnostic only, `navigator.gpu` with a stub adapter whose `requestDevice` throws: `gpu` present; reported scenario `graphics-wont-start`; the wall visible at 2073 ms with the Chrome restart text.
+
+Answer: the wall needs `navigator.gpu` to exist, which the playwriter headless browser already provides. It does not need a WebGL2 context, a browser version, or a working adapter, since the stub adapter still gives the wall. The local run cannot clear the wall through the playwriter setup. Removing `navigator.gpu` changes the wall to `no-graphics` and is not a fix. The wall would clear only when the kernel starts with a working WebGPU adapter and device. The playwriter launch cannot provide that yet; the change recorded under the 3D item (`PLAYWRITER_CHROMIUM_ARGS`) is the route. Whether a working adapter clears the wall was not measured.
 
 ## WebGL2 fallback: checked, not reached
 
