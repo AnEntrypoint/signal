@@ -166,3 +166,34 @@ Kept for the record. Headless playwriter session, cache cleared over CDP before 
 
 - Single tab: body text 2191 characters; no canvas; all four `[data-rail-group]` elements `display:none`; about 1100 requests; 10 frame navigations; 77 to 82 `requestfailed`, all `ERR_ABORTED`; 0 page errors; 0 requests to any origin other than 127.0.0.1:4173.
 - Two tabs: 41 and 50 `ERR_ABORTED` in one run; 82 in each tab in an earlier run; 0 page errors; 0 non-local requests.
+
+## Headed run on :1: the adapter works, the world does not draw
+
+Route: `DISPLAY=:1 PLAYWRITER_BROWSER_PATH=/usr/bin/chromium playwriter browser start --headed --user-data-dir /tmp/verify/pw-headed-<ts>`, then a session with `playwriter session new` (no `--browser headless`). The browser started in 3.0 s wall (wrapper PID 1830743, `chromium.real` PID 1830746); the extension connected. Both PIDs were stopped with `kill` after the witnesses and are gone. The headless Chromium PID 1766856 was not started by this run and was left running.
+
+The four `PLAYWRITER_CHROMIUM_ARGS` flags were not applied. playwriter 0.9.0 reads `PLAYWRITER_BROWSER_PATH` but no chromium-args setting; the process has only the wrapper's flags (`--use-vulkan`, `--enable-features=Vulkan,VaapiVideoDecoder`, `--ignore-gpu-blocklist`). This is a gm defect: the bundled playwriter must read the args setting before the flags can be tested.
+
+`witness-headed.js` (one run in a new headed tab, step times from the run):
+
+| step | t |
+|---|---|
+| `/__health` loaded | 738 ms |
+| `navigator.gpu.requestAdapter()` on 127.0.0.1:4173 | 939 ms (88 ms in the call) |
+| kernel committed | 1005 ms |
+| wall state `no-wall` | 1147 ms |
+| 40 s poll done | 41744 ms |
+| canvases listed | 50698 ms |
+| pixels read | 88272 ms |
+
+Witness output: `SUMMARY {"adapter":{"secureContext":true,"userAgent":"Chrome/155.0.0.0","gpu":true,"adapterMs":88,"adapter":true,"vendor":"nvidia","architecture":"ampere","features":19},"scenario":null,"plateHits":0,"transitions":[{"atMs":1147,"state":"no-wall"}],"requested":{"engine-stand (WebGL2 world renderer)":0,"engine-stand-page":0,"engine-film":0,"engine-film-renderer":0,"worker-pipeline-compiler (WebGPU pipelines)":0,"authored-realm loader":1,"world-stand module (9d5c4347)":2}, ...}`
+
+Reading:
+
+- Adapter: met on the localhost page through the headed route (`adapter: true`, NVIDIA Ampere).
+- Wall: the `graphics-wont-start` card did not appear, and `/ready-plate` was never requested, so the scenario was not read. The wall is gone in this run, but the reason is the page never reaching that check, not a check that passed.
+- World: the outer page carries `data-spawn-stood` but not `spawn-world-shown`. No WebGL2 or WebGPU renderer module was requested. `witness-headed-state.js` took two screenshots 3 s apart: both 64138 bytes with the same hash, so nothing animates.
+- Cause: `witness-headed-faults.js` (30 s after load) counted 64 failed responses: 30 `world-store/values`, 1 `world-store/manifests/.../closure`, 4 `cdn/watch`, 3 `cdn/value.*.mp3`, 2 `worlds/summary`, 1 `cdn/resolve`, 1 `derived`, 2 `__local/*.mjs`, plus 9 `api/session/grant` 503s (the decided grant answer). The capture recorded the same 404s: `state/fetch-log.jsonl` has 37 `404` entries, 461 lines name `world-store/values`, and each 404 body is the same 35-byte JSON. The world's models and textures are not in the snapshot, which matches the `[Tome] ... spawned with no model` warnings.
+- Not proven: that the missing closure manifest is what stops the kernel from requesting the renderer modules. It is the likely gate.
+- Fixing it means fetching those values from `play.spawn.co`. This run was told nothing leaves the host, so it was not done. The 3D world stays open until the values are captured with the owner's go-ahead.
+
+playwriter defect, for gm: `newCDPSession` on a session's page fails with `Target.attachToBrowserTarget: No tab found`, also after `session reset`. The cache-clear step was dropped, so this run's profile was fresh, not cold-cache-cleared.
