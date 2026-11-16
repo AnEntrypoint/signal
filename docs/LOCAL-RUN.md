@@ -197,3 +197,16 @@ Reading:
 - Fixing it means fetching those values from `play.spawn.co`. This run was told nothing leaves the host, so it was not done. The 3D world stays open until the values are captured with the owner's go-ahead.
 
 playwriter defect, for gm: `newCDPSession` on a session's page fails with `Target.attachToBrowserTarget: No tab found`, also after `session reset`. The cache-clear step was dropped, so this run's profile was fresh, not cold-cache-cleared.
+
+## Missing world content: what exists locally, what does not
+
+Local search, no request leaves the host. `.spawn/local/audit-world-values.mjs <failures.json>` reproduces the counts below from `state/fetch-log.jsonl` and the manifests in `assets/play.spawn.co/`.
+
+- The two manifests `b095eb29…` and `f9148572…` reference 337 distinct values. 257 have a real body in `assets/play.spawn.co/_world-store_values_<hash>.bin` and are served. 80 have no body: the capture recorded them as 404 on both `play.spawn.co/world-store/values` and `spawnfile.io/dev/magic-assets/v5/values`. Those 80 are 138 `js.cut` paths (world script bundles), 16 `yml.cut` paths (data files), one `index.main.ground` and two list digests.
+- The headed kernel (`witness-headed-faults.js`, 30 s after load) made 38 distinct failing requests: 64 responses, of which 37 are 404 and one is the grant's 503. No failing request has a local body, so there was nothing to serve and the server was not changed. The headed witness was rerun once without a change to serving.
+- 35 of the 38 were never captured; 3 were captured as 404 (`cdn/value.<sha>.mp3`, whose hashes match world-store values that the capture recorded as `value_not_found`).
+- Which of the 80 the kernel needs is not measured: the headed kernel never requested them. The kernel requested nine pool modules (`/__local/<name>.mjs`) that are not in the pool capture. The session body's module map lists them, headed by `0ee7f7f7-a3f6c0cc75abc82f` with twelve dependencies; the boot graph is partial in the session body, so whether these nine block the renderer is not established.
+- Whether the kernel can run without the missing items is not determined. The headed kernel marks `data-spawn-stood` and does not mark `spawn-world-shown`. Removing a module from the served graph would change the page rather than measure it, and no missing item can be answered from this host.
+- Host search: a whole-host search for the nine module names, the three CDN audio hashes and the music clip name returned zero hits in its first pass. The second pass did not finish within the time limit, so the host search is incomplete. The open rows are 23 to 32 in `docs/PENDING_VALIDATION.md`.
+
+Playwriter defect, carried from the headed run: `newCDPSession` on a session's page fails with `No tab found`, so cache clearing was not used for these runs.
