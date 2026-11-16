@@ -20,6 +20,7 @@ Each change is committed locally. "Verified" means a headless playwriter run on 
 | 14 | `/ready-plate` answers `200` with an empty body (local stub; the hosted page is not captured because the request carries a device report) | `.spawn/local/serve-local.mjs` | Verified: no 404; the page renders. The stub is not the hosted plate |
 | 15 | Verified the kernel does not need `/ready-plate` content: `404`, empty `200` and a snapshot fragment give the same page state | `docs/LOCAL-RUN.md` (`/ready-plate` section) | Verified: table with `page.route` witness |
 | 16 | Cold single-tab witness prints every failure grouped by error and host (35 failures in the run, all `ERR_ABORTED`; the earlier print showed six of 48) | `.spawn/local/witness-cold-tab.js`; `docs/LOCAL-RUN.md` (final witness) | Verified: one cold run, grouped counts quoted |
+| 17 | `docs/LOCAL-RUN.md` gives the real snapshot path (`SNAPSHOT_ROOT=/workspace/signal`) in place of the placeholder; the default `.spawn/local/snapshot` is noted as absent | `docs/LOCAL-RUN.md` (where the runner lives, how to start) | Verified: the documented command starts on a spare port and reports `mappings: 4322` |
 
 Open, not verified:
 

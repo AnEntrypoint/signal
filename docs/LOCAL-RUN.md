@@ -7,12 +7,14 @@ Signal Stage runs from captured bytes with no network connection at runtime.
 - `.spawn/local/serve-local.mjs`: the server. It is workshop-only. `.spawn/` is not sent to the room (AGENTS.md), and the file imports `node:http` and `node:fs`, so it runs under Node in the workshop, never in the world.
 - `.spawn/local/capture-snapshot.mjs`: builds the snapshot from the hosted site. It needs network access and runs only at build time.
 - `.spawn/local/capture-missing.mjs`: captures pool modules that the kernel loads but the snapshot lacks. It makes GET requests only, follows the pool-name references in each captured module, and writes each file in the layout the server reads. Each capture is appended to `state/fetch-log.jsonl` with its sha256.
-- The snapshot (`assets/`, `raw/`, `state/`) is about 170 MB and is not in git. `SNAPSHOT_ROOT` points at it. The default is `.spawn/local/snapshot`, which is git-ignored.
+- The snapshot (`assets/`, `raw/`, `state/`) is about 170 MB and is not in git. In this workshop it is `/workspace/signal`, the directory that holds `assets/`, `raw/` and `state/` directly. `SNAPSHOT_ROOT` must point there. Without it the server uses `.spawn/local/snapshot`, which is git-ignored and does not exist here, so the server starts with no captured mappings.
 
 ## How to start
 
+Run from `world/signal-stage`:
+
 ```
-SNAPSHOT_ROOT=/path/to/snapshot PORT=4173 node .spawn/local/serve-local.mjs
+SNAPSHOT_ROOT=/workspace/signal PORT=4173 HOST=127.0.0.1 node .spawn/local/serve-local.mjs
 ```
 
 Open http://127.0.0.1:4173/. `GET /__health` reports the number of captured URL mappings and the number of misses since start.
