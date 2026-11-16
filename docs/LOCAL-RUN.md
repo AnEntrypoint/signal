@@ -26,7 +26,10 @@ Open http://127.0.0.1:4173/. `GET /__health` reports the number of captured URL 
 
 ## Last measured run
 
-Filled in by the Phase B check of this commit (see the Phase B note at the end of this file).
+Playwriter, http://127.0.0.1:4173/, two loads in fresh pages (profile cache kept between them):
+
+- Load A: body text 2550 characters; one canvas; all four \`[data-rail-group]\` elements \`display:none\`; 307 requests; 0 page errors; 0 requests to any origin other than 127.0.0.1:4173 (the 10 \`blob:\` URLs created by the page are not network requests); 8 \`requestfailed\`, all \`ERR_ABORTED\`.
+- Load B: body text 2550 characters; one canvas; rail hidden; 243 requests; 0 page errors; 0 non-local requests; 7 \`requestfailed\`, all \`ERR_ABORTED\`.
 
 ## What still does not work
 
