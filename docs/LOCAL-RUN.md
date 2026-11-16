@@ -210,3 +210,42 @@ Local search, no request leaves the host. `.spawn/local/audit-world-values.mjs <
 - Host search: a whole-host search for the nine module names, the three CDN audio hashes and the music clip name returned zero hits in its first pass. The second pass did not finish within the time limit, so the host search is incomplete. The open rows are 23 to 32 in `docs/PENDING_VALIDATION.md`.
 
 Playwriter defect, carried from the headed run: `newCDPSession` on a session's page fails with `No tab found`, so cache clearing was not used for these runs.
+
+## Build and check loop: measured from a cold start
+
+`.spawn/local/measure-loop.sh <out-dir>` runs each step once, in order: stop the server, the world check, the snapshot check, start the server, start the headed browser, the headed witness, stop the browser, stop the server. Every step prints its wall time, and the host load (1, 5 and 15 minutes) before and after. The host is shared: its load was 17 to 26 on 12 cores during these runs, from unrelated builds, so the numbers carry that noise.
+
+"Cold" here means the server is a new process that reads its state files again, and the headed browser starts on a fresh profile. The page cache is not dropped, because this host gives no root.
+
+Final run, committed state (`/tmp/verify/loop-final`):
+
+| step | wall | load before | load after | result |
+|---|---|---|---|---|
+| stop-old-server | 0.02 s | 22.81 | 22.81 | ok |
+| world-check (`scripts/check-world.mjs`) | 0.29 s | 22.81 | 22.81 | ok |
+| snapshot-check (`verify.py`) | 3.71 s | 22.81 | 23.30 | rc 1 (see below) |
+| server-start | 0.42 s | 23.30 | 23.30 | ok |
+| headed-browser-start | 3.29 s | 23.30 | 24.16 | ok |
+| headed-witness | 31.67 s | 24.16 | 26.14 | ok; longest step |
+| headed-browser-stop | 0.42 s | 26.14 | 26.14 | group gone |
+| stop-server | 0.01 s | 26.14 | 26.14 | ok |
+
+Total: 39.8 s. The headed witness is the longest step at 80% of it. Inside it: the page marks itself stood at 23.8 s after the poll starts (the kernel boot, which the local run cannot shorten), the frame check passes in 4 ms, and the one screenshot takes 3.9 s.
+
+The snapshot check exits 1 and has done so since before this loop: the captures changed files that `index.json` does not record (`assets/play.spawn.co/_v4_client_pool_1f6a49dc…`, `state/fetch-log.jsonl`), `world/signal-stage/.gitignore` changed, and the headed browser profile was written under `.playwriter/browser-profile`. It is reported, not fixed here: fixing it means regenerating `index.json`, which rewrites the snapshot's record.
+
+Baselines, same script, before the changes: extension route with the committed witness, 72.4 s total (witness 65.1 s); direct route with the committed witness, 70.2 s (witness 63.6 s).
+
+Candidates, in order, each measured once:
+
+| candidate | measured | decision |
+|---|---|---|
+| witness poll stops at `data-spawn-stood` instead of a fixed 40 s | 65.1 s to 43.0 s witness (extension route); outcome unchanged | kept (`963aaa8`) |
+| read each screen box once (three identical reads became one) | pixel list 3 to 1; the step time is not separable under load (17 to 20) | kept as a cleanup of identical reads (`09b7d3e`); no measured time gain claimed |
+| frame check replaces the fixed 8 s settle | 38.5 s to 26.1 s witness (direct route); frame ready in 4 ms | kept (`4da27fa`) |
+| no wait after stood at all | the screenshot hit the 30 s extension timeout; the run failed | rejected; reverted, the frame check is the wait |
+| attach by direct CDP instead of the extension | the extension's install keys did not identify our browser; browser start 3.6 s to 1.1 to 3.3 s | route changed for the timed run, same Chromium and display; the outcome is unchanged (`5c42df0`) |
+| browser stop waits for the group to exit instead of a fixed 2 s | 2.1 s to 0.29 s | kept (`5c42df0`) |
+| snapshot check reads a file once in the fetch-manifest loop | 0.50 s to 0.20 s on the 489 files, 0.3 s total: 0.8% of the 39.8 s loop | not applied: below 5%; `/workspace/signal` is not a git repository, so it could not be committed |
+
+The last candidate changed the check by 0.8% of wall time, so the loop stops there. What remains is the kernel's own boot (23.8 s), which is outside this repo, and the screenshot's compositor wait (3.9 s this run, 0.19 s in another), which the pixel evidence needs as it is. A lossy screenshot would change the counts, so it was not tried.
