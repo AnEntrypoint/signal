@@ -81,7 +81,16 @@ while (Date.now() - tPoll < 40000) {
   await new Promise((r) => setTimeout(r, 250));
 }
 step('poll-done', 'plateHits=' + plateHits + ' scenario=' + scenario);
-await new Promise((r) => setTimeout(r, 8000));
+const tReady = Date.now();
+for (;;) {
+  const frame = await p.evaluate(() => new Promise((r) => {
+    const t = setTimeout(() => r(false), 1000);
+    requestAnimationFrame(() => { clearTimeout(t); r(true); });
+  })).catch(() => false);
+  if (frame || Date.now() - tReady > 8000) break;
+  await new Promise((r) => setTimeout(r, 250));
+}
+step('ready', 'after=' + (Date.now() - tReady) + 'ms');
 const canvases = [];
 for (const f of p.frames()) {
   const info = await f.evaluate(() => [...document.querySelectorAll('canvas')].map((c) => {
@@ -104,7 +113,12 @@ for (const c of canvases) {
 }
 const pixels = [];
 for (const c of boxes.values()) {
+  const tFrame = Date.now();
+  await p.evaluate(() => new Promise((r) => requestAnimationFrame(() => r(1)))).catch(() => 0);
+  step('raf', 'ms=' + (Date.now() - tFrame));
+  const tShot = Date.now();
   const buf = await p.screenshot({ clip: { x: c.ox + c.x, y: c.oy + c.y, width: c.w, height: c.h } });
+  step('screenshot', 'ms=' + (Date.now() - tShot) + ' bytes=' + buf.length);
   const s = await d.evaluate(async (b64) => {
     const img = new Image();
     img.src = 'data:image/png;base64,' + b64;
