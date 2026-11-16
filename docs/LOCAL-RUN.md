@@ -32,6 +32,16 @@ Headless playwriter session (`playwriter session new --browser headless`), cache
 - Single tab, cache cleared: body text 2191 characters; no canvas; all four `[data-rail-group]` elements `display:none`; about 1100 requests; 10 frame navigations; 77 to 82 `requestfailed`, all `ERR_ABORTED`; 0 page errors; 0 requests to any origin other than 127.0.0.1:4173 (the `blob:` URLs the page creates are not network requests).
 - Two tabs loaded at the same time, cache cleared: 41 and 50 `ERR_ABORTED` in one run; 82 in each tab in an earlier run; 0 page errors; 0 non-local requests.
 
+## Final local witness
+
+The local run is closed on the decision that the `ERR_ABORTED` loads are known kernel behaviour. The bar for the local run is zero page errors and zero non-local requests, and both are met. Run on the server at HEAD (`serve-local.mjs` unpatched), playwriter headless session 3, `PLAYWRITER_WEBGPU=1` set on every run:
+
+- Cold single tab (`cold-tab.js`, cache cleared): body text 2191 characters; `canvases: 0`; all four `[data-rail-group]` elements `display:none`; 1067 requests; 10 frame navigations; 80 `requestfailed`, all `ERR_ABORTED`; `pageErrors: []`; `nonLocal: []`.
+- Two tabs loaded at the same time (`concurrent.js`, cache cleared): tab 0 has 81 `ERR_ABORTED`, tab 1 has 81; both have body text 2191, `canvases: 0`, `pageErrors: 0`, `nonLocal: 0`.
+- `PLAYWRITER_WEBGPU=1` made no difference. The variable is not read anywhere in the installed playwriter package, and the canvas count is 0 with and without it. The 3D world does not draw in this headless session.
+
+What the witnesses do not count: `requestfailed` only sees network failures, and the local server answers some requests with 404 responses, which are not failures there. On the cold load the response-level check (`http-errs.js`) recorded 148 responses with status 400 or above. These are the outer page's `/_next/image` requests for `spawnfile.io` character assets, `/icon.png`, `/ready-plate`, and the `503` grant responses. The server's `/__health` reports 33 misses: pool modules the snapshot does not contain (`/__misses` lists them). They are local 404s, not requests to another origin, and the page still renders with the same text.
+
 ## Known kernel behaviour: the `ERR_ABORTED` loads
 
 The 41 to 82 aborted loads per page load are a known kernel behaviour, not a local-server fault. They are kept as the captured kernel produces them, and no serve-time patch removes them with the 503 grant in place.
@@ -48,6 +58,6 @@ What the runtime trace showed (playwriter, an init script wrapping `AbortControl
 
 - Zero failed requests is not reached. The `ERR_ABORTED` requests come from the kernel's own frames. The session frame is created, then the kernel creates and removes helper frames (`/kernel-witness`, `about:blank`, the authored realm). Navigation aborts the loads the replaced frame had in flight. Frame detach events were not observed in the recorded runs.
 - A localizer change that answered same-path session writes with `history.replaceState` was tried. The kernel's session writes do not go through `iframe.src`, so it did nothing, and it was reverted.
-- The 3D world needs WebGL or WebGPU. The headless session draws no canvas.
+- The 3D world needs WebGL or WebGPU. The headless session draws no canvas, with or without `PLAYWRITER_WEBGPU=1`.
 - The realtime WebSocket to the local origin fails.
 - The local run shows the captured copy of the world in the snapshot. Commits to this repository do not change what it shows.
