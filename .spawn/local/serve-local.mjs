@@ -77,11 +77,12 @@ const origins = [
   'https://play.spawn.co',
   'https://spawnfile.io',
   'https://kiln.spawn.co',
+  'https://maps.spawnfile.io',
 ];
 function rewrite(text) {
   let out = text.replace(/<base\s+href=["'][^"']*["']\s*\/?>/gi, '');
   const originAlternation = origins.map((o) => o.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
-  const externalUrl = new RegExp('(?<=["\'=(\\s])(' + originAlternation + ')(/[^\\\\"\'<>\\s\\)`{}$]*)?', 'g');
+  const externalUrl = new RegExp('(?<=["\'`=(\\s])(' + originAlternation + ')(/[^\\\\"\'<>\\s\\)`{}$]*)?', 'g');
   const quotedOrigin = new RegExp('(["\'`])(' + originAlternation + ')\\1(?!:)', 'g');
   out = out.replace(quotedOrigin, (match, quote) => `${quote}${BASE}${quote}`);
   out = out.replace(externalUrl, (match, origin, path = '') => {
@@ -121,12 +122,8 @@ const server = http.createServer((req, res) => {
     send(res, 200, withLocalizer(rewrite(outerStatic(readFileSync(join(ROOT, 'raw/http/dev-page.body'), 'utf8')))), types['.html']);
     return;
   }
-  if (pathname.startsWith('/api/session/grant')) {
-    send(res, 200, '{}', types['.json']);
-    return;
-  }
-  if (pathname.startsWith('/api/sdk/')) {
-    send(res, 503, JSON.stringify({ error: 'local snapshot: the sdk is not reachable offline' }), types['.json']);
+  if (pathname.startsWith('/api/session/grant') || pathname.startsWith('/api/sdk/')) {
+    send(res, 503, JSON.stringify({ error: 'local snapshot: no session grant or sdk call is answered offline' }), types['.json']);
     return;
   }
   if (STATIC_ORIGIN_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {

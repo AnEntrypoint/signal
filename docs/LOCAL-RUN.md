@@ -19,21 +19,23 @@ Open http://127.0.0.1:4173/. `GET /__health` reports the number of captured URL 
 ## What is removed or changed
 
 - The outer Next.js app does not run. `/` serves the captured HTML with the Next runtime scripts (`/_next/` script tags), their preload links and the `self.__next_f.push` data removed. The captured server markup is shown as is. React hydration error #418 no longer occurs.
-- Hosted origins (play.spawn.co, spawn.co, spawnfile.io, kiln, bigspawn) are rewritten to local `/__local/` routes. An inline localizer sends iframe `src` and string `fetch` URLs for those origins to local routes.
+- Hosted origins (play.spawn.co, spawn.co, spawnfile.io, kiln, bigspawn, maps.spawnfile.io) are rewritten to local `/__local/` routes, including origins that appear in backtick template literals. An inline localizer sends iframe `src` and string `fetch` URLs for the play, spawn and kiln origins to local routes.
 - The sidebar: elements matching `[data-rail-group]` are hidden with `display:none`. They are not deleted from the DOM.
-- Session grant: `/api/session/grant` answers `200 {}`. It issues no token and no bearer, and no hosted credential is replayed. `/api/sdk/*` answers `503`.
-- Cache probes: `only-if-cached` in served JS and HTML is rewritten to `default`. The local server answers the probe, so it no longer fails with `ERR_CACHE_MISS`.
+- Session grant: `/api/session/grant` and `/api/sdk/*` answer `503` JSON. No token or bearer is issued or replayed.
+- Cache probes: `only-if-cached` in served JS and HTML is rewritten to `default`, so the local server answers the probe.
+- Module and session responses are `immutable`. After a change to the rewrite rules, clear the browser cache, or a profile keeps the old bytes.
 
 ## Last measured run
 
-Playwriter, http://127.0.0.1:4173/, two loads in fresh pages (profile cache kept between them):
+Headless playwriter session (`playwriter session new --browser headless`), cache cleared over CDP before each load, `http://127.0.0.1:4173/`:
 
-- Load A: body text 2550 characters; one canvas; all four `[data-rail-group]` elements `display:none`; 307 requests; 0 page errors; 0 requests to any origin other than 127.0.0.1:4173 (the 10 `blob:` URLs created by the page are not network requests); 8 `requestfailed`, all `ERR_ABORTED`.
-- Load B: body text 2550 characters; one canvas; rail hidden; 243 requests; 0 page errors; 0 non-local requests; 7 `requestfailed`, all `ERR_ABORTED`.
+- Single tab: body text 2191 characters; no canvas; all four `[data-rail-group]` elements `display:none`; 1068 requests; 10 frame navigations; 82 `requestfailed`, all `ERR_ABORTED`; 0 page errors; 0 requests to any origin other than 127.0.0.1:4173 (the `blob:` URLs the page creates are not network requests).
+- Two tabs loaded at the same time: each tab 82 `ERR_ABORTED`; 0 page errors; 0 non-local requests.
 
 ## What still does not work
 
-- The kernel navigates its session frame several times at startup (session, session with `?standRows=on` or `?oneask=on`, then `about:blank`). Each navigation aborts the previous document's in-flight loads. 7 to 8 requests end `ERR_ABORTED` on each load in a single tab. This is not fixed. With other kernel tabs open on the same server, one check showed 39 and another 165, so measure with one tab open.
-- The 3D world needs WebGL or WebGPU. The playwriter browser runs with `--disable-gpu`, so the world may not draw there.
+- Zero failed requests is not reached. The `ERR_ABORTED` requests come from the kernel's own frames. The session frame is created, then the kernel creates and removes helper frames (`/kernel-witness`, `about:blank`, the authored realm). Frame removal and navigation abort the loads the removed frame had in flight. With the grant answered `200 {}` the count was about 7 on a warm cache, so the grant 503 is the main driver of the count.
+- A localizer change that answered same-path session writes with `history.replaceState` was tried. The kernel's session writes do not go through `iframe.src`, so it did nothing, and it was reverted.
+- The 3D world needs WebGL or WebGPU. The headless session draws no canvas.
 - The realtime WebSocket to the local origin fails.
 - The local run shows the captured copy of the world in the snapshot. Commits to this repository do not change what it shows.

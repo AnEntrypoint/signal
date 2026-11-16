@@ -1,20 +1,26 @@
 # Pending validation
 
-Each change is committed locally. "Verified" means a playwriter run on http://127.0.0.1:4173/ showed the stated result.
+Each change is committed locally. "Verified" means a headless playwriter run on http://127.0.0.1:4173/ showed the stated result.
 
 | # | Change | Where | Status |
 |---|---|---|---|
-| 1 | Runner moved out of the world tree to the workshop-only path `.spawn/local/`; `SNAPSHOT_ROOT` picks the snapshot | `.spawn/local/serve-local.mjs`, `.spawn/local/capture-snapshot.mjs` | Syntax checked; Phase B check pending |
+| 1 | Runner at the workshop-only path `.spawn/local/`; `SNAPSHOT_ROOT` picks the snapshot | `.spawn/local/serve-local.mjs`, `.spawn/local/capture-snapshot.mjs` | Verified: served on 4173 from this path |
 | 2 | Snapshot directory ignored under the new path | `.gitignore` | Added |
-| 3 | `/` drops the Next runtime scripts, preload links and `__next_f` pushes, so the outer app does not hydrate | `.spawn/local/serve-local.mjs` (`outerStatic`) | Verified: 0 page errors on both loads (React #418 gone) |
-| 4 | `only-if-cached` rewritten to `default` in served text | `.spawn/local/serve-local.mjs` (`rewrite`) | Removes the warm-load `ERR_CACHE_MISS` failures; verified in the Phase B check |
-| 5 | Session grant answers `200 {}`, SDK stays `503` | `.spawn/local/serve-local.mjs` | Verified: the grant failures that caused reloads are gone; 7 to 8 \`ERR_ABORTED\` remain from the kernel's own navigations |
-| 6 | Sidebar hidden with `[data-rail-group]{display:none!important}` | `.spawn/local/serve-local.mjs` (localizer) | Verified: rail groups \`display:none\` on both loads |
-| 7 | Docs rewritten for the new path, the removed items and the open failures | `docs/LOCAL-RUN.md` | Added |
-| 8 | This list | `docs/PENDING_VALIDATION.md` | Added |
+| 3 | `/` drops the Next runtime scripts, preload links and `__next_f` pushes | `.spawn/local/serve-local.mjs` (`outerStatic`) | Verified: 0 page errors |
+| 4 | `only-if-cached` rewritten to `default` in served text | `.spawn/local/serve-local.mjs` (`rewrite`) | Verified: no `ERR_CACHE_MISS` |
+| 5 | Session grant and SDK answer `503` JSON (was `200 {}` in `04601ff`) | `.spawn/local/serve-local.mjs` | Verified: the page loads; 82 `ERR_ABORTED` remain |
+| 6 | Sidebar hidden with `[data-rail-group]{display:none!important}` | `.spawn/local/serve-local.mjs` (localizer) | Verified: all four groups `display:none` |
+| 7 | Origin `https://maps.spawnfile.io` added to the rewrite list | `.spawn/local/serve-local.mjs` (`origins`) | Verified: 0 non-local requests after a cache clear |
+| 8 | Rewrite also matches origins preceded by a backtick | `.spawn/local/serve-local.mjs` (`rewrite`, `externalUrl`) | Verified with row 7 |
+| 9 | Docs rewritten for the current state | `docs/LOCAL-RUN.md` | Added |
+| 10 | This list | `docs/PENDING_VALIDATION.md` | Added |
+
+Open, not verified:
+
+- Zero `ERR_ABORTED` (single tab and concurrent tabs). Not reached: 82 per tab with the 503 grant.
 
 Tried and not kept:
 
-- Rewriting `cache:"reload"` to `cache:"default"`: the same 5 `ERR_ABORTED` remained.
-- Removing the eager kernel frame's `src`: the aborts went away, but the session never loaded, so the world did not run.
-- Starting the eager frame at the URL the kernel navigates to (`?standRows=on`): the kernel still navigates again, and 6 requests failed.
+- A localizer that answers same-path session writes with `history.replaceState` instead of navigating: the kernel does not write through `iframe.src`, so it never ran. Reverted.
+- Rewriting `cache:"reload"` to `cache:"default"`: the same aborts remained. Reverted.
+- Removing the eager kernel frame's `src`: the aborts went away, but the session never loaded.
