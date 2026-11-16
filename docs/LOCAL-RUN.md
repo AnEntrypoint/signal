@@ -68,7 +68,14 @@ Cause, measured in the installed playwriter:
 - The settings the installed package does read: `AGENT_GRAPHICS` (kitty image output only), `HEADFUL` (test utilities only, not the session launch), and `PLAYWRITER_*` for the CLI and relay. None sets a GPU or WebGPU flag. `PLAYWRITER_WEBGPU` is not read anywhere in the package.
 - `--use-angle` was not passed by hand, and no second Chromium was started.
 
-The gm change needed: the headless launch in `executor.js` should accept a Chromium argument list from an environment variable (for example `PLAYWRITER_CHROMIUM_ARGS`) and pass it as `args` to `chromium.launch`. Which flags make a WebGPU adapter appear on this Linux headless Chromium is not verified here, because that needs the launch change and a fresh browser; it is recorded as open in `docs/PENDING_VALIDATION.md`.
+The gm change needed, and the contract it is checked against:
+
+- Variable name: `PLAYWRITER_CHROMIUM_ARGS`.
+- Format: a JSON array of strings, for example `PLAYWRITER_CHROMIUM_ARGS='["<flag>", "<flag>"]'`. The strings are passed as given; the variable is not split on spaces.
+- Where: the headless launch in `playwriter/dist/executor.js`, the `chromium.launch({ headless: true, executablePath })` call (around line 830). The change adds `args: <parsed array>` to that object. Unset or empty means no extra arguments, so the current behaviour is unchanged.
+- Check after the change, in a fresh headless session with the variable set: `navigator.gpu.requestAdapter()` returns an adapter (not `null`), and the kernel frame has a canvas (the world draws). Without the variable, the same check returns `null` as measured above.
+
+Which flags make a WebGPU adapter appear on this Linux headless Chromium is not verified here. That needs the launch change and a fresh browser, and `--use-angle` was not passed by hand. The item stays open in `docs/PENDING_VALIDATION.md`.
 
 ## Known kernel behaviour: the `ERR_ABORTED` loads
 
