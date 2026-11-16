@@ -88,7 +88,14 @@ function rewrite(text) {
     const absolute = origin + path;
     return `${BASE}/__local/${encodeURIComponent(absolute)}`;
   });
-  return out;
+  return out.replace(/only-if-cached/g, 'default');
+}
+
+function outerStatic(html) {
+  return html
+    .replace(/<link rel="preload" as="script"[^>]*>/g, '')
+    .replace(/<script\b[^>]*\bsrc="[^"]*\/_next\/[^"]*"[^>]*><\/script>/g, '')
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/g, (m) => (m.includes('self.__next_f.push') ? '' : m));
 }
 
 const IMMUTABLE_CACHE = 'public, max-age=31536000, immutable';
@@ -111,11 +118,15 @@ const server = http.createServer((req, res) => {
   const url = new URL(req.url, BASE);
   const pathname = decodeURIComponent(url.pathname);
   if (pathname === '/' || pathname === '/index.html' || pathname === '/outer') {
-    send(res, 200, withLocalizer(rewrite(readFileSync(join(ROOT, 'raw/http/dev-page.body'), 'utf8'))), types['.html']);
+    send(res, 200, withLocalizer(rewrite(outerStatic(readFileSync(join(ROOT, 'raw/http/dev-page.body'), 'utf8')))), types['.html']);
     return;
   }
-  if (pathname.startsWith('/api/session/grant') || pathname.startsWith('/api/sdk/')) {
-    send(res, 503, JSON.stringify({ error: 'local snapshot: no session grant is issued offline' }), types['.json']);
+  if (pathname.startsWith('/api/session/grant')) {
+    send(res, 200, '{}', types['.json']);
+    return;
+  }
+  if (pathname.startsWith('/api/sdk/')) {
+    send(res, 503, JSON.stringify({ error: 'local snapshot: the sdk is not reachable offline' }), types['.json']);
     return;
   }
   if (STATIC_ORIGIN_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {
