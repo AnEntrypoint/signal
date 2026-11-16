@@ -90,9 +90,15 @@ for (const f of p.frames()) {
 step('canvases-listed', 'count=' + canvases.length);
 const d = await context.newPage();
 await d.setContent('<html></html>');
-const pixels = [];
+const boxes = new Map();
 for (const c of canvases) {
   if (c.w < 2 || c.h < 2) continue;
+  const key = [c.ox + c.x, c.oy + c.y, c.w, c.h].join(',');
+  if (!boxes.has(key)) boxes.set(key, { ...c, bitmaps: [] });
+  boxes.get(key).bitmaps.push(c.bitmap);
+}
+const pixels = [];
+for (const c of boxes.values()) {
   const buf = await p.screenshot({ clip: { x: c.ox + c.x, y: c.oy + c.y, width: c.w, height: c.h } });
   const s = await d.evaluate(async (b64) => {
     const img = new Image();
@@ -112,7 +118,7 @@ for (const c of canvases) {
     }
     return { uniqueColors: seen.size, litShare: +(lit / (px.length / 4)).toFixed(3) };
   }, buf.toString('base64'));
-  pixels.push({ frame: c.frame, bitmap: c.bitmap, box: [Math.round(c.x + c.ox), Math.round(c.y + c.oy), Math.round(c.w), Math.round(c.h)], ...s });
+  pixels.push({ frame: c.frame, bitmaps: c.bitmaps, box: [Math.round(c.x + c.ox), Math.round(c.y + c.oy), Math.round(c.w), Math.round(c.h)], ...s });
 }
 step('pixels-read');
 const top = Object.entries(messages).sort((a, b) => b[1] - a[1]).slice(0, 12).map(([k, v]) => v + 'x ' + k);
