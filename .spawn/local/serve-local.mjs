@@ -4,6 +4,7 @@ import http from 'node:http';
 import { createReadStream, existsSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { extname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { answerLocalGrant, isLoopbackRequest } from './replacements/grant-local.mjs';
 
 const ROOT = resolve(process.env.SNAPSHOT_ROOT || fileURLToPath(new URL('./snapshot', import.meta.url)));
 const ASSETS = join(ROOT, 'assets');
@@ -149,9 +150,34 @@ function spawnfilePoolAlias(urlText) {
   return null;
 }
 
+const GRANT_BODY_LIMIT = 4096;
+const STUB_BODY = JSON.stringify({ error: 'local snapshot: no session grant or sdk call is answered offline' });
+
+function grantRoute(req, res) {
+  const chunks = [];
+  let size = 0;
+  req.on('data', (chunk) => {
+    size += chunk.length;
+    if (size <= GRANT_BODY_LIMIT) chunks.push(chunk);
+  });
+  req.on('end', () => {
+    const answer = size <= GRANT_BODY_LIMIT && isLoopbackRequest(req, PORT) ? answerLocalGrant(Buffer.concat(chunks).toString('utf8'), Date.now()) : null;
+    if (answer) {
+      res.writeHead(200, { 'Content-Type': types['.json'], 'Cache-Control': 'no-store' });
+      res.end(JSON.stringify(answer));
+      return;
+    }
+    send(res, 503, STUB_BODY, types['.json']);
+  });
+}
+
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, BASE);
   const pathname = decodeURIComponent(url.pathname);
+  if (req.method === 'POST' && pathname === '/api/session/grant') {
+    grantRoute(req, res);
+    return;
+  }
   if (pathname === '/' || pathname === '/index.html' || pathname === '/outer') {
     send(res, 200, withLocalizer(rewrite(outerStatic(readFileSync(join(ROOT, 'raw/http/dev-page.body'), 'utf8')))), types['.html']);
     return;
