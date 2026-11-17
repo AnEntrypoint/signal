@@ -1,0 +1,9 @@
+[
+  {
+    "url": "https://r7bg2tewa-playco.spawnfile.io/v4/client/pool/tome-ui/authored-realm-kept-f239caa792d8b017.html",
+    "file": "world/signal-stage/.spawn/local/replacements/realm-shell.html",
+    "sha256": "6fd3eac3e13ccfbee5da15b5e80bdbf6aa0739003fff6ab93becee87ab7964c3",
+    "replaces": "tome-ui/authored-realm-kept-f239caa792d8b017.html, served by spawnfile.io (out of scope)",
+    "what": "realm shell: imports the in-scope engine-authored-realm module (01daf0ef), calls bootstrapAuthoredRealm, and answers the host with ready"
+  }
+]

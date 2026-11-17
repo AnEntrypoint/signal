@@ -47,6 +47,13 @@ for (const name of ['state/fetch-log.jsonl', 'state/local-engine-fetch.jsonl', '
   }
   loaded.push({ file: name, present: true, lines, mapped, sha256: createHash('sha256').update(text).digest('hex') });
 }
+const replacementMapPath = fileURLToPath(new URL('./replacements/map.json', import.meta.url));
+if (existsSync(replacementMapPath)) {
+  const replacementText = readFileSync(replacementMapPath, 'utf8');
+  const replacements = JSON.parse(replacementText);
+  for (const entry of replacements) fetchLog.set(entry.url, entry.file);
+  loaded.push({ file: 'replacements/map.json', present: true, lines: replacements.length, mapped: replacements.length, sha256: createHash('sha256').update(replacementText).digest('hex') });
+}
 const PINNED_MAPPINGS = fetchLog.size;
 const expectMappings = process.env.EXPECT_MAPPINGS;
 if (expectMappings !== undefined && Number(expectMappings) !== PINNED_MAPPINGS) {
