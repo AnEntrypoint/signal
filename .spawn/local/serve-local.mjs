@@ -114,6 +114,8 @@ function rewrite(text) {
   out = out.replace(quotedOrigin, (match, quote) => `${quote}${BASE}${quote}`);
   out = out.replace(externalUrl, (match, origin, path = '') => {
     const absolute = origin + path;
+    const sessionWorld = absolute.match(/^https:\/\/play\.spawn\.co\/(session\/world%3A.*)$/);
+    if (sessionWorld) return `${BASE}/${sessionWorld[1]}`;
     return `${BASE}/__local/${encodeURIComponent(absolute)}`;
   });
   return out.replace(/only-if-cached/g, 'default');
@@ -127,7 +129,7 @@ function outerStatic(html) {
 }
 
 const IMMUTABLE_CACHE = 'public, max-age=31536000, immutable';
-const LOCALIZER = `<script>(function(){var hosted=['https://play.spawn.co','https://www.spawn.co','https://kiln.spawn.co'];function localize(value){var text=String(value);if(/^https:\\/\\/[a-z0-9-]+\\.spawnfile\\.io\\//.test(text))return location.origin+'/__local/'+encodeURIComponent(text);for(var i=0;i<hosted.length;i++){if(text.indexOf(hosted[i])===0){return location.origin+'/__local/'+encodeURIComponent(text);}}return value;}var descriptor=Object.getOwnPropertyDescriptor(HTMLIFrameElement.prototype,'src');Object.defineProperty(HTMLIFrameElement.prototype,'src',{configurable:true,enumerable:descriptor.enumerable,get:descriptor.get,set:function(value){return descriptor.set.call(this,localize(value));}});var setAttribute=Element.prototype.setAttribute;Element.prototype.setAttribute=function(name,value){return setAttribute.call(this,name,name==='src'&&this instanceof HTMLIFrameElement?localize(value):value);};var nativeFetch=window.fetch;window.fetch=function(input,init){if(typeof input==='string'){input=localize(input);}return nativeFetch.call(this,input,init);};var railStyle=document.createElement('style');railStyle.textContent='[data-rail-group]{display:none!important}';document.documentElement.appendChild(railStyle);})();</script>`;
+const LOCALIZER = `<script>(function(){var hosted=['https://play.spawn.co','https://www.spawn.co','https://kiln.spawn.co'];function localize(value){var text=String(value);if(text.indexOf('https://play.spawn.co/session/world%3A')===0)return location.origin+'/session/'+text.slice('https://play.spawn.co/session/'.length);if(/^https:\\/\\/[a-z0-9-]+\\.spawnfile\\.io\\//.test(text))return location.origin+'/__local/'+encodeURIComponent(text);for(var i=0;i<hosted.length;i++){if(text.indexOf(hosted[i])===0){return location.origin+'/__local/'+encodeURIComponent(text);}}return value;}var descriptor=Object.getOwnPropertyDescriptor(HTMLIFrameElement.prototype,'src');Object.defineProperty(HTMLIFrameElement.prototype,'src',{configurable:true,enumerable:descriptor.enumerable,get:descriptor.get,set:function(value){return descriptor.set.call(this,localize(value));}});var setAttribute=Element.prototype.setAttribute;Element.prototype.setAttribute=function(name,value){return setAttribute.call(this,name,name==='src'&&this instanceof HTMLIFrameElement?localize(value):value);};var nativeFetch=window.fetch;window.fetch=function(input,init){if(typeof input==='string'){input=localize(input);}return nativeFetch.call(this,input,init);};var railStyle=document.createElement('style');railStyle.textContent='[data-rail-group]{display:none!important}';document.documentElement.appendChild(railStyle);})();</script>`;
 function withLocalizer(html) {
   return html.replace(/<head[^>]*>/, (tag) => tag + LOCALIZER);
 }
@@ -163,7 +165,9 @@ function grantRoute(req, res) {
   req.on('end', () => {
     const answer = size <= GRANT_BODY_LIMIT && isLoopbackRequest(req, PORT) ? answerLocalGrant(Buffer.concat(chunks).toString('utf8'), Date.now()) : null;
     if (answer) {
-      res.writeHead(200, { 'Content-Type': types['.json'], 'Cache-Control': 'no-store' });
+      const headers = { 'Content-Type': types['.json'], 'Cache-Control': 'no-store' };
+      if (answer.admitted === undefined) headers['x-spawn-edge-guest'] = 'served';
+      res.writeHead(200, headers);
       res.end(JSON.stringify(answer));
       return;
     }
@@ -206,6 +210,18 @@ const server = http.createServer((req, res) => {
     res.writeHead(200, { 'Content-Type': types[extname(chunk).toLowerCase()] || 'application/octet-stream', 'Access-Control-Allow-Origin': '*', 'Cache-Control': IMMUTABLE_CACHE });
     createReadStream(chunk).pipe(res);
     return;
+  }
+  if (req.method === 'GET' && /^\/session\/.+\.(mjs|json|html)$/.test(url.pathname)) {
+    const module = localPathFor('https://play.spawn.co/v4/client/pool/' + url.pathname.slice('/session/'.length));
+    if (module && extname(module).toLowerCase() === '.html') {
+      send(res, 200, withLocalizer(rewrite(readFileSync(module, 'utf8'))), types['.html'], IMMUTABLE_CACHE);
+      return;
+    }
+    if (module) {
+      res.writeHead(200, { 'Content-Type': types[extname(module).toLowerCase()] || 'application/octet-stream', 'Access-Control-Allow-Origin': '*', 'Cache-Control': IMMUTABLE_CACHE });
+      createReadStream(module).pipe(res);
+      return;
+    }
   }
   if (pathname === '/session' || pathname.startsWith('/session/')) {
     send(res, 200, withLocalizer(rewrite(readFileSync(join(ROOT, 'raw/http/session-dev.body'), 'utf8'))), types['.html'], IMMUTABLE_CACHE);

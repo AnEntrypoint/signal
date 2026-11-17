@@ -28,7 +28,7 @@ const request = (host, { method = 'POST', origin, body = JSON.stringify({ world:
   const req = http.request({ host: '127.0.0.1', port: PORT, path, method, headers }, (res) => {
     let text = '';
     res.on('data', (c) => { text += c; });
-    res.on('end', () => resolve({ status: res.statusCode, text }));
+    res.on('end', () => resolve({ status: res.statusCode, text, headers: res.headers }));
   });
   req.on('error', reject);
   req.end(body);
@@ -47,6 +47,10 @@ try {
   const loop = await request(`127.0.0.1:${PORT}`);
   expect(loop.status === 200, 'loopback grant status 200, got ' + loop.status);
   expect(loop.status === 200 && 'grantWire' in JSON.parse(loop.text), 'loopback grant body has grantWire');
+  expect(loop.headers['x-spawn-edge-guest'] === 'served', 'world-only grant asks the page for the edge grant');
+  const edge = await request(`127.0.0.1:${PORT}`, { body: JSON.stringify({ world: WORLD, edge: true }) });
+  expect(edge.status === 200 && 'admitted' in JSON.parse(edge.text) && 'mediaPass' in JSON.parse(edge.text), 'edge grant returns admitted and mediaPass');
+  expect(edge.headers['x-spawn-edge-guest'] === undefined, 'edge grant does not ask again');
   const foreignHost = await request(`evil.example:${PORT}`);
   expect(foreignHost.status === 503, 'foreign Host gets the 503 stub, got ' + foreignHost.status);
   const foreignOrigin = await request(`127.0.0.1:${PORT}`, { origin: 'https://evil.example' });
