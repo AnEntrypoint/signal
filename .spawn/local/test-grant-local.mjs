@@ -55,6 +55,10 @@ try {
   expect(getGrant.status === 503, 'GET grant gets the 503 stub, got ' + getGrant.status);
   const sdk = await request(`127.0.0.1:${PORT}`, { path: '/api/sdk/v1/x/agent/rooms' });
   expect(sdk.status === 503, 'sdk call stays the 503 stub, got ' + sdk.status);
+  const attach = await request(`127.0.0.1:${PORT}`, { path: '/session/attach/warm?world=' + WORLD + '&arm=1', body: '' });
+  expect(attach.status === 204, 'loopback attach/warm answers 204, got ' + attach.status);
+  const foreignAttach = await request(`evil.example:${PORT}`, { path: '/session/attach/warm?world=' + WORLD + '&arm=1', body: '' });
+  expect(foreignAttach.status !== 204, 'foreign attach/warm never gets the local 204, got ' + foreignAttach.status);
   console.log(`grant loopback=${loop.status} foreignHost=${foreignHost.status} foreignOrigin=${foreignOrigin.status} get=${getGrant.status} sdk=${sdk.status}`);
 } catch (error) {
   failures.push(String(error.message || error));

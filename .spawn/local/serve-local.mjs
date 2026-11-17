@@ -178,6 +178,12 @@ const server = http.createServer((req, res) => {
     grantRoute(req, res);
     return;
   }
+  if (req.method === 'POST' && pathname === '/session/attach/warm' && isLoopbackRequest(req, PORT)) {
+    req.resume();
+    res.writeHead(204, { 'Cache-Control': 'no-store' });
+    res.end();
+    return;
+  }
   if (pathname === '/' || pathname === '/index.html' || pathname === '/outer') {
     send(res, 200, withLocalizer(rewrite(outerStatic(readFileSync(join(ROOT, 'raw/http/dev-page.body'), 'utf8')))), types['.html']);
     return;
