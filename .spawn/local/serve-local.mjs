@@ -107,7 +107,7 @@ const origins = [
 ];
 function rewrite(text) {
   let out = text.replace(/<base\s+href=["'][^"']*["']\s*\/?>/gi, '');
-  const originAlternation = origins.map((o) => o.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+  const originAlternation = origins.map((o) => o.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + '|https://[a-z0-9-]+\\.spawnfile\\.io';
   const externalUrl = new RegExp('(?<=["\'`=(\\s])(' + originAlternation + ')(/[^\\\\"\'<>\\s\\)`{}$]*)?', 'g');
   const quotedOrigin = new RegExp('(["\'`])(' + originAlternation + ')\\1(?!:)', 'g');
   out = out.replace(quotedOrigin, (match, quote) => `${quote}${BASE}${quote}`);
@@ -126,7 +126,7 @@ function outerStatic(html) {
 }
 
 const IMMUTABLE_CACHE = 'public, max-age=31536000, immutable';
-const LOCALIZER = `<script>(function(){var hosted=['https://play.spawn.co','https://www.spawn.co','https://kiln.spawn.co'];function localize(value){var text=String(value);for(var i=0;i<hosted.length;i++){if(text.indexOf(hosted[i])===0){return location.origin+'/__local/'+encodeURIComponent(text);}}return value;}var descriptor=Object.getOwnPropertyDescriptor(HTMLIFrameElement.prototype,'src');Object.defineProperty(HTMLIFrameElement.prototype,'src',{configurable:true,enumerable:descriptor.enumerable,get:descriptor.get,set:function(value){return descriptor.set.call(this,localize(value));}});var setAttribute=Element.prototype.setAttribute;Element.prototype.setAttribute=function(name,value){return setAttribute.call(this,name,name==='src'&&this instanceof HTMLIFrameElement?localize(value):value);};var nativeFetch=window.fetch;window.fetch=function(input,init){if(typeof input==='string'){input=localize(input);}return nativeFetch.call(this,input,init);};var railStyle=document.createElement('style');railStyle.textContent='[data-rail-group]{display:none!important}';document.documentElement.appendChild(railStyle);})();</script>`;
+const LOCALIZER = `<script>(function(){var hosted=['https://play.spawn.co','https://www.spawn.co','https://kiln.spawn.co'];function localize(value){var text=String(value);if(/^https:\\/\\/[a-z0-9-]+\\.spawnfile\\.io\\//.test(text))return location.origin+'/__local/'+encodeURIComponent(text);for(var i=0;i<hosted.length;i++){if(text.indexOf(hosted[i])===0){return location.origin+'/__local/'+encodeURIComponent(text);}}return value;}var descriptor=Object.getOwnPropertyDescriptor(HTMLIFrameElement.prototype,'src');Object.defineProperty(HTMLIFrameElement.prototype,'src',{configurable:true,enumerable:descriptor.enumerable,get:descriptor.get,set:function(value){return descriptor.set.call(this,localize(value));}});var setAttribute=Element.prototype.setAttribute;Element.prototype.setAttribute=function(name,value){return setAttribute.call(this,name,name==='src'&&this instanceof HTMLIFrameElement?localize(value):value);};var nativeFetch=window.fetch;window.fetch=function(input,init){if(typeof input==='string'){input=localize(input);}return nativeFetch.call(this,input,init);};var railStyle=document.createElement('style');railStyle.textContent='[data-rail-group]{display:none!important}';document.documentElement.appendChild(railStyle);})();</script>`;
 function withLocalizer(html) {
   return html.replace(/<head[^>]*>/, (tag) => tag + LOCALIZER);
 }
@@ -139,6 +139,14 @@ function send(res, status, body, contentType = 'text/plain; charset=utf-8', cach
     'Cache-Control': cacheControl,
   });
   res.end(body);
+}
+
+function spawnfilePoolAlias(urlText) {
+  try {
+    const u = new URL(urlText);
+    if (/\.spawnfile\.io$/.test(u.hostname) && u.pathname.startsWith('/v4/client/pool/')) return 'https://play.spawn.co' + u.pathname;
+  } catch {}
+  return null;
 }
 
 const server = http.createServer((req, res) => {
@@ -231,6 +239,7 @@ const server = http.createServer((req, res) => {
         target = localPathFor(u.origin + u.pathname);
       } catch {}
     }
+    if (!target) target = localPathFor(spawnfilePoolAlias(external));
     if (!target) missing.set(external, (missing.get(external) || 0) + 1);
   } else if (pathname.startsWith('/world/')) {
     const local = join(ROOT, pathname);
