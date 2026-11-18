@@ -222,6 +222,20 @@ const probeInit = (keep) => {
     setTimeout(() => { try { const k = new OffscreenCanvas(ctx.canvas.width, ctx.canvas.height); const g = k.getContext('2d'); g.drawImage(ctx.canvas, 0, 0); P.presentPost = (P.presentPost || []).concat([litOf(g, ctx.canvas.width, ctx.canvas.height)]).slice(-12); } catch (e) { P.presentPost = (P.presentPost || []).concat([{ error: String(e.message).slice(0, 80) }]).slice(-12); } }, 400);
     return out;
   };
+  const WorkerCtor = window.Worker;
+  window.Worker = function (url, opts) {
+    const w = new WorkerCtor(url, opts);
+    w.addEventListener('message', (e) => {
+      const d = e.data;
+      const kind = d && typeof d === 'object' && typeof d.kind === 'string' ? d.kind : typeof d;
+      P.workerKinds = P.workerKinds || {};
+      P.workerKinds[kind] = (P.workerKinds[kind] || 0) + 1;
+      if (kind === 'present-road-settled' || kind === 'device-canvas-road-lost') P.roadEvents = (P.roadEvents || []).concat([{ kind, road: d.road ?? null, surfaceGone: d.surfaceGone ?? null, key: d.key ?? null, death: d.death ?? null }]).slice(-6);
+      if (kind === 'frame-bitmap' && d.bitmap) P.frameBitmaps = (P.frameBitmaps || []).concat([{ w: d.bitmap.width, h: d.bitmap.height, id: d.frameId }]).slice(-8);
+    });
+    return w;
+  };
+  window.Worker.prototype = WorkerCtor.prototype;
   const bcp = BroadcastChannel.prototype.postMessage;
   BroadcastChannel.prototype.postMessage = function (m, ...rest) { if (m && m.kind === 'removed') push(P.lost, { kind: 'main-posted-removed', names: m.names, t: Date.now(), stack: String(new Error().stack).split('\n').slice(1, 6).join(' | ').slice(0, 400) }); return bcp.call(this, m, ...rest); };
   const lk = LockManager.prototype.request;
@@ -311,6 +325,7 @@ after.presentSample = await capped((sessionFrame || page).evaluate(() => {
   for (let i = 0; i < d.length; i += 4) { const v = d[i] + d[i + 1] + d[i + 2]; if (v > 0) lit += 1; sum += v; }
   return { found: true, w: k.width, h: k.height, nonBlackPixels: lit, meanBrightness: Math.round((sum / (d.length / 4)) * 100) / 100 };
 }).catch((e) => 'eval-fail ' + String(e.message).slice(0, 120)), 60000, 'sample-timeout');
+after.presentDom = await capped((sessionFrame || page).evaluate(() => [...document.querySelectorAll('canvas')].map((c) => ({ w: c.width, h: c.height, surface: c.dataset.spawnPresentSurface ?? null, road: c.dataset.spawnPresentRoad ?? null, engine: c.dataset.engine ?? null, display: c.style.display || null, opacity: c.style.opacity || null, connected: c.isConnected, context: c.getAttribute('data-spawn-present-road') ?? null }))).catch((e) => 'eval-fail ' + String(e.message).slice(0, 120)), 60000, 'dom-timeout');
 after.scene = await sceneSnap();
 await page.screenshot({ path: OUT + '/after.png' }).catch(() => {});
 fs.writeFileSync(OUT + '/scene.json', JSON.stringify({ before, after, closes: handles.map((h) => ({ url: h.url, openedMs: h.openedMs, closedMs: h.closedMs, closedAt: h.closedAt || null })), failures, responses, events }, null, 1));
