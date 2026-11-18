@@ -16,7 +16,8 @@ echo $! > "$OUT/browser.pid"
 for i in $(seq 1 60); do curl -sf http://127.0.0.1:9333/json/version > "$OUT/version.json" && break; sleep 0.5; done
 WS=$(node -e "console.log(JSON.parse(require('fs').readFileSync('$OUT/version.json','utf8')).webSocketDebuggerUrl)")
 ID=$(playwriter session new --direct "$WS" 2>&1 | grep -o 'Session [0-9]*' | awk '{print $2}')
-sed -e "s|__TARGET__|$TARGET|" -e "s|__OUT__|$OUT|" .spawn/local/probe-page.js > "$OUT/probe.js"
+PROBE="${PROBE:-.spawn/local/probe-page.js}"
+sed -e "s|__TARGET__|$TARGET|" -e "s|__OUT__|$OUT|" "$PROBE" > "$OUT/probe.js"
 PLAYWRITER_EXEC_TIMEOUT=600000 timeout 630 playwriter -s "$ID" -e "$(cat "$OUT/probe.js")" > "$OUT/probe.out" 2>&1
 echo "probe rc=$? session=$ID out=$OUT"
 cut -c1-4000 "$OUT/probe.out"
