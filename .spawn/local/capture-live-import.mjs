@@ -47,6 +47,7 @@ for (const rec of index.records) {
     raw_body: null,
     headers_file: null,
     served: true,
+    verified_against_name: value !== null,
     purpose: 'live-capture-playwriter: the page\'s own request, captured through the playwriter session',
     captured_from: rec.page,
   };

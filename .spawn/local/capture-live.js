@@ -15,7 +15,7 @@ const handle = async (res) => {
   const req = res.request();
   const status = res.status();
   const headers = await res.allHeaders().catch(() => ({}));
-  const rec = { seq: ++seq, url, method: req.method(), status, content_type: headers['content-type'] || '', page: res.frame() ? res.frame().url().slice(0, 160) : '' };
+  const rec = { seq: ++seq, url, method: req.method(), status, content_type: headers['content-type'] || '', page: res.frame() ? res.frame().url().slice(0, 160) : '', phase: globalThis.__phase || 'load' };
   if (req.method() === 'POST') {
     const reqBody = req.postDataBuffer();
     if (reqBody) { rec.request_sha256 = sha(reqBody); fs.writeFileSync(OUT + '/req-' + rec.seq + '.bin', reqBody); }
@@ -27,15 +27,22 @@ const handle = async (res) => {
   records.push(rec);
 };
 context.on('response', (res) => { pending.push(handle(res)); });
-context.on('requestfailed', (r) => { if (KEEP.test(r.url())) records.push({ url: r.url(), method: r.method(), failed: r.failure() ? r.failure().errorText : 'failed' }); });
+context.on('requestfailed', (r) => { if (KEEP.test(r.url())) records.push({ url: r.url(), method: r.method(), failed: r.failure() ? r.failure().errorText : 'failed', phase: globalThis.__phase || 'load' }); });
 const page = await context.newPage();
 await page.setViewportSize({ width: 1280, height: 800 });
 await page.goto(LIVE, { waitUntil: 'commit', timeout: 120000 }).catch((e) => records.push({ navError: String(e.message).slice(0, 200) }));
-const shown = await page.waitForSelector('html.spawn-world-shown', { timeout: 150000 }).then(() => true).catch(() => false);
-await new Promise((r) => setTimeout(r, 20000));
+const shown = await page.waitForSelector('html.spawn-world-shown', { timeout: 40000 }).then(() => true).catch(() => false);
+await new Promise((r) => setTimeout(r, 15000));
+await page.screenshot({ path: OUT + '/live-before.png' }).catch(() => {});
+globalThis.__phase = 'after-click';
+await page.mouse.click(640, 400).catch(() => {});
+await new Promise((r) => setTimeout(r, 30000));
+await page.screenshot({ path: OUT + '/live-after.png' }).catch(() => {});
+const flags = await page.evaluate(() => ({ shown: document.documentElement.classList.contains('spawn-world-shown'), stood: document.documentElement.hasAttribute('data-spawn-stood') })).catch(() => null);
+const settleUntil = Date.now() + 60000;
 let settled = 0;
-while (settled < pending.length) { settled = pending.length; await Promise.allSettled(pending); await new Promise((r) => setTimeout(r, 2000)); }
-fs.writeFileSync(OUT + '/index.json', JSON.stringify({ live: LIVE, shown, records }, null, 1));
-const target = records.filter((r) => /73cfc540|2dc8f05b/.test(r.url || '')).map((r) => [r.url, r.status, r.size || 0, r.sha256 || r.failed || '']);
-console.log(JSON.stringify({ shown, records: records.length, pool200: records.filter((r) => /pool/.test(r.url || '') && r.status === 200).length, target }));
+while (Date.now() < settleUntil && settled < pending.length) { settled = pending.length; await Promise.allSettled(pending); await new Promise((r) => setTimeout(r, 2000)); }
+fs.writeFileSync(OUT + '/index.json', JSON.stringify({ live: LIVE, shown, flags, records }, null, 1));
+const target = records.filter((r) => /73cfc540|2dc8f05b|b8d1ffa19e65023b/.test(r.url || '')).map((r) => [r.url, r.status, r.size || 0, r.sha256 || r.failed || '', r.phase]);
+console.log(JSON.stringify({ shown, flags, records: records.length, pool200: records.filter((r) => /pool/.test(r.url || '') && r.status === 200).length, target }));
 await page.close();
