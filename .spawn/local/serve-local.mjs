@@ -25,6 +25,7 @@ const types = {
 };
 
 const fetchLog = new Map();
+const postReplays = new Map();
 const loaded = [];
 for (const name of ['state/fetch-log.jsonl', 'state/local-engine-fetch.jsonl', 'state/local-engine-runtime.jsonl']) {
   const p = join(ROOT, name);
@@ -44,6 +45,7 @@ for (const name of ['state/fetch-log.jsonl', 'state/local-engine-fetch.jsonl', '
         fetchLog.set(r.url, r.file);
         mapped += 1;
       }
+      if (r.file && r.request_sha256 && r.served !== false) postReplays.set(`${r.url}|${r.request_sha256}`, r);
     } catch {}
   }
   loaded.push({ file: name, present: true, lines, mapped, sha256: createHash('sha256').update(text).digest('hex') });
@@ -175,6 +177,45 @@ function grantRoute(req, res) {
   });
 }
 
+const POST_BODY_LIMIT = 4 * 1024 * 1024;
+
+function postReplayRoute(req, res, external) {
+  const chunks = [];
+  let size = 0;
+  req.on('data', (chunk) => {
+    size += chunk.length;
+    if (size <= POST_BODY_LIMIT) chunks.push(chunk);
+  });
+  req.on('end', () => {
+    const bodySha = size <= POST_BODY_LIMIT ? createHash('sha256').update(Buffer.concat(chunks)).digest('hex') : null;
+    const record = bodySha ? postReplays.get(`${external}|${bodySha}`) : undefined;
+    if (!record && bodySha && new URL(external).pathname === '/world-store/values') {
+      const hashes = [...Buffer.concat(chunks).toString('utf8').matchAll(/[0-9a-f]{64}/g)].map((m) => m[0]);
+      const parts = [];
+      let absent = 0;
+      for (const hash of hashes) {
+        const file = localPathFor(`https://play.spawn.co/world-store/values/${hash}`);
+        if (!file) { absent += 1; continue; }
+        const payload = readFileSync(file);
+        const length = Buffer.alloc(4);
+        length.writeUInt32BE(payload.length, 0);
+        parts.push(length, payload);
+      }
+      res.writeHead(200, { 'Content-Type': 'application/octet-stream', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store', 'x-local-values-absent': String(absent) });
+      res.end(Buffer.concat(parts));
+      return;
+    }
+    if (!record) {
+      const key = `POST ${external} body=${bodySha}`;
+      missing.set(key, (missing.get(key) || 0) + 1);
+      send(res, 404, `world-store POST has no captured reply for this body: ${external}`);
+      return;
+    }
+    res.writeHead(200, { 'Content-Type': record.content_type || 'application/octet-stream', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' });
+    createReadStream(join(ROOT, record.file)).pipe(res);
+  });
+}
+
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, BASE);
   const pathname = decodeURIComponent(url.pathname);
@@ -239,9 +280,27 @@ const server = http.createServer((req, res) => {
     send(res, 200, '{}', types['.json']);
     return;
   }
+  if (pathname.startsWith('/world-store/') && req.method === 'OPTIONS') {
+    res.writeHead(204, { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'GET, HEAD, POST, OPTIONS', 'Access-Control-Allow-Headers': 'authorization, content-type' });
+    res.end();
+    return;
+  }
+  if (pathname.startsWith('/world-store/') && req.method === 'POST') {
+    postReplayRoute(req, res, `https://play.spawn.co${pathname}${url.search}`);
+    return;
+  }
+  const cut = /^\/world-store\/cuts\/[0-9a-f]{64}\/([0-9a-f]{64})$/.exec(pathname);
+  if (cut && req.method === 'GET') {
+    const value = localPathFor(`https://play.spawn.co/world-store/values/${cut[1]}`);
+    if (value) {
+      res.writeHead(200, { 'Content-Type': 'application/octet-stream', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' });
+      createReadStream(value).pipe(res);
+      return;
+    }
+  }
   if (pathname.startsWith('/world-store/')) {
     const external = `https://play.spawn.co${pathname}${url.search}`;
-    const found = localPathFor(external);
+    const found = localPathFor(external) || localPathFor(`https://play.spawn.co${pathname}`);
     if (found) {
       const ext2 = extname(found).toLowerCase();
       if (['.html', '.htm', '.js', '.mjs', '.css', '.json'].includes(ext2)) {
