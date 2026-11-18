@@ -43,6 +43,45 @@ context.on('response', (res) => { const u = res.url(); if (res.status() >= 400 &
 const page = await context.newPage();
 page.on('console', (m) => { if (consoleLines.length < 800) consoleLines.push(m.type() + ' ' + m.location().url.slice(0, 120) + ' :: ' + m.text().slice(0, 300)); });
 page.on('pageerror', (e) => { if (consoleLines.length < 800) consoleLines.push('PAGEERROR ' + String(e.message).slice(0, 300)); });
+const workerHandles = [];
+const workerInit = () => {
+  const P = (self.__probe = { hasGpu: !!navigator.gpu, gpuAdapter: 0, gpuNoAdapter: 0, deviceOk: 0, deviceFail: [], submit: 0, currentTexture: 0, errors: [] });
+  const push = (list, v) => { if (list.length < 30) list.push(v); };
+  self.addEventListener('error', (e) => push(P.errors, String(e.message || '').slice(0, 200)));
+  self.addEventListener('unhandledrejection', (e) => push(P.errors, 'rejection ' + String((e.reason && e.reason.message) || e.reason).slice(0, 200)));
+  if (navigator.gpu) {
+    const gp = Object.getPrototypeOf(navigator.gpu);
+    const ra = gp.requestAdapter;
+    gp.requestAdapter = async function (...args) { const a = await ra.apply(this, args); if (a) P.gpuAdapter += 1; else P.gpuNoAdapter += 1; return a; };
+    const rd = GPUAdapter.prototype.requestDevice;
+    GPUAdapter.prototype.requestDevice = async function (...args) { try { const d = await rd.apply(this, args); P.deviceOk += 1; return d; } catch (e) { push(P.deviceFail, String(e.message).slice(0, 200)); throw e; } };
+    const sub = GPUQueue.prototype.submit;
+    GPUQueue.prototype.submit = function (...args) { P.submit += 1; return sub.apply(this, args); };
+    const gct = GPUCanvasContext.prototype.getCurrentTexture;
+    GPUCanvasContext.prototype.getCurrentTexture = function (...args) { P.currentTexture += 1; return gct.apply(this, args); };
+  }
+};
+page.on('worker', (w) => {
+  const handle = { url: w.url().slice(0, 140), patch: null, w };
+  workerHandles.push(handle);
+  w.evaluate(workerInit).then(() => { handle.patch = 'ok'; }, (e) => { handle.patch = 'fail ' + String(e.message).slice(0, 120); });
+});
+const workerSnap = async () => {
+  const out = [];
+  for (const h of workerHandles) {
+    const probe = await h.w.evaluate(() => (self.__probe ? JSON.parse(JSON.stringify(self.__probe)) : null)).catch((e) => 'eval-fail ' + String(e.message).slice(0, 80));
+    out.push({ url: h.url, patch: h.patch, probe });
+  }
+  return out;
+};
+const locksSnap = async () => {
+  const out = [];
+  for (const f of page.frames()) {
+    const v = await f.evaluate(async () => { if (!navigator.locks) return 'no locks'; const q = await navigator.locks.query(); return { held: q.held.map((l) => l.name + ':' + l.mode).slice(0, 20), pending: q.pending.map((l) => l.name + ':' + l.mode).slice(0, 20) }; }).catch((e) => 'eval-fail ' + String(e.message).slice(0, 80));
+    out.push({ url: f.url().slice(0, 80), locks: v });
+  }
+  return out;
+};
 await page.setViewportSize({ width: 1280, height: 800 });
 await page.goto(TARGET, { waitUntil: 'commit', timeout: 120000 }).catch((e) => consoleLines.push('NAV ' + String(e.message).slice(0, 200)));
 await wait(15000);
@@ -56,10 +95,14 @@ const snap = async (label) => {
   return { label, html, frames };
 };
 const before = await snap('before-click');
+before.workers = await workerSnap();
+before.locks = await locksSnap();
 await page.screenshot({ path: OUT + '/before.png' }).catch(() => {});
 await page.mouse.click(640, 400).catch(() => {});
 await wait(30000);
 const after = await snap('after-click');
+after.workers = await workerSnap();
+after.locks = await locksSnap();
 await page.screenshot({ path: OUT + '/after.png' }).catch(() => {});
 fs.writeFileSync(OUT + '/probe.json', JSON.stringify({ target: TARGET, before, after, failures, responses }, null, 1));
 fs.writeFileSync(OUT + '/console.txt', consoleLines.join('\n') + '\n');
