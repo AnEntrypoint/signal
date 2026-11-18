@@ -6,10 +6,12 @@ fs.mkdirSync(OUT, { recursive: true });
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const capped = (p, ms, label) => Promise.race([p, wait(ms).then(() => label)]);
 const workerInit = () => {
-  const P = (self.__probe = { hasGpu: !!navigator.gpu, gpuAdapter: 0, deviceOk: 0, submit: 0, beginRenderPass: 0, draw: 0, drawIndexed: 0, dispatch: 0, writeBuffer: 0, drawHist: {}, passLog: [], lastFrame: [], bitmapArgs: [], createImageBitmap: 0, frameSamples: [], quiet: false, errors: [] });
+  const P = (self.__probe = { hasGpu: !!navigator.gpu, gpuAdapter: 0, deviceOk: 0, submit: 0, beginRenderPass: 0, draw: 0, drawIndexed: 0, dispatch: 0, writeBuffer: 0, drawHist: {}, passLog: [], lastFrame: [], bitmapArgs: [], createImageBitmap: 0, frameSamples: [], quiet: false, errors: [], lost: [] });
   const bufs = [];
   const texs = [];
   const devices = [];
+  const selfClose = self.close;
+  self.close = function (...args) { new BroadcastChannel('spawn-probe').postMessage({ kind: 'worker-close-called', t: Date.now(), stack: String(new Error().stack).split('\n').slice(1, 7).join(' | ').slice(0, 500) }); return selfClose.apply(this, args); };
   const texIdx = new WeakMap();
   const viewTex = new WeakMap();
   const push = (list, v) => { if (list.length < 40) list.push(v); };
@@ -20,7 +22,7 @@ const workerInit = () => {
   const ra = gp.requestAdapter;
   gp.requestAdapter = async function (...args) { const a = await ra.apply(this, args); if (a) P.gpuAdapter += 1; return a; };
   const rd = GPUAdapter.prototype.requestDevice;
-  GPUAdapter.prototype.requestDevice = async function (...args) { const d = await rd.apply(this, args); P.deviceOk += 1; if (devices.length < 2) devices.push(d); return d; };
+  GPUAdapter.prototype.requestDevice = async function (...args) { const d = await rd.apply(this, args); P.deviceOk += 1; d.lost.then((i) => new BroadcastChannel('spawn-probe').postMessage({ kind: 'lost', reason: i.reason, message: String(i.message).slice(0, 160), t: Date.now() })); if (devices.length < 2) devices.push(d); return d; };
   const cbuf = GPUDevice.prototype.createBuffer;
   GPUDevice.prototype.createBuffer = function (desc) {
     const b = cbuf.call(this, Object.assign({}, desc, { usage: desc.usage | 4 }));
@@ -58,7 +60,7 @@ const workerInit = () => {
   GPUComputePassEncoder.prototype.dispatchWorkgroups = function (...args) { P.dispatch += 1; return dsp.apply(this, args); };
   const wb = GPUQueue.prototype.writeBuffer;
   GPUQueue.prototype.writeBuffer = function (...args) { P.writeBuffer += 1; return wb.apply(this, args); };
-  const BPP = { rgba8unorm: 4, 'rgba8unorm-srgb': 4, bgra8unorm: 4, 'bgra8unorm-srgb': 4, rgba8snorm: 4, rgb10a2unorm: 4, rgba16float: 8, rg32float: 8, rgba32float: 16, r32float: 4, r16float: 2, r8unorm: 1, rg8unorm: 2 };
+  const BPP = { 'rg11b10ufloat': 4, rgba8unorm: 4, 'rgba8unorm-srgb': 4, bgra8unorm: 4, 'bgra8unorm-srgb': 4, rgba8snorm: 4, rgb10a2unorm: 4, rgba16float: 8, rg32float: 8, rgba32float: 16, r32float: 4, r16float: 2, r8unorm: 1, rg8unorm: 2 };
   const readBuffer = async (device, src, size) => {
     P.quiet = true;
     try {
@@ -87,10 +89,10 @@ const workerInit = () => {
       const u = new Uint8Array(st.getMappedRange().slice(0));
       st.unmap();
       st.destroy();
-      let nz = 0;
-      let sum = 0;
-      for (let y = 0; y < rec.h; y++) { const row = y * bytesPerRow; for (let x = 0; x < rec.w * bpp; x++) { if (bpp === 4 && x % 4 === 3) continue; if (u[row + x] !== 0) nz += 1; sum += u[row + x]; } }
-      return { nonzeroRGB: nz, sumRGB: sum };
+      const alphaBytes = rec.format === 'rgba16float' ? [6, 7] : rec.format.startsWith('rgba') ? [3] : [];
+      let lit = 0;
+      for (let y = 0; y < rec.h; y++) { for (let x = 0; x < rec.w; x++) { const o = y * bytesPerRow + x * bpp; let any = false; for (let c = 0; c < bpp; c++) { if (alphaBytes.includes(c)) continue; if (u[o + c] !== 0) any = true; } if (any) lit += 1; } }
+      return { litRGBPixels: lit, pixels: rec.w * rec.h, format: rec.format };
     } finally { P.quiet = false; }
   };
   self.__probeScene = async () => {
@@ -114,6 +116,8 @@ const workerInit = () => {
     }
     return out;
   };
+  const bcPost = BroadcastChannel.prototype.postMessage;
+  BroadcastChannel.prototype.postMessage = function (m, ...rest) { if (m && m.kind === 'removed') new BroadcastChannel('spawn-probe').postMessage({ kind: 'posted-removed', names: m.names, t: Date.now(), stack: String(new Error().stack).split('\n').slice(1, 6).join(' | ').slice(0, 400) }); return bcPost.call(this, m, ...rest); };
   const cib = self.createImageBitmap;
   self.createImageBitmap = async function (...args) {
     const bmp = await cib.apply(this, args);
@@ -137,11 +141,33 @@ const workerInit = () => {
 };
 const probeInit = () => {
   if (window.__probe) return;
-  const P = (window.__probe = { href: location.href.slice(0, 140), gpuAdapter: 0, gpuNoAdapter: 0, contexts: [], raf: 0, workers: [], errors: [], rejections: [], pointer: 0, keys: 0 });
+  const P = (window.__probe = { href: location.href.slice(0, 140), gpuAdapter: 0, gpuNoAdapter: 0, contexts: [], raf: 0, workers: [], errors: [], rejections: [], pointer: 0, keys: 0, locks: [], lost: [], frameSets: [] });
   const push = (list, v) => { if (list.length < 40) list.push(v); };
   window.addEventListener('error', (e) => push(P.errors, String(e.message || '').slice(0, 220)), true);
   window.addEventListener('unhandledrejection', (e) => push(P.rejections, String((e.reason && e.reason.message) || e.reason).slice(0, 220)));
   window.addEventListener('pointerdown', () => { P.pointer += 1; }, true);
+  const bc = new BroadcastChannel('spawn-probe');
+  bc.onmessage = (e) => push(P.lost, e.data);
+  const srcDesc = Object.getOwnPropertyDescriptor(HTMLIFrameElement.prototype, 'src');
+  const noteSrc = (el, v, via) => push(P.frameSets, { via, v: String(v).slice(0, 140), t: Date.now(), slot: el.getAttribute('data-spawn-kernel-frame') === null ? '' : 'kernel', stack: String(new Error().stack).split('\n').slice(2, 5).join(' | ').slice(0, 300) });
+  Object.defineProperty(HTMLIFrameElement.prototype, 'src', { configurable: true, enumerable: srcDesc.enumerable, get: srcDesc.get, set(v) { noteSrc(this, v, 'prop'); return srcDesc.set.call(this, v); } });
+  const sattr = Element.prototype.setAttribute;
+  Element.prototype.setAttribute = function (n, v) { if (this instanceof HTMLIFrameElement && n === 'src') noteSrc(this, v, 'attr'); return sattr.call(this, n, v); };
+  const note = (op, el) => { try { new BroadcastChannel('spawn-probe').postMessage({ kind: 'frame-op', op, tag: el ? el.tagName : '', src: el && el.getAttribute ? String(el.getAttribute('src')).slice(0, 90) : '', href: location.href.slice(0, 90), t: Date.now(), stack: String(new Error().stack).split('\n').slice(2, 5).join(' | ').slice(0, 300) }); } catch (e) {} };
+  const wterm = Worker.prototype.terminate;
+  Worker.prototype.terminate = function () { note('worker-terminate', null); return wterm.call(this); };
+  const raa = Element.prototype.removeAttribute;
+  Element.prototype.removeAttribute = function (n) { if (n === 'src' && this.tagName === 'IFRAME') note('removeAttribute-src', this); return raa.call(this, n); };
+  const rch = Node.prototype.removeChild;
+  Node.prototype.removeChild = function (c) { if (c && c.tagName === 'IFRAME') note('removeChild', c); return rch.call(this, c); };
+  const rmv = Element.prototype.remove;
+  Element.prototype.remove = function () { if (this.tagName === 'IFRAME') note('remove', this); return rmv.call(this); };
+  const dop = Document.prototype.open;
+  Document.prototype.open = function (...a) { note('document.open', null); return dop.apply(this, a); };
+  const bcp = BroadcastChannel.prototype.postMessage;
+  BroadcastChannel.prototype.postMessage = function (m, ...rest) { if (m && m.kind === 'removed') push(P.lost, { kind: 'main-posted-removed', names: m.names, t: Date.now(), stack: String(new Error().stack).split('\n').slice(1, 6).join(' | ').slice(0, 400) }); return bcp.call(this, m, ...rest); };
+  const lk = LockManager.prototype.request;
+  LockManager.prototype.request = function (name, ...rest) { if (typeof name === 'string' && /play-slot|gpu-pool-slot/.test(name)) push(P.locks, { name, t: Date.now() }); return lk.call(this, name, ...rest); };
   if (navigator.gpu) {
     const gp = Object.getPrototypeOf(navigator.gpu);
     const ra = gp.requestAdapter;
@@ -164,13 +190,17 @@ await context.addInitScript(probeInit);
 if (TARGET.startsWith('http://127.0.0.1')) await context.route((u) => new URL(u).pathname === '/ready-plate', (r) => r.fulfill({ status: 200, contentType: 'text/html', body: '' }));
 context.on('requestfailed', (r) => { if (failures.length < 300) failures.push(r.method() + ' ' + r.failure().errorText + ' ' + r.url().slice(0, 200)); });
 context.on('response', (res) => { if (res.status() >= 400 && responses.length < 300) responses.push(res.status() + ' ' + res.request().method() + ' ' + res.url().slice(0, 200)); });
+const events = [];
 const page = await context.newPage();
+page.on('framedetached', (f) => events.push({ kind: 'frame-detached', url: f.url().slice(0, 90), t: Date.now() }));
+page.on('framenavigated', (f) => events.push({ kind: 'frame-navigated', url: f.url().slice(0, 90), t: Date.now() }));
+page.on('close', () => events.push({ kind: 'page-close', t: Date.now() }));
 page.on('console', (m) => { if (consoleLines.length < 800) consoleLines.push(m.type() + ' ' + m.location().url.slice(0, 120) + ' :: ' + m.text().slice(0, 300)); });
 page.on('pageerror', (e) => { if (consoleLines.length < 800) consoleLines.push('PAGEERROR ' + String(e.message).slice(0, 300)); });
 page.on('worker', (w) => {
   const h = { url: w.url().slice(0, 140), patch: null, w, openedMs: Date.now() - t0, closedMs: null };
   handles.push(h);
-  w.on('close', () => { h.closedMs = Date.now() - t0; });
+  w.on('close', () => { h.closedMs = Date.now() - t0; h.closedAt = Date.now(); });
   w.evaluate(workerInit).then(() => { h.patch = 'ok'; }, (e) => { h.patch = 'fail ' + String(e.message).slice(0, 120); });
 });
 await page.setViewportSize({ width: 1280, height: 800 });
@@ -199,17 +229,21 @@ const snap = async (label) => {
     const probe = await capped(f.evaluate(() => (window.__probe ? JSON.parse(JSON.stringify(window.__probe)) : null)).catch((e) => 'eval-fail ' + String(e.message).slice(0, 80)), 8000, 'eval-timeout');
     frames.push({ url: f.url().slice(0, 140), probe });
   }
-  const html = await capped(page.evaluate(() => ({ shown: document.documentElement.classList.contains('spawn-world-shown'), stood: document.documentElement.hasAttribute('data-spawn-stood') })).catch((e) => 'eval-fail'), 8000, 'eval-timeout');
+  const html = await capped(page.evaluate(() => ({ shown: document.documentElement.classList.contains('spawn-world-shown'), stood: document.documentElement.hasAttribute('data-spawn-stood'), coi: window.crossOriginIsolated, reason: (window.__spawnHeldDocumentReleased || {}).reason || null })).catch((e) => 'eval-fail'), 8000, 'eval-timeout');
   return { label, html, frames, workers: await workerSnap() };
 };
 const before = await snap('before-click');
 await page.screenshot({ path: OUT + '/before.png' }).catch(() => {});
 await page.mouse.click(640, 400).catch(() => {});
 await wait(30000);
-const after = await snap('after-click');
+const clicked = await snap('after-click');
+await page.keyboard.press('Space').catch(() => {});
+await wait(20000);
+const after = await snap('after-key');
+after.clicked = clicked.html;
 after.scene = await sceneSnap();
 await page.screenshot({ path: OUT + '/after.png' }).catch(() => {});
-fs.writeFileSync(OUT + '/scene.json', JSON.stringify({ before, after, closes: handles.map((h) => ({ url: h.url, openedMs: h.openedMs, closedMs: h.closedMs })), failures, responses }, null, 1));
+fs.writeFileSync(OUT + '/scene.json', JSON.stringify({ before, after, closes: handles.map((h) => ({ url: h.url, openedMs: h.openedMs, closedMs: h.closedMs, closedAt: h.closedAt || null })), failures, responses, events }, null, 1));
 fs.writeFileSync(OUT + '/console.txt', consoleLines.join('\n') + '\n');
 console.log(JSON.stringify({ html: after.html, workers: after.workers.length, scene: after.scene.map((s) => ({ url: s.url.slice(0, 60), keys: s.scene && typeof s.scene === 'object' ? Object.keys(s.scene) : String(s.scene) })), closed: handles.filter((h) => h.closedMs !== null).length }));
 await page.close();
