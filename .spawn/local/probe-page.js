@@ -29,6 +29,9 @@ const probeInit = () => {
   const W = window.Worker;
   window.Worker = function (url, opts) { push(P.workers, String(url).slice(0, 140)); return new W(url, opts); };
   window.Worker.prototype = W.prototype;
+  const P2 = window.__probe;
+  const tfib = ImageBitmapRenderingContext.prototype.transferFromImageBitmap;
+  ImageBitmapRenderingContext.prototype.transferFromImageBitmap = function (...args) { P2.bitmapPresent = (P2.bitmapPresent || 0) + 1; return tfib.apply(this, args); };
   const raf = window.requestAnimationFrame.bind(window);
   window.requestAnimationFrame = (cb) => raf((t) => { P.raf += 1; cb(t); });
 };
@@ -45,8 +48,9 @@ page.on('console', (m) => { if (consoleLines.length < 800) consoleLines.push(m.t
 page.on('pageerror', (e) => { if (consoleLines.length < 800) consoleLines.push('PAGEERROR ' + String(e.message).slice(0, 300)); });
 const workerHandles = [];
 const workerInit = () => {
-  const P = (self.__probe = { hasGpu: !!navigator.gpu, gpuAdapter: 0, gpuNoAdapter: 0, deviceOk: 0, deviceFail: [], submit: 0, currentTexture: 0, errors: [] });
+  const P = (self.__probe = { hasGpu: !!navigator.gpu, gpuAdapter: 0, gpuNoAdapter: 0, deviceOk: 0, deviceFail: [], submit: 0, currentTexture: 0, beginRenderPass: 0, beginComputePass: 0, draw: 0, drawIndexed: 0, dispatch: 0, writeBuffer: 0, writeTexture: 0, toBitmap: 0, createImageBitmap: 0, errors: [] });
   const push = (list, v) => { if (list.length < 30) list.push(v); };
+  const count = (proto, name, key) => { if (!proto || typeof proto[name] !== 'function') return; const f = proto[name]; proto[name] = function (...args) { P[key] += 1; return f.apply(this, args); }; };
   self.addEventListener('error', (e) => push(P.errors, String(e.message || '').slice(0, 200)));
   self.addEventListener('unhandledrejection', (e) => push(P.errors, 'rejection ' + String((e.reason && e.reason.message) || e.reason).slice(0, 200)));
   if (navigator.gpu) {
@@ -55,11 +59,18 @@ const workerInit = () => {
     gp.requestAdapter = async function (...args) { const a = await ra.apply(this, args); if (a) P.gpuAdapter += 1; else P.gpuNoAdapter += 1; return a; };
     const rd = GPUAdapter.prototype.requestDevice;
     GPUAdapter.prototype.requestDevice = async function (...args) { try { const d = await rd.apply(this, args); P.deviceOk += 1; return d; } catch (e) { push(P.deviceFail, String(e.message).slice(0, 200)); throw e; } };
-    const sub = GPUQueue.prototype.submit;
-    GPUQueue.prototype.submit = function (...args) { P.submit += 1; return sub.apply(this, args); };
-    const gct = GPUCanvasContext.prototype.getCurrentTexture;
-    GPUCanvasContext.prototype.getCurrentTexture = function (...args) { P.currentTexture += 1; return gct.apply(this, args); };
+    count(GPUQueue.prototype, 'submit', 'submit');
+    count(GPUCanvasContext.prototype, 'getCurrentTexture', 'currentTexture');
+    count(GPUCommandEncoder.prototype, 'beginRenderPass', 'beginRenderPass');
+    count(GPUCommandEncoder.prototype, 'beginComputePass', 'beginComputePass');
+    count(GPURenderPassEncoder.prototype, 'draw', 'draw');
+    count(GPURenderPassEncoder.prototype, 'drawIndexed', 'drawIndexed');
+    count(GPUComputePassEncoder.prototype, 'dispatchWorkgroups', 'dispatch');
+    count(GPUQueue.prototype, 'writeBuffer', 'writeBuffer');
+    count(GPUQueue.prototype, 'writeTexture', 'writeTexture');
   }
+  if (self.OffscreenCanvas) count(OffscreenCanvas.prototype, 'transferToImageBitmap', 'toBitmap');
+  if (self.createImageBitmap) { const cib = self.createImageBitmap; self.createImageBitmap = function (...args) { P.createImageBitmap += 1; return cib.apply(this, args); }; }
 };
 page.on('worker', (w) => {
   const handle = { url: w.url().slice(0, 140), patch: null, w };
@@ -69,7 +80,7 @@ page.on('worker', (w) => {
 const workerSnap = async () => {
   const out = [];
   for (const h of workerHandles) {
-    const probe = await h.w.evaluate(() => (self.__probe ? JSON.parse(JSON.stringify(self.__probe)) : null)).catch((e) => 'eval-fail ' + String(e.message).slice(0, 80));
+    const probe = await Promise.race([h.w.evaluate(() => (self.__probe ? JSON.parse(JSON.stringify(self.__probe)) : null)).catch((e) => 'eval-fail ' + String(e.message).slice(0, 80)), wait(8000).then(() => 'eval-timeout')]);
     out.push({ url: h.url, patch: h.patch, probe });
   }
   return out;
@@ -77,7 +88,7 @@ const workerSnap = async () => {
 const locksSnap = async () => {
   const out = [];
   for (const f of page.frames()) {
-    const v = await f.evaluate(async () => { if (!navigator.locks) return 'no locks'; const q = await navigator.locks.query(); return { held: q.held.map((l) => l.name + ':' + l.mode).slice(0, 20), pending: q.pending.map((l) => l.name + ':' + l.mode).slice(0, 20) }; }).catch((e) => 'eval-fail ' + String(e.message).slice(0, 80));
+    const v = await Promise.race([f.evaluate(async () => { if (!navigator.locks) return 'no locks'; const q = await navigator.locks.query(); return { held: q.held.map((l) => l.name + ':' + l.mode).slice(0, 20), pending: q.pending.map((l) => l.name + ':' + l.mode).slice(0, 20) }; }).catch((e) => 'eval-fail ' + String(e.message).slice(0, 80)), wait(8000).then(() => 'eval-timeout')]);
     out.push({ url: f.url().slice(0, 80), locks: v });
   }
   return out;
