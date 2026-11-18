@@ -88,8 +88,9 @@ const workerInit = () => {
       st.unmap();
       st.destroy();
       let nz = 0;
-      for (let y = 0; y < rec.h; y++) { const row = y * bytesPerRow; for (let x = 0; x < rec.w * bpp; x++) { if (u[row + x] !== 0) nz += 1; } }
-      return nz;
+      let sum = 0;
+      for (let y = 0; y < rec.h; y++) { const row = y * bytesPerRow; for (let x = 0; x < rec.w * bpp; x++) { if (bpp === 4 && x % 4 === 3) continue; if (u[row + x] !== 0) nz += 1; sum += u[row + x]; } }
+      return { nonzeroRGB: nz, sumRGB: sum };
     } finally { P.quiet = false; }
   };
   self.__probeScene = async () => {
