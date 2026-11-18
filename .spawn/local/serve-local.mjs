@@ -217,6 +217,8 @@ function postReplayRoute(req, res, external) {
 }
 
 const server = http.createServer((req, res) => {
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+  res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
   const url = new URL(req.url, BASE);
   const pathname = decodeURIComponent(url.pathname);
   if (req.method === 'POST' && pathname === '/api/session/grant') {
