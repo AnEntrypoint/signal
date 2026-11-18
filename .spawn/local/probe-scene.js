@@ -2,6 +2,7 @@
 const fs = require('fs');
 const OUT = '__OUT__';
 const TARGET = '__TARGET__';
+const KEEP_PREBORN = __KEEP__ === 1;
 fs.mkdirSync(OUT, { recursive: true });
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const capped = (p, ms, label) => Promise.race([p, wait(ms).then(() => label)]);
@@ -140,11 +141,24 @@ const workerInit = () => {
   };
   const bcPost = BroadcastChannel.prototype.postMessage;
   BroadcastChannel.prototype.postMessage = function (m, ...rest) { if (m && m.kind === 'removed') new BroadcastChannel('spawn-probe').postMessage({ kind: 'posted-removed', names: m.names, t: Date.now(), stack: String(new Error().stack).split('\n').slice(1, 6).join(' | ').slice(0, 400) }); return bcPost.call(this, m, ...rest); };
+  const sendBitmap = (b, via) => {
+    const bc = new BroadcastChannel('spawn-probe');
+    try {
+      const c = new OffscreenCanvas(b.width, b.height);
+      const g = c.getContext('2d');
+      g.drawImage(b, 0, 0);
+      const d = g.getImageData(0, 0, b.width, b.height).data;
+      let lit = 0;
+      for (let i = 0; i < d.length; i += 4) { if (d[i] + d[i + 1] + d[i + 2] > 0) lit += 1; }
+      bc.postMessage({ kind: 'worker-bitmap', via, w: b.width, h: b.height, lit, pixels: b.width * b.height, t: Date.now() });
+    } catch (e) { bc.postMessage({ kind: 'worker-bitmap', via, error: String(e.message).slice(0, 80), t: Date.now() }); }
+  };
   const ttib = OffscreenCanvas.prototype.transferToImageBitmap;
-  OffscreenCanvas.prototype.transferToImageBitmap = function (...a) { P.toBitmap = (P.toBitmap || 0) + 1; return ttib.apply(this, a); };
+  OffscreenCanvas.prototype.transferToImageBitmap = function (...a) { P.toBitmap = (P.toBitmap || 0) + 1; const b = ttib.apply(this, a); sendBitmap(b, 'transferToImageBitmap'); return b; };
   const cib = self.createImageBitmap;
   self.createImageBitmap = async function (...args) {
     const bmp = await cib.apply(this, args);
+    sendBitmap(bmp, 'createImageBitmap');
     P.createImageBitmap += 1;
     if (P.bitmapArgs.length < 3) P.bitmapArgs.push(args[0] && args[0].constructor ? args[0].constructor.name : typeof args[0]);
     if (P.createImageBitmap % 3 === 0 && bmp && bmp.width > 0) {
@@ -163,7 +177,7 @@ const workerInit = () => {
     return bmp;
   };
 };
-const probeInit = () => {
+const probeInit = (keep) => {
   if (window.__probe) return;
   const P = (window.__probe = { href: location.href.slice(0, 140), gpuAdapter: 0, gpuNoAdapter: 0, contexts: [], raf: 0, workers: [], errors: [], rejections: [], pointer: 0, keys: 0, locks: [], lost: [], frameSets: [], msgs: [] });
   const push = (list, v) => { if (list.length < 40) list.push(v); };
@@ -190,6 +204,24 @@ const probeInit = () => {
   Element.prototype.remove = function () { if (this.tagName === 'IFRAME') note('remove', this); return rmv.call(this); };
   const dop = Document.prototype.open;
   Document.prototype.open = function (...a) { note('document.open', null); return dop.apply(this, a); };
+  if (keep) {
+    const wt = Worker.prototype.terminate;
+    Worker.prototype.terminate = function () {
+      const pre = window.__spawnPrebornRendererWorker;
+      if (pre && pre.worker === this) return undefined;
+      return wt.call(this);
+    };
+  }
+  const litOf = (g, w, h) => { const d = g.getImageData(0, 0, w, h).data; let lit = 0; for (let i = 0; i < d.length; i += 4) { if (d[i] + d[i + 1] + d[i + 2] > 0) lit += 1; } return { w, h, lit, pixels: w * h }; };
+  const sampleSource = (b) => { try { const c = new OffscreenCanvas(b.width, b.height); const g = c.getContext('2d'); g.drawImage(b, 0, 0); return litOf(g, b.width, b.height); } catch (e) { return { error: String(e.message).slice(0, 80) }; } };
+  const tfibPre = ImageBitmapRenderingContext.prototype.transferFromImageBitmap;
+  ImageBitmapRenderingContext.prototype.transferFromImageBitmap = function (bitmap, ...rest) {
+    const ctx = this;
+    if (bitmap) P.presentPre = (P.presentPre || []).concat([sampleSource(bitmap)]).slice(-12);
+    const out = tfibPre.call(this, bitmap, ...rest);
+    setTimeout(() => { try { const k = new OffscreenCanvas(ctx.canvas.width, ctx.canvas.height); const g = k.getContext('2d'); g.drawImage(ctx.canvas, 0, 0); P.presentPost = (P.presentPost || []).concat([litOf(g, ctx.canvas.width, ctx.canvas.height)]).slice(-12); } catch (e) { P.presentPost = (P.presentPost || []).concat([{ error: String(e.message).slice(0, 80) }]).slice(-12); } }, 400);
+    return out;
+  };
   const bcp = BroadcastChannel.prototype.postMessage;
   BroadcastChannel.prototype.postMessage = function (m, ...rest) { if (m && m.kind === 'removed') push(P.lost, { kind: 'main-posted-removed', names: m.names, t: Date.now(), stack: String(new Error().stack).split('\n').slice(1, 6).join(' | ').slice(0, 400) }); return bcp.call(this, m, ...rest); };
   const lk = LockManager.prototype.request;
@@ -212,7 +244,7 @@ const failures = [];
 const responses = [];
 const consoleLines = [];
 const t0 = Date.now();
-await context.addInitScript(probeInit);
+await context.addInitScript(probeInit, KEEP_PREBORN);
 if (TARGET.startsWith('http://127.0.0.1')) await context.route((u) => new URL(u).pathname === '/ready-plate', (r) => r.fulfill({ status: 200, contentType: 'text/html', body: '' }));
 context.on('requestfailed', (r) => { if (failures.length < 300) failures.push(r.method() + ' ' + r.failure().errorText + ' ' + r.url().slice(0, 200)); });
 context.on('response', (res) => { if (res.status() >= 400 && responses.length < 300) responses.push(res.status() + ' ' + res.request().method() + ' ' + res.url().slice(0, 200)); });
