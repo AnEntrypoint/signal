@@ -48,7 +48,7 @@ page.on('console', (m) => { if (consoleLines.length < 800) consoleLines.push(m.t
 page.on('pageerror', (e) => { if (consoleLines.length < 800) consoleLines.push('PAGEERROR ' + String(e.message).slice(0, 300)); });
 const workerHandles = [];
 const workerInit = () => {
-  const P = (self.__probe = { hasGpu: !!navigator.gpu, gpuAdapter: 0, gpuNoAdapter: 0, deviceOk: 0, deviceFail: [], submit: 0, currentTexture: 0, beginRenderPass: 0, beginComputePass: 0, draw: 0, drawIndexed: 0, dispatch: 0, writeBuffer: 0, writeTexture: 0, toBitmap: 0, createImageBitmap: 0, errors: [] });
+  const P = (self.__probe = { hasGpu: !!navigator.gpu, gpuAdapter: 0, gpuNoAdapter: 0, deviceOk: 0, deviceFail: [], submit: 0, currentTexture: 0, beginRenderPass: 0, beginComputePass: 0, draw: 0, drawIndexed: 0, dispatch: 0, writeBuffer: 0, writeTexture: 0, toBitmap: 0, createImageBitmap: 0, frameSamples: [], errors: [] });
   const push = (list, v) => { if (list.length < 30) list.push(v); };
   const count = (proto, name, key) => { if (!proto || typeof proto[name] !== 'function') return; const f = proto[name]; proto[name] = function (...args) { P[key] += 1; return f.apply(this, args); }; };
   self.addEventListener('error', (e) => push(P.errors, String(e.message || '').slice(0, 200)));
@@ -70,7 +70,27 @@ const workerInit = () => {
     count(GPUQueue.prototype, 'writeTexture', 'writeTexture');
   }
   if (self.OffscreenCanvas) count(OffscreenCanvas.prototype, 'transferToImageBitmap', 'toBitmap');
-  if (self.createImageBitmap) { const cib = self.createImageBitmap; self.createImageBitmap = function (...args) { P.createImageBitmap += 1; return cib.apply(this, args); }; }
+  if (self.createImageBitmap) {
+    const cib = self.createImageBitmap;
+    self.createImageBitmap = async function (...args) {
+      const bmp = await cib.apply(this, args);
+      P.createImageBitmap += 1;
+      if (P.createImageBitmap % 10 === 0 && bmp && bmp.width > 0) {
+        try {
+          const c = new OffscreenCanvas(bmp.width, bmp.height);
+          const g = c.getContext('2d');
+          g.drawImage(bmp, 0, 0);
+          const d = g.getImageData(0, 0, bmp.width, bmp.height).data;
+          let nonBlack = 0;
+          let sum = 0;
+          for (let i = 0; i < d.length; i += 4) { const v = d[i] + d[i + 1] + d[i + 2]; if (v > 0) nonBlack += 1; sum += v; }
+          P.frameSamples.push({ n: P.createImageBitmap, w: bmp.width, h: bmp.height, nonBlackPixels: nonBlack, meanBrightness: Math.round((sum / (d.length / 4)) * 100) / 100 });
+          if (P.frameSamples.length > 12) P.frameSamples.shift();
+        } catch (e) { push(P.errors, 'sample ' + String(e.message).slice(0, 120)); }
+      }
+      return bmp;
+    };
+  }
 };
 page.on('worker', (w) => {
   const handle = { url: w.url().slice(0, 140), patch: null, w };
