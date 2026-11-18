@@ -95,6 +95,28 @@ const workerInit = () => {
       return { litRGBPixels: lit, pixels: rec.w * rec.h, format: rec.format };
     } finally { P.quiet = false; }
   };
+  const readDepth = async (device, rec) => {
+    P.quiet = true;
+    try {
+      const bytesPerRow = Math.ceil((rec.w * 4) / 256) * 256;
+      const st = cbuf.call(device, { size: bytesPerRow * rec.h, usage: 1 | 8 });
+      const enc = device.createCommandEncoder();
+      enc.copyTextureToBuffer({ texture: rec.t, aspect: 'depth-only' }, { buffer: st, bytesPerRow }, [rec.w, rec.h, 1]);
+      device.queue.submit([enc.finish()]);
+      await st.mapAsync(1);
+      const f = new Float32Array(st.getMappedRange().slice(0));
+      st.unmap();
+      st.destroy();
+      const stride = bytesPerRow / 4;
+      let nonzero = 0;
+      let equalOne = 0;
+      let otherNonzero = 0;
+      let min = Infinity;
+      let max = -Infinity;
+      for (let y = 0; y < rec.h; y++) { for (let x = 0; x < rec.w; x++) { const v = f[y * stride + x]; if (v !== 0) nonzero += 1; if (v === 1) equalOne += 1; else if (v !== 0) otherNonzero += 1; if (v < min) min = v; if (v > max) max = v; } }
+      return { nonzeroTexels: nonzero, texels: rec.w * rec.h, equalOne, otherNonzero, min, max };
+    } finally { P.quiet = false; }
+  };
   self.__probeScene = async () => {
     const device = devices[0];
     if (!device) return { error: 'no device recorded' };
@@ -112,12 +134,14 @@ const workerInit = () => {
     }
     for (let i = 0; i < Math.min(texs.length, 80); i++) {
       const rec = texs[i];
-      try { out.textures.push({ idx: i, label: rec.label, w: rec.w, h: rec.h, format: rec.format, usage: rec.usage, nonzeroBytes: await readTexture(device, rec) }); } catch (e) { out.textures.push({ idx: i, label: rec.label, error: String(e.message).slice(0, 120) }); }
+      try { out.textures.push({ idx: i, label: rec.label, w: rec.w, h: rec.h, format: rec.format, usage: rec.usage, nonzeroBytes: rec.format === 'depth32float' ? await readDepth(device, rec) : await readTexture(device, rec) }); } catch (e) { out.textures.push({ idx: i, label: rec.label, error: String(e.message).slice(0, 120) }); }
     }
     return out;
   };
   const bcPost = BroadcastChannel.prototype.postMessage;
   BroadcastChannel.prototype.postMessage = function (m, ...rest) { if (m && m.kind === 'removed') new BroadcastChannel('spawn-probe').postMessage({ kind: 'posted-removed', names: m.names, t: Date.now(), stack: String(new Error().stack).split('\n').slice(1, 6).join(' | ').slice(0, 400) }); return bcPost.call(this, m, ...rest); };
+  const ttib = OffscreenCanvas.prototype.transferToImageBitmap;
+  OffscreenCanvas.prototype.transferToImageBitmap = function (...a) { P.toBitmap = (P.toBitmap || 0) + 1; return ttib.apply(this, a); };
   const cib = self.createImageBitmap;
   self.createImageBitmap = async function (...args) {
     const bmp = await cib.apply(this, args);
@@ -141,11 +165,13 @@ const workerInit = () => {
 };
 const probeInit = () => {
   if (window.__probe) return;
-  const P = (window.__probe = { href: location.href.slice(0, 140), gpuAdapter: 0, gpuNoAdapter: 0, contexts: [], raf: 0, workers: [], errors: [], rejections: [], pointer: 0, keys: 0, locks: [], lost: [], frameSets: [] });
+  const P = (window.__probe = { href: location.href.slice(0, 140), gpuAdapter: 0, gpuNoAdapter: 0, contexts: [], raf: 0, workers: [], errors: [], rejections: [], pointer: 0, keys: 0, locks: [], lost: [], frameSets: [], msgs: [] });
   const push = (list, v) => { if (list.length < 40) list.push(v); };
   window.addEventListener('error', (e) => push(P.errors, String(e.message || '').slice(0, 220)), true);
   window.addEventListener('unhandledrejection', (e) => push(P.rejections, String((e.reason && e.reason.message) || e.reason).slice(0, 220)));
   window.addEventListener('pointerdown', () => { P.pointer += 1; }, true);
+  window.addEventListener('keydown', () => { P.keys += 1; }, true);
+  window.addEventListener('message', (e) => { if (P.msgs.length < 80) P.msgs.push({ t: Date.now(), o: String(e.origin).slice(0, 40), s: JSON.stringify(e.data).slice(0, 180) }); });
   const bc = new BroadcastChannel('spawn-probe');
   bc.onmessage = (e) => push(P.lost, e.data);
   const srcDesc = Object.getOwnPropertyDescriptor(HTMLIFrameElement.prototype, 'src');
@@ -229,18 +255,30 @@ const snap = async (label) => {
     const probe = await capped(f.evaluate(() => (window.__probe ? JSON.parse(JSON.stringify(window.__probe)) : null)).catch((e) => 'eval-fail ' + String(e.message).slice(0, 80)), 8000, 'eval-timeout');
     frames.push({ url: f.url().slice(0, 140), probe });
   }
-  const html = await capped(page.evaluate(() => ({ shown: document.documentElement.classList.contains('spawn-world-shown'), stood: document.documentElement.hasAttribute('data-spawn-stood'), coi: window.crossOriginIsolated, reason: (window.__spawnHeldDocumentReleased || {}).reason || null })).catch((e) => 'eval-fail'), 8000, 'eval-timeout');
+  const html = await capped(page.evaluate(() => ({ shown: document.documentElement.classList.contains('spawn-world-shown'), stood: document.documentElement.hasAttribute('data-spawn-stood'), coi: window.crossOriginIsolated, reason: (window.__spawnHeldDocumentReleased || {}).reason || null, active: document.activeElement ? document.activeElement.tagName : null })).catch((e) => 'eval-fail'), 8000, 'eval-timeout');
   return { label, html, frames, workers: await workerSnap() };
 };
 const before = await snap('before-click');
 await page.screenshot({ path: OUT + '/before.png' }).catch(() => {});
-await page.mouse.click(640, 400).catch(() => {});
-await wait(30000);
-const clicked = await snap('after-click');
+await page.evaluate(() => { if (document.activeElement) document.activeElement.blur(); document.body.focus(); }).catch(() => {});
 await page.keyboard.press('Space').catch(() => {});
-await wait(20000);
+await wait(30000);
 const after = await snap('after-key');
-after.clicked = clicked.html;
+const sessionFrame = page.frames().find((f) => f.url().includes('/session/world'));
+after.presentSample = await capped((sessionFrame || page).evaluate(() => {
+  const c = document.querySelector('canvas[data-spawn-present-surface]');
+  if (!c) return { found: false };
+  const k = document.createElement('canvas');
+  k.width = c.width;
+  k.height = c.height;
+  const g = k.getContext('2d');
+  g.drawImage(c, 0, 0);
+  const d = g.getImageData(0, 0, k.width, k.height).data;
+  let lit = 0;
+  let sum = 0;
+  for (let i = 0; i < d.length; i += 4) { const v = d[i] + d[i + 1] + d[i + 2]; if (v > 0) lit += 1; sum += v; }
+  return { found: true, w: k.width, h: k.height, nonBlackPixels: lit, meanBrightness: Math.round((sum / (d.length / 4)) * 100) / 100 };
+}).catch((e) => 'eval-fail ' + String(e.message).slice(0, 120)), 60000, 'sample-timeout');
 after.scene = await sceneSnap();
 await page.screenshot({ path: OUT + '/after.png' }).catch(() => {});
 fs.writeFileSync(OUT + '/scene.json', JSON.stringify({ before, after, closes: handles.map((h) => ({ url: h.url, openedMs: h.openedMs, closedMs: h.closedMs, closedAt: h.closedAt || null })), failures, responses, events }, null, 1));
