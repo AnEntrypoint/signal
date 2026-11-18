@@ -41,6 +41,7 @@ const pending = [];
 const responses = [];
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 await context.addInitScript(probeInit);
+if (TARGET.startsWith('http://127.0.0.1')) await context.route((u) => new URL(u).pathname === '/ready-plate', (r) => r.fulfill({ status: 200, contentType: 'text/html', body: '' }));
 context.on('requestfailed', (r) => { if (failures.length < 300) failures.push(r.method() + ' ' + r.failure().errorText + ' ' + r.url().slice(0, 200)); });
 context.on('response', (res) => { const u = res.url(); if (res.status() >= 400 && responses.length < 300) responses.push(res.status() + ' ' + res.request().method() + ' ' + u.slice(0, 200)); });
 const page = await context.newPage();
