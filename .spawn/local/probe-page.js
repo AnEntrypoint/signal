@@ -68,6 +68,14 @@ const workerInit = () => {
     count(GPUComputePassEncoder.prototype, 'dispatchWorkgroups', 'dispatch');
     count(GPUQueue.prototype, 'writeBuffer', 'writeBuffer');
     count(GPUQueue.prototype, 'writeTexture', 'writeTexture');
+    const dh = GPURenderPassEncoder.prototype.draw;
+    GPURenderPassEncoder.prototype.draw = function (vc, ic, ...rest) { const k = vc + 'x' + (ic === undefined ? 1 : ic); P.drawHist = P.drawHist || {}; P.drawHist[k] = (P.drawHist[k] || 0) + 1; return dh.call(this, vc, ic, ...rest); };
+    const brp = GPUCommandEncoder.prototype.beginRenderPass;
+    GPUCommandEncoder.prototype.beginRenderPass = function (desc) {
+      P.passes = P.passes || [];
+      if (P.passes.length < 8) P.passes.push({ attachments: desc.colorAttachments.length, loads: desc.colorAttachments.map((a) => a.loadOp), clear: desc.colorAttachments.map((a) => (a.clearValue ? [a.clearValue.r, a.clearValue.g, a.clearValue.b, a.clearValue.a] : null)), depth: !!desc.depthStencilAttachment, label: String(desc.label || '').slice(0, 60) });
+      return brp.call(this, desc);
+    };
   }
   if (self.OffscreenCanvas) count(OffscreenCanvas.prototype, 'transferToImageBitmap', 'toBitmap');
   if (self.createImageBitmap) {
@@ -75,7 +83,7 @@ const workerInit = () => {
     self.createImageBitmap = async function (...args) {
       const bmp = await cib.apply(this, args);
       P.createImageBitmap += 1;
-      if (P.createImageBitmap % 10 === 0 && bmp && bmp.width > 0) {
+      if (P.createImageBitmap % 3 === 0 && bmp && bmp.width > 0) {
         try {
           const c = new OffscreenCanvas(bmp.width, bmp.height);
           const g = c.getContext('2d');
