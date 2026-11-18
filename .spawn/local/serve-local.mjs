@@ -217,8 +217,10 @@ function postReplayRoute(req, res, external) {
 }
 
 const server = http.createServer((req, res) => {
+  if (process.env.LOCAL_ISOLATION !== 'off') {
   res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
   res.setHeader('Cross-Origin-Embedder-Policy', 'require-corp');
+  }
   const url = new URL(req.url, BASE);
   const pathname = decodeURIComponent(url.pathname);
   if (req.method === 'POST' && pathname === '/api/session/grant') {
@@ -290,6 +292,15 @@ const server = http.createServer((req, res) => {
   if (pathname.startsWith('/world-store/') && req.method === 'POST') {
     postReplayRoute(req, res, `https://play.spawn.co${pathname}${url.search}`);
     return;
+  }
+  const manifestBody = /^\/world-store\/manifests\/([0-9a-f]{64})$/.exec(pathname);
+  if (manifestBody && req.method === 'GET') {
+    const file = join(ASSETS, 'play.spawn.co', 'cache', manifestBody[1] + '.bin');
+    if (existsSync(file) && createHash('sha256').update(readFileSync(file)).digest('hex') === manifestBody[1]) {
+      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-store' });
+      createReadStream(file).pipe(res);
+      return;
+    }
   }
   const cut = /^\/world-store\/cuts\/[0-9a-f]{64}\/([0-9a-f]{64})$/.exec(pathname);
   if (cut && req.method === 'GET') {

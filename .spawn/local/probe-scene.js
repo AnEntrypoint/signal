@@ -284,4 +284,5 @@ await page.screenshot({ path: OUT + '/after.png' }).catch(() => {});
 fs.writeFileSync(OUT + '/scene.json', JSON.stringify({ before, after, closes: handles.map((h) => ({ url: h.url, openedMs: h.openedMs, closedMs: h.closedMs, closedAt: h.closedAt || null })), failures, responses, events }, null, 1));
 fs.writeFileSync(OUT + '/console.txt', consoleLines.join('\n') + '\n');
 console.log(JSON.stringify({ html: after.html, workers: after.workers.length, scene: after.scene.map((s) => ({ url: s.url.slice(0, 60), keys: s.scene && typeof s.scene === 'object' ? Object.keys(s.scene) : String(s.scene) })), closed: handles.filter((h) => h.closedMs !== null).length }));
+if (TARGET.startsWith('http://127.0.0.1')) { const misses = await fetch('http://127.0.0.1:4173/__misses').then((x) => x.text()).catch((e) => 'misses-fetch-failed ' + e.message); fs.writeFileSync(OUT + '/misses.txt', misses); }
 await page.close();
