@@ -512,7 +512,7 @@ await capped(startFrame().evaluate(() => {
   window.__displayCtx = { found: true, bitmaprenderer: !!c0.getContext('bitmaprenderer'), w: c0.width, h: c0.height, connected: c0.isConnected, display: cs.display, visibility: cs.visibility, opacity: cs.opacity, rect: [r.left, r.top, r.width, r.height], alphaMode: 'none: bitmaprenderer has no alphaMode' };
   const sample = () => {
     const sinks = window.__sinkCanvases;
-    const frame = { t: Date.now(), bitmapPresent: (window.__probe && window.__probe.bitmapPresent) || 0, canvases: [] };
+    const frame = { t: Date.now(), bitmapPresent: (window.__probe && window.__probe.bitmapPresent) || 0, pp: ((window.__probe && window.__probe.presentPost) || []).slice(-1)[0] || null, canvases: [] };
     for (const c of document.querySelectorAll('canvas')) {
       const k = document.createElement('canvas');
       k.width = c.width; k.height = c.height;
@@ -521,7 +521,7 @@ await capped(startFrame().evaluate(() => {
       const d = g.getImageData(0, 0, k.width, k.height).data;
       let lit = 0;
       for (let i = 0; i < d.length; i += 4) { if (d[i] + d[i + 1] + d[i + 2] > 0) lit += 1; }
-      frame.canvases.push({ surface: c.dataset.spawnPresentSurface ?? null, w: c.width, h: c.height, sink: !!(sinks && sinks.has(c)), lit, hash: fnv(d) });
+      frame.canvases.push({ surface: c.dataset.spawnPresentSurface ?? null, w: c.width, h: c.height, sink: !!(sinks && sinks.has(c)), lit, hash: fnv(d), png: c.width > 0 ? c.toDataURL('image/png').length : 0 });
     }
     window.__displaySamples.push(frame);
   };
