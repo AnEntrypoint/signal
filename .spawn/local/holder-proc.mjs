@@ -2,6 +2,7 @@ import fs from 'node:fs';
 const [procRoot, holderPid, shmDir] = process.argv.slice(2);
 const ROLLUP_KEYS = ['Rss', 'Anonymous', 'Shared_Clean', 'Shared_Dirty', 'Private_Dirty'];
 const HEADER = /^([0-9a-f]+)-([0-9a-f]+) (\S+) (\S+) (\S+) (\S+)\s*(.*)$/;
+const SMAPS_FIELD = { Size: 'sizeKb', Rss: 'rssKb', Anonymous: 'anonKb', Private_Dirty: 'pdKb' };
 const TOP = 20;
 const PASSES = 3;
 const KB = 1024;
@@ -14,9 +15,9 @@ const parseSmaps = (txt) => {
   let cur = null;
   for (const line of txt.split('\n')) {
     const h = line.match(HEADER);
-    if (h) { cur = { key: h[1] + '-' + h[2], startN: BigInt('0x' + h[1]), endN: BigInt('0x' + h[2]), start: h[1], end: h[2], perms: h[3], inode: h[6], path: h[7].trim() || '[anon]', sizeKb: 0, rssKb: 0, anonKb: 0 }; maps.push(cur); continue; }
-    const f = cur && line.match(/^(Size|Rss|Anonymous):\s+(\d+) kB/);
-    if (f) { const v = Number(f[2]); if (f[1] === 'Size') cur.sizeKb = v; else if (f[1] === 'Rss') cur.rssKb = v; else cur.anonKb = v; }
+    if (h) { cur = { key: h[1] + '-' + h[2], startN: BigInt('0x' + h[1]), endN: BigInt('0x' + h[2]), start: h[1], end: h[2], perms: h[3], inode: h[6], path: h[7].trim() || '[anon]', sizeKb: 0, rssKb: 0, anonKb: 0, pdKb: 0 }; maps.push(cur); continue; }
+    const f = cur && line.match(/^(Size|Rss|Anonymous|Private_Dirty):\s+(\d+) kB/);
+    if (f) cur[SMAPS_FIELD[f[1]]] = Number(f[2]);
   }
   return maps;
 };
@@ -37,7 +38,18 @@ const takeSnapshot = () => {
 };
 const isAnon = (m) => m.inode === '0';
 const isShm = (m) => m.path.startsWith('/dev/shm/') || m.path.startsWith('/memfd:');
-const top = (arr) => [...arr].sort((a, b) => b.rssKb - a.rssKb || b.sizeKb - a.sizeKb).slice(0, TOP).map((m) => ({ range: m.start + '-' + m.end, sizeBytes: toBytes(m.sizeKb), rssBytes: toBytes(m.rssKb), path: m.path }));
+const top = (arr) => [...arr].sort((a, b) => b.rssKb - a.rssKb || b.sizeKb - a.sizeKb).slice(0, TOP).map((m) => ({ range: m.start + '-' + m.end, sizeBytes: toBytes(m.sizeKb), rssBytes: toBytes(m.rssKb), privateDirtyBytes: toBytes(m.pdKb), path: m.path }));
+const groupTags = (arr) => {
+  const g = new Map();
+  for (const m of arr) {
+    const e = g.get(m.path) || { tag: m.path, mappings: 0, rssKb: 0, pdKb: 0 };
+    e.mappings += 1;
+    e.rssKb += m.rssKb;
+    e.pdKb += m.pdKb;
+    g.set(m.path, e);
+  }
+  return [...g.values()].sort((a, b) => b.rssKb - a.rssKb || (a.tag < b.tag ? -1 : a.tag > b.tag ? 1 : 0)).map((e) => ({ tag: e.tag, mappings: e.mappings, rssBytes: toBytes(e.rssKb), privateDirtyBytes: toBytes(e.pdKb) }));
+};
 const out = { pid: Number(holderPid), error: null };
 try {
   const rollup = parseRollup(fs.readFileSync(procRoot + '/' + holderPid + '/smaps_rollup', 'utf8'));
@@ -54,12 +66,16 @@ try {
     anonRollupDiffBytes: diff(anonymousBytes, rollup.Anonymous),
     rssRollupDiffBytes: diff(anonRssBytes + fileRssBytes, rollup.Rss),
   };
+  const anonTags = groupTags(anon);
+  totals.tagCount = anonTags.length;
+  totals.tagRssDiffBytes = sumBy(anonTags, (g) => g.rssBytes) - anonRssBytes;
   const entries = fs.readdirSync(shmDir, { withFileTypes: true }).filter((d) => d.isFile()).map((d) => ({ name: d.name, sizeBytes: fs.statSync(shmDir + '/' + d.name).size })).sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
   const s = fs.statfsSync(shmDir);
   const shmDirInfo = { path: shmDir, totalBytes: s.blocks * s.bsize, freeBytes: s.bfree * s.bsize, usedBytes: (s.blocks - s.bfree) * s.bsize, entries: entries };
   const rendererShm = maps.filter(isShm).map((m) => ({ path: m.path, sizeBytes: toBytes(m.sizeKb), rssBytes: toBytes(m.rssKb) }));
   out.rollup = rollup;
   out.totals = totals;
+  out.anonTags = anonTags;
   out.anonTop20 = top(anon);
   out.fileTop20 = top(file);
   out.shmDir = shmDirInfo;
