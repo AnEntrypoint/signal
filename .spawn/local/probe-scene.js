@@ -167,8 +167,10 @@ const workerInit = () => {
       g.drawImage(b, 0, 0);
       const d = g.getImageData(0, 0, b.width, b.height).data;
       let lit = 0;
-      for (let i = 0; i < d.length; i += 4) { if (d[i] + d[i + 1] + d[i + 2] > 0) lit += 1; }
-      P.bitmapSamples = (P.bitmapSamples || []).concat([{ via, w: b.width, h: b.height, lit, pixels: b.width * b.height, t: Date.now() }]).slice(-12); return lit;
+      let alpha = 0;
+      for (let i = 0; i < d.length; i += 4) { if (d[i] + d[i + 1] + d[i + 2] > 0) lit += 1; if (d[i + 3] > 0) alpha += 1; }
+      P.bitmapAlpha = alpha;
+      P.bitmapSamples = (P.bitmapSamples || []).concat([{ via, w: b.width, h: b.height, lit, alpha, pixels: b.width * b.height, t: Date.now() }]).slice(-12); return lit;
     } catch (e) { P.bitmapSamples = (P.bitmapSamples || []).concat([{ via, error: String(e.message).slice(0, 80), t: Date.now() }]).slice(-12); return -1; }
   };
   const ttib = OffscreenCanvas.prototype.transferToImageBitmap;
@@ -183,7 +185,7 @@ const workerInit = () => {
     const b = ttib.apply(this, a);
     const lit = sendBitmap(b, 'transferToImageBitmap');
     if (!P.transferLog) P.transferLog = [];
-    if (P.transferLog.length < 400) P.transferLog.push({ n, lit, w: b.width, h: b.height, fromCopiedCanvas, presentedIdx: presentedFrom ? presentedFrom.idx : null, presentedLit: presentedFrom ? presentedFrom.lit : null });
+    if (P.transferLog.length < 400) P.transferLog.push({ n, lit, alpha: P.bitmapAlpha, w: b.width, h: b.height, fromCopiedCanvas, presentedIdx: presentedFrom ? presentedFrom.idx : null, presentedLit: presentedFrom ? presentedFrom.lit : null });
     if (pre) settle({ idx: n, w: d.w, h: d.h }, 'before-transfer', pre).then((row) => keepRow('transferPre', Object.assign(row, { n, fromCopiedCanvas })));
     return b;
   };
@@ -223,11 +225,13 @@ const workerInit = () => {
     await r.st.mapAsync(1);
     const d = new Uint8Array(r.st.getMappedRange());
     let lit = 0;
-    for (let y = 0; y < r.h; y += 1) for (let x = 0; x < r.w; x += 1) { const o = y * r.bytesPerRow + x * 4; if (d[o] + d[o + 1] + d[o + 2] > 0) lit += 1; }
+    let alpha = 0;
+    for (let y = 0; y < r.h; y += 1) for (let x = 0; x < r.w; x += 1) { const o = y * r.bytesPerRow + x * 4; if (d[o] + d[o + 1] + d[o + 2] > 0) lit += 1; if (d[o + 3] > 0) alpha += 1; }
     r.st.unmap();
+    r.alpha = alpha;
     return lit;
   };
-  const settle = (c, phase, r) => countLit(r).then((lit) => ({ idx: c.idx, phase, lit, pixels: c.w * c.h }), (e) => ({ idx: c.idx, phase, error: String(e.message).slice(0, 160) }));
+  const settle = (c, phase, r) => countLit(r).then((lit) => ({ idx: c.idx, phase, lit, alpha: r.alpha, pixels: c.w * c.h }), (e) => ({ idx: c.idx, phase, error: String(e.message).slice(0, 160) }));
   const cts = GPUCommandEncoder.prototype.copyTextureToTexture;
   GPUCommandEncoder.prototype.copyTextureToTexture = function (src, dst, size) {
     P.copies = (P.copies || 0) + 1;
