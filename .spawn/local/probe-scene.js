@@ -68,14 +68,14 @@ self.postMessage = function (m, ...rest) { if (m && typeof m === "object") { con
   const cbuf = GPUDevice.prototype.createBuffer;
   GPUDevice.prototype.createBuffer = function (desc) {
     const b = cbuf.call(this, Object.assign({}, desc, { usage: desc.usage & 3 ? desc.usage : desc.usage | 4 }));
-    if (!P.quiet && bufs.length < 500) bufs.push({ b, size: desc.size, usage: desc.usage, label: String(desc.label || '').slice(0, 60) });
+    if (__READ__ === 1 && !P.quiet && bufs.length < 500) bufs.push({ b, size: desc.size, usage: desc.usage, label: String(desc.label || '').slice(0, 60) });
     bufLabel.set(b, String(desc.label || '').slice(0, 60) + '|' + desc.size + '|' + desc.usage);
     return b;
   };
   const ctex = GPUDevice.prototype.createTexture;
   GPUDevice.prototype.createTexture = function (desc) {
     const t = ctex.call(this, desc);
-    if (!P.quiet && texs.length < 200) {
+    if (__READ__ === 1 && !P.quiet && texs.length < 200) {
       const size = Array.isArray(desc.size) ? desc.size : [desc.size.width, desc.size.height || 1];
       texs.push({ t, w: size[0], h: size[1] || 1, format: desc.format, usage: desc.usage, label: String(desc.label || '').slice(0, 60), dim: desc.dimension || '2d', mips: desc.mipLevelCount || 1, samples: desc.sampleCount || 1 });
       texIdx.set(t, texs.length - 1);
@@ -289,6 +289,7 @@ self.postMessage = function (m, ...rest) { if (m && typeof m === "object") { con
   const gcfg = GPUCanvasContext.prototype.configure;
   GPUCanvasContext.prototype.configure = function (c) { P.canvasConfig = { alphaMode: c && c.alphaMode, format: c && c.format, configures: ((P.canvasConfig && P.canvasConfig.configures) || 0) + 1 }; return gcfg.call(this, c); };
   const readCopy = (tex) => {
+    P.stagingMade = (P.stagingMade || 0) + 1;
     try {
       const device = devices[0];
       const bytesPerRow = tex.width * 4;
@@ -302,6 +303,7 @@ self.postMessage = function (m, ...rest) { if (m && typeof m === "object") { con
     }
   };
   const readCopyCmd = (tex) => {
+    P.stagingMade = (P.stagingMade || 0) + 1;
     try {
       const device = devices[0];
       const bytesPerRow = tex.width * 4;
@@ -328,7 +330,7 @@ self.postMessage = function (m, ...rest) { if (m && typeof m === "object") { con
   const cts = GPUCommandEncoder.prototype.copyTextureToTexture;
   GPUCommandEncoder.prototype.copyTextureToTexture = function (src, dst, size) {
     P.copies = (P.copies || 0) + 1;
-    lastCopies.push({ idx: P.copies, src: src.texture, dst: dst.texture, canvas: texCanvas.get(dst.texture) || null, gctAt: P.gctCalls || 0, srcIdx: texIdx.get(src.texture) ?? null, dstIdx: texIdx.get(dst.texture) ?? null, w: src.texture.width, h: src.texture.height });
+    if (__READ__ === 1) lastCopies.push({ idx: P.copies, src: src.texture, dst: dst.texture, canvas: texCanvas.get(dst.texture) || null, gctAt: P.gctCalls || 0, srcIdx: texIdx.get(src.texture) ?? null, dstIdx: texIdx.get(dst.texture) ?? null, w: src.texture.width, h: src.texture.height });
     return cts.call(this, src, dst, size);
   };
   const sq = GPUQueue.prototype.submit;
@@ -504,6 +506,18 @@ page.on('framedetached', (f) => events.push({ kind: 'frame-detached', url: f.url
 page.on('framenavigated', (f) => events.push({ kind: 'frame-navigated', url: f.url().slice(0, 90), t: Date.now() }));
 page.on('close', () => events.push({ kind: 'page-close', t: Date.now() }));
 page.on('crash', () => events.push({ kind: 'page-crash', t: Date.now() }));
+const crashLog = [];
+const bcdp = await Promise.resolve(context.browser()?.newBrowserCDPSession()).catch(() => null);
+const pcdp = await context.newCDPSession(page);
+const stampCrash = (src, name, params) => { if (crashLog.length < 300) crashLog.push({ t: Date.now(), src, name, params: JSON.stringify(params ?? null).slice(0, 400) }); };
+bcdp?.on('Target.targetCrashed', (p) => stampCrash('browser', 'Target.targetCrashed', p));
+bcdp?.on('Target.detachedFromTarget', (p) => stampCrash('browser', 'Target.detachedFromTarget', p));
+await bcdp?.send('Target.setDiscoverTargets', { discover: true }).catch((e) => stampCrash('browser', 'discover-fail', String(e.message)));
+pcdp.on('Inspector.targetCrashed', (p) => stampCrash('page', 'Inspector.targetCrashed', p));
+pcdp.on('Inspector.detached', (p) => stampCrash('page', 'Inspector.detached', p));
+pcdp.on('Runtime.exceptionThrown', (p) => stampCrash('page', 'Runtime.exceptionThrown', p.exceptionDetails || p));
+await pcdp.send('Inspector.enable').catch((e) => stampCrash('page', 'inspector-enable-fail', String(e.message)));
+await pcdp.send('Runtime.enable').catch((e) => stampCrash('page', 'runtime-enable-fail', String(e.message)));
 page.on('console', (m) => { if (consoleLines.length < 800) consoleLines.push(m.type() + ' ' + m.location().url.slice(0, 120) + ' :: ' + m.text().slice(0, 300)); });
 page.on('pageerror', (e) => { if (consoleLines.length < 800) consoleLines.push('PAGEERROR ' + String(e.message).slice(0, 300)); });
 page.on('worker', (w) => {
@@ -614,8 +628,9 @@ await capped(startFrame().evaluate(() => {
 const memTrace = [];
 for (let m = 0; m < 15; m += 1) {
   await wait(10000);
-  const mem = await capped(page.evaluate(() => (performance.memory ? { used: performance.memory.usedJSHeapSize, total: performance.memory.totalJSHeapSize, limit: performance.memory.jsHeapSizeLimit } : null)).catch((e) => 'mem-fail ' + String(e.message).slice(0, 80)), 4000, 'mem-timeout');
-  memTrace.push({ atMs: (m + 1) * 10000, mem, pageClosed: page.isClosed() });
+  const info = await capped(bcdp ? bcdp.send('SystemInfo.getProcessInfo').catch((e) => 'proc-fail ' + String(e.message).slice(0, 80)) : Promise.resolve('no-browser-cdp'), 4000, 'proc-timeout');
+  const procs = info && Array.isArray(info.processInfo) ? info.processInfo.map((p) => ({ type: p.type, pid: p.id, cpu: p.cpuTime })) : info;
+  memTrace.push({ atMs: (m + 1) * 10000, t: Date.now(), procs, pageClosed: page.isClosed(), crashEvents: crashLog.length });
 }
 const after = await snap('after-key');
 after.gesture = { tries: gestureTries, shown: gestureShown, log: gestureLog };
@@ -645,7 +660,7 @@ after.env = await capped((sessionFrame || page).evaluate(async () => {
 after.scene = await sceneSnap();
 await page.screenshot({ path: OUT + '/after.png' }).catch(() => {});
 fs.writeFileSync(OUT + '/routes.json', JSON.stringify(routeHits, null, 1));
-fs.writeFileSync(OUT + '/scene.json', JSON.stringify({ before, after, memTrace, closes: handles.map((h) => ({ url: h.url, openedMs: h.openedMs, closedMs: h.closedMs, closedAt: h.closedAt || null })), failures, responses, events }, null, 1));
+fs.writeFileSync(OUT + '/scene.json', JSON.stringify({ before, after, memTrace, crashLog, closes: handles.map((h) => ({ url: h.url, openedMs: h.openedMs, closedMs: h.closedMs, closedAt: h.closedAt || null })), failures, responses, events }, null, 1));
 fs.writeFileSync(OUT + '/console.txt', consoleLines.join('\n') + '\n');
 console.log(JSON.stringify({ html: after.html, workers: after.workers.length, scene: after.scene.map((s) => ({ url: s.url.slice(0, 60), keys: s.scene && typeof s.scene === 'object' ? Object.keys(s.scene) : String(s.scene) })), closed: handles.filter((h) => h.closedMs !== null).length }));
 if (TARGET.startsWith('http://127.0.0.1')) { const misses = await fetch('http://127.0.0.1:4173/__misses').then((x) => x.text()).catch((e) => 'misses-fetch-failed ' + e.message); fs.writeFileSync(OUT + '/misses.txt', misses); }
