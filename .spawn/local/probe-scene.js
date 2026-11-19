@@ -27,6 +27,19 @@ const workerInit = () => {
       return tfb.call(this, b);
     };
   }
+  const fnvView = (v) => { const u = new Uint8Array(v.buffer, v.byteOffset, Math.min(v.byteLength, 4096)); let h = 2166136261; for (let i = 0; i < u.length; i += 1) { h ^= u[i]; h = Math.imul(h, 16777619); } return (h >>> 0).toString(16); };
+  const frameWrites = [];
+  const clockStamp = () => Math.round(performance.now() * 1000) / 1000;
+  P.frameClock = [];
+  P.framePosts = [];
+  const clockPush = (v) => { if (P.frameClock.length < 400) P.frameClock.push(v); };
+  const raf0 = self.requestAnimationFrame.bind(self);
+  self.requestAnimationFrame = (cb) => raf0((t) => { clockPush({ k: 'raf', cb: cb.name, t: Math.round(t * 1000) / 1000, now: clockStamp() }); return cb(t); });
+  const st0 = self.setTimeout.bind(self);
+  self.setTimeout = (cb, ms, ...a) => { if (typeof cb !== 'function') return st0(cb, ms, ...a); return st0((...x) => { if (cb.name === 'dm5') clockPush({ k: 'timer', cb: cb.name, ms, now: clockStamp() }); return cb(...x); }, ms, ...a); };
+  const pm0 = self.postMessage.bind(self);
+  let lastSubmits = 0;
+  self.postMessage = function (m, ...rest) { if (m && m.kind === 'frame-bitmap' && P.framePosts.length < 400) { const big = frameWrites.reduce((a, w) => (a === null || w.n > a.n ? w : a), null); P.framePosts.push({ frameId: m.frameId, now: clockStamp(), submits: P.submit - lastSubmits, writes: frameWrites.length, fps: frameWrites.map((w) => w.fp), big: big ? { n: big.n, f: big.f } : null }); } if (m && m.kind === 'frame-bitmap') { frameWrites.length = 0; lastSubmits = P.submit; } return pm0(m, ...rest); };
   const bufs = [];
   const texs = [];
   const devices = [];
@@ -79,7 +92,16 @@ const workerInit = () => {
   const dsp = GPUComputePassEncoder.prototype.dispatchWorkgroups;
   GPUComputePassEncoder.prototype.dispatchWorkgroups = function (...args) { P.dispatch += 1; return dsp.apply(this, args); };
   const wb = GPUQueue.prototype.writeBuffer;
-  GPUQueue.prototype.writeBuffer = function (...args) { P.writeBuffer += 1; return wb.apply(this, args); };
+  GPUQueue.prototype.writeBuffer = function (...args) {
+    P.writeBuffer += 1;
+    const src = args[2];
+    if (src && frameWrites.length < 80) {
+      const v = ArrayBuffer.isView(src) ? src : new Uint8Array(src);
+      const f = v.byteLength >= 16 && v.byteOffset % 4 === 0 ? Array.from(new Float32Array(v.buffer, v.byteOffset, Math.min(4, Math.floor(v.byteLength / 4)))) : null;
+      frameWrites.push({ n: v.byteLength, fp: fnvView(v), f });
+    }
+    return wb.apply(this, args);
+  };
   const BPP = { 'rg11b10ufloat': 4, rgba8unorm: 4, 'rgba8unorm-srgb': 4, bgra8unorm: 4, 'bgra8unorm-srgb': 4, rgba8snorm: 4, rgb10a2unorm: 4, rgba16float: 8, rg32float: 8, rgba32float: 16, r32float: 4, r16float: 2, r8unorm: 1, rg8unorm: 2 };
   const readBuffer = async (device, src, size) => {
     P.quiet = true;
