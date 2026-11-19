@@ -46,7 +46,7 @@ const workerInit = () => {
   const texs = [];
   const devices = [];
   const selfClose = self.close;
-  self.close = function (...args) { new BroadcastChannel('spawn-probe').postMessage({ kind: 'worker-close-called', t: Date.now(), stack: String(new Error().stack).split('\n').slice(1, 7).join(' | ').slice(0, 500) }); return selfClose.apply(this, args); };
+  self.close = function (...args) { P.closeAt = Date.now(); new BroadcastChannel('spawn-probe').postMessage({ kind: 'worker-close-called', t: Date.now(), stack: String(new Error().stack).split('\n').slice(1, 7).join(' | ').slice(0, 500) }); return selfClose.apply(this, args); };
   const texIdx = new WeakMap();
   const viewTex = new WeakMap();
   const push = (list, v) => { if (list.length < 40) list.push(v); };
@@ -279,7 +279,8 @@ self.postMessage = function (m, ...rest) { if (m && typeof m === "object") { con
     pendingPasses.set(this, []);
     if (!P.worldTransfers) P.worldTransfers = [];
     const rec = { n, f: P.submit, decision: worldList.length === 0 ? 'no-pass' : worldList.some((r) => r.draws > 0) ? 'drawn' : 'cleared-or-released', passes: worldList.length, draws: worldList.reduce((s, r) => s + r.draws, 0), clears: worldList.reduce((s, r) => s + r.clears, 0), loads: worldList.map((r) => r.loads.join('/')).join(';'), stores: worldList.map((r) => r.stores.join('/')).join(';') };
-    if (P.worldTransfers.length < 60) { P.worldTransfers.push(rec); worldBc.postMessage({ kind: 'world-transfer', rec }); }
+    rec.postAt = Date.now();
+    if (P.worldTransfers.length < 60) { P.worldTransfers.push(rec); worldBc.postMessage({ kind: 'world-transfer', rec, postAt: rec.postAt }); }
     const b = ttib.apply(this, a);
     const lit = sendBitmap(b, 'transferToImageBitmap');
     if (!P.transferLog) P.transferLog = [];
@@ -462,7 +463,14 @@ const probeInit = (cfg) => {
   };
   const WorkerCtor = window.Worker;
   const worldBcPage = window === window.top ? new BroadcastChannel('spawn-probe') : null;
-  if (worldBcPage) worldBcPage.onmessage = (e) => { if (e.data && e.data.kind === 'world-transfer') (window.__worldRecs ||= []).push(e.data.rec); };
+  if (worldBcPage) {
+    window.__worldListenerAt = Date.now();
+    worldBcPage.onmessage = (e) => {
+      const d = e.data || {};
+      if (d.kind === 'world-transfer' || d.kind === 'worker-close-called') { (window.__bcLog ||= []).push({ kind: d.kind, postAt: d.postAt ?? d.t ?? null, receivedAt: Date.now() }); if (window.__bcLog.length > 200) window.__bcLog.shift(); }
+      if (d.kind === 'world-transfer') (window.__worldRecs ||= []).push(d.rec);
+    };
+  }
   const hookedUrl = (url, opts) => {
     const hookUrl = URL.createObjectURL(new Blob([cfg.hook], { type: 'text/javascript' }));
     const abs = new URL(String(url), location.href).href;
@@ -470,6 +478,7 @@ const probeInit = (cfg) => {
     return URL.createObjectURL(new Blob([boot], { type: 'text/javascript' }));
   };
   window.Worker = function (url, opts) {
+    (window.__workerCreates ||= []).push(Date.now());
     const w = new WorkerCtor(cfg.hook ? hookedUrl(url, opts) : url, opts);
     w.addEventListener('message', (e) => {
       const d = e.data;
@@ -673,7 +682,7 @@ const workerCounters = () => Promise.all(handles.filter((h) => h.closedMs === nu
 for (let m = 0; m < 15; m += 1) {
   await wait(10000);
   const vis = await capped(page.evaluate(() => document.visibilityState).catch((e) => 'vis-fail ' + String(e.message).slice(0, 60)), 3000, 'vis-timeout');
-  const canvasState = await capped(startFrame().evaluate(() => { const L = window.__spawnLastKernelLoadingState || null; const q = window.__probe || {}; return { canvases: [...document.querySelectorAll('canvas')].map((c) => { const s = getComputedStyle(c); return { w: c.width, h: c.height, opacity: s.opacity, display: s.display, visibility: s.visibility, inlineOpacity: c.style.opacity, surface: c.dataset.spawnPresentSurface ?? null }; }), shown: document.documentElement.classList.contains('spawn-world-shown'), bootWait: L ? L.bootWaitCondition ?? null : null, phase: L ? L.phase ?? null : null, adapterAnswers: q.adapterAnswers || 0, framePostsPage: q.framePostsPage || 0, bitmapPresent: q.bitmapPresent || 0, worldCount: (window.__worldRecs || []).length, worldRecs: (window.__worldRecs || []).slice(-6) }; }).catch((e) => 'canvas-fail ' + String(e.message).slice(0, 60)), 3000, 'canvas-timeout');
+  const canvasState = await capped(startFrame().evaluate(() => { const L = window.__spawnLastKernelLoadingState || null; const q = window.__probe || {}; return { canvases: [...document.querySelectorAll('canvas')].map((c) => { const s = getComputedStyle(c); return { w: c.width, h: c.height, opacity: s.opacity, display: s.display, visibility: s.visibility, inlineOpacity: c.style.opacity, surface: c.dataset.spawnPresentSurface ?? null }; }), shown: document.documentElement.classList.contains('spawn-world-shown'), bootWait: L ? L.bootWaitCondition ?? null : null, phase: L ? L.phase ?? null : null, adapterAnswers: q.adapterAnswers || 0, framePostsPage: q.framePostsPage || 0, bitmapPresent: q.bitmapPresent || 0, worldCount: (window.__worldRecs || []).length, worldRecs: (window.__worldRecs || []).slice(-6), worldListenerAt: window.__worldListenerAt ?? null, workerCreates: (window.__workerCreates || []).slice(0, 4), bcLog: (window.__bcLog || []).slice(-12) }; }).catch((e) => 'canvas-fail ' + String(e.message).slice(0, 60)), 3000, 'canvas-timeout');
   const info = await capped(bcdp ? bcdp.send('SystemInfo.getProcessInfo').catch((e) => 'proc-fail ' + String(e.message).slice(0, 80)) : Promise.resolve('no-browser-cdp'), 4000, 'proc-timeout');
   const procs = info && Array.isArray(info.processInfo) ? info.processInfo.map((p) => ({ type: p.type, pid: p.id, cpu: p.cpuTime })) : info;
   memTrace.push({ atMs: (m + 1) * 10000, t: Date.now(), visibility: vis, canvas: canvasState, workers: await workerCounters(), procs, pageClosed: page.isClosed(), crashEvents: crashLog.length });
