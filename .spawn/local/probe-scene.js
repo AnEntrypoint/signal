@@ -540,7 +540,7 @@ let gestureTries = 0;
 let gestureShown = false;
 for (let g = 0; g < 20 && !gestureShown; g += 1) {
   gestureTries += 1;
-  await page.mouse.click(640, 400).catch(() => {});
+  await page.evaluate(() => { if (document.activeElement) document.activeElement.blur(); document.body.focus(); }).catch(() => {});
   await page.keyboard.press('Space').catch(() => {});
   await wait(2000);
   gestureShown = await page.evaluate(() => document.documentElement.classList.contains('spawn-world-shown')).catch(() => false);
