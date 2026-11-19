@@ -18,6 +18,7 @@ for kind in browser server; do
   f="$OUT/$kind.pid"
   [ -f "$f" ] || continue
   root=$(tr -d '[:space:]' < "$f")
+  if [ ! -d "/proc/$root" ]; then echo "$kind pid $root already exited"; continue; fi
   if ! owned "$root" "$kind"; then echo "refused $kind pid $root: command line is not this run's $kind" >&2; continue; fi
   pgid=$(ps -o pgid= -p "$root" | tr -d ' ')
   if [ "$pgid" = "$root" ]; then kill -TERM -- "-$root" 2>/dev/null; fi
