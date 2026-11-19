@@ -26,7 +26,7 @@ const workerInit = () => {
   GPUAdapter.prototype.requestDevice = async function (...args) { const d = await rd.apply(this, args); P.deviceOk += 1; d.addEventListener('uncapturederror', (ev) => { if ((P.uncaptured || []).length < 6) P.uncaptured = (P.uncaptured || []).concat([String(ev.error.message).slice(0, 420)]); }); d.lost.then((i) => new BroadcastChannel('spawn-probe').postMessage({ kind: 'lost', reason: i.reason, message: String(i.message).slice(0, 160), t: Date.now() })); if (devices.length < 2) devices.push(d); return d; };
   const cbuf = GPUDevice.prototype.createBuffer;
   GPUDevice.prototype.createBuffer = function (desc) {
-    const b = cbuf.call(this, Object.assign({}, desc, { usage: desc.usage | 4 }));
+    const b = cbuf.call(this, Object.assign({}, desc, { usage: desc.usage & 3 ? desc.usage : desc.usage | 4 }));
     if (!P.quiet && bufs.length < 500) bufs.push({ b, size: desc.size, usage: desc.usage, label: String(desc.label || '').slice(0, 60) });
     return b;
   };
@@ -150,12 +150,28 @@ const workerInit = () => {
       const d = g.getImageData(0, 0, b.width, b.height).data;
       let lit = 0;
       for (let i = 0; i < d.length; i += 4) { if (d[i] + d[i + 1] + d[i + 2] > 0) lit += 1; }
-      P.bitmapSamples = (P.bitmapSamples || []).concat([{ via, w: b.width, h: b.height, lit, pixels: b.width * b.height, t: Date.now() }]).slice(-12);
-    } catch (e) { P.bitmapSamples = (P.bitmapSamples || []).concat([{ via, error: String(e.message).slice(0, 80), t: Date.now() }]).slice(-12); }
+      P.bitmapSamples = (P.bitmapSamples || []).concat([{ via, w: b.width, h: b.height, lit, pixels: b.width * b.height, t: Date.now() }]).slice(-12); return lit;
+    } catch (e) { P.bitmapSamples = (P.bitmapSamples || []).concat([{ via, error: String(e.message).slice(0, 80), t: Date.now() }]).slice(-12); return -1; }
   };
   const ttib = OffscreenCanvas.prototype.transferToImageBitmap;
-  OffscreenCanvas.prototype.transferToImageBitmap = function (...a) { P.toBitmap = (P.toBitmap || 0) + 1; const b = ttib.apply(this, a); sendBitmap(b, 'transferToImageBitmap'); return b; };
+  OffscreenCanvas.prototype.transferToImageBitmap = function (...a) {
+    P.toBitmap = (P.toBitmap || 0) + 1;
+    const n = P.toBitmap;
+    const d = lastDst;
+    const fromCopiedCanvas = d ? d.canvas === this : null;
+    const pre = d ? readCopy(d.dst) : null;
+    const b = ttib.apply(this, a);
+    const lit = sendBitmap(b, 'transferToImageBitmap');
+    if (!P.transferLog) P.transferLog = [];
+    if (P.transferLog.length < 400) P.transferLog.push({ n, lit, fromCopiedCanvas });
+    if (pre) settle({ idx: n, w: d.w, h: d.h }, 'before-transfer', pre).then((row) => { if (!P.transferPre) P.transferPre = []; if (P.transferPre.length < 400) P.transferPre.push(Object.assign(row, { n, fromCopiedCanvas })); });
+    return b;
+  };
   const lastCopies = [];
+  const texCanvas = new WeakMap();
+  let lastDst = null;
+  const gct = GPUCanvasContext.prototype.getCurrentTexture;
+  GPUCanvasContext.prototype.getCurrentTexture = function () { const tx = gct.call(this); texCanvas.set(tx, this.canvas); return tx; };
   const readCopy = (tex) => {
     try {
       const device = devices[0];
@@ -182,7 +198,7 @@ const workerInit = () => {
   const cts = GPUCommandEncoder.prototype.copyTextureToTexture;
   GPUCommandEncoder.prototype.copyTextureToTexture = function (src, dst, size) {
     P.copies = (P.copies || 0) + 1;
-    lastCopies.push({ idx: P.copies, src: src.texture, dst: dst.texture, w: src.texture.width, h: src.texture.height });
+    lastCopies.push({ idx: P.copies, src: src.texture, dst: dst.texture, canvas: texCanvas.get(dst.texture) || null, w: src.texture.width, h: src.texture.height });
     return cts.call(this, src, dst, size);
   };
   const sq = GPUQueue.prototype.submit;
@@ -192,6 +208,7 @@ const workerInit = () => {
     const out = sq.apply(this, args);
     const post = batch.map((c) => ({ c, r: readCopy(c.dst) }));
     if (batch.length) {
+      lastDst = batch[batch.length - 1];
       Promise.all([...pre.map((x) => settle(x.c, 'before', x.r)), ...post.map((x) => settle(x.c, 'after', x.r))]).then((rows) => { P.copyReads = (P.copyReads || []).concat(rows).slice(-80); });
     }
     return out;
