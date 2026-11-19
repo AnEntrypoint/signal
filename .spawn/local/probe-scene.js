@@ -9,7 +9,7 @@ const capped = (p, ms, label) => Promise.race([p, wait(ms).then(() => label)]);
 const workerInit = () => {
   const P = (self.__probe = { hasGpu: !!navigator.gpu, gpuAdapter: 0, deviceOk: 0, submit: 0, beginRenderPass: 0, draw: 0, drawIndexed: 0, dispatch: 0, writeBuffer: 0, drawHist: {}, passLog: [], lastFrame: [], bitmapArgs: [], createImageBitmap: 0, frameSamples: [], quiet: false, errors: [], lost: [] });
   const hashBytes = (d) => { let h = 2166136261; for (let i = 0; i < d.length; i += 1) { h ^= d[i]; h = Math.imul(h, 16777619); } return (h >>> 0).toString(16); };
-  if (typeof ImageBitmapRenderingContext !== 'undefined' && typeof document !== 'undefined') {
+  if (typeof ImageBitmapRenderingContext !== 'undefined' && typeof document !== 'undefined' && __READ__ === 1) {
     window.__displayed = [];
     const tfb = ImageBitmapRenderingContext.prototype.transferFromImageBitmap;
     ImageBitmapRenderingContext.prototype.transferFromImageBitmap = function (b) {
@@ -212,6 +212,8 @@ const workerInit = () => {
   const bcPost = BroadcastChannel.prototype.postMessage;
   BroadcastChannel.prototype.postMessage = function (m, ...rest) { if (m && m.kind === 'removed') new BroadcastChannel('spawn-probe').postMessage({ kind: 'posted-removed', names: m.names, t: Date.now(), stack: String(new Error().stack).split('\n').slice(1, 6).join(' | ').slice(0, 400) }); return bcPost.call(this, m, ...rest); };
   const sendBitmap = (b, via) => {
+    if (__READ__ === 0) return -1;
+    const rs = performance.now();
     const bc = new BroadcastChannel('spawn-probe');
     try {
       const c = new OffscreenCanvas(b.width, b.height);
@@ -224,7 +226,7 @@ const workerInit = () => {
       P.bitmapAlpha = alpha;
       P.bitmapHash = hashBytes(d);
       P.bitmapSamples = (P.bitmapSamples || []).concat([{ via, w: b.width, h: b.height, lit, alpha, pixels: b.width * b.height, t: Date.now() }]).slice(-12); return lit;
-    } catch (e) { P.bitmapSamples = (P.bitmapSamples || []).concat([{ via, error: String(e.message).slice(0, 80), t: Date.now() }]).slice(-12); return -1; }
+    } catch (e) { P.bitmapSamples = (P.bitmapSamples || []).concat([{ via, error: String(e.message).slice(0, 80), t: Date.now() }]).slice(-12); return -1; } finally { P.readMs = Math.round(((P.readMs || 0) + performance.now() - rs) * 10) / 10; }
   };
   const ttib = OffscreenCanvas.prototype.transferToImageBitmap;
   const keepRow = (name, row) => { if (!P[name]) P[name] = []; if (P[name].length < 400) P[name].push(row); };
@@ -401,9 +403,9 @@ const probeInit = (cfg) => {
     const ctx = this;
     (window.__sinkCanvases ||= new WeakSet()).add(ctx.canvas);
     (window.__transferTimes ||= []).push(Date.now());
-    if (bitmap) { const pc = sampleSource(bitmap); P.presentPre = (P.presentPre || []).concat([pc]).slice(-12); (window.__pageCalls ||= []).push(pc); }
+    if (bitmap && __READ__ === 1) { const pc = sampleSource(bitmap); P.presentPre = (P.presentPre || []).concat([pc]).slice(-12); (window.__pageCalls ||= []).push(pc); }
     const out = tfibPre.call(this, bitmap, ...rest);
-    setTimeout(() => { try { const k = new OffscreenCanvas(ctx.canvas.width, ctx.canvas.height); const g = k.getContext('2d', { willReadFrequently: true }); g.drawImage(ctx.canvas, 0, 0); P.presentPost = (P.presentPost || []).concat([litOf(g, ctx.canvas.width, ctx.canvas.height)]).slice(-12); } catch (e) { P.presentPost = (P.presentPost || []).concat([{ error: String(e.message).slice(0, 80) }]).slice(-12); } }, 400);
+    if (__READ__ === 1) setTimeout(() => { try { const k = new OffscreenCanvas(ctx.canvas.width, ctx.canvas.height); const g = k.getContext('2d', { willReadFrequently: true }); g.drawImage(ctx.canvas, 0, 0); P.presentPost = (P.presentPost || []).concat([litOf(g, ctx.canvas.width, ctx.canvas.height)]).slice(-12); } catch (e) { P.presentPost = (P.presentPost || []).concat([{ error: String(e.message).slice(0, 80) }]).slice(-12); } }, 400);
     return out;
   };
   const WorkerCtor = window.Worker;
