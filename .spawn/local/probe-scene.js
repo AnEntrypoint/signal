@@ -150,8 +150,8 @@ const workerInit = () => {
       const d = g.getImageData(0, 0, b.width, b.height).data;
       let lit = 0;
       for (let i = 0; i < d.length; i += 4) { if (d[i] + d[i + 1] + d[i + 2] > 0) lit += 1; }
-      bc.postMessage({ kind: 'worker-bitmap', via, w: b.width, h: b.height, lit, pixels: b.width * b.height, t: Date.now() });
-    } catch (e) { bc.postMessage({ kind: 'worker-bitmap', via, error: String(e.message).slice(0, 80), t: Date.now() }); }
+      P.bitmapSamples = (P.bitmapSamples || []).concat([{ via, w: b.width, h: b.height, lit, pixels: b.width * b.height, t: Date.now() }]).slice(-12);
+    } catch (e) { P.bitmapSamples = (P.bitmapSamples || []).concat([{ via, error: String(e.message).slice(0, 80), t: Date.now() }]).slice(-12); }
   };
   const ttib = OffscreenCanvas.prototype.transferToImageBitmap;
   OffscreenCanvas.prototype.transferToImageBitmap = function (...a) { P.toBitmap = (P.toBitmap || 0) + 1; const b = ttib.apply(this, a); sendBitmap(b, 'transferToImageBitmap'); return b; };
