@@ -18,7 +18,7 @@ WS=$(node -e "console.log(JSON.parse(require('fs').readFileSync('$OUT/version.js
 ID=$(playwriter session new --direct "$WS" 2>&1 | grep -o 'Session [0-9]*' | awk '{print $2}')
 setsid bash .spawn/local/bound-watch.sh "$OUT" > /dev/null 2>&1 & echo $! > "$OUT/watch.pid"
 PROBE="${PROBE:-.spawn/local/probe-page.js}"
-sed -e "s|__TARGET__|$TARGET|" -e "s|__OUT__|$OUT|" -e "s|__KEEP__|${KEEP_PREBORN:-0}|" -e "s|__FORCE__|${FORCE_ROAD:-}|" -e "s|__SAMPLE__|${SAMPLE:-1}|" -e "s|__READ__|${READ:-1}|g" "$PROBE" > "$OUT/probe.js"
+sed -e "s|__TARGET__|$TARGET|" -e "s|__OUT__|$OUT|" -e "s|__KEEP__|${KEEP_PREBORN:-0}|" -e "s|__FORCE__|${FORCE_ROAD:-}|" -e "s|__SAMPLE__|${SAMPLE:-0}|" -e "s|__READ__|${READ:-1}|g" "$PROBE" > "$OUT/probe.js"
 PLAYWRITER_EXEC_TIMEOUT=600000 timeout 600 playwriter -s "$ID" -e "$(cat "$OUT/probe.js")" > "$OUT/probe.out" 2>&1
 echo "probe rc=$? session=$ID out=$OUT"
 cut -c1-4000 "$OUT/probe.out"

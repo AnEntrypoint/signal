@@ -632,6 +632,8 @@ await capped(startFrame().evaluate(() => {
   const cs = getComputedStyle(c0);
   const r = c0.getBoundingClientRect();
   window.__displayCtx = { found: true, bitmaprenderer: !!c0.getContext('bitmaprenderer'), w: c0.width, h: c0.height, connected: c0.isConnected, display: cs.display, visibility: cs.visibility, opacity: cs.opacity, rect: [r.left, r.top, r.width, r.height], alphaMode: 'none: bitmaprenderer has no alphaMode' };
+  const scratch = document.createElement('canvas');
+  const scratchQ = document.createElement('canvas');
   let busy = false;
   const sample = async () => {
     if (busy) return;
@@ -641,18 +643,18 @@ await capped(startFrame().evaluate(() => {
       const sinks = window.__sinkCanvases;
       const frame = { t: Date.now(), bitmapPresent: (window.__probe && window.__probe.bitmapPresent) || 0, pp: ((window.__probe && window.__probe.presentPost) || []).slice(-1)[0] || null, canvases: [] };
       for (const c of document.querySelectorAll('canvas')) {
-        const k = document.createElement('canvas');
+        const k = scratch;
         k.width = c.width; k.height = c.height;
         const g = k.getContext('2d', { willReadFrequently: true });
         g.drawImage(c, 0, 0);
         const d = g.getImageData(0, 0, k.width, k.height).data;
         let lit = 0;
         for (let i = 0; i < d.length; i += 4) { if (d[i] + d[i + 1] + d[i + 2] > 0) lit += 1; }
-        const entry = { surface: c.dataset.spawnPresentSurface ?? null, w: c.width, h: c.height, sink: !!(sinks && sinks.has(c)), lit, hash: fnv(d), png: c.width > 0 ? c.toDataURL('image/png').length : 0 };
+        const entry = { surface: c.dataset.spawnPresentSurface ?? null, w: c.width, h: c.height, sink: !!(sinks && sinks.has(c)), lit, hash: fnv(d) };
         if (entry.sink && c.width > 0) {
           const blob = await new Promise((res) => c.toBlob(res, 'image/png'));
           const bmp = await createImageBitmap(blob);
-          const q = document.createElement('canvas');
+          const q = scratchQ;
           q.width = bmp.width; q.height = bmp.height;
           const qg = q.getContext('2d', { willReadFrequently: true });
           qg.drawImage(bmp, 0, 0);
@@ -675,7 +677,7 @@ await capped(startFrame().evaluate(() => {
   const sessRafTick = () => { window.__sessRaf += 1; requestAnimationFrame(sessRafTick); };
   requestAnimationFrame(sessRafTick);
   if (__SAMPLE__ === 1) sample();
-  if (__SAMPLE__ === 1) window.__displayTimer = setInterval(sample, 500);
+  if (__SAMPLE__ === 1) window.__displayTimer = setInterval(sample, 2000);
 }).catch((e) => { console.log('display-start-fail ' + String(e.message).slice(0, 120)); }), 60000, 'display-start-timeout');
 const memTrace = [];
 const workerCounters = () => Promise.all(handles.filter((h) => h.closedMs === null).map((h) => capped(h.w.evaluate(() => { const q = self.__probe; return q ? { world: (q.worldTransfers || []).slice(-6), wb: q.writeBuffer, submit: q.submit, staging: q.stagingMade || 0, copies: q.copies || 0, frames: (q.frameClock || []).length, posts: (q.framePosts || []).length } : null; }).catch((e) => 'eval-fail ' + String(e.message).slice(0, 60)), 3000, 'worker-timeout')));
