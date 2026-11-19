@@ -23,7 +23,7 @@ const workerInit = () => {
   const ra = gp.requestAdapter;
   gp.requestAdapter = async function (...args) { const a = await ra.apply(this, args); if (a) P.gpuAdapter += 1; return a; };
   const rd = GPUAdapter.prototype.requestDevice;
-  GPUAdapter.prototype.requestDevice = async function (...args) { const d = await rd.apply(this, args); P.deviceOk += 1; d.lost.then((i) => new BroadcastChannel('spawn-probe').postMessage({ kind: 'lost', reason: i.reason, message: String(i.message).slice(0, 160), t: Date.now() })); if (devices.length < 2) devices.push(d); return d; };
+  GPUAdapter.prototype.requestDevice = async function (...args) { const d = await rd.apply(this, args); P.deviceOk += 1; d.addEventListener('uncapturederror', (ev) => { if ((P.uncaptured || []).length < 6) P.uncaptured = (P.uncaptured || []).concat([String(ev.error.message).slice(0, 420)]); }); d.lost.then((i) => new BroadcastChannel('spawn-probe').postMessage({ kind: 'lost', reason: i.reason, message: String(i.message).slice(0, 160), t: Date.now() })); if (devices.length < 2) devices.push(d); return d; };
   const cbuf = GPUDevice.prototype.createBuffer;
   GPUDevice.prototype.createBuffer = function (desc) {
     const b = cbuf.call(this, Object.assign({}, desc, { usage: desc.usage | 4 }));
@@ -155,6 +155,47 @@ const workerInit = () => {
   };
   const ttib = OffscreenCanvas.prototype.transferToImageBitmap;
   OffscreenCanvas.prototype.transferToImageBitmap = function (...a) { P.toBitmap = (P.toBitmap || 0) + 1; const b = ttib.apply(this, a); sendBitmap(b, 'transferToImageBitmap'); return b; };
+  const lastCopies = [];
+  const readCopy = (tex) => {
+    try {
+      const device = devices[0];
+      const bytesPerRow = tex.width * 4;
+      const st = cbuf.call(device, { size: bytesPerRow * tex.height, usage: 1 | 8 });
+      const enc = device.createCommandEncoder();
+      enc.copyTextureToBuffer({ texture: tex }, { buffer: st, bytesPerRow }, [tex.width, tex.height, 1]);
+      sb.call(device.queue, [enc.finish()]);
+      return { st, bytesPerRow, w: tex.width, h: tex.height };
+    } catch (e) {
+      return { error: String(e.message).slice(0, 160) };
+    }
+  };
+  const countLit = async (r) => {
+    if (r.error) throw new Error(r.error);
+    await r.st.mapAsync(1);
+    const d = new Uint8Array(r.st.getMappedRange());
+    let lit = 0;
+    for (let y = 0; y < r.h; y += 1) for (let x = 0; x < r.w; x += 1) { const o = y * r.bytesPerRow + x * 4; if (d[o] + d[o + 1] + d[o + 2] > 0) lit += 1; }
+    r.st.unmap();
+    return lit;
+  };
+  const settle = (c, phase, r) => countLit(r).then((lit) => ({ idx: c.idx, phase, lit, pixels: c.w * c.h }), (e) => ({ idx: c.idx, phase, error: String(e.message).slice(0, 160) }));
+  const cts = GPUCommandEncoder.prototype.copyTextureToTexture;
+  GPUCommandEncoder.prototype.copyTextureToTexture = function (src, dst, size) {
+    P.copies = (P.copies || 0) + 1;
+    lastCopies.push({ idx: P.copies, src: src.texture, dst: dst.texture, w: src.texture.width, h: src.texture.height });
+    return cts.call(this, src, dst, size);
+  };
+  const sq = GPUQueue.prototype.submit;
+  GPUQueue.prototype.submit = function (...args) {
+    const batch = lastCopies.splice(0);
+    const pre = batch.map((c) => ({ c, r: readCopy(c.src) }));
+    const out = sq.apply(this, args);
+    const post = batch.map((c) => ({ c, r: readCopy(c.dst) }));
+    if (batch.length) {
+      Promise.all([...pre.map((x) => settle(x.c, 'before', x.r)), ...post.map((x) => settle(x.c, 'after', x.r))]).then((rows) => { P.copyReads = (P.copyReads || []).concat(rows).slice(-80); });
+    }
+    return out;
+  };
   const cib = self.createImageBitmap;
   self.createImageBitmap = async function (...args) {
     const bmp = await cib.apply(this, args);
