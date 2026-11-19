@@ -575,8 +575,8 @@ await capped(startFrame().evaluate(() => {
   window.__sessRaf = 0;
   const sessRafTick = () => { window.__sessRaf += 1; requestAnimationFrame(sessRafTick); };
   requestAnimationFrame(sessRafTick);
-  sample();
-  window.__displayTimer = setInterval(sample, 500);
+  if (__SAMPLE__ === 1) sample();
+  if (__SAMPLE__ === 1) window.__displayTimer = setInterval(sample, 500);
 }).catch((e) => { window.__displayErr = String(e.message).slice(0, 120); }), 60000, 'display-start-timeout');
 await wait(30000);
 const after = await snap('after-key');
