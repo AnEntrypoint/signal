@@ -8,6 +8,25 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const capped = (p, ms, label) => Promise.race([p, wait(ms).then(() => label)]);
 const workerInit = () => {
   const P = (self.__probe = { hasGpu: !!navigator.gpu, gpuAdapter: 0, deviceOk: 0, submit: 0, beginRenderPass: 0, draw: 0, drawIndexed: 0, dispatch: 0, writeBuffer: 0, drawHist: {}, passLog: [], lastFrame: [], bitmapArgs: [], createImageBitmap: 0, frameSamples: [], quiet: false, errors: [], lost: [] });
+  const hashBytes = (d) => { let h = 2166136261; for (let i = 0; i < d.length; i += 1) { h ^= d[i]; h = Math.imul(h, 16777619); } return (h >>> 0).toString(16); };
+  if (typeof ImageBitmapRenderingContext !== 'undefined' && typeof document !== 'undefined') {
+    P.displayed = [];
+    const tfb = ImageBitmapRenderingContext.prototype.transferFromImageBitmap;
+    ImageBitmapRenderingContext.prototype.transferFromImageBitmap = function (b) {
+      let entry;
+      try {
+        const k = new OffscreenCanvas(b.width, b.height);
+        const kg = k.getContext('2d', { willReadFrequently: true });
+        kg.drawImage(b, 0, 0);
+        const d = kg.getImageData(0, 0, b.width, b.height).data;
+        let lit = 0;
+        for (let i = 0; i < d.length; i += 4) { if (d[i] + d[i + 1] + d[i + 2] > 0) lit += 1; }
+        entry = { lit, hash: hashBytes(d), w: b.width, h: b.height };
+      } catch (e) { entry = { error: String(e.message).slice(0, 120) }; }
+      if (P.displayed.length < 400) P.displayed.push(entry);
+      return tfb.call(this, b);
+    };
+  }
   const bufs = [];
   const texs = [];
   const devices = [];
@@ -181,6 +200,7 @@ const workerInit = () => {
       let alpha = 0;
       for (let i = 0; i < d.length; i += 4) { if (d[i] + d[i + 1] + d[i + 2] > 0) lit += 1; if (d[i + 3] > 0) alpha += 1; }
       P.bitmapAlpha = alpha;
+      P.bitmapHash = hashBytes(d);
       P.bitmapSamples = (P.bitmapSamples || []).concat([{ via, w: b.width, h: b.height, lit, alpha, pixels: b.width * b.height, t: Date.now() }]).slice(-12); return lit;
     } catch (e) { P.bitmapSamples = (P.bitmapSamples || []).concat([{ via, error: String(e.message).slice(0, 80), t: Date.now() }]).slice(-12); return -1; }
   };
@@ -214,7 +234,7 @@ const workerInit = () => {
     const b = ttib.apply(this, a);
     const lit = sendBitmap(b, 'transferToImageBitmap');
     if (!P.transferLog) P.transferLog = [];
-    if (P.transferLog.length < 400) P.transferLog.push({ n, lit, alpha: P.bitmapAlpha, w: b.width, h: b.height, fromCopiedCanvas, copyCanvasId: d ? canvasId(d.canvas) : null, transferCanvasId: canvasId(this), gctBetween, frames, presentedIdx: presentedFrom ? presentedFrom.idx : null, presentedLit: presentedFrom ? presentedFrom.lit : null });
+    if (P.transferLog.length < 400) P.transferLog.push({ n, lit, alpha: P.bitmapAlpha, hash: P.bitmapHash, w: b.width, h: b.height, fromCopiedCanvas, copyCanvasId: d ? canvasId(d.canvas) : null, transferCanvasId: canvasId(this), gctBetween, frames, presentedIdx: presentedFrom ? presentedFrom.idx : null, presentedLit: presentedFrom ? presentedFrom.lit : null });
     if (pre) settle({ idx: n, w: d.w, h: d.h }, 'before-transfer', pre).then((row) => keepRow('transferPre', Object.assign(row, { n, fromCopiedCanvas })));
     return b;
   };
@@ -479,8 +499,33 @@ const before = await snap('before-click');
 await page.screenshot({ path: OUT + '/before.png' }).catch(() => {});
 await page.evaluate(() => { if (document.activeElement) document.activeElement.blur(); document.body.focus(); }).catch(() => {});
 await page.keyboard.press('Space').catch(() => {});
+const startFrame = () => page.frames().find((f) => f.url().includes('/session/world')) || page;
+await capped(startFrame().evaluate(() => {
+  const fnv = (d) => { let h = 2166136261; for (let i = 0; i < d.length; i += 1) { h ^= d[i]; h = Math.imul(h, 16777619); } return (h >>> 0).toString(16); };
+  const c0 = document.querySelector('canvas[data-spawn-present-surface]');
+  window.__displaySamples = [];
+  if (!c0) { window.__displayCtx = { found: false }; return; }
+  const cs = getComputedStyle(c0);
+  const r = c0.getBoundingClientRect();
+  window.__displayCtx = { found: true, bitmaprenderer: !!c0.getContext('bitmaprenderer'), w: c0.width, h: c0.height, connected: c0.isConnected, display: cs.display, visibility: cs.visibility, opacity: cs.opacity, rect: [r.left, r.top, r.width, r.height], alphaMode: 'none: bitmaprenderer has no alphaMode' };
+  const sample = () => {
+    const c = document.querySelector('canvas[data-spawn-present-surface]');
+    if (!c) return;
+    const k = document.createElement('canvas');
+    k.width = c.width; k.height = c.height;
+    const g = k.getContext('2d', { willReadFrequently: true });
+    g.drawImage(c, 0, 0);
+    const d = g.getImageData(0, 0, k.width, k.height).data;
+    let lit = 0;
+    for (let i = 0; i < d.length; i += 4) { if (d[i] + d[i + 1] + d[i + 2] > 0) lit += 1; }
+    window.__displaySamples.push({ t: Date.now(), lit, hash: fnv(d) });
+  };
+  sample();
+  window.__displayTimer = setInterval(sample, 500);
+}).catch((e) => { window.__displayErr = String(e.message).slice(0, 120); }), 60000, 'display-start-timeout');
 await wait(30000);
 const after = await snap('after-key');
+after.display = await capped(startFrame().evaluate(() => { clearInterval(window.__displayTimer); return { ctx: window.__displayCtx || null, samples: window.__displaySamples || [], hooks: (self.__probe && self.__probe.displayed) || [], err: window.__displayErr || null }; }).catch((e) => 'display-eval-fail ' + String(e.message).slice(0, 120)), 60000, 'display-read-timeout');
 const sessionFrame = page.frames().find((f) => f.url().includes('/session/world'));
 after.presentSample = await capped((sessionFrame || page).evaluate(() => {
   const c = document.querySelector('canvas[data-spawn-present-surface]');
