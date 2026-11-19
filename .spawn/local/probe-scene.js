@@ -211,6 +211,8 @@ const workerInit = () => {
   let lastDst = null;
   const gct = GPUCanvasContext.prototype.getCurrentTexture;
   GPUCanvasContext.prototype.getCurrentTexture = function () { const tx = gct.call(this); P.gctCalls = (P.gctCalls || 0) + 1; texCanvas.set(tx, this.canvas); return tx; };
+  const gcfg = GPUCanvasContext.prototype.configure;
+  GPUCanvasContext.prototype.configure = function (c) { P.canvasConfig = { alphaMode: c && c.alphaMode, format: c && c.format, configures: ((P.canvasConfig && P.canvasConfig.configures) || 0) + 1 }; return gcfg.call(this, c); };
   const readCopy = (tex) => {
     try {
       const device = devices[0];
@@ -258,14 +260,21 @@ const workerInit = () => {
   GPUQueue.prototype.submit = function (...args) {
     const batch = lastCopies.splice(0);
     const pre = batch.map((c) => ({ c, r: readCopy(c.src) }));
+    const dstBefore = batch.map((c) => ({ c, r: readCopy(c.dst) }));
     const post = batch.map((c) => ({ c, r: readCopyCmd(c.dst) }));
     const cmds = post.map((x) => x.r.cmd).filter(Boolean);
     const sameSubmit = cmds.length > 0 && Array.isArray(args[0]);
     const out = sameSubmit ? sq.apply(this, [[...args[0], ...cmds], ...args.slice(1)]) : sq.apply(this, args);
     if (cmds.length && !sameSubmit) sb.call(this, cmds);
+    const dstAfter = batch.map((c) => ({ c, r: readCopy(c.dst) }));
     if (batch.length) {
       lastDst = batch[batch.length - 1];
-      Promise.all([...pre.map((x) => settle(x.c, 'before', x.r)), ...post.map((x) => settle(x.c, 'after-same-submit', x.r).then((row) => { if (row.lit !== undefined && (!lastResolved || row.idx > lastResolved.idx)) lastResolved = row; return row; }))]).then((rows) => { P.copyReads = (P.copyReads || []).concat(rows).slice(-400); });
+      Promise.all([
+        ...pre.map((x) => settle(x.c, 'before', x.r)),
+        ...dstBefore.map((x) => settle(x.c, 'dst-before-submit', x.r)),
+        ...post.map((x) => settle(x.c, 'after-same-submit', x.r).then((row) => { if (row.lit !== undefined && (!lastResolved || row.idx > lastResolved.idx)) lastResolved = row; return row; })),
+        ...dstAfter.map((x) => settle(x.c, 'dst-after-submit', x.r)),
+      ]).then((rows) => { P.copyReads = (P.copyReads || []).concat(rows).slice(-800); });
     }
     return out;
   };
