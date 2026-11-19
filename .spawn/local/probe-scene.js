@@ -676,7 +676,7 @@ await capped(startFrame().evaluate(() => {
   requestAnimationFrame(sessRafTick);
   if (__SAMPLE__ === 1) sample();
   if (__SAMPLE__ === 1) window.__displayTimer = setInterval(sample, 500);
-}).catch((e) => { window.__displayErr = String(e.message).slice(0, 120); }), 60000, 'display-start-timeout');
+}).catch((e) => { console.log('display-start-fail ' + String(e.message).slice(0, 120)); }), 60000, 'display-start-timeout');
 const memTrace = [];
 const workerCounters = () => Promise.all(handles.filter((h) => h.closedMs === null).map((h) => capped(h.w.evaluate(() => { const q = self.__probe; return q ? { world: (q.worldTransfers || []).slice(-6), wb: q.writeBuffer, submit: q.submit, staging: q.stagingMade || 0, copies: q.copies || 0, frames: (q.frameClock || []).length, posts: (q.framePosts || []).length } : null; }).catch((e) => 'eval-fail ' + String(e.message).slice(0, 60)), 3000, 'worker-timeout')));
 for (let m = 0; m < 15; m += 1) {
