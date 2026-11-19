@@ -451,8 +451,10 @@ const probeInit = (cfg) => {
   }
   const bcp = BroadcastChannel.prototype.postMessage;
   BroadcastChannel.prototype.postMessage = function (m, ...rest) { if (m && m.kind === 'removed') push(P.lost, { kind: 'main-posted-removed', names: m.names, t: Date.now(), stack: String(new Error().stack).split('\n').slice(1, 6).join(' | ').slice(0, 400) }); return bcp.call(this, m, ...rest); };
+  if (typeof LockManager !== 'undefined') {
   const lk = LockManager.prototype.request;
   LockManager.prototype.request = function (name, ...rest) { if (typeof name === 'string' && /play-slot|gpu-pool-slot/.test(name)) push(P.locks, { name, t: Date.now() }); return lk.call(this, name, ...rest); };
+  }
   if (navigator.gpu) {
     const gp = Object.getPrototypeOf(navigator.gpu);
     const ra = gp.requestAdapter;
