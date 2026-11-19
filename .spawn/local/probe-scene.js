@@ -249,17 +249,6 @@ const workerInit = () => {
     }
     return out;
   };
-  GPUQueue.prototype.submit = function (...args) {
-    const batch = lastCopies.splice(0);
-    const pre = batch.map((c) => ({ c, r: readCopy(c.src) }));
-    const out = sq.apply(this, args);
-    const post = batch.map((c) => ({ c, r: readCopy(c.dst) }));
-    if (batch.length) {
-      lastDst = batch[batch.length - 1];
-      Promise.all([...pre.map((x) => settle(x.c, 'before', x.r)), ...post.map((x) => settle(x.c, 'after', x.r).then((row) => { if (row.lit !== undefined && (!lastResolved || row.idx > lastResolved.idx)) lastResolved = row; return row; }))]).then((rows) => { P.copyReads = (P.copyReads || []).concat(rows).slice(-400); });
-    }
-    return out;
-  };
   const cib = self.createImageBitmap;
   self.createImageBitmap = async function (...args) {
     const bmp = await cib.apply(this, args);
