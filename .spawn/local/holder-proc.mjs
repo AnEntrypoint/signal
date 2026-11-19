@@ -20,7 +20,7 @@ const parseSmaps = (txt) => {
 };
 const isAnon = (m) => m.inode === '0';
 const isShm = (m) => m.path.startsWith('/dev/shm/') || m.path.startsWith('/memfd:');
-const top = (arr) => [...arr].sort((a, b) => b.sizeKb - a.sizeKb).slice(0, TOP).map((m) => ({ range: m.start + '-' + m.end, sizeBytes: toBytes(m.sizeKb), rssBytes: toBytes(m.rssKb), path: m.path }));
+const top = (arr) => [...arr].sort((a, b) => b.rssKb - a.rssKb || b.sizeKb - a.sizeKb).slice(0, TOP).map((m) => ({ range: m.start + '-' + m.end, sizeBytes: toBytes(m.sizeKb), rssBytes: toBytes(m.rssKb), path: m.path }));
 const out = { pid: Number(holderPid), error: null };
 try {
   const rollup = parseRollup(fs.readFileSync(procRoot + '/' + holderPid + '/smaps_rollup', 'utf8'));
