@@ -2,6 +2,7 @@
 import { createHash } from 'node:crypto';
 import http from 'node:http';
 import { createReadStream, existsSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { FRAME_GATE_CHUNK, frameGateHookBody } from './frame-gate-hook.mjs';
 import { extname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { answerLocalGrant, isLoopbackRequest } from './replacements/grant-local.mjs';
@@ -108,6 +109,10 @@ const origins = [
   'https://kiln.spawn.co',
   'https://maps.spawnfile.io',
 ];
+function gatedChunk(file) {
+  if (!process.env.PROBE_FRAME_GATE || !file.endsWith('/' + FRAME_GATE_CHUNK)) return null;
+  return readFileSync(file, 'utf8') + frameGateHookBody();
+}
 function rewrite(text) {
   let out = text.replace(/<base\s+href=["'][^"']*["']\s*\/?>/gi, '');
   const originAlternation = origins.map((o) => o.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + '|https://[a-z0-9-]+\\.spawnfile\\.io';
@@ -249,7 +254,7 @@ const server = http.createServer((req, res) => {
     }
     const chunkExt = extname(chunk).toLowerCase();
     if (['.js', '.mjs', '.css'].includes(chunkExt)) {
-      send(res, 200, rewrite(readFileSync(chunk, 'utf8')), types[chunkExt], IMMUTABLE_CACHE);
+      send(res, 200, rewrite(gatedChunk(chunk) ?? readFileSync(chunk, 'utf8')), types[chunkExt], IMMUTABLE_CACHE);
       return;
     }
     res.writeHead(200, { 'Content-Type': types[extname(chunk).toLowerCase()] || 'application/octet-stream', 'Access-Control-Allow-Origin': '*', 'Cache-Control': IMMUTABLE_CACHE });
@@ -264,7 +269,9 @@ const server = http.createServer((req, res) => {
     }
     if (module) {
       res.writeHead(200, { 'Content-Type': types[extname(module).toLowerCase()] || 'application/octet-stream', 'Access-Control-Allow-Origin': '*', 'Cache-Control': IMMUTABLE_CACHE });
-      createReadStream(module).pipe(res);
+      const gated = gatedChunk(module);
+      if (gated !== null) res.end(gated);
+      else createReadStream(module).pipe(res);
       return;
     }
   }
@@ -385,7 +392,7 @@ const server = http.createServer((req, res) => {
   const contentType = types[ext] || 'application/octet-stream';
   if (['.html', '.htm', '.js', '.mjs', '.css', '.json'].includes(ext)) {
     res.writeHead(200, { 'Content-Type': contentType, 'Access-Control-Allow-Origin': '*', 'Cache-Control': IMMUTABLE_CACHE });
-    res.end(rewrite(readFileSync(target, 'utf8')));
+    res.end(rewrite(gatedChunk(target) ?? readFileSync(target, 'utf8')));
     return;
   }
   res.writeHead(200, {
