@@ -3,6 +3,9 @@ const L = '/workspace/signal/world/signal-stage/.spawn/local/';
 const src = fs.readFileSync(L + 'holder-proc.mjs', 'utf8');
 const outDir = process.argv[2] || '/tmp/verify';
 const cases = [
+  ['drop-grouping', '  out.anonTags = anonTags;', ''],
+  ['tag-diff', '  totals.tagRssDiffBytes = sumBy(anonTags, (g) => g.rssBytes) - anonRssBytes;', ''],
+  ['pd-field', 'privateDirtyBytes: toBytes(m.pdKb), path: m.path }));', 'path: m.path }));'],
   ['no-dedupe', 'const uniq = dedupe(maps);', 'const uniq = maps;'],
   ['overlap-check', 'overlaps: snap.overlaps,', 'overlaps: 0,'],
   ['anon-diff', 'anonRollupDiffBytes: diff(anonymousBytes, rollup.Anonymous),', ''],

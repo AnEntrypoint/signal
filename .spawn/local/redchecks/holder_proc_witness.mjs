@@ -19,7 +19,7 @@ const writeProc = (pid, maps, roll, rollupFrom = maps, extraAnonKb = 0) => {
     const start = m.base.toString(16).padStart(12, '0');
     const end = (m.base + m.sizeKb * KB).toString(16).padStart(12, '0');
     smaps += start + '-' + end + ' ' + m.perms + ' 00000000 00:00 ' + m.inode + ' ' + m.path + '\n';
-    smaps += 'Size: ' + m.sizeKb + ' kB\nKernelPageSize: 4 kB\nRss: ' + m.rssKb + ' kB\nAnonymous: ' + m.anonKb + ' kB\nPrivate_Dirty: 0 kB\nVmFlags: rd wr mr mw me ac\n';
+    smaps += 'Size: ' + m.sizeKb + ' kB\nKernelPageSize: 4 kB\nRss: ' + m.rssKb + ' kB\nAnonymous: ' + m.anonKb + ' kB\nPrivate_Dirty: ' + (m.pdKb ?? 0) + ' kB\nVmFlags: rd wr mr mw me ac\n';
   }
   fs.writeFileSync(dir + '/smaps', smaps);
   const sumRss = rollupFrom.reduce((s, m) => s + m.rssKb, 0);
@@ -42,12 +42,22 @@ const fixture5 = [
   { base: 0x700000000000, sizeKb: 400, rssKb: 200, anonKb: 200, inode: '0', path: '[anon:v8]', perms: 'rw-p' },
   { base: 0x700000000000, sizeKb: 512, rssKb: 256, anonKb: 256, inode: '0', path: '[anon:v8]', perms: 'rw-p' },
 ];
+const fixture6 = [
+  { base: 0x800000000000, sizeKb: 262144, rssKb: 204800, anonKb: 204800, pdKb: 204800, inode: '0', path: '[anon:v8]', perms: 'rw-p' },
+  { base: 0x810000000000, sizeKb: 131072, rssKb: 51200, anonKb: 51200, pdKb: 51200, inode: '0', path: '[anon:v8]', perms: 'rw-p' },
+  { base: 0x820000000000, sizeKb: 65536, rssKb: 40960, anonKb: 40960, pdKb: 30720, inode: '0', path: '[anon:partition_alloc]', perms: 'rw-p' },
+  { base: 0x830000000000, sizeKb: 32768, rssKb: 10240, anonKb: 10240, pdKb: 10240, inode: '0', path: '[anon:v8-sandbox]', perms: 'rw-p' },
+  { base: 0x840000000000, sizeKb: 4096, rssKb: 0, anonKb: 0, pdKb: 0, inode: '0', path: '[heap]', perms: 'rw-p' },
+  { base: 0x850000000000, sizeKb: 1024, rssKb: 512, anonKb: 512, pdKb: 512, inode: '0', path: '', perms: 'rw-p' },
+  { base: 0x860000000000, sizeKb: 2048, rssKb: 1024, anonKb: 0, pdKb: 0, inode: '77', path: '/usr/lib/x.so', perms: 'r-xp' },
+];
 const roll1 = { sc: 1000, sd: 200, pd: 900 };
 const f1 = writeProc(4242, fixture1, roll1);
 const f2 = writeProc(5151, fixture2, { sc: 0, sd: 0, pd: 0 });
 const f3 = writeProc(6161, fixture3raw, roll1, fixture1);
 const f4 = writeProc(7171, fixture1, roll1, fixture1, 2048);
 const f5 = writeProc(8181, fixture5, { sc: 0, sd: 0, pd: 0 });
+const f6 = writeProc(9191, fixture6, roll1);
 const run = (pid, shm) => {
   const rr = spawnSync('node', [readerPath, procRoot, String(pid), shm], { encoding: 'utf8' });
   const line = (rr.stdout || '').split('\n').find((l) => l.startsWith('HOLDER_PROC '));
@@ -78,8 +88,9 @@ check('F1 totals counts 50/25/25, no duplicates, consistent in one attempt', !!t
 check('F1 totals anonRssBytes and fileRssBytes', !!t1 && t1.anonRssBytes === expAnon1 && t1.fileRssBytes === expFile1, t1 && [t1.anonRssBytes, t1.fileRssBytes]);
 check('F1 sum rule: anonRss + fileRss equals rollup Rss', !!t1 && !!ru1 && t1.anonRssBytes + t1.fileRssBytes === ru1.Rss, t1 && ru1 && [t1.anonRssBytes + t1.fileRssBytes, ru1.Rss]);
 check('F1 anonymous sum equals rollup Anonymous, diff field is 0', !!t1 && !!ru1 && t1.anonymousBytes === ru1.Anonymous && t1.anonRollupDiffBytes === 0, t1 && [t1.anonymousBytes, t1.anonRollupDiffBytes]);
+check('F1 tag groups: 2 tags ([heap] and [anon]) and tag RSS sum equals anonRssBytes', !!t1 && t1.tagCount === 2 && t1.tagRssDiffBytes === 0, t1 && [t1.tagCount, t1.tagRssDiffBytes]);
 const at1 = h1 && h1.anonTop20;
-check('F1 anonTop20 has 20 entries, rss order, size present', Array.isArray(at1) && at1.length === 20 && nonIncreasing(at1, 'rssBytes') && allNumeric(at1, 'sizeBytes') && uniqueRanges(at1), at1 && at1.length);
+check('F1 anonTop20 has 20 entries, rss order, size and privateDirty present', Array.isArray(at1) && at1.length === 20 && nonIncreasing(at1, 'rssBytes') && allNumeric(at1, 'sizeBytes') && allNumeric(at1, 'privateDirtyBytes') && uniqueRanges(at1), at1 && at1.length);
 check('F1 anonTop20 first is the 400 kB mapping (largest RSS)', !!at1 && at1[0].sizeBytes === 400 * KB && at1[0].rssBytes === 200 * KB, at1 && at1[0]);
 const ft1 = h1 && h1.fileTop20;
 check('F1 fileTop20 has 20 entries, rss order, size present', Array.isArray(ft1) && ft1.length === 20 && nonIncreasing(ft1, 'rssBytes') && allNumeric(ft1, 'sizeBytes'), ft1 && ft1.length);
@@ -94,6 +105,7 @@ check('F2 reader exit 0 and pid 5151, error null', r2.status === 0 && h2 !== nul
 const t2 = h2 && h2.totals;
 check('F2 totals counts 5/3/2 and RSS split 41 MB anon, 98 MB file', !!t2 && t2.mappingCount === 5 && t2.anonCount === 3 && t2.fileCount === 2 && t2.anonRssBytes === 41 * MB && t2.fileRssBytes === 98 * MB, t2);
 check('F2 anonymous diff 0 and rss diff 0', !!t2 && t2.anonRollupDiffBytes === 0 && t2.rssRollupDiffBytes === 0, t2);
+check('F2 tag RSS sum equals anonRssBytes', !!t2 && t2.tagRssDiffBytes === 0 && t2.tagCount === 3, t2);
 const at2 = h2 && h2.anonTop20;
 check('F2 anonTop20 order is by RSS: partition_alloc 40 MB, v8 1 MB, v8-sandbox 0 MB', Array.isArray(at2) && JSON.stringify(at2.map((x) => x.path)) === JSON.stringify(['[anon:partition_alloc]', '[anon:v8]', '[anon:v8-sandbox]']), at2 && at2.map((x) => x.path));
 check('F2 anonTop20 first holds 40 MB RSS with size 64 MB kept as field', !!at2 && at2[0].rssBytes === 40 * MB && at2[0].sizeBytes === 64 * MB, at2 && at2[0]);
@@ -119,6 +131,18 @@ const r5 = run(8181, shmB);
 const h5 = r5.h;
 const t5 = h5 && h5.totals;
 check('F5 same start, different end: overlap detected, not consistent after 3 attempts', !!t5 && t5.overlaps >= 1 && t5.consistent === false && t5.attempts === 3 && t5.mappingCount === 2, t5);
+const r6 = run(9191, shmB);
+const h6 = r6.h;
+const t6 = h6 && h6.totals;
+const g6 = h6 && h6.anonTags;
+const expPd6 = fixture6.filter((m) => m.inode === '0').reduce((s, m) => s + (m.pdKb || 0), 0) * KB;
+check('F6 reader exit 0 and pid 9191, error null', r6.status === 0 && h6 !== null && h6.pid === 9191 && h6.error === null, h6 && [h6.pid, h6.error]);
+check('F6 tags listed in RSS order: [anon:v8], [anon:partition_alloc], [anon:v8-sandbox], [anon], [heap]', Array.isArray(g6) && JSON.stringify(g6.map((x) => x.tag)) === JSON.stringify(['[anon:v8]', '[anon:partition_alloc]', '[anon:v8-sandbox]', '[anon]', '[heap]']), g6 && g6.map((x) => x.tag));
+check('F6 [anon:v8] group: 2 mappings, 250 MB RSS, 250 MB Private_Dirty', Array.isArray(g6) && g6[0].mappings === 2 && g6[0].rssBytes === 250 * MB && g6[0].privateDirtyBytes === 250 * MB, g6 && g6[0]);
+check('F6 [anon:partition_alloc] group: 40 MB RSS of which 30 MB Private_Dirty', Array.isArray(g6) && g6[1].rssBytes === 40 * MB && g6[1].privateDirtyBytes === 30 * MB, g6 && g6[1]);
+check('F6 tag groups sum to anonRssBytes from the same read (tagRssDiffBytes 0)', !!t6 && t6.tagRssDiffBytes === 0 && Array.isArray(g6) && g6.reduce((s, x) => s + x.rssBytes, 0) === t6.anonRssBytes, t6 && [t6.tagRssDiffBytes, t6.anonRssBytes]);
+check('F6 tag groups cover every anonymous mapping (mapping counts sum to anonCount) and Private_Dirty sums to the anon Private_Dirty', !!t6 && Array.isArray(g6) && g6.reduce((s, x) => s + x.mappings, 0) === t6.anonCount && g6.reduce((s, x) => s + x.privateDirtyBytes, 0) === expPd6, g6 && [g6.reduce((s, x) => s + x.mappings, 0), t6 && t6.anonCount]);
+check('F6 anonTop20 first holds 200 MB RSS and 200 MB Private_Dirty', Array.isArray(h6 && h6.anonTop20) && h6.anonTop20[0].rssBytes === 200 * MB && h6.anonTop20[0].privateDirtyBytes === 200 * MB, h6 && h6.anonTop20 && h6.anonTop20[0]);
 for (const c of checks) console.log((c.ok ? 'PASS ' : 'FAIL ') + c.name + ' got=' + c.got);
 const green = checks.every((c) => c.ok);
 console.log('HOLDER PROC WITNESS (' + readerPath + '): ' + (green ? 'GREEN' : 'RED'));
