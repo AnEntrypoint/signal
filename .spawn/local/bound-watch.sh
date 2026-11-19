@@ -15,6 +15,7 @@ while :; do
   [ "$ELAPSED" -gt "$RUN_S" ] && REASON="run ${ELAPSED}s over cap ${RUN_S}s"
   if [ -n "$REASON" ]; then
     echo "$REASON" > "$OUT/bound.reason"
+    ps -eo pid=,pgid=,rss=,args= | awk -v g="$B" '$2==g' | sort -k3 -nr | head -5 | cut -c1-200 > "$OUT/bound.holder"
     kill -- -"$B" 2>/dev/null
     S=$(cat "$OUT/server.pid" 2>/dev/null)
     [ -n "$S" ] && kill -- -"$S" 2>/dev/null
