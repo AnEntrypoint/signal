@@ -11,7 +11,7 @@ fs.mkdirSync(shmA, { recursive: true });
 fs.mkdirSync(shmB, { recursive: true });
 fs.writeFileSync(shmA + '/gpu-0', Buffer.alloc(4096));
 fs.writeFileSync(shmA + '/gpu-1', Buffer.alloc(8192));
-const writeProc = (pid, maps, roll) => {
+const writeProc = (pid, maps, roll, rollupFrom = maps, extraAnonKb = 0) => {
   const dir = procRoot + '/' + pid;
   fs.mkdirSync(dir, { recursive: true });
   let smaps = '';
@@ -22,8 +22,8 @@ const writeProc = (pid, maps, roll) => {
     smaps += 'Size: ' + m.sizeKb + ' kB\nKernelPageSize: 4 kB\nRss: ' + m.rssKb + ' kB\nAnonymous: ' + m.anonKb + ' kB\nPrivate_Dirty: 0 kB\nVmFlags: rd wr mr mw me ac\n';
   }
   fs.writeFileSync(dir + '/smaps', smaps);
-  const sumRss = maps.reduce((s, m) => s + m.rssKb, 0);
-  const sumAnon = maps.reduce((s, m) => s + m.anonKb, 0);
+  const sumRss = rollupFrom.reduce((s, m) => s + m.rssKb, 0);
+  const sumAnon = rollupFrom.reduce((s, m) => s + m.anonKb, 0) + extraAnonKb;
   fs.writeFileSync(dir + '/smaps_rollup', '00400000-7fff00000000 ---p 00000000 00:00 0 [rollup]\nRss: ' + sumRss + ' kB\nShared_Clean: ' + roll.sc + ' kB\nShared_Dirty: ' + roll.sd + ' kB\nPrivate_Clean: 0 kB\nPrivate_Dirty: ' + roll.pd + ' kB\nAnonymous: ' + sumAnon + ' kB\n');
   return { sumRss, sumAnon };
 };
@@ -37,8 +37,17 @@ const fixture2 = [
   { base: 0x500000000000, sizeKb: 257 * 1024, rssKb: 98 * 1024, anonKb: 0, inode: '77', path: '/usr/lib/chromium/chromium.real', perms: 'r-xp' },
   { base: 0x600000000000, sizeKb: 1024, rssKb: 0, anonKb: 0, inode: '77', path: '/usr/lib/locale/x.pak', perms: 'r--p' },
 ];
-const f1 = writeProc(4242, fixture1, { sc: 1000, sd: 200, pd: 900 });
+const fixture3raw = [...fixture1.slice().reverse(), ...fixture1.slice(0, 5)];
+const fixture5 = [
+  { base: 0x700000000000, sizeKb: 400, rssKb: 200, anonKb: 200, inode: '0', path: '[anon:v8]', perms: 'rw-p' },
+  { base: 0x700000000000, sizeKb: 512, rssKb: 256, anonKb: 256, inode: '0', path: '[anon:v8]', perms: 'rw-p' },
+];
+const roll1 = { sc: 1000, sd: 200, pd: 900 };
+const f1 = writeProc(4242, fixture1, roll1);
 const f2 = writeProc(5151, fixture2, { sc: 0, sd: 0, pd: 0 });
+const f3 = writeProc(6161, fixture3raw, roll1, fixture1);
+const f4 = writeProc(7171, fixture1, roll1, fixture1, 2048);
+const f5 = writeProc(8181, fixture5, { sc: 0, sd: 0, pd: 0 });
 const run = (pid, shm) => {
   const rr = spawnSync('node', [readerPath, procRoot, String(pid), shm], { encoding: 'utf8' });
   const line = (rr.stdout || '').split('\n').find((l) => l.startsWith('HOLDER_PROC '));
@@ -50,6 +59,9 @@ const checks = [];
 const check = (name, ok, got) => checks.push({ name, ok: Boolean(ok), got: String(JSON.stringify(got) ?? 'absent').slice(0, 160) });
 const nonIncreasing = (arr, key) => Array.isArray(arr) && arr.every((x, i, a) => i === 0 || a[i - 1][key] >= x[key]);
 const allNumeric = (arr, key) => Array.isArray(arr) && arr.every((x) => typeof x[key] === 'number');
+const uniqueRanges = (arr) => Array.isArray(arr) && new Set(arr.map((x) => x.range)).size === arr.length;
+const expAnon1 = fixture1.filter((m) => m.inode === '0').reduce((s, m) => s + m.rssKb, 0) * KB;
+const expFile1 = fixture1.filter((m) => m.inode !== '0').reduce((s, m) => s + m.rssKb, 0) * KB;
 const r1 = run(4242, shmA);
 const h1 = r1.h;
 check('F1 reader exit 0 and HOLDER_PROC line', r1.status === 0 && h1 !== null, r1.status);
@@ -62,18 +74,15 @@ check('F1 rollup Shared_Clean equal', !!ru1 && ru1.Shared_Clean === 1000 * KB, r
 check('F1 rollup Shared_Dirty equal', !!ru1 && ru1.Shared_Dirty === 200 * KB, ru1 && ru1.Shared_Dirty);
 check('F1 rollup Private_Dirty equal', !!ru1 && ru1.Private_Dirty === 900 * KB, ru1 && ru1.Private_Dirty);
 const t1 = h1 && h1.totals;
-const expAnon1 = fixture1.filter((m) => m.inode === '0').reduce((s, m) => s + m.rssKb, 0) * KB;
-const expFile1 = fixture1.filter((m) => m.inode !== '0').reduce((s, m) => s + m.rssKb, 0) * KB;
-check('F1 totals counts', !!t1 && t1.mappingCount === 50 && t1.anonCount === 25 && t1.fileCount === 25, t1);
+check('F1 totals counts 50/25/25, no duplicates, consistent in one attempt', !!t1 && t1.mappingCount === 50 && t1.anonCount === 25 && t1.fileCount === 25 && t1.duplicatesDropped === 0 && t1.overlaps === 0 && t1.consistent === true && t1.attempts === 1, t1);
 check('F1 totals anonRssBytes and fileRssBytes', !!t1 && t1.anonRssBytes === expAnon1 && t1.fileRssBytes === expFile1, t1 && [t1.anonRssBytes, t1.fileRssBytes]);
 check('F1 sum rule: anonRss + fileRss equals rollup Rss', !!t1 && !!ru1 && t1.anonRssBytes + t1.fileRssBytes === ru1.Rss, t1 && ru1 && [t1.anonRssBytes + t1.fileRssBytes, ru1.Rss]);
-check('F1 sum rule: anonymousBytes equals rollup Anonymous', !!t1 && !!ru1 && t1.anonymousBytes === ru1.Anonymous, t1 && ru1 && [t1.anonymousBytes, ru1.Anonymous]);
+check('F1 anonymous sum equals rollup Anonymous, diff field is 0', !!t1 && !!ru1 && t1.anonymousBytes === ru1.Anonymous && t1.anonRollupDiffBytes === 0, t1 && [t1.anonymousBytes, t1.anonRollupDiffBytes]);
 const at1 = h1 && h1.anonTop20;
-check('F1 anonTop20 has 20 entries', Array.isArray(at1) && at1.length === 20, at1 && at1.length);
-check('F1 anonTop20 sorted by rssBytes, size present in each entry', nonIncreasing(at1, 'rssBytes') && allNumeric(at1, 'sizeBytes') && typeof (at1 && at1[0] && at1[0].range) === 'string', at1 && at1[0]);
+check('F1 anonTop20 has 20 entries, rss order, size present', Array.isArray(at1) && at1.length === 20 && nonIncreasing(at1, 'rssBytes') && allNumeric(at1, 'sizeBytes') && uniqueRanges(at1), at1 && at1.length);
 check('F1 anonTop20 first is the 400 kB mapping (largest RSS)', !!at1 && at1[0].sizeBytes === 400 * KB && at1[0].rssBytes === 200 * KB, at1 && at1[0]);
 const ft1 = h1 && h1.fileTop20;
-check('F1 fileTop20 has 20 entries, sorted by rssBytes, size present', Array.isArray(ft1) && ft1.length === 20 && nonIncreasing(ft1, 'rssBytes') && allNumeric(ft1, 'sizeBytes'), ft1 && ft1.length);
+check('F1 fileTop20 has 20 entries, rss order, size present', Array.isArray(ft1) && ft1.length === 20 && nonIncreasing(ft1, 'rssBytes') && allNumeric(ft1, 'sizeBytes'), ft1 && ft1.length);
 check('F1 fileTop20 first is /dev/shm/gpu-1 at 200 kB RSS of 800 kB', !!ft1 && ft1[0].path === '/dev/shm/gpu-1' && ft1[0].rssBytes === 200 * KB && ft1[0].sizeBytes === 800 * KB, ft1 && ft1[0]);
 const sd1 = h1 && h1.shmDir;
 check('F1 shmDir totals numeric and entries with fixture sizes', !!sd1 && typeof sd1.totalBytes === 'number' && typeof sd1.freeBytes === 'number' && typeof sd1.usedBytes === 'number' && JSON.stringify(sd1.entries) === JSON.stringify([{ name: 'gpu-0', sizeBytes: 4096 }, { name: 'gpu-1', sizeBytes: 8192 }]), sd1 && sd1.entries);
@@ -84,6 +93,7 @@ const h2 = r2.h;
 check('F2 reader exit 0 and pid 5151, error null', r2.status === 0 && h2 !== null && h2.pid === 5151 && h2.error === null, h2 && [h2.pid, h2.error]);
 const t2 = h2 && h2.totals;
 check('F2 totals counts 5/3/2 and RSS split 41 MB anon, 98 MB file', !!t2 && t2.mappingCount === 5 && t2.anonCount === 3 && t2.fileCount === 2 && t2.anonRssBytes === 41 * MB && t2.fileRssBytes === 98 * MB, t2);
+check('F2 anonymous diff 0 and rss diff 0', !!t2 && t2.anonRollupDiffBytes === 0 && t2.rssRollupDiffBytes === 0, t2);
 const at2 = h2 && h2.anonTop20;
 check('F2 anonTop20 order is by RSS: partition_alloc 40 MB, v8 1 MB, v8-sandbox 0 MB', Array.isArray(at2) && JSON.stringify(at2.map((x) => x.path)) === JSON.stringify(['[anon:partition_alloc]', '[anon:v8]', '[anon:v8-sandbox]']), at2 && at2.map((x) => x.path));
 check('F2 anonTop20 first holds 40 MB RSS with size 64 MB kept as field', !!at2 && at2[0].rssBytes === 40 * MB && at2[0].sizeBytes === 64 * MB, at2 && at2[0]);
@@ -92,6 +102,23 @@ const ft2 = h2 && h2.fileTop20;
 check('F2 fileTop20 first is chromium.real at 98 MB RSS', Array.isArray(ft2) && ft2[0].path === '/usr/lib/chromium/chromium.real' && ft2[0].rssBytes === 98 * MB && ft2[0].sizeBytes === 257 * MB, ft2 && ft2[0]);
 const ru2 = h2 && h2.rollup;
 check('F2 rollup Rss equal to fixture sum', !!ru2 && ru2.Rss === f2.sumRss * KB, ru2 && ru2.Rss);
+const r3 = run(6161, shmA);
+const h3 = r3.h;
+const t3 = h3 && h3.totals;
+check('F3 reader exit 0 and pid 6161', r3.status === 0 && h3 !== null && h3.pid === 6161 && h3.error === null, h3 && [h3.pid, h3.error]);
+check('F3 duplicates dropped (5) and out-of-order seen (>0) on the raw read', !!t3 && t3.duplicatesDropped === 5 && t3.outOfOrder > 0, t3 && [t3.duplicatesDropped, t3.outOfOrder]);
+check('F3 deduped read is consistent, mapping count back to 50', !!t3 && t3.mappingCount === 50 && t3.overlaps === 0 && t3.consistent === true && t3.attempts === 1, t3);
+check('F3 sums equal the unique set, rollup diffs 0', !!t3 && t3.anonRssBytes === expAnon1 && t3.fileRssBytes === expFile1 && t3.anonRollupDiffBytes === 0 && t3.rssRollupDiffBytes === 0, t3);
+const at3 = h3 && h3.anonTop20;
+check('F3 anonTop20 has unique ranges and the same first entry as F1', uniqueRanges(at3) && at3 && at3[0].sizeBytes === 400 * KB && at3[0].rssBytes === 200 * KB, at3 && at3[0]);
+const r4 = run(7171, shmA);
+const h4 = r4.h;
+const t4 = h4 && h4.totals;
+check('F4 sum disagrees with rollup Anonymous: diff is reported (-2048 kB), not hidden', !!t4 && t4.anonRollupDiffBytes === -2048 * KB && t4.rssRollupDiffBytes === 0 && t4.consistent === true, t4);
+const r5 = run(8181, shmB);
+const h5 = r5.h;
+const t5 = h5 && h5.totals;
+check('F5 same start, different end: overlap detected, not consistent after 3 attempts', !!t5 && t5.overlaps >= 1 && t5.consistent === false && t5.attempts === 3 && t5.mappingCount === 2, t5);
 for (const c of checks) console.log((c.ok ? 'PASS ' : 'FAIL ') + c.name + ' got=' + c.got);
 const green = checks.every((c) => c.ok);
 console.log('HOLDER PROC WITNESS (' + readerPath + '): ' + (green ? 'GREEN' : 'RED'));

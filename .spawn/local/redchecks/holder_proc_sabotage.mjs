@@ -3,6 +3,9 @@ const L = '/workspace/signal/world/signal-stage/.spawn/local/';
 const src = fs.readFileSync(L + 'holder-proc.mjs', 'utf8');
 const outDir = process.argv[2] || '/tmp/verify';
 const cases = [
+  ['no-dedupe', 'const uniq = dedupe(maps);', 'const uniq = maps;'],
+  ['overlap-check', 'overlaps: snap.overlaps,', 'overlaps: 0,'],
+  ['anon-diff', 'anonRollupDiffBytes: diff(anonymousBytes, rollup.Anonymous),', ''],
   ['pid', 'const out = { pid: Number(holderPid), error: null };', 'const out = { error: null };'],
   ['rollup', '  out.rollup = rollup;', ''],
   ['rollup-Rss', "'Rss', ", ''],
@@ -15,7 +18,7 @@ const cases = [
   ['fileTop20', '  out.fileTop20 = top(file);', ''],
   ['shmDir', '  out.shmDir = shmDirInfo;', ''],
   ['rendererShm', '  out.rendererShm = rendererShm;', ''],
-  ['file-sum', 'fileRssBytes: toBytes(sumBy(file, (m) => m.rssKb)),', 'fileRssBytes: 0,'],
+  ['file-sum', 'const fileRssBytes = toBytes(sumBy(file, (m) => m.rssKb));', 'const fileRssBytes = 0;'],
   ['sort-size', '.sort((a, b) => b.rssKb - a.rssKb || b.sizeKb - a.sizeKb)', '.sort((a, b) => b.sizeKb - a.sizeKb)'],
 ];
 const made = [];
