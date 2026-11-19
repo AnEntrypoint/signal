@@ -606,6 +606,7 @@ await capped(startFrame().evaluate(() => {
 await wait(30000);
 const after = await snap('after-key');
 after.gesture = { tries: gestureTries, shown: gestureShown, log: gestureLog };
+after.boot = await capped(page.evaluate(() => ({ loading: window.__spawnLastKernelLoadingState ?? null, released: window.__spawnHeldDocumentReleased ?? null, marks: performance.getEntriesByType('mark').map((m) => m.name).slice(0, 120), iframes: [...document.querySelectorAll('iframe')].map((f) => ({ src: (f.getAttribute('src') || '').slice(0, 120), kernel: f.getAttribute('data-spawn-kernel-frame') })) })).catch((e) => 'boot-eval-fail ' + String(e.message).slice(0, 120)), 60000, 'boot-timeout');
 after.display = await capped(startFrame().evaluate(() => { clearInterval(window.__displayTimer); return { focus: document.hasFocus(), activation: navigator.userActivation.hasBeenActive, ctx: window.__displayCtx || null, samples: window.__displaySamples || [], hooks: window.__displayed || [], pageCalls: window.__pageCalls || [], transferTimes: window.__transferTimes || [], err: window.__displayErr || null }; }).catch((e) => 'display-eval-fail ' + String(e.message).slice(0, 120)), 60000, 'display-read-timeout');
 const sessionFrame = page.frames().find((f) => f.url().includes('/session/world'));
 after.presentSample = await capped((sessionFrame || page).evaluate(() => {
