@@ -161,34 +161,20 @@ const workerInit = () => {
     const d = lastDst;
     const fromCopiedCanvas = d ? d.canvas === this : null;
     const pre = d ? readCopy(d.dst) : null;
-    const presented = (frameTex.get(this) || { prev: null }).prev;
-    const presentedPre = presented ? readCopy(presented) : null;
+    const presentedFrom = lastResolved;
     const b = ttib.apply(this, a);
-    const presentedPost = presented ? readCopy(presented) : null;
     const lit = sendBitmap(b, 'transferToImageBitmap');
     if (!P.transferLog) P.transferLog = [];
-    if (P.transferLog.length < 400) P.transferLog.push({ n, lit, fromCopiedCanvas, presented: !!presented });
+    if (P.transferLog.length < 400) P.transferLog.push({ n, lit, fromCopiedCanvas, presentedIdx: presentedFrom ? presentedFrom.idx : null, presentedLit: presentedFrom ? presentedFrom.lit : null });
     if (pre) settle({ idx: n, w: d.w, h: d.h }, 'before-transfer', pre).then((row) => keepRow('transferPre', Object.assign(row, { n, fromCopiedCanvas })));
-    if (presented) {
-      const pr = { idx: n, w: presented.width, h: presented.height };
-      if (presentedPre) settle(pr, 'presented-before', presentedPre).then((row) => keepRow('presentedReads', Object.assign(row, { n })));
-      if (presentedPost) settle(pr, 'presented-after', presentedPost).then((row) => keepRow('presentedReads', Object.assign(row, { n })));
-    }
     return b;
   };
   const lastCopies = [];
+  let lastResolved = null;
   const texCanvas = new WeakMap();
   let lastDst = null;
   const gct = GPUCanvasContext.prototype.getCurrentTexture;
-  const frameTex = new WeakMap();
-  GPUCanvasContext.prototype.getCurrentTexture = function () {
-    const tx = gct.call(this);
-    const f = frameTex.get(this.canvas) || { cur: null, prev: null };
-    if (f.cur !== tx) { f.prev = f.cur; f.cur = tx; }
-    frameTex.set(this.canvas, f);
-    texCanvas.set(tx, this.canvas);
-    return tx;
-  };
+  GPUCanvasContext.prototype.getCurrentTexture = function () { const tx = gct.call(this); texCanvas.set(tx, this.canvas); return tx; };
   const readCopy = (tex) => {
     try {
       const device = devices[0];
@@ -226,7 +212,7 @@ const workerInit = () => {
     const post = batch.map((c) => ({ c, r: readCopy(c.dst) }));
     if (batch.length) {
       lastDst = batch[batch.length - 1];
-      Promise.all([...pre.map((x) => settle(x.c, 'before', x.r)), ...post.map((x) => settle(x.c, 'after', x.r))]).then((rows) => { P.copyReads = (P.copyReads || []).concat(rows).slice(-80); });
+      Promise.all([...pre.map((x) => settle(x.c, 'before', x.r)), ...post.map((x) => settle(x.c, 'after', x.r).then((row) => { if (row.lit !== undefined && (!lastResolved || row.idx > lastResolved.idx)) lastResolved = row; return row; }))]).then((rows) => { P.copyReads = (P.copyReads || []).concat(rows).slice(-400); });
     }
     return out;
   };
