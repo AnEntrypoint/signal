@@ -436,7 +436,8 @@ const probeInit = (cfg) => {
       const kind = d && typeof d === 'object' && typeof d.kind === 'string' ? d.kind : typeof d;
       P.workerKinds = P.workerKinds || {};
       P.workerKinds[kind] = (P.workerKinds[kind] || 0) + 1;
-      if (kind === 'adapter-answer') P.adapter = JSON.stringify(d).slice(0, 400);
+      if (kind === 'adapter-answer') { P.adapter = JSON.stringify(d).slice(0, 400); P.adapterAnswers = (P.adapterAnswers || 0) + 1; }
+      if (kind === 'frame-bitmap' || (d && typeof d === 'object' && d.bitmap)) P.framePostsPage = (P.framePostsPage || 0) + 1;
       if (d && typeof d === 'object') { const ty = String(d.type ?? d.kind ?? ''); if (/road|canvas|readback|present/i.test(ty)) P.typed = (P.typed || []).concat([{ ty, browser: d.browser ?? null, key: d.key ?? null, death: d.death ?? null, road: d.road ?? null }]).slice(-12); }
       if (kind === 'object') { const ks = d && typeof d === 'object' ? Object.keys(d).sort().join(',') : typeof d; P.objKeys = P.objKeys || {}; if (ks in P.objKeys || Object.keys(P.objKeys).length < 12) P.objKeys[ks] = (P.objKeys[ks] || 0) + 1; if (d && typeof d === 'object' && typeof ImageBitmap !== 'undefined' && Object.values(d).some((v) => v instanceof ImageBitmap)) P.objBitmaps = (P.objBitmaps || 0) + 1; }
       if (kind === 'present-road-settled' || kind === 'device-canvas-road-lost') P.roadEvents = (P.roadEvents || []).concat([{ kind, road: d.road ?? null, surfaceGone: d.surfaceGone ?? null, key: d.key ?? null, death: d.death ?? null }]).slice(-6);
@@ -632,9 +633,10 @@ const workerCounters = () => Promise.all(handles.filter((h) => h.closedMs === nu
 for (let m = 0; m < 15; m += 1) {
   await wait(10000);
   const vis = await capped(page.evaluate(() => document.visibilityState).catch((e) => 'vis-fail ' + String(e.message).slice(0, 60)), 3000, 'vis-timeout');
+  const canvasState = await capped(startFrame().evaluate(() => { const L = window.__spawnLastKernelLoadingState || null; const q = window.__probe || {}; return { canvases: [...document.querySelectorAll('canvas')].map((c) => { const s = getComputedStyle(c); return { w: c.width, h: c.height, opacity: s.opacity, display: s.display, visibility: s.visibility, inlineOpacity: c.style.opacity, surface: c.dataset.spawnPresentSurface ?? null }; }), shown: document.documentElement.classList.contains('spawn-world-shown'), bootWait: L ? L.bootWaitCondition ?? null : null, phase: L ? L.phase ?? null : null, adapterAnswers: q.adapterAnswers || 0, framePostsPage: q.framePostsPage || 0, bitmapPresent: q.bitmapPresent || 0 }; }).catch((e) => 'canvas-fail ' + String(e.message).slice(0, 60)), 3000, 'canvas-timeout');
   const info = await capped(bcdp ? bcdp.send('SystemInfo.getProcessInfo').catch((e) => 'proc-fail ' + String(e.message).slice(0, 80)) : Promise.resolve('no-browser-cdp'), 4000, 'proc-timeout');
   const procs = info && Array.isArray(info.processInfo) ? info.processInfo.map((p) => ({ type: p.type, pid: p.id, cpu: p.cpuTime })) : info;
-  memTrace.push({ atMs: (m + 1) * 10000, t: Date.now(), visibility: vis, workers: await workerCounters(), procs, pageClosed: page.isClosed(), crashEvents: crashLog.length });
+  memTrace.push({ atMs: (m + 1) * 10000, t: Date.now(), visibility: vis, canvas: canvasState, workers: await workerCounters(), procs, pageClosed: page.isClosed(), crashEvents: crashLog.length });
 }
 const after = await snap('after-key');
 after.gesture = { tries: gestureTries, shown: gestureShown, log: gestureLog };
