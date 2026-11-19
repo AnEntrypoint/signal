@@ -32,7 +32,7 @@ const workerInit = () => {
   };
   const ctex = GPUDevice.prototype.createTexture;
   GPUDevice.prototype.createTexture = function (desc) {
-    const t = ctex.call(this, Object.assign({}, desc, { usage: desc.usage | 1 }));
+    const t = ctex.call(this, desc);
     if (!P.quiet && texs.length < 200) {
       const size = Array.isArray(desc.size) ? desc.size : [desc.size.width, desc.size.height || 1];
       texs.push({ t, w: size[0], h: size[1] || 1, format: desc.format, usage: desc.usage, label: String(desc.label || '').slice(0, 60), dim: desc.dimension || '2d', mips: desc.mipLevelCount || 1, samples: desc.sampleCount || 1 });
@@ -154,24 +154,41 @@ const workerInit = () => {
     } catch (e) { P.bitmapSamples = (P.bitmapSamples || []).concat([{ via, error: String(e.message).slice(0, 80), t: Date.now() }]).slice(-12); return -1; }
   };
   const ttib = OffscreenCanvas.prototype.transferToImageBitmap;
+  const keepRow = (name, row) => { if (!P[name]) P[name] = []; if (P[name].length < 400) P[name].push(row); };
   OffscreenCanvas.prototype.transferToImageBitmap = function (...a) {
     P.toBitmap = (P.toBitmap || 0) + 1;
     const n = P.toBitmap;
     const d = lastDst;
     const fromCopiedCanvas = d ? d.canvas === this : null;
     const pre = d ? readCopy(d.dst) : null;
+    const presented = (frameTex.get(this) || { prev: null }).prev;
+    const presentedPre = presented ? readCopy(presented) : null;
     const b = ttib.apply(this, a);
+    const presentedPost = presented ? readCopy(presented) : null;
     const lit = sendBitmap(b, 'transferToImageBitmap');
     if (!P.transferLog) P.transferLog = [];
-    if (P.transferLog.length < 400) P.transferLog.push({ n, lit, fromCopiedCanvas });
-    if (pre) settle({ idx: n, w: d.w, h: d.h }, 'before-transfer', pre).then((row) => { if (!P.transferPre) P.transferPre = []; if (P.transferPre.length < 400) P.transferPre.push(Object.assign(row, { n, fromCopiedCanvas })); });
+    if (P.transferLog.length < 400) P.transferLog.push({ n, lit, fromCopiedCanvas, presented: !!presented });
+    if (pre) settle({ idx: n, w: d.w, h: d.h }, 'before-transfer', pre).then((row) => keepRow('transferPre', Object.assign(row, { n, fromCopiedCanvas })));
+    if (presented) {
+      const pr = { idx: n, w: presented.width, h: presented.height };
+      if (presentedPre) settle(pr, 'presented-before', presentedPre).then((row) => keepRow('presentedReads', Object.assign(row, { n })));
+      if (presentedPost) settle(pr, 'presented-after', presentedPost).then((row) => keepRow('presentedReads', Object.assign(row, { n })));
+    }
     return b;
   };
   const lastCopies = [];
   const texCanvas = new WeakMap();
   let lastDst = null;
   const gct = GPUCanvasContext.prototype.getCurrentTexture;
-  GPUCanvasContext.prototype.getCurrentTexture = function () { const tx = gct.call(this); texCanvas.set(tx, this.canvas); return tx; };
+  const frameTex = new WeakMap();
+  GPUCanvasContext.prototype.getCurrentTexture = function () {
+    const tx = gct.call(this);
+    const f = frameTex.get(this.canvas) || { cur: null, prev: null };
+    if (f.cur !== tx) { f.prev = f.cur; f.cur = tx; }
+    frameTex.set(this.canvas, f);
+    texCanvas.set(tx, this.canvas);
+    return tx;
+  };
   const readCopy = (tex) => {
     try {
       const device = devices[0];
