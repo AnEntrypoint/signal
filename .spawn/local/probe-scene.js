@@ -95,7 +95,9 @@ self.postMessage = function (m, ...rest) { if (m && typeof m === "object") { con
     if (!P.quiet && P.passLog.length < 400) {
       P.passLog.push({ label: String(desc.label || '').slice(0, 60), targets: atts.map((a) => { const t = a && a.view ? viewTex.get(a.view) : undefined; const i = t ? texIdx.get(t) : undefined; return i === undefined ? '?' : i; }), loads: atts.map((a) => a && a.loadOp), clear: atts.map((a) => (a && a.clearValue ? [a.clearValue.r, a.clearValue.g, a.clearValue.b, a.clearValue.a] : null)) });
     }
-    return brp.call(this, desc);
+    const enc = brp.call(this, desc);
+    noteCanvasPass(enc, desc);
+    return enc;
   };
   const dh = GPURenderPassEncoder.prototype.draw;
   GPURenderPassEncoder.prototype.draw = function (vc, ic, ...rest) { P.draw += 1; const k = vc + 'x' + (ic === undefined ? 1 : ic); P.drawHist[k] = (P.drawHist[k] || 0) + 1; return dh.call(this, vc, ic, ...rest); };
@@ -273,6 +275,10 @@ self.postMessage = function (m, ...rest) { if (m && typeof m === "object") { con
     const frames = String(new Error().stack).split('\n').slice(2, 4).map((x) => x.trim().slice(0, 90));
     const pre = d ? readCopy(d.dst) : null;
     const presentedFrom = lastResolved;
+    const worldList = pendingPasses.get(this) || [];
+    pendingPasses.set(this, []);
+    if (!P.worldTransfers) P.worldTransfers = [];
+    if (P.worldTransfers.length < 60) P.worldTransfers.push({ n, f: P.submit, decision: worldList.length === 0 ? 'no-pass' : worldList.some((r) => r.draws > 0) ? 'drawn' : 'cleared-or-released', passes: worldList.length, draws: worldList.reduce((s, r) => s + r.draws, 0), clears: worldList.reduce((s, r) => s + r.clears, 0), loads: worldList.map((r) => r.loads.join('/')).join(';'), stores: worldList.map((r) => r.stores.join('/')).join(';') });
     const b = ttib.apply(this, a);
     const lit = sendBitmap(b, 'transferToImageBitmap');
     if (!P.transferLog) P.transferLog = [];
@@ -283,6 +289,30 @@ self.postMessage = function (m, ...rest) { if (m && typeof m === "object") { con
   const lastCopies = [];
   let lastResolved = null;
   const texCanvas = new WeakMap();
+  const pendingPasses = new Map();
+  const noteCanvasPass = (enc, desc) => {
+    let canvasEl = null;
+    const loads = [];
+    const stores = [];
+    let clears = 0;
+    for (const a of desc.colorAttachments || []) {
+      const t = a && a.view ? viewTex.get(a.view) : undefined;
+      if (t && texCanvas.has(t)) canvasEl = texCanvas.get(t);
+      loads.push(a && a.loadOp);
+      stores.push(a && a.storeOp);
+      if (a && a.loadOp === 'clear') clears += 1;
+    }
+    if (canvasEl === null) return;
+    const rec = { loads, stores, clears, draws: 0 };
+    const d0 = P.draw + P.drawIndexed;
+    const end = enc.end;
+    enc.end = function (...x) {
+      rec.draws = P.draw + P.drawIndexed - d0;
+      if (!pendingPasses.has(canvasEl)) pendingPasses.set(canvasEl, []);
+      pendingPasses.get(canvasEl).push(rec);
+      return end.apply(this, x);
+    };
+  };
   let lastDst = null;
   const gct = GPUCanvasContext.prototype.getCurrentTexture;
   GPUCanvasContext.prototype.getCurrentTexture = function () { const tx = gct.call(this); P.gctCalls = (P.gctCalls || 0) + 1; texCanvas.set(tx, this.canvas); return tx; };
@@ -629,7 +659,7 @@ await capped(startFrame().evaluate(() => {
   if (__SAMPLE__ === 1) window.__displayTimer = setInterval(sample, 500);
 }).catch((e) => { window.__displayErr = String(e.message).slice(0, 120); }), 60000, 'display-start-timeout');
 const memTrace = [];
-const workerCounters = () => Promise.all(handles.filter((h) => h.closedMs === null).map((h) => capped(h.w.evaluate(() => { const q = self.__probe; return q ? { wb: q.writeBuffer, submit: q.submit, staging: q.stagingMade || 0, copies: q.copies || 0, frames: (q.frameClock || []).length, posts: (q.framePosts || []).length } : null; }).catch((e) => 'eval-fail ' + String(e.message).slice(0, 60)), 3000, 'worker-timeout')));
+const workerCounters = () => Promise.all(handles.filter((h) => h.closedMs === null).map((h) => capped(h.w.evaluate(() => { const q = self.__probe; return q ? { world: (q.worldTransfers || []).slice(-6), wb: q.writeBuffer, submit: q.submit, staging: q.stagingMade || 0, copies: q.copies || 0, frames: (q.frameClock || []).length, posts: (q.framePosts || []).length } : null; }).catch((e) => 'eval-fail ' + String(e.message).slice(0, 60)), 3000, 'worker-timeout')));
 for (let m = 0; m < 15; m += 1) {
   await wait(10000);
   const vis = await capped(page.evaluate(() => document.visibilityState).catch((e) => 'vis-fail ' + String(e.message).slice(0, 60)), 3000, 'vis-timeout');
