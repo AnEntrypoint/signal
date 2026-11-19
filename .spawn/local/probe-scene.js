@@ -54,6 +54,10 @@ const workerInit = () => {
   self.addEventListener('unhandledrejection', (e) => push(P.errors, 'rejection ' + String((e.reason && e.reason.message) || e.reason).slice(0, 200)));
 P.msgKinds = P.msgKinds || {};
 P.errorMsgs = P.errorMsgs || [];
+P.inKinds = P.inKinds || {};
+P.postSample = P.postSample || [];
+self.addEventListener("message", (e) => { const d = e.data; const k = d && typeof d === "object" ? String(d.kind) : typeof d; P.inKinds[k] = (P.inKinds[k] || 0) + 1; if (k === "init" && !P.initSeen) P.initSeen = JSON.stringify(Object.keys(d)).slice(0, 240); });
+self.postMessage = self.postMessage;
 const pmKinds = self.postMessage;
 self.postMessage = function (m, ...rest) { if (m && typeof m === "object") { const k = String(m.kind); P.msgKinds[k] = (P.msgKinds[k] || 0) + 1; if (k === "error" && P.errorMsgs.length < 20) P.errorMsgs.push(String(m.message).slice(0, 240)); } return pmKinds.call(this, m, ...rest); };
   if (!navigator.gpu) return;
