@@ -603,7 +603,7 @@ await capped(startFrame().evaluate(() => {
   if (__SAMPLE__ === 1) sample();
   if (__SAMPLE__ === 1) window.__displayTimer = setInterval(sample, 500);
 }).catch((e) => { window.__displayErr = String(e.message).slice(0, 120); }), 60000, 'display-start-timeout');
-await wait(30000);
+await wait(150000);
 const after = await snap('after-key');
 after.gesture = { tries: gestureTries, shown: gestureShown, log: gestureLog };
 after.boot = await capped(page.evaluate(() => ({ loading: window.__spawnLastKernelLoadingState ?? null, released: window.__spawnHeldDocumentReleased ?? null, marks: performance.getEntriesByType('mark').map((m) => m.name).slice(0, 120), iframes: [...document.querySelectorAll('iframe')].map((f) => ({ src: (f.getAttribute('src') || '').slice(0, 120), kernel: f.getAttribute('data-spawn-kernel-frame') })) })).catch((e) => 'boot-eval-fail ' + String(e.message).slice(0, 120)), 60000, 'boot-timeout');
