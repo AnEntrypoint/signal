@@ -121,19 +121,30 @@ const workerInit = () => {
     } finally { P.quiet = false; }
   };
   const diagNoCopy = async (device, list) => {
-    const rec = list.find((r) => (r.t.usage & 1) === 0);
+    const rec = list.find((r) => r.label === 'lume post picture' && (r.t.usage & 1) === 0) || list.find((r) => (r.t.usage & 1) === 0);
     if (!rec) return null;
     const bytesPerRow = Math.ceil((rec.w * 4) / 256) * 256;
     device.pushErrorScope('validation');
     let thrown = null;
+    let st = null;
     try {
-      const st = cbuf.call(device, { size: bytesPerRow * rec.h, usage: 1 | 8 });
+      st = cbuf.call(device, { size: bytesPerRow * rec.h, usage: 1 | 8 });
       const enc = device.createCommandEncoder();
       enc.copyTextureToBuffer({ texture: rec.t }, { buffer: st, bytesPerRow }, [rec.w, rec.h, 1]);
       device.queue.submit([enc.finish()]);
     } catch (e) { thrown = String(e.message).slice(0, 200); }
     const scope = await device.popErrorScope();
-    return { label: rec.label, usage: rec.t.usage, thrown, error: scope ? String(scope.message).slice(0, 200) : null };
+    let lit = null;
+    if (st && !scope && !thrown) {
+      try {
+        await st.mapAsync(1);
+        const u = new Uint8Array(st.getMappedRange().slice(0));
+        st.unmap();
+        lit = 0;
+        for (let y = 0; y < rec.h; y += 1) for (let x = 0; x < rec.w; x += 1) { const o = y * bytesPerRow + x * 4; if (u[o] + u[o + 1] + u[o + 2] > 0) lit += 1; }
+      } catch (err) { lit = 'map: ' + String(err.message).slice(0, 120); }
+    }
+    return { label: rec.label, idx: list.indexOf(rec), usage: rec.t.usage, thrown, error: scope ? String(scope.message).slice(0, 200) : null, lit };
   };
   self.__probeScene = async () => {
     const device = devices[0];
@@ -175,17 +186,22 @@ const workerInit = () => {
   };
   const ttib = OffscreenCanvas.prototype.transferToImageBitmap;
   const keepRow = (name, row) => { if (!P[name]) P[name] = []; if (P[name].length < 400) P[name].push(row); };
+  let canvasSeq = 0;
+  const canvasIds = new WeakMap();
+  const canvasId = (c) => { if (!c) return null; if (!canvasIds.has(c)) { canvasSeq += 1; canvasIds.set(c, canvasSeq); } return canvasIds.get(c); };
   OffscreenCanvas.prototype.transferToImageBitmap = function (...a) {
     P.toBitmap = (P.toBitmap || 0) + 1;
     const n = P.toBitmap;
     const d = lastDst;
     const fromCopiedCanvas = d ? d.canvas === this : null;
+    const gctBetween = d ? (P.gctCalls || 0) - d.gctAt : null;
+    const frames = String(new Error().stack).split('\n').slice(2, 4).map((x) => x.trim().slice(0, 90));
     const pre = d ? readCopy(d.dst) : null;
     const presentedFrom = lastResolved;
     const b = ttib.apply(this, a);
     const lit = sendBitmap(b, 'transferToImageBitmap');
     if (!P.transferLog) P.transferLog = [];
-    if (P.transferLog.length < 400) P.transferLog.push({ n, lit, alpha: P.bitmapAlpha, w: b.width, h: b.height, fromCopiedCanvas, presentedIdx: presentedFrom ? presentedFrom.idx : null, presentedLit: presentedFrom ? presentedFrom.lit : null });
+    if (P.transferLog.length < 400) P.transferLog.push({ n, lit, alpha: P.bitmapAlpha, w: b.width, h: b.height, fromCopiedCanvas, copyCanvasId: d ? canvasId(d.canvas) : null, transferCanvasId: canvasId(this), gctBetween, frames, presentedIdx: presentedFrom ? presentedFrom.idx : null, presentedLit: presentedFrom ? presentedFrom.lit : null });
     if (pre) settle({ idx: n, w: d.w, h: d.h }, 'before-transfer', pre).then((row) => keepRow('transferPre', Object.assign(row, { n, fromCopiedCanvas })));
     return b;
   };
@@ -194,7 +210,7 @@ const workerInit = () => {
   const texCanvas = new WeakMap();
   let lastDst = null;
   const gct = GPUCanvasContext.prototype.getCurrentTexture;
-  GPUCanvasContext.prototype.getCurrentTexture = function () { const tx = gct.call(this); texCanvas.set(tx, this.canvas); return tx; };
+  GPUCanvasContext.prototype.getCurrentTexture = function () { const tx = gct.call(this); P.gctCalls = (P.gctCalls || 0) + 1; texCanvas.set(tx, this.canvas); return tx; };
   const readCopy = (tex) => {
     try {
       const device = devices[0];
@@ -231,11 +247,11 @@ const workerInit = () => {
     r.alpha = alpha;
     return lit;
   };
-  const settle = (c, phase, r) => countLit(r).then((lit) => ({ idx: c.idx, phase, lit, alpha: r.alpha, pixels: c.w * c.h }), (e) => ({ idx: c.idx, phase, error: String(e.message).slice(0, 160) }));
+  const settle = (c, phase, r) => countLit(r).then((lit) => ({ idx: c.idx, phase, lit, alpha: r.alpha, srcIdx: c.srcIdx ?? null, dstIdx: c.dstIdx ?? null, pixels: c.w * c.h }), (e) => ({ idx: c.idx, phase, error: String(e.message).slice(0, 160) }));
   const cts = GPUCommandEncoder.prototype.copyTextureToTexture;
   GPUCommandEncoder.prototype.copyTextureToTexture = function (src, dst, size) {
     P.copies = (P.copies || 0) + 1;
-    lastCopies.push({ idx: P.copies, src: src.texture, dst: dst.texture, canvas: texCanvas.get(dst.texture) || null, w: src.texture.width, h: src.texture.height });
+    lastCopies.push({ idx: P.copies, src: src.texture, dst: dst.texture, canvas: texCanvas.get(dst.texture) || null, gctAt: P.gctCalls || 0, srcIdx: texIdx.get(src.texture) ?? null, dstIdx: texIdx.get(dst.texture) ?? null, w: src.texture.width, h: src.texture.height });
     return cts.call(this, src, dst, size);
   };
   const sq = GPUQueue.prototype.submit;
