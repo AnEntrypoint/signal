@@ -52,6 +52,10 @@ const workerInit = () => {
   const push = (list, v) => { if (list.length < 40) list.push(v); };
   self.addEventListener('error', (e) => push(P.errors, String(e.message || '').slice(0, 200)));
   self.addEventListener('unhandledrejection', (e) => push(P.errors, 'rejection ' + String((e.reason && e.reason.message) || e.reason).slice(0, 200)));
+P.msgKinds = P.msgKinds || {};
+P.errorMsgs = P.errorMsgs || [];
+const pmKinds = self.postMessage;
+self.postMessage = function (m, ...rest) { if (m && typeof m === "object") { const k = String(m.kind); P.msgKinds[k] = (P.msgKinds[k] || 0) + 1; if (k === "error" && P.errorMsgs.length < 20) P.errorMsgs.push(String(m.message).slice(0, 240)); } return pmKinds.call(this, m, ...rest); };
   if (!navigator.gpu) return;
   const gp = Object.getPrototypeOf(navigator.gpu);
   const ra = gp.requestAdapter;
