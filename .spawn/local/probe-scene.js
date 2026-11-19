@@ -538,12 +538,16 @@ await page.screenshot({ path: OUT + '/before.png' }).catch(() => {});
 await page.evaluate(() => { if (document.activeElement) document.activeElement.blur(); document.body.focus(); }).catch(() => {});
 let gestureTries = 0;
 let gestureShown = false;
+const gestureLog = [];
+await page.evaluate(() => { window.__topKeys = 0; window.addEventListener('keydown', () => { window.__topKeys += 1; }, true); }).catch(() => {});
 for (let g = 0; g < 20 && !gestureShown; g += 1) {
   gestureTries += 1;
   await page.evaluate(() => { if (document.activeElement) document.activeElement.blur(); document.body.focus(); }).catch(() => {});
   await page.keyboard.press('Space').catch(() => {});
   await wait(2000);
-  gestureShown = await page.evaluate(() => document.documentElement.classList.contains('spawn-world-shown')).catch(() => false);
+  const gs = await page.evaluate(() => ({ shown: document.documentElement.classList.contains('spawn-world-shown'), keys: window.__topKeys, active: document.activeElement ? document.activeElement.tagName : null, focus: document.hasFocus() })).catch(() => null);
+  gestureLog.push(gs);
+  gestureShown = !!(gs && gs.shown);
 }
 const startFrame = () => page.frames().find((f) => f.url().includes('/session/world')) || page;
 await capped(startFrame().evaluate(() => {
@@ -601,7 +605,7 @@ await capped(startFrame().evaluate(() => {
 }).catch((e) => { window.__displayErr = String(e.message).slice(0, 120); }), 60000, 'display-start-timeout');
 await wait(30000);
 const after = await snap('after-key');
-after.gesture = { tries: gestureTries, shown: gestureShown };
+after.gesture = { tries: gestureTries, shown: gestureShown, log: gestureLog };
 after.display = await capped(startFrame().evaluate(() => { clearInterval(window.__displayTimer); return { focus: document.hasFocus(), activation: navigator.userActivation.hasBeenActive, ctx: window.__displayCtx || null, samples: window.__displaySamples || [], hooks: window.__displayed || [], pageCalls: window.__pageCalls || [], transferTimes: window.__transferTimes || [], err: window.__displayErr || null }; }).catch((e) => 'display-eval-fail ' + String(e.message).slice(0, 120)), 60000, 'display-read-timeout');
 const sessionFrame = page.frames().find((f) => f.url().includes('/session/world'));
 after.presentSample = await capped((sessionFrame || page).evaluate(() => {
