@@ -459,8 +459,14 @@ const probeInit = (cfg) => {
     return out;
   };
   const WorkerCtor = window.Worker;
+  const hookedUrl = (url, opts) => {
+    const hookUrl = URL.createObjectURL(new Blob([cfg.hook], { type: 'text/javascript' }));
+    const abs = new URL(String(url), location.href).href;
+    const boot = opts && opts.type === 'module' ? 'import ' + JSON.stringify(hookUrl) + ';import ' + JSON.stringify(abs) + ';' : 'importScripts(' + JSON.stringify(hookUrl) + ',' + JSON.stringify(abs) + ');';
+    return URL.createObjectURL(new Blob([boot], { type: 'text/javascript' }));
+  };
   window.Worker = function (url, opts) {
-    const w = new WorkerCtor(url, opts);
+    const w = new WorkerCtor(cfg.hook ? hookedUrl(url, opts) : url, opts);
     w.addEventListener('message', (e) => {
       const d = e.data;
       const kind = d && typeof d === 'object' && typeof d.kind === 'string' ? d.kind : typeof d;
@@ -505,7 +511,7 @@ const responses = [];
 const routeHits = [];
 const consoleLines = [];
 const t0 = Date.now();
-await context.addInitScript(probeInit, { keep: KEEP_PREBORN, force: '__FORCE__' });
+await context.addInitScript(probeInit, { keep: KEEP_PREBORN, force: '__FORCE__', hook: '(' + workerInit.toString() + ')();' });
 await context.route(/\.m?js(\?|$)/, async (route) => {
   const req = route.request();
   const u = req.url().replace(/^.*\/pool\//, '');
@@ -557,7 +563,7 @@ page.on('worker', (w) => {
   const h = { url: w.url().slice(0, 140), patch: null, w, openedMs: Date.now() - t0, closedMs: null };
   handles.push(h);
   w.on('close', () => { h.closedMs = Date.now() - t0; h.closedAt = Date.now(); });
-  w.evaluate(workerInit).then(() => { h.patch = 'ok'; }, (e) => { h.patch = 'fail ' + String(e.message).slice(0, 120); });
+  h.patch = 'creation';
 });
 await page.setViewportSize({ width: 1280, height: 800 });
 await page.goto(TARGET, { waitUntil: 'commit', timeout: 120000 }).catch((e) => consoleLines.push('NAV ' + String(e.message).slice(0, 200)));
