@@ -16,12 +16,14 @@ echo $! > "$OUT/browser.pid"
 for i in $(seq 1 60); do curl -sf http://127.0.0.1:9333/json/version > "$OUT/version.json" && break; sleep 0.5; done
 WS=$(node -e "console.log(JSON.parse(require('fs').readFileSync('$OUT/version.json','utf8')).webSocketDebuggerUrl)")
 ID=$(playwriter session new --direct "$WS" 2>&1 | grep -o 'Session [0-9]*' | awk '{print $2}')
+setsid bash .spawn/local/bound-watch.sh "$OUT" > /dev/null 2>&1 & echo $! > "$OUT/watch.pid"
 PROBE="${PROBE:-.spawn/local/probe-page.js}"
 sed -e "s|__TARGET__|$TARGET|" -e "s|__OUT__|$OUT|" -e "s|__KEEP__|${KEEP_PREBORN:-0}|" -e "s|__FORCE__|${FORCE_ROAD:-}|" -e "s|__SAMPLE__|${SAMPLE:-1}|" -e "s|__READ__|${READ:-1}|g" "$PROBE" > "$OUT/probe.js"
-PLAYWRITER_EXEC_TIMEOUT=600000 timeout 630 playwriter -s "$ID" -e "$(cat "$OUT/probe.js")" > "$OUT/probe.out" 2>&1
+PLAYWRITER_EXEC_TIMEOUT=600000 timeout 600 playwriter -s "$ID" -e "$(cat "$OUT/probe.js")" > "$OUT/probe.out" 2>&1
 echo "probe rc=$? session=$ID out=$OUT"
 cut -c1-4000 "$OUT/probe.out"
 kill -- -"$(cat $OUT/browser.pid)" 2>/dev/null
+kill "$(cat $OUT/watch.pid)" 2>/dev/null
 if [ "$MODE" = serve ]; then kill -- -"$(cat $OUT/server.pid)" 2>/dev/null; fi
 sleep 2
 echo "after: browser alive=$(kill -0 $(cat $OUT/browser.pid) 2>/dev/null && echo yes || echo no)"
