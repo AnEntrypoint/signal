@@ -10,7 +10,7 @@ const workerInit = () => {
   const P = (self.__probe = { hasGpu: !!navigator.gpu, gpuAdapter: 0, deviceOk: 0, submit: 0, beginRenderPass: 0, draw: 0, drawIndexed: 0, dispatch: 0, writeBuffer: 0, drawHist: {}, passLog: [], lastFrame: [], bitmapArgs: [], createImageBitmap: 0, frameSamples: [], quiet: false, errors: [], lost: [] });
   const hashBytes = (d) => { let h = 2166136261; for (let i = 0; i < d.length; i += 1) { h ^= d[i]; h = Math.imul(h, 16777619); } return (h >>> 0).toString(16); };
   if (typeof ImageBitmapRenderingContext !== 'undefined' && typeof document !== 'undefined') {
-    P.displayed = [];
+    window.__displayed = [];
     const tfb = ImageBitmapRenderingContext.prototype.transferFromImageBitmap;
     ImageBitmapRenderingContext.prototype.transferFromImageBitmap = function (b) {
       let entry;
@@ -23,7 +23,7 @@ const workerInit = () => {
         for (let i = 0; i < d.length; i += 4) { if (d[i] + d[i + 1] + d[i + 2] > 0) lit += 1; }
         entry = { lit, hash: hashBytes(d), w: b.width, h: b.height };
       } catch (e) { entry = { error: String(e.message).slice(0, 120) }; }
-      if (P.displayed.length < 400) P.displayed.push(entry);
+      if (window.__displayed.length < 400) window.__displayed.push(entry);
       return tfb.call(this, b);
     };
   }
@@ -376,6 +376,8 @@ const probeInit = (cfg) => {
   const tfibPre = ImageBitmapRenderingContext.prototype.transferFromImageBitmap;
   ImageBitmapRenderingContext.prototype.transferFromImageBitmap = function (bitmap, ...rest) {
     const ctx = this;
+    (window.__sinkCanvases ||= new WeakSet()).add(ctx.canvas);
+    (window.__transferTimes ||= []).push(Date.now());
     if (bitmap) P.presentPre = (P.presentPre || []).concat([sampleSource(bitmap)]).slice(-12);
     const out = tfibPre.call(this, bitmap, ...rest);
     setTimeout(() => { try { const k = new OffscreenCanvas(ctx.canvas.width, ctx.canvas.height); const g = k.getContext('2d', { willReadFrequently: true }); g.drawImage(ctx.canvas, 0, 0); P.presentPost = (P.presentPost || []).concat([litOf(g, ctx.canvas.width, ctx.canvas.height)]).slice(-12); } catch (e) { P.presentPost = (P.presentPost || []).concat([{ error: String(e.message).slice(0, 80) }]).slice(-12); } }, 400);
@@ -509,23 +511,25 @@ await capped(startFrame().evaluate(() => {
   const r = c0.getBoundingClientRect();
   window.__displayCtx = { found: true, bitmaprenderer: !!c0.getContext('bitmaprenderer'), w: c0.width, h: c0.height, connected: c0.isConnected, display: cs.display, visibility: cs.visibility, opacity: cs.opacity, rect: [r.left, r.top, r.width, r.height], alphaMode: 'none: bitmaprenderer has no alphaMode' };
   const sample = () => {
-    const c = document.querySelector('canvas[data-spawn-present-surface]');
-    if (!c) return;
-    const k = document.createElement('canvas');
-    k.width = c.width; k.height = c.height;
-    const g = k.getContext('2d', { willReadFrequently: true });
-    g.drawImage(c, 0, 0);
-    const d = g.getImageData(0, 0, k.width, k.height).data;
-    let lit = 0;
-    for (let i = 0; i < d.length; i += 4) { if (d[i] + d[i + 1] + d[i + 2] > 0) lit += 1; }
-    window.__displaySamples.push({ t: Date.now(), lit, hash: fnv(d) });
+    const sinks = window.__sinkCanvases;
+    const frame = { t: Date.now(), bitmapPresent: (window.__probe && window.__probe.bitmapPresent) || 0, canvases: [] };
+    for (const c of document.querySelectorAll('canvas')) {
+      const k = document.createElement('canvas');
+      k.width = c.width; k.height = c.height;
+      const g = k.getContext('2d', { willReadFrequently: true });
+      g.drawImage(c, 0, 0);
+      const d = g.getImageData(0, 0, k.width, k.height).data;
+      let lit = 0;
+      for (let i = 0; i < d.length; i += 4) { if (d[i] + d[i + 1] + d[i + 2] > 0) lit += 1; }
+      frame.canvases.push({ surface: c.dataset.spawnPresentSurface ?? null, w: c.width, h: c.height, sink: !!(sinks && sinks.has(c)), lit, hash: fnv(d) });
+    }
+    window.__displaySamples.push(frame);
   };
-  sample();
   window.__displayTimer = setInterval(sample, 500);
 }).catch((e) => { window.__displayErr = String(e.message).slice(0, 120); }), 60000, 'display-start-timeout');
 await wait(30000);
 const after = await snap('after-key');
-after.display = await capped(startFrame().evaluate(() => { clearInterval(window.__displayTimer); return { ctx: window.__displayCtx || null, samples: window.__displaySamples || [], hooks: (self.__probe && self.__probe.displayed) || [], err: window.__displayErr || null }; }).catch((e) => 'display-eval-fail ' + String(e.message).slice(0, 120)), 60000, 'display-read-timeout');
+after.display = await capped(startFrame().evaluate(() => { clearInterval(window.__displayTimer); return { ctx: window.__displayCtx || null, samples: window.__displaySamples || [], hooks: window.__displayed || [], transferTimes: window.__transferTimes || [], err: window.__displayErr || null }; }).catch((e) => 'display-eval-fail ' + String(e.message).slice(0, 120)), 60000, 'display-read-timeout');
 const sessionFrame = page.frames().find((f) => f.url().includes('/session/world'));
 after.presentSample = await capped((sessionFrame || page).evaluate(() => {
   const c = document.querySelector('canvas[data-spawn-present-surface]');
