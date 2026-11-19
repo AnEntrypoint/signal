@@ -11,7 +11,7 @@ if [ "$MODE" = serve ]; then
   echo $! > "$OUT/server.pid"
   for i in $(seq 1 60); do curl -sf http://127.0.0.1:4173/__health > /dev/null && break; sleep 0.5; done
 fi
-setsid env DISPLAY=:1 /usr/bin/chromium --user-data-dir="$OUT/profile" --remote-debugging-port=9333 --no-first-run --no-default-browser-check --enable-unsafe-webgpu --enable-features=Vulkan,WebGPU --use-angle=vulkan --use-vulkan=swiftshader --use-webgpu-adapter=swiftshader --enable-unsafe-swiftshader about:blank > "$OUT/browser.out" 2>&1 &
+setsid env DISPLAY=:1 /usr/bin/chromium --user-data-dir="$OUT/profile" --remote-debugging-port=9333 --host-resolver-rules="MAP * ~NOTFOUND, EXCLUDE localhost" --no-first-run --no-default-browser-check --enable-unsafe-webgpu --enable-features=Vulkan,WebGPU --use-angle=vulkan --use-vulkan=swiftshader --use-webgpu-adapter=swiftshader --enable-unsafe-swiftshader about:blank > "$OUT/browser.out" 2>&1 &
 echo $! > "$OUT/browser.pid"
 for i in $(seq 1 60); do curl -sf http://127.0.0.1:9333/json/version > "$OUT/version.json" && break; sleep 0.5; done
 WS=$(node -e "console.log(JSON.parse(require('fs').readFileSync('$OUT/version.json','utf8')).webSocketDebuggerUrl)")
