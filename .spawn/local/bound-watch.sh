@@ -16,6 +16,9 @@ while :; do
   if [ -n "$REASON" ]; then
     echo "$REASON" > "$OUT/bound.reason"
     ps -eo pid=,pgid=,rss=,args= | awk -v g="$B" '$2==g' | sort -k3 -nr | head -5 | cut -c1-200 > "$OUT/bound.holder"
+    HP=$(awk '/--type=renderer/ {print $1; exit}' "$OUT/bound.holder"); [ -n "$HP" ] || HP=$(awk 'NR==1 {print $1}' "$OUT/bound.holder")
+    OVER=$(ps -eo pgid=,rss=,args= | awk -v g="$B" '$1==g && /--type=renderer/ && $2>1000000 {n++} END {print n+0}')
+    timeout 10 node "${HOLDER_READER:-$(dirname "$0")/holder-read.mjs}" "${CDP_PORT:-9333}" "$HP" "$OVER" >> "$OUT/bound.holder" 2>> "$OUT/bound.holder.err"
     kill -- -"$B" 2>/dev/null
     S=$(cat "$OUT/server.pid" 2>/dev/null)
     [ -n "$S" ] && kill -- -"$S" 2>/dev/null
