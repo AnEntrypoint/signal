@@ -186,6 +186,12 @@ const workerInit = () => {
   };
   const ttib = OffscreenCanvas.prototype.transferToImageBitmap;
   const keepRow = (name, row) => { if (!P[name]) P[name] = []; if (P[name].length < 400) P[name].push(row); };
+  const ctrlCanvas = new OffscreenCanvas(640, 400);
+  const ctrlCtx = ctrlCanvas.getContext('2d');
+  ctrlCtx.fillStyle = '#ff0000';
+  ctrlCtx.fillRect(0, 0, 640, 400);
+  const ctrlBitmap = ttib.call(ctrlCanvas);
+  P.control = { lit: sendBitmap(ctrlBitmap, 'control'), alpha: P.bitmapAlpha, w: ctrlBitmap.width, h: ctrlBitmap.height };
   let canvasSeq = 0;
   const canvasIds = new WeakMap();
   const canvasId = (c) => { if (!c) return null; if (!canvasIds.has(c)) { canvasSeq += 1; canvasIds.set(c, canvasSeq); } return canvasIds.get(c); };
