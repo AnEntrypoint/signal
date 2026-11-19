@@ -16,6 +16,7 @@ const cases = [
   ['shmDir', '  out.shmDir = shmDirInfo;', ''],
   ['rendererShm', '  out.rendererShm = rendererShm;', ''],
   ['file-sum', 'fileRssBytes: toBytes(sumBy(file, (m) => m.rssKb)),', 'fileRssBytes: 0,'],
+  ['sort-size', '.sort((a, b) => b.rssKb - a.rssKb || b.sizeKb - a.sizeKb)', '.sort((a, b) => b.sizeKb - a.sizeKb)'],
 ];
 const made = [];
 for (const [name, text, repl] of cases) {
