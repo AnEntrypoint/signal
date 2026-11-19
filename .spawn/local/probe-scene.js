@@ -177,7 +177,10 @@ const workerInit = () => {
     return bmp;
   };
 };
-const probeInit = (keep) => {
+const probeInit = (cfg) => {
+  const keep = cfg.keep;
+  const force = cfg.force;
+  const forced = (v) => { const s = String(v); if (!force || !s.includes('/session/world') || s.includes('presentRoad=')) return v; return s + (s.includes('?') ? '&' : '?') + 'presentRoad=' + force; };
   if (window.__probe) return;
   const P = (window.__probe = { href: location.href.slice(0, 140), gpuAdapter: 0, gpuNoAdapter: 0, contexts: [], raf: 0, workers: [], errors: [], rejections: [], pointer: 0, keys: 0, locks: [], lost: [], frameSets: [], msgs: [] });
   const push = (list, v) => { if (list.length < 40) list.push(v); };
@@ -190,9 +193,9 @@ const probeInit = (keep) => {
   bc.onmessage = (e) => push(P.lost, e.data);
   const srcDesc = Object.getOwnPropertyDescriptor(HTMLIFrameElement.prototype, 'src');
   const noteSrc = (el, v, via) => push(P.frameSets, { via, v: String(v).slice(0, 140), t: Date.now(), slot: el.getAttribute('data-spawn-kernel-frame') === null ? '' : 'kernel', stack: String(new Error().stack).split('\n').slice(2, 5).join(' | ').slice(0, 300) });
-  Object.defineProperty(HTMLIFrameElement.prototype, 'src', { configurable: true, enumerable: srcDesc.enumerable, get: srcDesc.get, set(v) { noteSrc(this, v, 'prop'); return srcDesc.set.call(this, v); } });
+  Object.defineProperty(HTMLIFrameElement.prototype, 'src', { configurable: true, enumerable: srcDesc.enumerable, get: srcDesc.get, set(v) { const w = forced(v); noteSrc(this, w, 'prop'); return srcDesc.set.call(this, w); } });
   const sattr = Element.prototype.setAttribute;
-  Element.prototype.setAttribute = function (n, v) { if (this instanceof HTMLIFrameElement && n === 'src') noteSrc(this, v, 'attr'); return sattr.call(this, n, v); };
+  Element.prototype.setAttribute = function (n, v) { const w = this instanceof HTMLIFrameElement && n === 'src' ? forced(v) : v; if (this instanceof HTMLIFrameElement && n === 'src') noteSrc(this, w, 'attr'); return sattr.call(this, n, w); };
   const note = (op, el) => { try { new BroadcastChannel('spawn-probe').postMessage({ kind: 'frame-op', op, tag: el ? el.tagName : '', src: el && el.getAttribute ? String(el.getAttribute('src')).slice(0, 90) : '', href: location.href.slice(0, 90), t: Date.now(), stack: String(new Error().stack).split('\n').slice(2, 5).join(' | ').slice(0, 300) }); } catch (e) {} };
   const wterm = Worker.prototype.terminate;
   Worker.prototype.terminate = function () { note('worker-terminate', null); return wterm.call(this); };
@@ -230,12 +233,19 @@ const probeInit = (keep) => {
       const kind = d && typeof d === 'object' && typeof d.kind === 'string' ? d.kind : typeof d;
       P.workerKinds = P.workerKinds || {};
       P.workerKinds[kind] = (P.workerKinds[kind] || 0) + 1;
+      if (kind === 'adapter-answer') P.adapter = JSON.stringify(d).slice(0, 400);
+      if (d && typeof d === 'object') { const ty = String(d.type ?? d.kind ?? ''); if (/road|canvas|readback|present/i.test(ty)) P.typed = (P.typed || []).concat([{ ty, browser: d.browser ?? null, key: d.key ?? null, death: d.death ?? null, road: d.road ?? null }]).slice(-12); }
+      if (kind === 'object') { const ks = d && typeof d === 'object' ? Object.keys(d).sort().join(',') : typeof d; P.objKeys = P.objKeys || {}; if (ks in P.objKeys || Object.keys(P.objKeys).length < 12) P.objKeys[ks] = (P.objKeys[ks] || 0) + 1; if (d && typeof d === 'object' && typeof ImageBitmap !== 'undefined' && Object.values(d).some((v) => v instanceof ImageBitmap)) P.objBitmaps = (P.objBitmaps || 0) + 1; }
       if (kind === 'present-road-settled' || kind === 'device-canvas-road-lost') P.roadEvents = (P.roadEvents || []).concat([{ kind, road: d.road ?? null, surfaceGone: d.surfaceGone ?? null, key: d.key ?? null, death: d.death ?? null }]).slice(-6);
       if (kind === 'frame-bitmap' && d.bitmap) P.frameBitmaps = (P.frameBitmaps || []).concat([{ w: d.bitmap.width, h: d.bitmap.height, id: d.frameId }]).slice(-8);
     });
     return w;
   };
   window.Worker.prototype = WorkerCtor.prototype;
+  for (const lvl of ['log', 'info', 'debug']) {
+    const orig = console[lvl].bind(console);
+    console[lvl] = (...args) => { const s = args.map(String).join(' '); if (s.includes('present road')) new BroadcastChannel('spawn-probe').postMessage({ kind: 'road-log', text: s.slice(0, 240), t: Date.now() }); return orig(...args); };
+  }
   const bcp = BroadcastChannel.prototype.postMessage;
   BroadcastChannel.prototype.postMessage = function (m, ...rest) { if (m && m.kind === 'removed') push(P.lost, { kind: 'main-posted-removed', names: m.names, t: Date.now(), stack: String(new Error().stack).split('\n').slice(1, 6).join(' | ').slice(0, 400) }); return bcp.call(this, m, ...rest); };
   const lk = LockManager.prototype.request;
@@ -256,9 +266,34 @@ const closes = [];
 const handles = [];
 const failures = [];
 const responses = [];
+const routeHits = [];
 const consoleLines = [];
 const t0 = Date.now();
-await context.addInitScript(probeInit, KEEP_PREBORN);
+await context.addInitScript(probeInit, { keep: KEEP_PREBORN, force: '__FORCE__' });
+await context.route(/\.m?js(\?|$)/, async (route) => {
+  const req = route.request();
+  const u = req.url().replace(/^.*\/pool\//, '');
+  const hit = { u: u.slice(0, 60), type: req.resourceType() };
+  routeHits.push(hit);
+  return route.continue();
+});
+await context.route(/6d66a223-/, async (route) => {
+  const response = await route.fetch();
+  const src = await response.text();
+  const id = route.request().url().match(/6d66a223-[0-9a-f]+/)[0];
+  const needle = 'function vq(e,t,r=rq,i=!1,n=!1,l=null,s=!1){';
+  if (src.split(needle).length !== 2) return route.fulfill({ response, body: src });
+  const show = (x) => (x === null ? 'null' : typeof x === 'object' ? JSON.stringify(x).slice(0, 80) : String(x));
+  const wrapper = 'function vq(...a){const out=vq0(...a);try{new BroadcastChannel("spawn-probe").postMessage({kind:"vq-call",variant:"' + id + '",args:a.map(' + show.toString() + ').slice(0,7),out:out});}catch(_){}return out;}function vq0(e,t,r=rq,i=!1,n=!1,l=null,s=!1){';
+  return route.fulfill({ response, body: src.replace(needle, wrapper) });
+});
+await context.route(/\.m?js(\?|$)/, async (route) => {
+  const req = route.request();
+  const u = req.url().replace(/^.*\/pool\//, '');
+  const hit = { u: u.slice(0, 60), type: req.resourceType() };
+  routeHits.push(hit);
+  return route.fallback();
+});
 if (TARGET.startsWith('http://127.0.0.1')) await context.route((u) => new URL(u).pathname === '/ready-plate', (r) => r.fulfill({ status: 200, contentType: 'text/html', body: '' }));
 context.on('requestfailed', (r) => { if (failures.length < 300) failures.push(r.method() + ' ' + r.failure().errorText + ' ' + r.url().slice(0, 200)); });
 context.on('response', (res) => { if (res.status() >= 400 && responses.length < 300) responses.push(res.status() + ' ' + res.request().method() + ' ' + res.url().slice(0, 200)); });
@@ -326,8 +361,13 @@ after.presentSample = await capped((sessionFrame || page).evaluate(() => {
   return { found: true, w: k.width, h: k.height, nonBlackPixels: lit, meanBrightness: Math.round((sum / (d.length / 4)) * 100) / 100 };
 }).catch((e) => 'eval-fail ' + String(e.message).slice(0, 120)), 60000, 'sample-timeout');
 after.presentDom = await capped((sessionFrame || page).evaluate(() => [...document.querySelectorAll('canvas')].map((c) => ({ w: c.width, h: c.height, surface: c.dataset.spawnPresentSurface ?? null, road: c.dataset.spawnPresentRoad ?? null, engine: c.dataset.engine ?? null, display: c.style.display || null, opacity: c.style.opacity || null, connected: c.isConnected, context: c.getAttribute('data-spawn-present-road') ?? null }))).catch((e) => 'eval-fail ' + String(e.message).slice(0, 120)), 60000, 'dom-timeout');
+after.env = await capped((sessionFrame || page).evaluate(async () => {
+  const adapter = navigator.gpu ? await navigator.gpu.requestAdapter().catch(() => null) : null;
+  return { ua: navigator.userAgent, href: location.href.slice(0, 200), presentRoadParam: new URL(location.href).searchParams.get('presentRoad'), cssMoz: typeof CSS !== 'undefined' ? CSS.supports('-moz-appearance', 'none') : 'no-CSS', mozInnerScreenX: typeof window.mozInnerScreenX, hasGpu: !!navigator.gpu, adapterInfo: adapter && adapter.info ? { vendor: adapter.info.vendor, architecture: adapter.info.architecture, isFallbackAdapter: adapter.info.isFallbackAdapter } : null, localStorageKeys: Object.keys(localStorage), sessionStorageKeys: Object.keys(sessionStorage), cookieNames: document.cookie.split('; ').map((c) => c.split('=')[0]), lsAll: Object.fromEntries(Object.keys(localStorage).map((k) => [k, String(localStorage.getItem(k)).slice(0, 200)])), canvasRoadCookie: (document.cookie.split('; ').find((c) => c.startsWith('__Secure-spawn-canvas-road-run=')) || null), sessionRoad: Object.fromEntries(Object.keys(sessionStorage).filter((k) => /spawn|road|canvas|Las/i.test(k)).map((k) => [k, String(sessionStorage.getItem(k)).slice(0, 200)])), roadStorage: Object.fromEntries(Object.keys(localStorage).filter((k) => /device-record|death|road|gpu/i.test(k)).map((k) => [k, String(localStorage.getItem(k)).slice(0, 360)])) };
+}).catch((e) => 'eval-fail ' + String(e.message).slice(0, 120)), 60000, 'env-timeout');
 after.scene = await sceneSnap();
 await page.screenshot({ path: OUT + '/after.png' }).catch(() => {});
+fs.writeFileSync(OUT + '/routes.json', JSON.stringify(routeHits, null, 1));
 fs.writeFileSync(OUT + '/scene.json', JSON.stringify({ before, after, closes: handles.map((h) => ({ url: h.url, openedMs: h.openedMs, closedMs: h.closedMs, closedAt: h.closedAt || null })), failures, responses, events }, null, 1));
 fs.writeFileSync(OUT + '/console.txt', consoleLines.join('\n') + '\n');
 console.log(JSON.stringify({ html: after.html, workers: after.workers.length, scene: after.scene.map((s) => ({ url: s.url.slice(0, 60), keys: s.scene && typeof s.scene === 'object' ? Object.keys(s.scene) : String(s.scene) })), closed: handles.filter((h) => h.closedMs !== null).length }));
