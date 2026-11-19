@@ -39,7 +39,7 @@ const workerInit = () => {
   self.setTimeout = (cb, ms, ...a) => { if (typeof cb !== 'function') return st0(cb, ms, ...a); return st0((...x) => { if (cb.name === 'dm5') clockPush({ k: 'timer', cb: cb.name, ms, now: clockStamp() }); return cb(...x); }, ms, ...a); };
   const pm0 = self.postMessage.bind(self);
   let lastSubmits = 0;
-  self.postMessage = function (m, ...rest) { if (m && m.kind === 'frame-bitmap' && P.framePosts.length < 400) { const big = frameWrites.reduce((a, w) => (a === null || w.n > a.n ? w : a), null); P.framePosts.push({ frameId: m.frameId, now: clockStamp(), submits: P.submit - lastSubmits, writes: frameWrites.length, fps: frameWrites.map((w) => w.fp), big: big ? { n: big.n, f: big.f } : null }); } if (m && m.kind === 'frame-bitmap') { frameWrites.length = 0; lastSubmits = P.submit; } return pm0(m, ...rest); };
+  self.postMessage = function (m, ...rest) { if (m && m.kind === 'frame-bitmap' && P.framePosts.length < 400) { const big = frameWrites.reduce((a, w) => (a === null || w.n > a.n ? w : a), null); P.framePosts.push({ frameId: m.frameId, now: clockStamp(), submits: P.submit - lastSubmits, writes: frameWrites.length, fps: frameWrites.map((w) => w.fp), fs: frameWrites.map((w) => w.f), big: big ? { n: big.n, f: big.f } : null }); } if (m && m.kind === 'frame-bitmap') { frameWrites.length = 0; lastSubmits = P.submit; } return pm0(m, ...rest); };
   const bufs = [];
   const texs = [];
   const devices = [];
