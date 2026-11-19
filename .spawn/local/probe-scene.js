@@ -174,7 +174,7 @@ const workerInit = () => {
     const bc = new BroadcastChannel('spawn-probe');
     try {
       const c = new OffscreenCanvas(b.width, b.height);
-      const g = c.getContext('2d');
+      const g = c.getContext('2d', { willReadFrequently: true });
       g.drawImage(b, 0, 0);
       const d = g.getImageData(0, 0, b.width, b.height).data;
       let lit = 0;
@@ -187,11 +187,18 @@ const workerInit = () => {
   const ttib = OffscreenCanvas.prototype.transferToImageBitmap;
   const keepRow = (name, row) => { if (!P[name]) P[name] = []; if (P[name].length < 400) P[name].push(row); };
   const ctrlCanvas = new OffscreenCanvas(640, 400);
-  const ctrlCtx = ctrlCanvas.getContext('2d');
+  const ctrlCtx = ctrlCanvas.getContext('2d', { willReadFrequently: true });
   ctrlCtx.fillStyle = '#ff0000';
   ctrlCtx.fillRect(0, 0, 640, 400);
+  const ctrlPre = Array.from(ctrlCtx.getImageData(0, 0, 1, 1).data);
   const ctrlBitmap = ttib.call(ctrlCanvas);
-  P.control = { lit: sendBitmap(ctrlBitmap, 'control'), alpha: P.bitmapAlpha, w: ctrlBitmap.width, h: ctrlBitmap.height };
+  const ctrlSample = (() => { const k = new OffscreenCanvas(640, 400); const kg = k.getContext('2d', { willReadFrequently: true }); kg.drawImage(ctrlBitmap, 0, 0); return Array.from(kg.getImageData(0, 0, 1, 1).data); })();
+  P.control = { pre: ctrlPre, sample: ctrlSample, lit: sendBitmap(ctrlBitmap, 'control'), alpha: P.bitmapAlpha, w: ctrlBitmap.width, h: ctrlBitmap.height };
+  const copyCanvas = new OffscreenCanvas(640, 400);
+  const copyCtx = copyCanvas.getContext('2d', { willReadFrequently: true });
+  copyCtx.fillStyle = '#ff0000';
+  copyCtx.fillRect(0, 0, 640, 400);
+  Promise.resolve(self.createImageBitmap(copyCanvas)).then((cbm) => { P.control.copy = { lit: sendBitmap(cbm, 'control-copy'), alpha: P.bitmapAlpha, w: cbm.width, h: cbm.height }; }, (err) => { P.control.copy = { error: String(err.message).slice(0, 120) }; });
   let canvasSeq = 0;
   const canvasIds = new WeakMap();
   const canvasId = (c) => { if (!c) return null; if (!canvasIds.has(c)) { canvasSeq += 1; canvasIds.set(c, canvasSeq); } return canvasIds.get(c); };
@@ -293,7 +300,7 @@ const workerInit = () => {
     if (P.createImageBitmap % 3 === 0 && bmp && bmp.width > 0) {
       try {
         const c = new OffscreenCanvas(bmp.width, bmp.height);
-        const g = c.getContext('2d');
+        const g = c.getContext('2d', { willReadFrequently: true });
         g.drawImage(bmp, 0, 0);
         const d = g.getImageData(0, 0, bmp.width, bmp.height).data;
         let nonBlack = 0;
@@ -345,13 +352,13 @@ const probeInit = (cfg) => {
     };
   }
   const litOf = (g, w, h) => { const d = g.getImageData(0, 0, w, h).data; let lit = 0; for (let i = 0; i < d.length; i += 4) { if (d[i] + d[i + 1] + d[i + 2] > 0) lit += 1; } return { w, h, lit, pixels: w * h }; };
-  const sampleSource = (b) => { try { const c = new OffscreenCanvas(b.width, b.height); const g = c.getContext('2d'); g.drawImage(b, 0, 0); return litOf(g, b.width, b.height); } catch (e) { return { error: String(e.message).slice(0, 80) }; } };
+  const sampleSource = (b) => { try { const c = new OffscreenCanvas(b.width, b.height); const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(b, 0, 0); return litOf(g, b.width, b.height); } catch (e) { return { error: String(e.message).slice(0, 80) }; } };
   const tfibPre = ImageBitmapRenderingContext.prototype.transferFromImageBitmap;
   ImageBitmapRenderingContext.prototype.transferFromImageBitmap = function (bitmap, ...rest) {
     const ctx = this;
     if (bitmap) P.presentPre = (P.presentPre || []).concat([sampleSource(bitmap)]).slice(-12);
     const out = tfibPre.call(this, bitmap, ...rest);
-    setTimeout(() => { try { const k = new OffscreenCanvas(ctx.canvas.width, ctx.canvas.height); const g = k.getContext('2d'); g.drawImage(ctx.canvas, 0, 0); P.presentPost = (P.presentPost || []).concat([litOf(g, ctx.canvas.width, ctx.canvas.height)]).slice(-12); } catch (e) { P.presentPost = (P.presentPost || []).concat([{ error: String(e.message).slice(0, 80) }]).slice(-12); } }, 400);
+    setTimeout(() => { try { const k = new OffscreenCanvas(ctx.canvas.width, ctx.canvas.height); const g = k.getContext('2d', { willReadFrequently: true }); g.drawImage(ctx.canvas, 0, 0); P.presentPost = (P.presentPost || []).concat([litOf(g, ctx.canvas.width, ctx.canvas.height)]).slice(-12); } catch (e) { P.presentPost = (P.presentPost || []).concat([{ error: String(e.message).slice(0, 80) }]).slice(-12); } }, 400);
     return out;
   };
   const WorkerCtor = window.Worker;
@@ -481,7 +488,7 @@ after.presentSample = await capped((sessionFrame || page).evaluate(() => {
   const k = document.createElement('canvas');
   k.width = c.width;
   k.height = c.height;
-  const g = k.getContext('2d');
+  const g = k.getContext('2d', { willReadFrequently: true });
   g.drawImage(c, 0, 0);
   const d = g.getImageData(0, 0, k.width, k.height).data;
   let lit = 0;
