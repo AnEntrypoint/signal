@@ -503,6 +503,7 @@ const page = await context.newPage();
 page.on('framedetached', (f) => events.push({ kind: 'frame-detached', url: f.url().slice(0, 90), t: Date.now() }));
 page.on('framenavigated', (f) => events.push({ kind: 'frame-navigated', url: f.url().slice(0, 90), t: Date.now() }));
 page.on('close', () => events.push({ kind: 'page-close', t: Date.now() }));
+page.on('crash', () => events.push({ kind: 'page-crash', t: Date.now() }));
 page.on('console', (m) => { if (consoleLines.length < 800) consoleLines.push(m.type() + ' ' + m.location().url.slice(0, 120) + ' :: ' + m.text().slice(0, 300)); });
 page.on('pageerror', (e) => { if (consoleLines.length < 800) consoleLines.push('PAGEERROR ' + String(e.message).slice(0, 300)); });
 page.on('worker', (w) => {
@@ -610,7 +611,12 @@ await capped(startFrame().evaluate(() => {
   if (__SAMPLE__ === 1) sample();
   if (__SAMPLE__ === 1) window.__displayTimer = setInterval(sample, 500);
 }).catch((e) => { window.__displayErr = String(e.message).slice(0, 120); }), 60000, 'display-start-timeout');
-await wait(150000);
+const memTrace = [];
+for (let m = 0; m < 15; m += 1) {
+  await wait(10000);
+  const mem = await capped(page.evaluate(() => (performance.memory ? { used: performance.memory.usedJSHeapSize, total: performance.memory.totalJSHeapSize, limit: performance.memory.jsHeapSizeLimit } : null)).catch((e) => 'mem-fail ' + String(e.message).slice(0, 80)), 4000, 'mem-timeout');
+  memTrace.push({ atMs: (m + 1) * 10000, mem, pageClosed: page.isClosed() });
+}
 const after = await snap('after-key');
 after.gesture = { tries: gestureTries, shown: gestureShown, log: gestureLog };
 after.boot = await capped(page.evaluate(() => ({ loading: window.__spawnLastKernelLoadingState ?? null, released: window.__spawnHeldDocumentReleased ?? null, marks: performance.getEntriesByType('mark').map((m) => m.name).slice(0, 120), iframes: [...document.querySelectorAll('iframe')].map((f) => ({ src: (f.getAttribute('src') || '').slice(0, 120), kernel: f.getAttribute('data-spawn-kernel-frame') })) })).catch((e) => 'boot-eval-fail ' + String(e.message).slice(0, 120)), 60000, 'boot-timeout');
@@ -639,7 +645,7 @@ after.env = await capped((sessionFrame || page).evaluate(async () => {
 after.scene = await sceneSnap();
 await page.screenshot({ path: OUT + '/after.png' }).catch(() => {});
 fs.writeFileSync(OUT + '/routes.json', JSON.stringify(routeHits, null, 1));
-fs.writeFileSync(OUT + '/scene.json', JSON.stringify({ before, after, closes: handles.map((h) => ({ url: h.url, openedMs: h.openedMs, closedMs: h.closedMs, closedAt: h.closedAt || null })), failures, responses, events }, null, 1));
+fs.writeFileSync(OUT + '/scene.json', JSON.stringify({ before, after, memTrace, closes: handles.map((h) => ({ url: h.url, openedMs: h.openedMs, closedMs: h.closedMs, closedAt: h.closedAt || null })), failures, responses, events }, null, 1));
 fs.writeFileSync(OUT + '/console.txt', consoleLines.join('\n') + '\n');
 console.log(JSON.stringify({ html: after.html, workers: after.workers.length, scene: after.scene.map((s) => ({ url: s.url.slice(0, 60), keys: s.scene && typeof s.scene === 'object' ? Object.keys(s.scene) : String(s.scene) })), closed: handles.filter((h) => h.closedMs !== null).length }));
 if (TARGET.startsWith('http://127.0.0.1')) { const misses = await fetch('http://127.0.0.1:4173/__misses').then((x) => x.text()).catch((e) => 'misses-fetch-failed ' + e.message); fs.writeFileSync(OUT + '/misses.txt', misses); }
