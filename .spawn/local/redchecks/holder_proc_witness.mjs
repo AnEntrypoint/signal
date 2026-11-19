@@ -1,0 +1,63 @@
+import fs from 'node:fs';
+import { spawnSync } from 'node:child_process';
+const readerPath = process.argv[2] || '/workspace/signal/world/signal-stage/.spawn/local/holder-proc.mjs';
+const root = '/tmp/verify/proc-fixture-' + Date.now();
+const PID = 4242;
+const KB = 1024;
+const procDir = root + '/proc/' + PID;
+const shmDir = root + '/shm';
+fs.mkdirSync(procDir, { recursive: true });
+fs.mkdirSync(shmDir, { recursive: true });
+const maps = [];
+for (let i = 0; i < 25; i += 1) maps.push({ base: 0x10000000 + i * 0x1000000, sizeKb: (i + 1) * 16, rssKb: Math.floor(((i + 1) * 16) / 2), anonKb: null, inode: '0', path: i % 3 === 0 ? '[heap]' : '', perms: 'rw-p' });
+for (let j = 0; j < 25; j += 1) {
+  const isShm = j >= 23;
+  maps.push({ base: 0x70000000 + j * 0x1000000, sizeKb: (j + 1) * 32, rssKb: Math.floor(((j + 1) * 32) / 4), anonKb: j === 0 ? 4 : 0, inode: '12345', path: isShm ? '/dev/shm/gpu-' + (j - 23) : '/usr/lib/lib' + j + '.so', perms: 'r--p' });
+}
+for (const m of maps) if (m.anonKb === null) m.anonKb = m.inode === '0' ? m.rssKb : 0;
+let smaps = '';
+for (const m of maps) {
+  const start = m.base.toString(16).padStart(12, '0');
+  const end = (m.base + m.sizeKb * KB).toString(16).padStart(12, '0');
+  smaps += start + '-' + end + ' ' + m.perms + ' 00000000 00:00 ' + m.inode + ' ' + m.path + '\n';
+  smaps += 'Size: ' + m.sizeKb + ' kB\nKernelPageSize: 4 kB\nRss: ' + m.rssKb + ' kB\nAnonymous: ' + m.anonKb + ' kB\nPrivate_Dirty: 0 kB\nVmFlags: rd wr mr mw me ac\n';
+}
+fs.writeFileSync(procDir + '/smaps', smaps);
+const sumRss = maps.reduce((s, m) => s + m.rssKb, 0);
+const sumAnon = maps.reduce((s, m) => s + m.anonKb, 0);
+fs.writeFileSync(procDir + '/smaps_rollup', '00400000-7fff00000000 ---p 00000000 00:00 0 [rollup]\nRss: ' + sumRss + ' kB\nShared_Clean: 1000 kB\nShared_Dirty: 200 kB\nPrivate_Clean: 0 kB\nPrivate_Dirty: 900 kB\nAnonymous: ' + sumAnon + ' kB\n');
+fs.writeFileSync(shmDir + '/gpu-0', Buffer.alloc(4096));
+fs.writeFileSync(shmDir + '/gpu-1', Buffer.alloc(8192));
+const expRssAnon = maps.filter((m) => m.inode === '0').reduce((s, m) => s + m.rssKb, 0) * KB;
+const expRssFile = maps.filter((m) => m.inode !== '0').reduce((s, m) => s + m.rssKb, 0) * KB;
+const rr = spawnSync('node', [readerPath, root + '/proc', String(PID), shmDir], { encoding: 'utf8' });
+const line = (rr.stdout || '').split('\n').find((l) => l.startsWith('HOLDER_PROC '));
+let h = null; try { h = line ? JSON.parse(line.slice('HOLDER_PROC '.length)) : null; } catch { h = null; }
+const checks = [];
+const check = (name, ok, got) => checks.push({ name, ok, got: String(JSON.stringify(got) ?? 'absent').slice(0, 160) });
+check('reader exit 0 and HOLDER_PROC line', rr.status === 0 && h !== null, rr.status);
+check('field pid present and equal', h !== null && 'pid' in h && h.pid === PID, h && h.pid);
+check('field error absent', h !== null && (h.error === null || h.error === undefined), h && h.error);
+const ru = h && h.rollup;
+check('rollup Rss present and equal', !!ru && ru.Rss === sumRss * KB, ru && ru.Rss);
+check('rollup Anonymous present and equal', !!ru && ru.Anonymous === sumAnon * KB, ru && ru.Anonymous);
+check('rollup Shared_Clean present and equal', !!ru && ru.Shared_Clean === 1000 * KB, ru && ru.Shared_Clean);
+check('rollup Shared_Dirty present and equal', !!ru && ru.Shared_Dirty === 200 * KB, ru && ru.Shared_Dirty);
+check('rollup Private_Dirty present and equal', !!ru && ru.Private_Dirty === 900 * KB, ru && ru.Private_Dirty);
+const tt = h && h.totals;
+check('totals present (counts and bytes)', !!tt && tt.mappingCount === 50 && tt.anonCount === 25 && tt.fileCount === 25, tt);
+check('totals anonRssBytes and fileRssBytes equal the split', !!tt && tt.anonRssBytes === expRssAnon && tt.fileRssBytes === expRssFile, tt && [tt.anonRssBytes, tt.fileRssBytes]);
+check('sum rule: anonRss + fileRss equals smaps_rollup Rss', !!tt && !!ru && tt.anonRssBytes + tt.fileRssBytes === ru.Rss, tt && ru && [tt.anonRssBytes + tt.fileRssBytes, ru.Rss]);
+check('sum rule: sum of Anonymous over all mappings equals smaps_rollup Anonymous', !!tt && !!ru && tt.anonymousBytes === ru.Anonymous, tt && ru && [tt.anonymousBytes, ru.Anonymous]);
+const at = h && h.anonTop20;
+check('anonTop20 present: 20 entries, sorted by size, largest 400 kB, [heap] or [anon]', Array.isArray(at) && at.length === 20 && at[0].sizeBytes === 400 * KB && at.every((x, i, a) => i === 0 || a[i - 1].sizeBytes >= x.sizeBytes) && at.every((x) => x.path === '[anon]' || x.path === '[heap]') && typeof at[0].range === 'string', at && at.length);
+const ft = h && h.fileTop20;
+check('fileTop20 present: 20 entries, largest is /dev/shm/gpu-1 at 800 kB', Array.isArray(ft) && ft.length === 20 && ft[0].path === '/dev/shm/gpu-1' && ft[0].sizeBytes === 800 * KB && ft.every((x, i, a) => i === 0 || a[i - 1].sizeBytes >= x.sizeBytes), ft && ft[0]);
+const sd = h && h.shmDir;
+check('shmDir present: totals numeric and entries with fixture sizes', !!sd && typeof sd.totalBytes === 'number' && typeof sd.freeBytes === 'number' && typeof sd.usedBytes === 'number' && JSON.stringify(sd.entries) === JSON.stringify([{ name: 'gpu-0', sizeBytes: 4096 }, { name: 'gpu-1', sizeBytes: 8192 }]), sd && sd.entries);
+const rs = h && h.rendererShm;
+check('rendererShm present: the two /dev/shm mappings with their rss', Array.isArray(rs) && rs.length === 2 && rs[0].path === '/dev/shm/gpu-0' && rs[1].path === '/dev/shm/gpu-1' && rs.reduce((s, x) => s + x.rssBytes, 0) === (192 + 200) * KB, rs);
+for (const c of checks) console.log((c.ok ? 'PASS ' : 'FAIL ') + c.name + ' got=' + c.got);
+const green = checks.every((c) => c.ok);
+console.log('HOLDER PROC WITNESS (' + readerPath + '): ' + (green ? 'GREEN' : 'RED'));
+process.exit(green ? 0 : 1);
