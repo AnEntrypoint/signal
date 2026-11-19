@@ -537,6 +537,7 @@ await capped(startFrame().evaluate(() => {
   const sample = async () => {
     if (busy) return;
     busy = true;
+    const costStart = performance.now();
     try {
       const sinks = window.__sinkCanvases;
       const frame = { t: Date.now(), bitmapPresent: (window.__probe && window.__probe.bitmapPresent) || 0, pp: ((window.__probe && window.__probe.presentPost) || []).slice(-1)[0] || null, canvases: [] };
@@ -564,9 +565,16 @@ await capped(startFrame().evaluate(() => {
         }
         frame.canvases.push(entry);
       }
+      frame.cost = Math.round((performance.now() - costStart) * 10) / 10;
+      frame.vis = document.visibilityState;
+      frame.focus = document.hasFocus();
+      frame.sessRaf = window.__sessRaf || 0;
       window.__displaySamples.push(frame);
     } finally { busy = false; }
   };
+  window.__sessRaf = 0;
+  const sessRafTick = () => { window.__sessRaf += 1; requestAnimationFrame(sessRafTick); };
+  requestAnimationFrame(sessRafTick);
   sample();
   window.__displayTimer = setInterval(sample, 500);
 }).catch((e) => { window.__displayErr = String(e.message).slice(0, 120); }), 60000, 'display-start-timeout');
