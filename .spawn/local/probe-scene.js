@@ -135,7 +135,7 @@ const workerInit = () => {
     }
     for (let i = 0; i < Math.min(texs.length, 80); i++) {
       const rec = texs[i];
-      try { out.textures.push({ idx: i, label: rec.label, w: rec.w, h: rec.h, format: rec.format, usage: rec.usage, nonzeroBytes: rec.format === 'depth32float' ? await readDepth(device, rec) : await readTexture(device, rec) }); } catch (e) { out.textures.push({ idx: i, label: rec.label, error: String(e.message).slice(0, 120) }); }
+      try { out.textures.push({ idx: i, label: rec.label, w: rec.w, h: rec.h, format: rec.format, usage: rec.usage, actualUsage: rec.t.usage, nonzeroBytes: rec.format === 'depth32float' ? await readDepth(device, rec) : await readTexture(device, rec) }); } catch (e) { out.textures.push({ idx: i, label: rec.label, error: String(e.message).slice(0, 120) }); }
     }
     return out;
   };
