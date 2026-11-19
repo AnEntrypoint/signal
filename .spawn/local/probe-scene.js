@@ -55,7 +55,7 @@ const workerInit = () => {
   if (!navigator.gpu) return;
   const gp = Object.getPrototypeOf(navigator.gpu);
   const ra = gp.requestAdapter;
-  gp.requestAdapter = async function (...args) { const a = await ra.apply(this, args); if (a) P.gpuAdapter += 1; return a; };
+  gp.requestAdapter = async function (...args) { P.adapterCalls = (P.adapterCalls || 0) + 1; try { const a = await ra.apply(this, args); if (a) P.gpuAdapter += 1; else P.adapterNull = (P.adapterNull || 0) + 1; return a; } catch (e) { P.adapterErr = String(e.message).slice(0, 160); throw e; } };
   const rd = GPUAdapter.prototype.requestDevice;
   GPUAdapter.prototype.requestDevice = async function (...args) { const d = await rd.apply(this, args); P.deviceOk += 1; d.addEventListener('uncapturederror', (ev) => { if ((P.uncaptured || []).length < 6) P.uncaptured = (P.uncaptured || []).concat([String(ev.error.message).slice(0, 420)]); }); d.lost.then((i) => new BroadcastChannel('spawn-probe').postMessage({ kind: 'lost', reason: i.reason, message: String(i.message).slice(0, 160), t: Date.now() })); if (devices.length < 2) devices.push(d); return d; };
   const cbuf = GPUDevice.prototype.createBuffer;
