@@ -29,17 +29,19 @@ const workerInit = () => {
   }
   const fnvView = (v) => { const u = new Uint8Array(v.buffer, v.byteOffset, Math.min(v.byteLength, 4096)); let h = 2166136261; for (let i = 0; i < u.length; i += 1) { h ^= u[i]; h = Math.imul(h, 16777619); } return (h >>> 0).toString(16); };
   const frameWrites = [];
+  const bufLabel = new WeakMap();
+  let lastArrival = null;
   const clockStamp = () => Math.round(performance.now() * 1000) / 1000;
   P.frameClock = [];
   P.framePosts = [];
-  const clockPush = (v) => { if (P.frameClock.length < 6000) P.frameClock.push(v); };
+  const clockPush = (v) => { if (v.k === 'raf') lastArrival = v.t; if (P.frameClock.length < 6000) P.frameClock.push(v); };
   const raf0 = self.requestAnimationFrame.bind(self);
   self.requestAnimationFrame = (cb) => raf0((t) => { clockPush({ k: 'raf', cb: cb.name, t: Math.round(t * 1000) / 1000, now: clockStamp() }); return cb(t); });
   const st0 = self.setTimeout.bind(self);
   self.setTimeout = (cb, ms, ...a) => { if (typeof cb !== 'function') return st0(cb, ms, ...a); return st0((...x) => { if (cb.name === 'dm5') clockPush({ k: 'timer', cb: cb.name, ms, now: clockStamp() }); return cb(...x); }, ms, ...a); };
   const pm0 = self.postMessage.bind(self);
   let lastSubmits = 0;
-  self.postMessage = function (m, ...rest) { if (m && m.kind === 'frame-bitmap' && P.framePosts.length < 400) { const big = frameWrites.reduce((a, w) => (a === null || w.n > a.n ? w : a), null); P.framePosts.push({ frameId: m.frameId, now: clockStamp(), submits: P.submit - lastSubmits, writes: frameWrites.length, fps: frameWrites.map((w) => w.fp), fs: frameWrites.map((w) => w.f), big: big ? { n: big.n, f: big.f } : null }); } if (m && m.kind === 'frame-bitmap') { frameWrites.length = 0; lastSubmits = P.submit; } return pm0(m, ...rest); };
+  self.postMessage = function (m, ...rest) { if (m && m.kind === 'frame-bitmap' && P.framePosts.length < 400) { const big = frameWrites.reduce((a, w) => (a === null || w.n > a.n ? w : a), null); P.framePosts.push({ frameId: m.frameId, now: clockStamp(), submits: P.submit - lastSubmits, writes: frameWrites.length, fps: frameWrites.map((w) => w.fp), fs: frameWrites.map((w) => w.f), hw: frameWrites.map((w) => ({ l: w.label, n: w.n, h: w.hits })), big: big ? { n: big.n, f: big.f } : null }); } if (m && m.kind === 'frame-bitmap') { frameWrites.length = 0; lastSubmits = P.submit; } return pm0(m, ...rest); };
   const bufs = [];
   const texs = [];
   const devices = [];
@@ -60,6 +62,7 @@ const workerInit = () => {
   GPUDevice.prototype.createBuffer = function (desc) {
     const b = cbuf.call(this, Object.assign({}, desc, { usage: desc.usage & 3 ? desc.usage : desc.usage | 4 }));
     if (!P.quiet && bufs.length < 500) bufs.push({ b, size: desc.size, usage: desc.usage, label: String(desc.label || '').slice(0, 60) });
+    bufLabel.set(b, String(desc.label || '').slice(0, 60) + '|' + desc.size + '|' + desc.usage);
     return b;
   };
   const ctex = GPUDevice.prototype.createTexture;
@@ -97,10 +100,16 @@ const workerInit = () => {
   GPUQueue.prototype.writeBuffer = function (...args) {
     P.writeBuffer += 1;
     const src = args[2];
-    if (src && frameWrites.length < 80) {
+    if (src && frameWrites.length < 400) {
       const v = ArrayBuffer.isView(src) ? src : new Uint8Array(src);
       const f = v.byteLength >= 16 && v.byteOffset % 4 === 0 ? Array.from(new Float32Array(v.buffer, v.byteOffset, Math.min(32, Math.floor(v.byteLength / 4)))) : null;
-      frameWrites.push({ n: v.byteLength, fp: fnvView(v), f });
+      const hits = [];
+      if (lastArrival !== null) {
+        const dv = new DataView(v.buffer, v.byteOffset, v.byteLength);
+        const A = lastArrival;
+        for (let k = 0; k + 4 <= v.byteLength; k += 1) { const x = dv.getFloat32(k, true); const dt = x * 1000 - A; if (dt > -50 && dt < 50) hits.push([k, x, Math.round(dt * 100) / 100]); }
+      }
+      frameWrites.push({ n: v.byteLength, fp: fnvView(v), f, label: bufLabel.get(args[0]) || '?', hits: hits.slice(0, 40) });
     }
     return wb.apply(this, args);
   };
@@ -584,7 +593,7 @@ await capped(startFrame().evaluate(() => {
 }).catch((e) => { window.__displayErr = String(e.message).slice(0, 120); }), 60000, 'display-start-timeout');
 await wait(30000);
 const after = await snap('after-key');
-after.display = await capped(startFrame().evaluate(() => { clearInterval(window.__displayTimer); return { ctx: window.__displayCtx || null, samples: window.__displaySamples || [], hooks: window.__displayed || [], pageCalls: window.__pageCalls || [], transferTimes: window.__transferTimes || [], err: window.__displayErr || null }; }).catch((e) => 'display-eval-fail ' + String(e.message).slice(0, 120)), 60000, 'display-read-timeout');
+after.display = await capped(startFrame().evaluate(() => { clearInterval(window.__displayTimer); return { focus: document.hasFocus(), activation: navigator.userActivation.hasBeenActive, ctx: window.__displayCtx || null, samples: window.__displaySamples || [], hooks: window.__displayed || [], pageCalls: window.__pageCalls || [], transferTimes: window.__transferTimes || [], err: window.__displayErr || null }; }).catch((e) => 'display-eval-fail ' + String(e.message).slice(0, 120)), 60000, 'display-read-timeout');
 const sessionFrame = page.frames().find((f) => f.url().includes('/session/world'));
 after.presentSample = await capped((sessionFrame || page).evaluate(() => {
   const c = document.querySelector('canvas[data-spawn-present-surface]');
