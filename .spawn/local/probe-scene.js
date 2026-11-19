@@ -77,6 +77,7 @@ const workerInit = () => {
     } finally { P.quiet = false; }
   };
   const readTexture = async (device, rec) => {
+    if ((rec.t.usage & 1) === 0) return { skipped: 'no COPY_SRC', usage: rec.t.usage };
     const bpp = BPP[rec.format];
     if (!bpp || rec.dim !== '2d' || rec.samples !== 1 || rec.mips !== 1) return null;
     const bytesPerRow = Math.ceil((rec.w * bpp) / 256) * 256;
@@ -97,6 +98,7 @@ const workerInit = () => {
     } finally { P.quiet = false; }
   };
   const readDepth = async (device, rec) => {
+    if ((rec.t.usage & 1) === 0) return { skipped: 'no COPY_SRC', usage: rec.t.usage };
     P.quiet = true;
     try {
       const bytesPerRow = Math.ceil((rec.w * 4) / 256) * 256;
@@ -118,6 +120,21 @@ const workerInit = () => {
       return { nonzeroTexels: nonzero, texels: rec.w * rec.h, equalOne, otherNonzero, min, max };
     } finally { P.quiet = false; }
   };
+  const diagNoCopy = async (device, list) => {
+    const rec = list.find((r) => (r.t.usage & 1) === 0);
+    if (!rec) return null;
+    const bytesPerRow = Math.ceil((rec.w * 4) / 256) * 256;
+    device.pushErrorScope('validation');
+    let thrown = null;
+    try {
+      const st = cbuf.call(device, { size: bytesPerRow * rec.h, usage: 1 | 8 });
+      const enc = device.createCommandEncoder();
+      enc.copyTextureToBuffer({ texture: rec.t }, { buffer: st, bytesPerRow }, [rec.w, rec.h, 1]);
+      device.queue.submit([enc.finish()]);
+    } catch (e) { thrown = String(e.message).slice(0, 200); }
+    const scope = await device.popErrorScope();
+    return { label: rec.label, usage: rec.t.usage, thrown, error: scope ? String(scope.message).slice(0, 200) : null };
+  };
   self.__probeScene = async () => {
     const device = devices[0];
     if (!device) return { error: 'no device recorded' };
@@ -133,6 +150,7 @@ const workerInit = () => {
         out.buffers.push({ label: r.label, size: r.size, usage: r.usage, nonzeroF32: nz, floats: f.length, first8: Array.from(f.slice(0, 8)).map((v) => Math.round(v * 1000) / 1000) });
       } catch (e) { out.buffers.push({ label: r.label, size: r.size, error: String(e.message).slice(0, 120) }); }
     }
+    out.noCopyDiag = await diagNoCopy(device, texs);
     for (let i = 0; i < Math.min(texs.length, 80); i++) {
       const rec = texs[i];
       try { out.textures.push({ idx: i, label: rec.label, w: rec.w, h: rec.h, format: rec.format, usage: rec.usage, actualUsage: rec.t.usage, nonzeroBytes: rec.format === 'depth32float' ? await readDepth(device, rec) : await readTexture(device, rec) }); } catch (e) { out.textures.push({ idx: i, label: rec.label, error: String(e.message).slice(0, 120) }); }
@@ -165,7 +183,7 @@ const workerInit = () => {
     const b = ttib.apply(this, a);
     const lit = sendBitmap(b, 'transferToImageBitmap');
     if (!P.transferLog) P.transferLog = [];
-    if (P.transferLog.length < 400) P.transferLog.push({ n, lit, fromCopiedCanvas, presentedIdx: presentedFrom ? presentedFrom.idx : null, presentedLit: presentedFrom ? presentedFrom.lit : null });
+    if (P.transferLog.length < 400) P.transferLog.push({ n, lit, w: b.width, h: b.height, fromCopiedCanvas, presentedIdx: presentedFrom ? presentedFrom.idx : null, presentedLit: presentedFrom ? presentedFrom.lit : null });
     if (pre) settle({ idx: n, w: d.w, h: d.h }, 'before-transfer', pre).then((row) => keepRow('transferPre', Object.assign(row, { n, fromCopiedCanvas })));
     return b;
   };
@@ -188,6 +206,18 @@ const workerInit = () => {
       return { error: String(e.message).slice(0, 160) };
     }
   };
+  const readCopyCmd = (tex) => {
+    try {
+      const device = devices[0];
+      const bytesPerRow = tex.width * 4;
+      const st = cbuf.call(device, { size: bytesPerRow * tex.height, usage: 1 | 8 });
+      const enc = device.createCommandEncoder();
+      enc.copyTextureToBuffer({ texture: tex }, { buffer: st, bytesPerRow }, [tex.width, tex.height, 1]);
+      return { st, bytesPerRow, w: tex.width, h: tex.height, cmd: enc.finish() };
+    } catch (e) {
+      return { error: String(e.message).slice(0, 160) };
+    }
+  };
   const countLit = async (r) => {
     if (r.error) throw new Error(r.error);
     await r.st.mapAsync(1);
@@ -205,6 +235,20 @@ const workerInit = () => {
     return cts.call(this, src, dst, size);
   };
   const sq = GPUQueue.prototype.submit;
+  GPUQueue.prototype.submit = function (...args) {
+    const batch = lastCopies.splice(0);
+    const pre = batch.map((c) => ({ c, r: readCopy(c.src) }));
+    const post = batch.map((c) => ({ c, r: readCopyCmd(c.dst) }));
+    const cmds = post.map((x) => x.r.cmd).filter(Boolean);
+    const sameSubmit = cmds.length > 0 && Array.isArray(args[0]);
+    const out = sameSubmit ? sq.apply(this, [[...args[0], ...cmds], ...args.slice(1)]) : sq.apply(this, args);
+    if (cmds.length && !sameSubmit) sb.call(this, cmds);
+    if (batch.length) {
+      lastDst = batch[batch.length - 1];
+      Promise.all([...pre.map((x) => settle(x.c, 'before', x.r)), ...post.map((x) => settle(x.c, 'after-same-submit', x.r).then((row) => { if (row.lit !== undefined && (!lastResolved || row.idx > lastResolved.idx)) lastResolved = row; return row; }))]).then((rows) => { P.copyReads = (P.copyReads || []).concat(rows).slice(-400); });
+    }
+    return out;
+  };
   GPUQueue.prototype.submit = function (...args) {
     const batch = lastCopies.splice(0);
     const pre = batch.map((c) => ({ c, r: readCopy(c.src) }));
