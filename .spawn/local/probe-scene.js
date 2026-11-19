@@ -111,7 +111,7 @@ self.postMessage = function (m, ...rest) { if (m && typeof m === "object") { con
       const v = ArrayBuffer.isView(src) ? src : new Uint8Array(src);
       const f = v.byteLength >= 16 && v.byteOffset % 4 === 0 ? Array.from(new Float32Array(v.buffer, v.byteOffset, Math.min(32, Math.floor(v.byteLength / 4)))) : null;
       const hits = [];
-      if (lastArrival !== null) {
+      if (lastArrival !== null && __SAMPLE__ === 1) {
         const dv = new DataView(v.buffer, v.byteOffset, v.byteLength);
         const A = lastArrival;
         for (let k = 0; k + 4 <= v.byteLength; k += 1) { const x = dv.getFloat32(k, true); const dt = x * 1000 - A; if (dt > -50 && dt < 50) hits.push([k, x, Math.round(dt * 100) / 100]); }
@@ -509,7 +509,7 @@ page.on('crash', () => events.push({ kind: 'page-crash', t: Date.now() }));
 const crashLog = [];
 const bcdp = await Promise.resolve(context.browser()?.newBrowserCDPSession()).catch(() => null);
 const pcdp = await context.newCDPSession(page);
-const stampCrash = (src, name, params) => { if (crashLog.length < 300) crashLog.push({ t: Date.now(), src, name, params: JSON.stringify(params ?? null).slice(0, 400) }); };
+const stampCrash = (src, name, params) => { if (crashLog.length < 300) crashLog.push({ t: Date.now(), src, name, params: JSON.stringify(params ?? null).slice(0, 1500) }); };
 bcdp?.on('Target.targetCrashed', (p) => stampCrash('browser', 'Target.targetCrashed', p));
 bcdp?.on('Target.detachedFromTarget', (p) => stampCrash('browser', 'Target.detachedFromTarget', p));
 await bcdp?.send('Target.setDiscoverTargets', { discover: true }).catch((e) => stampCrash('browser', 'discover-fail', String(e.message)));
@@ -626,11 +626,12 @@ await capped(startFrame().evaluate(() => {
   if (__SAMPLE__ === 1) window.__displayTimer = setInterval(sample, 500);
 }).catch((e) => { window.__displayErr = String(e.message).slice(0, 120); }), 60000, 'display-start-timeout');
 const memTrace = [];
+const workerCounters = () => Promise.all(handles.filter((h) => h.closedMs === null).map((h) => capped(h.w.evaluate(() => { const q = self.__probe; return q ? { wb: q.writeBuffer, submit: q.submit, staging: q.stagingMade || 0, copies: q.copies || 0, frames: (q.frameClock || []).length, posts: (q.framePosts || []).length } : null; }).catch((e) => 'eval-fail ' + String(e.message).slice(0, 60)), 3000, 'worker-timeout')));
 for (let m = 0; m < 15; m += 1) {
   await wait(10000);
   const info = await capped(bcdp ? bcdp.send('SystemInfo.getProcessInfo').catch((e) => 'proc-fail ' + String(e.message).slice(0, 80)) : Promise.resolve('no-browser-cdp'), 4000, 'proc-timeout');
   const procs = info && Array.isArray(info.processInfo) ? info.processInfo.map((p) => ({ type: p.type, pid: p.id, cpu: p.cpuTime })) : info;
-  memTrace.push({ atMs: (m + 1) * 10000, t: Date.now(), procs, pageClosed: page.isClosed(), crashEvents: crashLog.length });
+  memTrace.push({ atMs: (m + 1) * 10000, t: Date.now(), workers: await workerCounters(), procs, pageClosed: page.isClosed(), crashEvents: crashLog.length });
 }
 const after = await snap('after-key');
 after.gesture = { tries: gestureTries, shown: gestureShown, log: gestureLog };
