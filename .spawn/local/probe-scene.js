@@ -32,7 +32,7 @@ const workerInit = () => {
   const clockStamp = () => Math.round(performance.now() * 1000) / 1000;
   P.frameClock = [];
   P.framePosts = [];
-  const clockPush = (v) => { if (P.frameClock.length < 400) P.frameClock.push(v); };
+  const clockPush = (v) => { if (P.frameClock.length < 6000) P.frameClock.push(v); };
   const raf0 = self.requestAnimationFrame.bind(self);
   self.requestAnimationFrame = (cb) => raf0((t) => { clockPush({ k: 'raf', cb: cb.name, t: Math.round(t * 1000) / 1000, now: clockStamp() }); return cb(t); });
   const st0 = self.setTimeout.bind(self);
@@ -97,7 +97,7 @@ const workerInit = () => {
     const src = args[2];
     if (src && frameWrites.length < 80) {
       const v = ArrayBuffer.isView(src) ? src : new Uint8Array(src);
-      const f = v.byteLength >= 16 && v.byteOffset % 4 === 0 ? Array.from(new Float32Array(v.buffer, v.byteOffset, Math.min(4, Math.floor(v.byteLength / 4)))) : null;
+      const f = v.byteLength >= 16 && v.byteOffset % 4 === 0 ? Array.from(new Float32Array(v.buffer, v.byteOffset, Math.min(32, Math.floor(v.byteLength / 4)))) : null;
       frameWrites.push({ n: v.byteLength, fp: fnvView(v), f });
     }
     return wb.apply(this, args);
