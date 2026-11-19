@@ -75,7 +75,9 @@ const workerInit = () => {
   const cv = GPUTexture.prototype.createView;
   GPUTexture.prototype.createView = function (...args) { const v = cv.apply(this, args); viewTex.set(v, this); return v; };
   const sb = GPUQueue.prototype.submit;
-  GPUQueue.prototype.submit = function (...args) { P.submit += 1; if (!P.quiet) { P.lastFrame = P.passLog; P.passLog = []; } return sb.apply(this, args); };
+  GPUQueue.prototype.submit = function (...args) { P.submit += 1; if (!P.quiet) { P.lastFrame = P.passLog; P.passLog = []; } const doneAt = performance.now();
+    this.onSubmittedWorkDone().then(() => { P.gpuDone = P.gpuDone || []; if (P.gpuDone.length < 400) P.gpuDone.push({ ms: Math.round((performance.now() - doneAt) * 10) / 10, at: Math.round(performance.now() * 10) / 10 }); });
+    return sb.apply(this, args); };
   const brp = GPUCommandEncoder.prototype.beginRenderPass;
   GPUCommandEncoder.prototype.beginRenderPass = function (desc) {
     P.beginRenderPass += 1;
