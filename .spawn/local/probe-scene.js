@@ -631,9 +631,10 @@ const memTrace = [];
 const workerCounters = () => Promise.all(handles.filter((h) => h.closedMs === null).map((h) => capped(h.w.evaluate(() => { const q = self.__probe; return q ? { wb: q.writeBuffer, submit: q.submit, staging: q.stagingMade || 0, copies: q.copies || 0, frames: (q.frameClock || []).length, posts: (q.framePosts || []).length } : null; }).catch((e) => 'eval-fail ' + String(e.message).slice(0, 60)), 3000, 'worker-timeout')));
 for (let m = 0; m < 15; m += 1) {
   await wait(10000);
+  const vis = await capped(page.evaluate(() => document.visibilityState).catch((e) => 'vis-fail ' + String(e.message).slice(0, 60)), 3000, 'vis-timeout');
   const info = await capped(bcdp ? bcdp.send('SystemInfo.getProcessInfo').catch((e) => 'proc-fail ' + String(e.message).slice(0, 80)) : Promise.resolve('no-browser-cdp'), 4000, 'proc-timeout');
   const procs = info && Array.isArray(info.processInfo) ? info.processInfo.map((p) => ({ type: p.type, pid: p.id, cpu: p.cpuTime })) : info;
-  memTrace.push({ atMs: (m + 1) * 10000, t: Date.now(), workers: await workerCounters(), procs, pageClosed: page.isClosed(), crashEvents: crashLog.length });
+  memTrace.push({ atMs: (m + 1) * 10000, t: Date.now(), visibility: vis, workers: await workerCounters(), procs, pageClosed: page.isClosed(), crashEvents: crashLog.length });
 }
 const after = await snap('after-key');
 after.gesture = { tries: gestureTries, shown: gestureShown, log: gestureLog };
