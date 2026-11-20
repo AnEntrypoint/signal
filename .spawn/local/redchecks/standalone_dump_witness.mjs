@@ -74,6 +74,7 @@ const runScenario = async (name) => {
   check('Tracing.end sent before tracingComplete', !!h && typeof h.endSentAtMs === 'number' && typeof h.tracingCompleteAtMs === 'number' && h.endSentAtMs <= h.tracingCompleteAtMs, h && [h.endSentAtMs, h.tracingCompleteAtMs]);
   check('page closed after the read', !!h && h.pageClosed === true, h && h.pageClosed);
   check('requestedPids equal the pids that sent explicitly_triggered events', !!h && JSON.stringify(h.requestedPids) === JSON.stringify(cfg.pids), h && h.requestedPids);
+  check('dumpNames counts the dump events by name (requested if any, then two periodic)', !!h && JSON.stringify(h.dumpNames) === JSON.stringify(cfg.pids.length ? { explicitly_triggered: cfg.pids.length, periodic_interval: 2 } : { periodic_interval: 2 }), h && h.dumpNames);
   check('periodicPids list the pids that sent periodic totals (both scenarios)', !!h && JSON.stringify(h.periodicPids) === JSON.stringify([4242, 5555]), h && h.periodicPids);
   check('eventsSeen equals the events sent (requested plus two periodic decoys)', !!h && h.eventsSeen === cfg.pids.length + 2, h && h.eventsSeen);
   check('scope names the refusal', !!h && typeof h.scope === 'string' && h.scope.startsWith(cfg.scope), h && h.scope);
