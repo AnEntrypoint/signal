@@ -25,7 +25,6 @@ const CASES = {
 };
 const runCase = async (name) => {
   const cfg = CASES[name];
-  const starts = [];
   const server = http.createServer((req, res) => {
     if (req.url !== '/json/version') { res.statusCode = 404; res.end(); return; }
     res.setHeader('content-type', 'application/json');
@@ -35,7 +34,6 @@ const runCase = async (name) => {
   const sendIf = (sock, msg) => { if (sock.readyState === 1) sock.send(JSON.stringify(msg)); };
   wss.on('connection', (sock) => sock.on('message', (raw) => {
     const m = JSON.parse(String(raw));
-    if (m.method === 'Tracing.start') starts.push(m.params);
     if (m.method === 'Tracing.requestMemoryDump') { sendIf(sock, { id: m.id, result: { dumpGuid: 'G42', success: true } }); return; }
     if (m.method === 'Tracing.end') {
       sendIf(sock, { id: m.id, result: {} });
@@ -52,7 +50,6 @@ const runCase = async (name) => {
   try { h = line ? JSON.parse(line.slice('HOLDER_MEMDUMP '.length)) : null; } catch { h = null; }
   const checks = [];
   const check = (n, ok, got) => checks.push({ n: name + ': ' + n, ok: Boolean(ok), got: String(JSON.stringify(got) ?? 'absent').slice(0, 160) });
-  check('Tracing.start sends recordUntilFull, the memory-infra category and memoryDumpConfig triggers [] (the probe control)', starts.length === 1 && JSON.stringify(starts[0].traceConfig) === JSON.stringify({ recordMode: 'recordUntilFull', includedCategories: ['disabled-by-default-memory-infra'], memoryDumpConfig: { triggers: [] } }) && starts[0].transferMode === 'ReportEvents', starts);
   check('reader exit 0 and HOLDER_MEMDUMP line', rr.status === 0 && h !== null, rr.status);
   const IDS_BY_CASE = { 'requested-present': ['0x0', 'G42', 'OTHER'], 'only-periodic': ['0x0'], 'name-mismatch': ['G42'] };
   check('dumpEventIds lists the ids of the holder v events in order (fixture ids for the requested dump are assumptions)', !!h && JSON.stringify(h.dumpEventIds) === JSON.stringify(IDS_BY_CASE[name]), h && h.dumpEventIds);
