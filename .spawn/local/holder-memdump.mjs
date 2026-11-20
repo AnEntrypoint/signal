@@ -5,8 +5,15 @@ const EXTRA_CATEGORIES = (process.env.HOLDER_EXTRA_CATEGORIES || '').split(',').
 const HOLDER = Number(holderPid);
 const TRANSFER = process.env.HOLDER_TRANSFER === 'events' ? 'ReportEvents' : 'ReturnAsStream';
 const READ_WAIT_MS = Number(process.env.HOLDER_READ_WAIT_MS || 30000);
-const out = { pid: HOLDER, mode: null, error: null, dumpGuid: null, dumpSuccess: false, requestedAtMs: null, completedAtMs: null, eventsSeen: 0, requestedEvents: 0, requestedShapes: {}, requestedEndArgKeys: null, dumpNames: {}, dumpEventIds: [], periodicSamples: 0, periodicProcessTotalsKeys: null, privateFootprintBytes: null, peakResidentSetBytes: null, endReplyAtMs: null, tracingCompleteAtMs: null, dumpReplyKeys: null, dataLossOccurred: null, transferMode: TRANSFER, streamHandle: null, streamEvents: null, streamBytes: null, bufferUsageSamples: 0, bufferUsageSeries: [], lastBufferUsage: null, matchedDump: false, residentSetBytes: null, partitionAlloc: null, topAllocators: [] };
-const finish = () => { if (process.env.HOLDER_EVENTS_OUT) writeFileSync(process.env.HOLDER_EVENTS_OUT, JSON.stringify(events)); console.log('HOLDER_MEMDUMP ' + JSON.stringify(out)); process.exit(0); };
+const out = { pid: HOLDER, mode: null, error: null, dumpGuid: null, dumpSuccess: false, requestedAtMs: null, completedAtMs: null, eventsSeen: 0, requestedEvents: 0, requestedShapes: {}, requestedEndArgKeys: null, dumpNames: {}, dumpEventIds: [], periodicSamples: 0, periodicProcessTotalsKeys: null, privateFootprintBytes: null, peakResidentSetBytes: null, endReplyAtMs: null, tracingCompleteAtMs: null, dumpReplyKeys: null, dataLossOccurred: null, transferMode: TRANSFER, streamHandle: null, streamEvents: null, streamBytes: null, holderFinishEvents: null, reason: null, bufferUsageSamples: 0, bufferUsageSeries: [], lastBufferUsage: null, matchedDump: false, residentSetBytes: null, partitionAlloc: null, topAllocators: [] };
+const reasonOf = () => {
+  if (out.mode !== 'dump' || out.dumpSuccess) return null;
+  if (out.completedAtMs === null) return 'dump-reply-missing';
+  if (out.tracingCompleteAtMs === null) return 'trace-stop-never-completed';
+  if (out.holderFinishEvents === 0) return 'holder-finish-absent';
+  return 'dump-reply-false';
+};
+const finish = () => { out.holderFinishEvents = events.filter((e) => e.pid === HOLDER && e.name === 'MemoryDumpManager::FinishAsyncProcessDump').length; out.reason = reasonOf(); if (process.env.HOLDER_EVENTS_OUT) writeFileSync(process.env.HOLDER_EVENTS_OUT, JSON.stringify(events)); console.log('HOLDER_MEMDUMP ' + JSON.stringify(out)); process.exit(0); };
 const GUARD_MS = Number(process.env.HOLDER_GUARD_MS || 40000);
 const END_WAIT_MS = Number(process.env.HOLDER_END_WAIT_MS || 20000);
 const onGuard = () => { out.error = 'timeout'; finish(); };
