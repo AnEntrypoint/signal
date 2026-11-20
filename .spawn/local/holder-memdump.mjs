@@ -1,11 +1,12 @@
 const [port, holderPid] = process.argv.slice(2);
 const HOLDER = Number(holderPid);
-const out = { pid: HOLDER, error: null, dumpGuid: null, dumpSuccess: false, requestedAtMs: null, completedAtMs: null, eventsSeen: 0, requestedEvents: 0, dumpNames: {}, endReplyAtMs: null, tracingCompleteAtMs: null, bufferUsageSamples: 0, bufferUsageSeries: [], lastBufferUsage: null, matchedDump: false, residentSetBytes: null, partitionAlloc: null, topAllocators: [] };
+const out = { pid: HOLDER, error: null, dumpGuid: null, dumpSuccess: false, requestedAtMs: null, completedAtMs: null, eventsSeen: 0, requestedEvents: 0, dumpNames: {}, dumpEventIds: [], endReplyAtMs: null, tracingCompleteAtMs: null, bufferUsageSamples: 0, bufferUsageSeries: [], lastBufferUsage: null, matchedDump: false, residentSetBytes: null, partitionAlloc: null, topAllocators: [] };
 const finish = () => { console.log('HOLDER_MEMDUMP ' + JSON.stringify(out)); process.exit(0); };
 const guard = setTimeout(() => { out.error = 'timeout'; finish(); }, 40000);
 const sizeOf = (attrs, key) => (attrs && attrs[key] && attrs[key].units === 'bytes' ? parseInt(attrs[key].value, 16) : null);
 const summarize = (events) => {
   const dumps = events.filter((e) => e.ph === 'v' && e.pid === HOLDER && e.args && e.args.dumps);
+  out.dumpEventIds = [...new Set(dumps.map((e) => String(e.id)))].slice(0, 10);
   out.dumpNames = dumps.reduce((acc, e) => ({ ...acc, [e.name]: (acc[e.name] || 0) + 1 }), {});
   const requested = dumps.filter((e) => e.name === 'explicitly_triggered' && e.id === out.dumpGuid);
   out.requestedEvents = requested.length;

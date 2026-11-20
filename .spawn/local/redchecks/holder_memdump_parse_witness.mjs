@@ -51,6 +51,8 @@ const runCase = async (name) => {
   const checks = [];
   const check = (n, ok, got) => checks.push({ n: name + ': ' + n, ok: Boolean(ok), got: String(JSON.stringify(got) ?? 'absent').slice(0, 160) });
   check('reader exit 0 and HOLDER_MEMDUMP line', rr.status === 0 && h !== null, rr.status);
+  const IDS_BY_CASE = { 'requested-present': ['0x0', 'G42', 'OTHER'], 'only-periodic': ['0x0'], 'name-mismatch': ['G42'] };
+  check('dumpEventIds lists the ids of the holder v events in order (fixture ids for the requested dump are assumptions)', !!h && JSON.stringify(h.dumpEventIds) === JSON.stringify(IDS_BY_CASE[name]), h && h.dumpEventIds);
   check('error absent (the reply and tracingComplete arrived)', !!h && h.error === null, h && h.error);
   if (name === 'requested-present') {
     check('requestedEvents 1: only the explicitly_triggered event with the requested guid', !!h && h.requestedEvents === 1, h && h.requestedEvents);

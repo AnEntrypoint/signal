@@ -4,6 +4,7 @@ const [readerPath, outDir] = process.argv.slice(2);
 const src = fs.readFileSync(readerPath, 'utf8');
 const SEL = "e.name === 'explicitly_triggered' && e.id === out.dumpGuid";
 const muts = {
+  'drop-event-ids': ['  out.dumpEventIds = [...new Set(dumps.map((e) => String(e.id)))].slice(0, 10);', ''],
   'fallback-to-any': ['const pick = requested.length ? requested[requested.length - 1] : undefined;', 'const pick = requested.length ? requested[requested.length - 1] : dumps[dumps.length - 1];'],
   'id-only': [SEL, 'e.id === out.dumpGuid'],
   'name-only': [SEL, "e.name === 'explicitly_triggered'"],
