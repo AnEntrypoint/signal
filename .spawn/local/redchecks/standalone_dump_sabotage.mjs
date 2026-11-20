@@ -15,6 +15,8 @@ const muts = {
   'drop-names': [["  out.dumpNames = events.filter((e) => e.ph === 'v' && e.args && e.args.dumps).reduce((acc, e) => ({ ...acc, [e.name]: (acc[e.name] || 0) + 1 }), {});", '']],
   'drop-control-config': [["  if (TRIGGERS === 'none') traceConfig.memoryDumpConfig = { triggers: [] };", '']],
   'always-none': [["  const TRIGGERS = process.env.STANDALONE_TRIGGERS === 'none' ? 'none' : 'default';", "  const TRIGGERS = 'none';"]],
+  'drop-shapes': [["  out.eventShapes = events.reduce((acc, e) => { const k = [e.ph, e.cat, e.name].join('|'); return { ...acc, [k]: (acc[k] || 0) + 1 }; }, {});", '']],
+  'drop-guid-hits': [["  out.guidHitCount = guidHits.length;", '']],
   'drop-event-ids': [["  out.dumpEventIds = [...new Set(events.filter((e) => e.ph === 'v' && e.args && e.args.dumps).map((e) => String(e.id)))].slice(0, 10);", '']],
 };
 for (const [name, pairs] of Object.entries(muts)) {

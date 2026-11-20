@@ -84,6 +84,8 @@ const runScenario = async (name) => {
   const sentConfig = starts.length ? starts[0].traceConfig : null;
   check('triggers recorded as the control setting', !!h && h.triggers === wantTriggers, h && h.triggers);
   check('Tracing.start sends memoryDumpConfig triggers [] only in the none control', !!sentConfig && (wantTriggers === 'none' ? JSON.stringify(sentConfig.memoryDumpConfig) === JSON.stringify({ triggers: [] }) : sentConfig.memoryDumpConfig === undefined), sentConfig);
+  check('eventShapes counts the requested events and the two periodic decoys', !!h && (h.eventShapes['v||explicitly_triggered'] || 0) === cfg.pids.length && (h.eventShapes['v||periodic_interval'] || 0) === 2, h && h.eventShapes);
+  check('guid hits: events whose id is the requested guid 0xA', !!h && h.guidHitCount === cfg.pids.length, h && h.guidHitCount);
   check('scope names the refusal', !!h && typeof h.scope === 'string' && h.scope.startsWith(cfg.scope), h && h.scope);
   check('spin workers recorded as the spin count (null when not spinning)', !!h && h.spinWorkers === (cfg.spin || null), h && h.spinWorkers);
   if (cfg.pids.length) {
