@@ -5,7 +5,7 @@ const MB = 1048576;
 const LOAD_FRACTION = 0.9;
 const SPIN = Number(process.argv[4] || 0);
 const GUARD_MS = Number(process.argv[5] || 150) * 1000;
-const out = { port: Number(port), loadMb: LOAD_MB, loadAllocatedMb: null, targetId: null, sessionId: null, pageClosed: false, dumpGuid: null, dumpSuccess: false, requestedAtMs: null, requestReplyAtMs: null, endSentAtMs: null, endReplyAtMs: null, tracingCompleteAtMs: null, eventsSeen: 0, dumpedPids: [], loadPid: null, loadPidArrayBufferBytes: null, dumpEventIds: [], allocatorNames: [], spinWorkers: null, sampleDumpEvent: null, pageUrl: null, readyState: null, triggers: null, dumpNames: {}, eventShapes: {}, guidHitCount: null, guidHitSamples: [], processEndCount: null, processEndArgKeys: null, processEndSample: null, memInfraShapes: null, periodicPids: [], requestedPids: [], scope: null, error: null };
+const out = { port: Number(port), loadMb: LOAD_MB, loadAllocatedMb: null, targetId: null, sessionId: null, pageClosed: false, dumpGuid: null, dumpSuccess: false, requestedAtMs: null, requestReplyAtMs: null, endSentAtMs: null, endReplyAtMs: null, tracingCompleteAtMs: null, eventsSeen: 0, dumpedPids: [], loadPid: null, loadPidArrayBufferBytes: null, dumpEventIds: [], allocatorNames: [], spinWorkers: null, sampleDumpEvent: null, pageUrl: null, readyState: null, triggers: null, dumpNames: {}, eventShapes: {}, guidHitCount: null, guidHitSamples: [], processEndCount: null, processEndArgKeys: null, processEndSample: null, memInfraShapes: null, periodicProcessTotalsKeys: null, periodicPids: [], requestedPids: [], scope: null, error: null };
 const finish = () => { console.log('STANDALONE_DUMP ' + JSON.stringify(out)); process.exit(0); };
 const guard = setTimeout(() => { out.error = 'timeout'; finish(); }, GUARD_MS);
 const sizeOf = (attrs, key) => (attrs && attrs[key] && attrs[key].units === 'bytes' ? parseInt(attrs[key].value, 16) : null);
@@ -38,6 +38,9 @@ const summarize = (events) => {
   out.processEndArgKeys = processEnd.length ? Object.keys(processEnd[0].args || {}) : null;
   out.processEndSample = processEnd.length ? JSON.stringify(processEnd[0]).slice(0, 1500) : null;
   if (process.env.STANDALONE_SAMPLE_OUT && processEnd.length) writeFileSync(process.env.STANDALONE_SAMPLE_OUT, JSON.stringify(processEnd[0], null, 1));
+  const periodic = events.filter((e) => e.ph === 'v' && e.name === 'periodic_interval' && e.args && e.args.dumps);
+  out.periodicProcessTotalsKeys = periodic.length ? Object.keys(periodic[0].args.dumps.process_totals || {}) : null;
+  if (process.env.STANDALONE_PERIODIC_OUT && periodic.length) writeFileSync(process.env.STANDALONE_PERIODIC_OUT, JSON.stringify(periodic[0], null, 1));
   const memInfra = events.filter((e) => e.cat === 'disabled-by-default-memory-infra' && e.name !== 'periodic_interval');
   out.memInfraShapes = memInfra.reduce((acc, e) => { const k = [e.ph, e.name, Object.keys(e.args || {}).sort().join(',')].join('|'); return { ...acc, [k]: (acc[k] || 0) + 1 }; }, {});
   if (process.env.STANDALONE_MEMINFRA_OUT) {

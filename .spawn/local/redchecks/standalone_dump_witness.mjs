@@ -68,7 +68,7 @@ const runScenario = async (name) => {
   }));
   await new Promise((r) => server.listen(0, '127.0.0.1', r));
   const port = server.address().port;
-  const rr = await new Promise((resolve) => { const c = spawn('node', [scriptPath, String(port), String(LOAD), String(cfg.spin || 0), '60'], { env: { ...process.env, STANDALONE_TRIGGERS: cfg.triggers || '', STANDALONE_URL: cfg.url || '', STANDALONE_SAMPLE_OUT: '/tmp/verify/witness-e-sample-' + name + '.json', STANDALONE_MEMINFRA_OUT: '/tmp/verify/witness-meminfra-' + name + '.json' } }); let o = ''; c.stdout.on('data', (d) => { o += d; }); c.on('exit', (code) => resolve({ status: code, stdout: o })); });
+  const rr = await new Promise((resolve) => { const c = spawn('node', [scriptPath, String(port), String(LOAD), String(cfg.spin || 0), '60'], { env: { ...process.env, STANDALONE_TRIGGERS: cfg.triggers || '', STANDALONE_URL: cfg.url || '', STANDALONE_SAMPLE_OUT: '/tmp/verify/witness-e-sample-' + name + '.json', STANDALONE_MEMINFRA_OUT: '/tmp/verify/witness-meminfra-' + name + '.json', STANDALONE_PERIODIC_OUT: '/tmp/verify/witness-periodic-' + name + '.json' } }); let o = ''; c.stdout.on('data', (d) => { o += d; }); c.on('exit', (code) => resolve({ status: code, stdout: o })); });
   server.close();
   server.closeAllConnections?.();
   wss.close();
@@ -102,6 +102,8 @@ const runScenario = async (name) => {
   check('memInfraShapes has no periodic_interval key (periodic events are excluded)', !!h && !!h.memInfraShapes && Object.keys(h.memInfraShapes).every((k) => !k.startsWith('v|periodic_interval')), h && h.memInfraShapes);
   check('memInfraShapes counts one ProcessMemoryDump e per requested pid', !!h && !!h.memInfraShapes && (h.memInfraShapes['e|ProcessMemoryDump|dump_guid,dumps'] || 0) === cfg.pids.length, h && h.memInfraShapes);
   check('the first-per-shape sample file holds the GlobalMemoryDump e with its args', fs.existsSync('/tmp/verify/witness-meminfra-' + name + '.json') && JSON.parse(fs.readFileSync('/tmp/verify/witness-meminfra-' + name + '.json', 'utf8'))['e|GlobalMemoryDump'].args.dump_type === 'explicitly_triggered', name);
+  check('periodicProcessTotalsKeys lists the fixture process_totals keys (fixture shape, ASSUMED)', !!h && JSON.stringify(h.periodicProcessTotalsKeys) === JSON.stringify(['attrs']), h && h.periodicProcessTotalsKeys);
+  check('the first periodic event is saved in full (fixture shape, ASSUMED)', fs.existsSync('/tmp/verify/witness-periodic-' + name + '.json') && JSON.parse(fs.readFileSync('/tmp/verify/witness-periodic-' + name + '.json', 'utf8')).ph === 'v', name);
   check('scope names the refusal', !!h && typeof h.scope === 'string' && h.scope.startsWith(cfg.scope), h && h.scope);
   check('spin workers recorded as the spin count (null when not spinning)', !!h && h.spinWorkers === (cfg.spin || null), h && h.spinWorkers);
   if (cfg.pids.length) {
@@ -116,7 +118,7 @@ const runScenario = async (name) => {
   return checks;
 };
 const all = [];
-for (const n of Object.keys(SCENARIOS)) { fs.rmSync('/tmp/verify/witness-meminfra-' + n + '.json', { force: true }); fs.rmSync('/tmp/verify/witness-e-sample-' + n + '.json', { force: true }); }
+for (const n of Object.keys(SCENARIOS)) { fs.rmSync('/tmp/verify/witness-meminfra-' + n + '.json', { force: true }); fs.rmSync('/tmp/verify/witness-e-sample-' + n + '.json', { force: true }); fs.rmSync('/tmp/verify/witness-periodic-' + n + '.json', { force: true }); }
 for (const name of Object.keys(SCENARIOS)) all.push(...await runScenario(name));
 for (const c of all) console.log((c.ok ? 'PASS ' : 'FAIL ') + c.n + ' got=' + c.got);
 const red = all.filter((c) => !c.ok).length;

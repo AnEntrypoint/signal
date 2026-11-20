@@ -20,6 +20,7 @@ const muts = {
   'drop-arg-keys': [["const k = [e.ph, e.name, Object.keys(e.args || {}).sort().join(',')].join('|');", "const k = [e.ph, e.name].join('|');"]],
   'drop-meminfra-file': [["    writeFileSync(process.env.STANDALONE_MEMINFRA_OUT, JSON.stringify(firstByShape, null, 1));", "    void firstByShape;"]],
   'drop-periodic-filter': [["e.cat === 'disabled-by-default-memory-infra' && e.name !== 'periodic_interval'", "e.cat === 'disabled-by-default-memory-infra'"]],
+  'drop-periodic-out': [["  if (process.env.STANDALONE_PERIODIC_OUT && periodic.length) writeFileSync(process.env.STANDALONE_PERIODIC_OUT, JSON.stringify(periodic[0], null, 1));", "  void periodic;"]],
   'drop-url': [["process.env.STANDALONE_URL || 'about:blank'", "'about:blank'"]],
   'drop-end-sample': [["  out.processEndSample = processEnd.length ? JSON.stringify(processEnd[0]).slice(0, 1500) : null;", '']],
   'drop-event-ids': [["  out.dumpEventIds = [...new Set(events.filter((e) => e.ph === 'v' && e.args && e.args.dumps).map((e) => String(e.id)))].slice(0, 10);", '']],
