@@ -3,7 +3,9 @@ const [port, holderPid] = process.argv.slice(2);
 const events = [];
 const EXTRA_CATEGORIES = (process.env.HOLDER_EXTRA_CATEGORIES || '').split(',').filter(Boolean);
 const HOLDER = Number(holderPid);
-const out = { pid: HOLDER, mode: null, error: null, dumpGuid: null, dumpSuccess: false, requestedAtMs: null, completedAtMs: null, eventsSeen: 0, requestedEvents: 0, requestedShapes: {}, requestedEndArgKeys: null, dumpNames: {}, dumpEventIds: [], periodicSamples: 0, periodicProcessTotalsKeys: null, privateFootprintBytes: null, peakResidentSetBytes: null, endReplyAtMs: null, tracingCompleteAtMs: null, dumpReplyKeys: null, dataLossOccurred: null, bufferUsageSamples: 0, bufferUsageSeries: [], lastBufferUsage: null, matchedDump: false, residentSetBytes: null, partitionAlloc: null, topAllocators: [] };
+const TRANSFER = process.env.HOLDER_TRANSFER === 'events' ? 'ReportEvents' : 'ReturnAsStream';
+const READ_WAIT_MS = Number(process.env.HOLDER_READ_WAIT_MS || 30000);
+const out = { pid: HOLDER, mode: null, error: null, dumpGuid: null, dumpSuccess: false, requestedAtMs: null, completedAtMs: null, eventsSeen: 0, requestedEvents: 0, requestedShapes: {}, requestedEndArgKeys: null, dumpNames: {}, dumpEventIds: [], periodicSamples: 0, periodicProcessTotalsKeys: null, privateFootprintBytes: null, peakResidentSetBytes: null, endReplyAtMs: null, tracingCompleteAtMs: null, dumpReplyKeys: null, dataLossOccurred: null, transferMode: TRANSFER, streamHandle: null, streamEvents: null, streamBytes: null, bufferUsageSamples: 0, bufferUsageSeries: [], lastBufferUsage: null, matchedDump: false, residentSetBytes: null, partitionAlloc: null, topAllocators: [] };
 const finish = () => { if (process.env.HOLDER_EVENTS_OUT) writeFileSync(process.env.HOLDER_EVENTS_OUT, JSON.stringify(events)); console.log('HOLDER_MEMDUMP ' + JSON.stringify(out)); process.exit(0); };
 const GUARD_MS = Number(process.env.HOLDER_GUARD_MS || 40000);
 const END_WAIT_MS = Number(process.env.HOLDER_END_WAIT_MS || 20000);
@@ -50,14 +52,14 @@ const run = async () => {
     const m = JSON.parse(String(ev.data));
     if (m.method === 'Tracing.bufferUsage') { const bu = m.params || {}; out.bufferUsageSamples += 1; const sample = { atMs: Date.now(), percentFull: bu.percentFull ?? null, eventCount: bu.eventCount ?? null }; out.bufferUsageSeries.push(sample); out.lastBufferUsage = sample; return; }
     if (m.method === 'Tracing.dataCollected') { events.push(...((m.params && m.params.value) || [])); return; }
-    if (m.method === 'Tracing.tracingComplete') { out.tracingCompleteAtMs = Date.now(); out.dataLossOccurred = (m.params && m.params.dataLossOccurred) ?? null; complete(); return; }
+    if (m.method === 'Tracing.tracingComplete') { out.tracingCompleteAtMs = Date.now(); out.dataLossOccurred = (m.params && m.params.dataLossOccurred) ?? null; out.streamHandle = (m.params && m.params.stream) || null; complete(); return; }
     const w = waiting.get(m.id);
     if (!w) return;
     waiting.delete(m.id);
     if (m.error) w.reject(new Error(m.error.message)); else w.resolve(m.result);
   };
   const send = (method, params) => new Promise((resolve, reject) => { const id = ++seq; waiting.set(id, { resolve, reject }); sock.send(JSON.stringify({ id, method, params: params || {} })); });
-  await send('Tracing.start', { traceConfig: { recordMode: 'recordUntilFull', includedCategories: ['-*', 'disabled-by-default-memory-infra', ...EXTRA_CATEGORIES] }, transferMode: 'ReportEvents', bufferUsageReportingInterval: 1000 });
+  await send('Tracing.start', { traceConfig: { recordMode: 'recordUntilFull', includedCategories: ['-*', 'disabled-by-default-memory-infra', ...EXTRA_CATEGORIES] }, transferMode: TRANSFER, ...(TRANSFER === 'ReturnAsStream' ? { streamFormat: 'json', streamCompression: 'none' } : {}), bufferUsageReportingInterval: 1000 });
   const NO_DUMP_HOLD_MS = 3000;
   out.mode = process.env.HOLDER_MODE === 'no-dump' ? 'no-dump' : 'dump';
   if (out.mode === 'no-dump') await new Promise((res) => setTimeout(res, NO_DUMP_HOLD_MS));
@@ -70,6 +72,21 @@ const run = async () => {
   rearm(END_WAIT_MS);
   send('Tracing.end').then(() => { out.endReplyAtMs = Date.now(); }, () => {});
   await completed;
+  if (out.streamHandle) {
+    rearm(READ_WAIT_MS);
+    const parts = [];
+    for (;;) {
+      const chunk = await send('IO.read', { handle: out.streamHandle, size: 1 << 20 });
+      parts.push(chunk.base64Encoded ? Buffer.from(chunk.data, 'base64').toString('utf8') : chunk.data);
+      if (chunk.eof) break;
+    }
+    await send('IO.close', { handle: out.streamHandle });
+    const text = parts.join('');
+    const trace = JSON.parse(text);
+    out.streamBytes = text.length;
+    out.streamEvents = (trace.traceEvents || []).length;
+    for (const e of trace.traceEvents || []) events.push(e);
+  }
   out.eventsSeen = events.length;
   summarize(events);
   sock.close();
