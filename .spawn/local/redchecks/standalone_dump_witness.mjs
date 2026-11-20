@@ -77,6 +77,7 @@ const runScenario = async (name) => {
   check('spin workers recorded as the spin count (null when not spinning)', !!h && h.spinWorkers === (cfg.spin || null), h && h.spinWorkers);
   if (cfg.pids.length) {
     check('load pid is the page renderer (array_buffer 310 MB)', !!h && h.loadPid === PAGE_PID && h.loadPidArrayBufferBytes === 310 * MB, h && [h.loadPid, h.loadPidArrayBufferBytes]);
+    check('a sample dump event is recorded as JSON', !!h && typeof h.sampleDumpEvent === 'string' && h.sampleDumpEvent.includes('"ph":"v"'), h && h.sampleDumpEvent && h.sampleDumpEvent.slice(0, 60));
     check('dump event ids include the requested guid 0xA', !!h && (h.dumpEventIds || []).includes('0xA'), h && h.dumpEventIds);
     check('allocator names include the page array_buffer partition', !!h && (h.allocatorNames || []).includes('partition_alloc/partitions/array_buffer'), h && h.allocatorNames);
     check('holder dump lists 550 MB of partitions', !!h && (h.dumpedPids || []).some((p) => p.pid === HOLDER_PID && p.partitionTotalBytes === 550 * MB), h && h.dumpedPids);
