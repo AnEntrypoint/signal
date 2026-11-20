@@ -111,11 +111,16 @@ run() {
   for i in $(seq 1 60); do curl -sf "http://127.0.0.1:$CHROME/json/version" > "$RUN/version.json" && break; sleep 0.5; done
   WS=$(node -e "console.log(JSON.parse(require('fs').readFileSync('$RUN/version.json','utf8')).webSocketDebuggerUrl)")
   PW0=$(pgrep -f playwriter-ws-server | tr '\n' ' ')
-  ID=$(playwriter session new --direct "$WS" 2>&1 | grep -o "Session [0-9]*" | awk '{print $2}')
+  for try in 1 2 3; do
+    SESS=$(playwriter session new --direct "$WS" 2>&1)
+    ID=$(echo "$SESS" | grep -o "Session [0-9]*" | awk '{print $2}')
+    [ -n "$ID" ] && break
+    sleep 3
+  done
   for p in $(pgrep -f playwriter-ws-server); do
     case " $PW0 " in *" $p "*) ;; *) reg relay "$p" ;; esac
   done
-  [ -z "$ID" ] && { echo "ABORT: no playwriter session"; return 1; }
+  [ -z "$ID" ] && { echo "ABORT: no playwriter session: $(echo "$SESS" | head -c 400)"; return 1; }
   sed -e "s#__OUT__#$RUN#g" -e "s#__PORT__#$PORT#g" "$HERE/browser-trace.js" > "$RUN/trace.js"
   PLAYWRITER_EXEC_TIMEOUT=400000 timeout 420 playwriter -s "$ID" -e "$(cat "$RUN/trace.js")" > "$RUN/trace.out" 2>&1 &
   T=$!
@@ -139,7 +144,8 @@ teardown
 PIDS=$(awk '$1!="relay"{print $2}' "$REG")
 bash "$HERE/proc-check.sh" after $PIDS
 CHK=$?
-rm -rf "$RUN"
+[ "$(printenv WITNESS_KEEP_RUN)" = 1 ] || rm -rf "$RUN"
+echo "run dir: $RUN"
 if [ "$RUNRC" -eq 0 ] && [ "$CHK" -eq 0 ]; then echo "WITNESS passed"; exit 0; fi
 echo "WITNESS failed run=$RUNRC check=$CHK"
 exit 1
