@@ -26,7 +26,7 @@ const run = async () => {
     if (t.type === 'browser') continue;
     const { sessionId } = await send('Target.attachToTarget', { targetId: t.targetId, flatten: true });
     const heap = await send('Runtime.getHeapUsage', {}, sessionId);
-    out.perTargetHeap.push({ targetId: t.targetId, type: t.type, url: t.url, usedSize: heap.usedSize, totalSize: heap.totalSize });
+    out.perTargetHeap.push({ targetId: t.targetId, type: t.type, url: t.url, usedSize: heap.usedSize, totalSize: heap.totalSize, embedderHeapUsedSize: heap.embedderHeapUsedSize, backingStorageSize: heap.backingStorageSize });
     if (t.type === 'worker' || t.type === 'shared_worker' || t.type === 'service_worker') out.workers.push({ targetId: t.targetId, type: t.type, url: t.url });
     if (t.type === 'page') walk((await send('Page.getFrameTree', {}, sessionId)).frameTree);
   }

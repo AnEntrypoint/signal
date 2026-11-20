@@ -29,7 +29,7 @@ wss.on('connection', (sock) => sock.on('message', (raw) => {
   let result = {};
   if (m.method === 'Target.getTargets') result = { targetInfos: TARGETS };
   else if (m.method === 'Target.attachToTarget') result = { sessionId: 'S' + m.params.targetId };
-  else if (m.method === 'Runtime.getHeapUsage') { const id = m.sessionId.slice(1); result = { usedSize: HEAP[id], totalSize: HEAP[id] * 2 }; }
+  else if (m.method === 'Runtime.getHeapUsage') { const id = m.sessionId.slice(1); result = { usedSize: HEAP[id], totalSize: HEAP[id] * 2, embedderHeapUsedSize: Math.floor(HEAP[id] / 2), backingStorageSize: Math.floor(HEAP[id] / 4) }; }
   else if (m.method === 'Page.getFrameTree') result = { frameTree: { frame: { url: PAGE }, childFrames: [{ frame: { url: SESSION }, childFrames: [] }] } };
   sock.send(JSON.stringify({ id: m.id, result }));
 }));
@@ -54,9 +54,9 @@ const expect = {
   frameUrls: [PAGE, SESSION],
   workers: [{ targetId: 'W1', type: 'worker', url: WORKER }],
   perTargetHeap: [
-    { targetId: 'P1', type: 'page', url: PAGE, usedSize: 1111, totalSize: 2222 },
-    { targetId: 'F1', type: 'iframe', url: SESSION, usedSize: 2222, totalSize: 4444 },
-    { targetId: 'W1', type: 'worker', url: WORKER, usedSize: 3333, totalSize: 6666 },
+    { targetId: 'P1', type: 'page', url: PAGE, usedSize: 1111, totalSize: 2222, embedderHeapUsedSize: 555, backingStorageSize: 277 },
+    { targetId: 'F1', type: 'iframe', url: SESSION, usedSize: 2222, totalSize: 4444, embedderHeapUsedSize: 1111, backingStorageSize: 555 },
+    { targetId: 'W1', type: 'worker', url: WORKER, usedSize: 3333, totalSize: 6666, embedderHeapUsedSize: 1666, backingStorageSize: 833 },
   ],
 };
 const checks = [];
