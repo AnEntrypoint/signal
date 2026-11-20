@@ -13,6 +13,8 @@ const muts = {
   'drop-sample': [['  out.sampleDumpEvent = sampleEvent ? JSON.stringify(sampleEvent).slice(0, 1500) : null;', '  out.sampleDumpEvent = null;']],
   'fallback-any': [["    if (!(e.name === 'explicitly_triggered' && e.id === out.dumpGuid)) continue;", '']],
   'drop-names': [["  out.dumpNames = events.filter((e) => e.ph === 'v' && e.args && e.args.dumps).reduce((acc, e) => ({ ...acc, [e.name]: (acc[e.name] || 0) + 1 }), {});", '']],
+  'drop-control-config': [["  if (TRIGGERS === 'none') traceConfig.memoryDumpConfig = { triggers: [] };", '']],
+  'always-none': [["  const TRIGGERS = process.env.STANDALONE_TRIGGERS === 'none' ? 'none' : 'default';", "  const TRIGGERS = 'none';"]],
   'drop-event-ids': [["  out.dumpEventIds = [...new Set(events.filter((e) => e.ph === 'v' && e.args && e.args.dumps).map((e) => String(e.id)))].slice(0, 10);", '']],
 };
 for (const [name, pairs] of Object.entries(muts)) {
