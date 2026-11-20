@@ -30,6 +30,7 @@ const wss = new WebSocketServer({ server });
 const sendIf = (sock, msg) => { if (sock.readyState === 1) sock.send(JSON.stringify(msg)); };
 wss.on('connection', (sock) => sock.on('message', (raw) => {
   const m = JSON.parse(String(raw));
+  if (m.method === 'Tracing.start') { sendIf(sock, { id: m.id, result: {} }); const iv = setInterval(() => sendIf(sock, { method: 'Tracing.bufferUsage', params: { percentFull: 0.1, eventCount: 5000 } }), 300); setTimeout(() => clearInterval(iv), 30000); return; }
   if (m.method === 'Tracing.requestMemoryDump') { setTimeout(() => sendIf(sock, { id: m.id, result: { success: false, dumpGuid: '0x5' } }), REPLY_DELAY_MS); return; }
   if (m.method === 'Tracing.end') {
     if (MODE !== 'blocked-end') sendIf(sock, { id: m.id, result: {} });
@@ -53,6 +54,7 @@ check('refusal recorded: dumpGuid 0x5 and dumpSuccess false (not hidden)', !!h &
 check('eventsSeen 2 (the holder and the other pid events are both collected)', !!h && h.eventsSeen === 2, h && h.eventsSeen);
 check('matchedDump true: the holder process dump for the requested guid is present despite the refusal', !!h && h.matchedDump === true, h && h.matchedDump);
 check('residentSetBytes equals the holder process total (5.8 GB)', !!h && h.residentSetBytes === 5800000000, h && h.residentSetBytes);
+check('buffer usage samples arrived during the wait (the trace kept filling)', !!h && h.bufferUsageSamples >= 1 && !!h.lastBufferUsage && h.lastBufferUsage.eventCount === 5000, h && [h.bufferUsageSamples, h.lastBufferUsage]);
 check('tracingCompleteAtMs recorded (the flush finished before the guard)', !!h && typeof h.tracingCompleteAtMs === 'number', h && h.tracingCompleteAtMs);
 const pa = h && h.partitionAlloc;
 check('partitionAlloc total is the three partitions (550 MB)', !!pa && pa.totalBytes === 550 * MB, pa && pa.totalBytes);
