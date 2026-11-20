@@ -17,6 +17,8 @@ const muts = {
   'always-none': [["  const TRIGGERS = process.env.STANDALONE_TRIGGERS === 'none' ? 'none' : 'default';", "  const TRIGGERS = 'none';"]],
   'drop-shapes': [["  out.eventShapes = events.reduce((acc, e) => { const k = [e.ph, e.cat, e.name].join('|'); return { ...acc, [k]: (acc[k] || 0) + 1 }; }, {});", '']],
   'drop-guid-hits': [["  out.guidHitCount = guidHits.length;", '']],
+  'drop-url': [["process.env.STANDALONE_URL || 'about:blank'", "'about:blank'"]],
+  'drop-end-sample': [["  out.processEndSample = processEnd.length ? JSON.stringify(processEnd[0]).slice(0, 1500) : null;", '']],
   'drop-event-ids': [["  out.dumpEventIds = [...new Set(events.filter((e) => e.ph === 'v' && e.args && e.args.dumps).map((e) => String(e.id)))].slice(0, 10);", '']],
 };
 for (const [name, pairs] of Object.entries(muts)) {

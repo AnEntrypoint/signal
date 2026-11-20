@@ -1,10 +1,11 @@
+import { writeFileSync } from 'node:fs';
 const [port, loadArg] = process.argv.slice(2);
 const LOAD_MB = Number(loadArg || 300);
 const MB = 1048576;
 const LOAD_FRACTION = 0.9;
 const SPIN = Number(process.argv[4] || 0);
 const GUARD_MS = Number(process.argv[5] || 150) * 1000;
-const out = { port: Number(port), loadMb: LOAD_MB, loadAllocatedMb: null, targetId: null, sessionId: null, pageClosed: false, dumpGuid: null, dumpSuccess: false, requestedAtMs: null, requestReplyAtMs: null, endSentAtMs: null, endReplyAtMs: null, tracingCompleteAtMs: null, eventsSeen: 0, dumpedPids: [], loadPid: null, loadPidArrayBufferBytes: null, dumpEventIds: [], allocatorNames: [], spinWorkers: null, sampleDumpEvent: null, triggers: null, dumpNames: {}, eventShapes: {}, guidHitCount: null, guidHitSamples: [], periodicPids: [], requestedPids: [], scope: null, error: null };
+const out = { port: Number(port), loadMb: LOAD_MB, loadAllocatedMb: null, targetId: null, sessionId: null, pageClosed: false, dumpGuid: null, dumpSuccess: false, requestedAtMs: null, requestReplyAtMs: null, endSentAtMs: null, endReplyAtMs: null, tracingCompleteAtMs: null, eventsSeen: 0, dumpedPids: [], loadPid: null, loadPidArrayBufferBytes: null, dumpEventIds: [], allocatorNames: [], spinWorkers: null, sampleDumpEvent: null, pageUrl: null, readyState: null, triggers: null, dumpNames: {}, eventShapes: {}, guidHitCount: null, guidHitSamples: [], processEndCount: null, processEndArgKeys: null, processEndSample: null, periodicPids: [], requestedPids: [], scope: null, error: null };
 const finish = () => { console.log('STANDALONE_DUMP ' + JSON.stringify(out)); process.exit(0); };
 const guard = setTimeout(() => { out.error = 'timeout'; finish(); }, GUARD_MS);
 const sizeOf = (attrs, key) => (attrs && attrs[key] && attrs[key].units === 'bytes' ? parseInt(attrs[key].value, 16) : null);
@@ -32,6 +33,11 @@ const summarize = (events) => {
   const guidHits = events.filter((e) => JSON.stringify(e).includes(guidNeedle));
   out.guidHitCount = guidHits.length;
   out.guidHitSamples = guidHits.slice(0, 3).map((e) => JSON.stringify(e).slice(0, 400));
+  const processEnd = events.filter((e) => e.ph === 'e' && e.name === 'ProcessMemoryDump');
+  out.processEndCount = processEnd.length;
+  out.processEndArgKeys = processEnd.length ? Object.keys(processEnd[0].args || {}) : null;
+  out.processEndSample = processEnd.length ? JSON.stringify(processEnd[0]).slice(0, 1500) : null;
+  if (process.env.STANDALONE_SAMPLE_OUT && processEnd.length) writeFileSync(process.env.STANDALONE_SAMPLE_OUT, JSON.stringify(processEnd[0], null, 1));
   out.allocatorNames = Object.keys(events.find((e) => e.ph === 'v' && e.args && e.args.dumps)?.args.dumps.allocators || {}).slice(0, 40);
   out.requestedPids = out.dumpedPids.map((p) => p.pid);
   const candidates = out.dumpedPids.filter((p) => p.arrayBufferBytes !== null && p.arrayBufferBytes >= LOAD_MB * MB * LOAD_FRACTION);
@@ -59,10 +65,18 @@ const run = async () => {
     if (m.error) w.reject(new Error(m.error.message)); else w.resolve(m.result);
   };
   const send = (method, params, sessionId) => new Promise((resolve, reject) => { const id = ++seq; waiting.set(id, { resolve, reject }); const msg = { id, method, params: params || {} }; if (sessionId) msg.sessionId = sessionId; sock.send(JSON.stringify(msg)); });
-  const created = await send('Target.createTarget', { url: 'about:blank' });
+  const created = await send('Target.createTarget', { url: process.env.STANDALONE_URL || 'about:blank' });
   out.targetId = created.targetId;
   const attached = await send('Target.attachToTarget', { targetId: out.targetId, flatten: true });
   out.sessionId = attached.sessionId;
+  if (process.env.STANDALONE_URL) {
+    out.pageUrl = process.env.STANDALONE_URL;
+    for (let i = 0; i < 80 && out.readyState !== 'complete'; i += 1) {
+      const st = await send('Runtime.evaluate', { expression: 'document.readyState', returnByValue: true }, out.sessionId);
+      out.readyState = st.result && st.result.value;
+      if (out.readyState !== 'complete') await new Promise((res) => setTimeout(res, 250));
+    }
+  }
   const loaded = await send('Runtime.evaluate', { expression: '(() => { window.__load = []; for (let i = 0; i < ' + LOAD_MB + '; i++) { const b = new Uint8Array(1048576); b.fill(7); window.__load.push(b); } return window.__load.length; })()', returnByValue: true }, out.sessionId);
   out.loadAllocatedMb = loaded.result && loaded.result.value;
   if (SPIN > 0) {

@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import http from 'node:http';
 import { spawn } from 'node:child_process';
 import { createRequire } from 'node:module';
@@ -15,6 +16,7 @@ const SCENARIOS = {
   'refused-none': { success: false, pids: [], scope: 'global' },
   'ok': { success: true, pids: [HOLDER_PID, PAGE_PID], scope: 'none' },
   'ok-no-triggers': { success: true, pids: [HOLDER_PID, PAGE_PID], scope: 'none', triggers: 'none' },
+  'page-url': { success: true, pids: [HOLDER_PID, PAGE_PID], scope: 'none', url: 'http://127.0.0.1:4173/' },
   'spin': { success: true, pids: [HOLDER_PID, PAGE_PID], scope: 'none', spin: 2 },
 };
 const alloc = (bytes) => ({ attrs: { size: { type: 'scalar', units: 'bytes', value: bytes.toString(16) } } });
@@ -29,9 +31,11 @@ const dumpFor = (pid) => {
   return { ph: 'v', pid, id: '0xA', name: 'explicitly_triggered', args: { dumps: { allocators, process_totals: { attrs: { resident_set_bytes: { type: 'scalar', units: 'bytes', value: (6144 * MB).toString(16) } } } } } };
 };
 const periodicFor = (pid) => ({ ph: 'v', pid, id: '0x0', name: 'periodic_interval', args: { dumps: { process_totals: { attrs: { resident_set_bytes: { type: 'scalar', units: 'bytes', value: (6144 * MB).toString(16) } } } } } });
+const pmdEndFor = (pid) => ({ ph: 'e', pid, id: '0x14c', cat: 'disabled-by-default-memory-infra', name: 'ProcessMemoryDump', args: { dump_guid: '0xA', dumps: { allocators: { 'partition_alloc/partitions/array_buffer': alloc(310 * MB) }, process_totals: { attrs: { resident_set_bytes: { type: 'scalar', units: 'bytes', value: (6144 * MB).toString(16) } } } } } });
 const runScenario = async (name) => {
   const cfg = SCENARIOS[name];
   const starts = [];
+  const targetUrls = [];
   const server = http.createServer((req, res) => {
     if (req.url !== '/json/version') { res.statusCode = 404; res.end(); return; }
     res.setHeader('content-type', 'application/json');
@@ -43,15 +47,17 @@ const runScenario = async (name) => {
     const m = JSON.parse(String(raw));
     const reply = (result) => sendIf(sock, { id: m.id, sessionId: m.sessionId, result });
     if (m.method === 'Tracing.start') starts.push(m.params);
+    if (m.method === 'Target.createTarget') targetUrls.push(m.params.url);
     if (m.method === 'Target.createTarget') { reply({ targetId: 'T1' }); return; }
     if (m.method === 'Target.attachToTarget') { reply({ sessionId: 'S1' }); return; }
     if (m.method === 'Target.closeTarget') { reply({ success: true }); return; }
+    if (m.method === 'Runtime.evaluate' && m.params.expression.includes('readyState')) { reply({ result: { type: 'string', value: 'complete' } }); return; }
     if (m.method === 'Runtime.evaluate') { reply({ result: { type: 'number', value: m.params.expression.includes('new Worker') ? 2 : LOAD } }); return; }
     if (m.method === 'Tracing.requestMemoryDump') { setTimeout(() => sendIf(sock, { id: m.id, result: { dumpGuid: '0xA', success: cfg.success } }), REPLY_DELAY_MS); return; }
     if (m.method === 'Tracing.end') {
       reply({});
       setTimeout(() => {
-        sendIf(sock, { method: 'Tracing.dataCollected', params: { value: [...cfg.pids.map((p) => dumpFor(p)), ...[4242, 5555].map((p) => periodicFor(p))] } });
+        sendIf(sock, { method: 'Tracing.dataCollected', params: { value: [...cfg.pids.map((p) => dumpFor(p)), ...cfg.pids.map((p) => pmdEndFor(p)), ...[4242, 5555].map((p) => periodicFor(p))] } });
         sendIf(sock, { method: 'Tracing.tracingComplete', params: {} });
       }, FLUSH_DELAY_MS);
       return;
@@ -60,7 +66,7 @@ const runScenario = async (name) => {
   }));
   await new Promise((r) => server.listen(0, '127.0.0.1', r));
   const port = server.address().port;
-  const rr = await new Promise((resolve) => { const c = spawn('node', [scriptPath, String(port), String(LOAD), String(cfg.spin || 0), '60'], { env: { ...process.env, STANDALONE_TRIGGERS: cfg.triggers || '' } }); let o = ''; c.stdout.on('data', (d) => { o += d; }); c.on('exit', (code) => resolve({ status: code, stdout: o })); });
+  const rr = await new Promise((resolve) => { const c = spawn('node', [scriptPath, String(port), String(LOAD), String(cfg.spin || 0), '60'], { env: { ...process.env, STANDALONE_TRIGGERS: cfg.triggers || '', STANDALONE_URL: cfg.url || '', STANDALONE_SAMPLE_OUT: '/tmp/verify/witness-e-sample-' + name + '.json' } }); let o = ''; c.stdout.on('data', (d) => { o += d; }); c.on('exit', (code) => resolve({ status: code, stdout: o })); });
   server.close();
   server.closeAllConnections?.();
   wss.close();
@@ -79,13 +85,17 @@ const runScenario = async (name) => {
   check('requestedPids equal the pids that sent explicitly_triggered events', !!h && JSON.stringify(h.requestedPids) === JSON.stringify(cfg.pids), h && h.requestedPids);
   check('dumpNames counts the dump events by name (requested if any, then two periodic)', !!h && JSON.stringify(h.dumpNames) === JSON.stringify(cfg.pids.length ? { explicitly_triggered: cfg.pids.length, periodic_interval: 2 } : { periodic_interval: 2 }), h && h.dumpNames);
   check('periodicPids list the pids that sent periodic totals (both scenarios)', !!h && JSON.stringify(h.periodicPids) === JSON.stringify([4242, 5555]), h && h.periodicPids);
-  check('eventsSeen equals the events sent (requested plus two periodic decoys)', !!h && h.eventsSeen === cfg.pids.length + 2, h && h.eventsSeen);
+  check('eventsSeen equals the events sent (requested plus two periodic decoys)', !!h && h.eventsSeen === cfg.pids.length * 2 + 2, h && h.eventsSeen);
   const wantTriggers = cfg.triggers || 'default';
   const sentConfig = starts.length ? starts[0].traceConfig : null;
   check('triggers recorded as the control setting', !!h && h.triggers === wantTriggers, h && h.triggers);
   check('Tracing.start sends memoryDumpConfig triggers [] only in the none control', !!sentConfig && (wantTriggers === 'none' ? JSON.stringify(sentConfig.memoryDumpConfig) === JSON.stringify({ triggers: [] }) : sentConfig.memoryDumpConfig === undefined), sentConfig);
   check('eventShapes counts the requested events and the two periodic decoys', !!h && (h.eventShapes['v||explicitly_triggered'] || 0) === cfg.pids.length && (h.eventShapes['v||periodic_interval'] || 0) === 2, h && h.eventShapes);
-  check('guid hits: events whose id is the requested guid 0xA', !!h && h.guidHitCount === cfg.pids.length, h && h.guidHitCount);
+  check('guid hits: events whose id is the requested guid 0xA', !!h && h.guidHitCount === cfg.pids.length * 2, h && h.guidHitCount);
+  check('target opened the control URL, about:blank otherwise', targetUrls[0] === (cfg.url || 'about:blank'), targetUrls);
+  check('pageUrl and readyState recorded (complete only for the URL control)', !!h && h.pageUrl === (cfg.url || null) && h.readyState === (cfg.url ? 'complete' : null), h && [h.pageUrl, h.readyState]);
+  check('process end events counted (one per requested pid) and the first sampled as raw JSON', !!h && h.processEndCount === cfg.pids.length && (cfg.pids.length ? typeof h.processEndSample === 'string' && h.processEndSample.includes('"ph":"e"') : h.processEndSample === null), h && [h.processEndCount, h.processEndSample]);
+  if (cfg.pids.length) check('the full end-event sample file is written and is an e event (fixture payload, ASSUMED shape)', fs.existsSync('/tmp/verify/witness-e-sample-' + name + '.json') && JSON.parse(fs.readFileSync('/tmp/verify/witness-e-sample-' + name + '.json', 'utf8')).ph === 'e', name);
   check('scope names the refusal', !!h && typeof h.scope === 'string' && h.scope.startsWith(cfg.scope), h && h.scope);
   check('spin workers recorded as the spin count (null when not spinning)', !!h && h.spinWorkers === (cfg.spin || null), h && h.spinWorkers);
   if (cfg.pids.length) {
