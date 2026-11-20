@@ -3,9 +3,13 @@ const [port, holderPid] = process.argv.slice(2);
 const events = [];
 const EXTRA_CATEGORIES = (process.env.HOLDER_EXTRA_CATEGORIES || '').split(',').filter(Boolean);
 const HOLDER = Number(holderPid);
-const out = { pid: HOLDER, mode: null, error: null, dumpGuid: null, dumpSuccess: false, requestedAtMs: null, completedAtMs: null, eventsSeen: 0, requestedEvents: 0, requestedShapes: {}, requestedEndArgKeys: null, dumpNames: {}, dumpEventIds: [], periodicSamples: 0, periodicProcessTotalsKeys: null, privateFootprintBytes: null, peakResidentSetBytes: null, endReplyAtMs: null, tracingCompleteAtMs: null, bufferUsageSamples: 0, bufferUsageSeries: [], lastBufferUsage: null, matchedDump: false, residentSetBytes: null, partitionAlloc: null, topAllocators: [] };
+const out = { pid: HOLDER, mode: null, error: null, dumpGuid: null, dumpSuccess: false, requestedAtMs: null, completedAtMs: null, eventsSeen: 0, requestedEvents: 0, requestedShapes: {}, requestedEndArgKeys: null, dumpNames: {}, dumpEventIds: [], periodicSamples: 0, periodicProcessTotalsKeys: null, privateFootprintBytes: null, peakResidentSetBytes: null, endReplyAtMs: null, tracingCompleteAtMs: null, dumpReplyKeys: null, dataLossOccurred: null, bufferUsageSamples: 0, bufferUsageSeries: [], lastBufferUsage: null, matchedDump: false, residentSetBytes: null, partitionAlloc: null, topAllocators: [] };
 const finish = () => { if (process.env.HOLDER_EVENTS_OUT) writeFileSync(process.env.HOLDER_EVENTS_OUT, JSON.stringify(events)); console.log('HOLDER_MEMDUMP ' + JSON.stringify(out)); process.exit(0); };
-const guard = setTimeout(() => { out.error = 'timeout'; finish(); }, 40000);
+const GUARD_MS = Number(process.env.HOLDER_GUARD_MS || 40000);
+const END_WAIT_MS = Number(process.env.HOLDER_END_WAIT_MS || 20000);
+const onGuard = () => { out.error = 'timeout'; finish(); };
+let guard = setTimeout(onGuard, GUARD_MS);
+const rearm = (ms) => { clearTimeout(guard); guard = setTimeout(onGuard, ms); };
 const sizeOf = (attrs, key) => (attrs && attrs[key] && attrs[key].units === 'bytes' ? parseInt(attrs[key].value, 16) : null);
 const hexBytes = (v) => (typeof v === 'string' && /^[0-9a-f]+$/i.test(v) ? parseInt(v, 16) : null);
 const summarize = (events) => {
@@ -46,7 +50,7 @@ const run = async () => {
     const m = JSON.parse(String(ev.data));
     if (m.method === 'Tracing.bufferUsage') { const bu = m.params || {}; out.bufferUsageSamples += 1; const sample = { atMs: Date.now(), percentFull: bu.percentFull ?? null, eventCount: bu.eventCount ?? null }; out.bufferUsageSeries.push(sample); out.lastBufferUsage = sample; return; }
     if (m.method === 'Tracing.dataCollected') { events.push(...((m.params && m.params.value) || [])); return; }
-    if (m.method === 'Tracing.tracingComplete') { out.tracingCompleteAtMs = Date.now(); complete(); return; }
+    if (m.method === 'Tracing.tracingComplete') { out.tracingCompleteAtMs = Date.now(); out.dataLossOccurred = (m.params && m.params.dataLossOccurred) ?? null; complete(); return; }
     const w = waiting.get(m.id);
     if (!w) return;
     waiting.delete(m.id);
@@ -62,6 +66,8 @@ const run = async () => {
   out.completedAtMs = out.mode === 'dump' ? Date.now() : null;
   out.dumpGuid = dump.dumpGuid || null;
   out.dumpSuccess = dump.success === true;
+  out.dumpReplyKeys = Object.keys(dump).sort();
+  rearm(END_WAIT_MS);
   send('Tracing.end').then(() => { out.endReplyAtMs = Date.now(); }, () => {});
   await completed;
   out.eventsSeen = events.length;
