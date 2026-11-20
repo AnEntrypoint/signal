@@ -4,3 +4,6 @@ __pycache__/
 *.pyc
 node_modules/
 .spawn/local/snapshot/
+.spawn/local/redchecks/.browser-witness.*/
+.spawn/local/redchecks/.gate.*/
+.spawn/local/redchecks/.red-leak.*

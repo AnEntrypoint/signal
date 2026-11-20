@@ -1,0 +1,12 @@
+const fs = require('fs');
+const dir = process.argv[2];
+const t = JSON.parse(fs.readFileSync(dir + '/trace.json', 'utf8'));
+const errs = t.errs || [];
+const consoleErrors = (t.consoles || []).filter((c) => c.startsWith('error'));
+const posts = (t.reqs || []).filter((r) => r.m === 'POST');
+const session = (t.frames || []).filter((f) => /session/.test(String(f.url)));
+const framesDrawn = session.some((f) => f.info && (f.info.canvases || []).some((c) => c !== '0x0'));
+const res = { consoleErrors: consoleErrors.length, pageErrors: errs.length, postRequests: posts.length, sessionCanvases: session.map((f) => (f.info && f.info.canvases) || null), framesDrawn };
+fs.writeFileSync(dir + '/result.json', JSON.stringify(res, null, 1));
+console.log('RESULT ' + JSON.stringify(res));
+process.exit(consoleErrors.length === 0 && errs.length === 0 && posts.length === 0 && framesDrawn ? 0 : 1);
