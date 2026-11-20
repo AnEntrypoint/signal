@@ -20,6 +20,7 @@ const dumpFor = (pid, id) => ({ ph: 'v', pid, id, args: { dumps: {
 const EVENTS = [dumpFor(4242, '0x5'), dumpFor(9999, '0x5')];
 const REPLY_DELAY_MS = 15000;
 const FLUSH_DELAY_MS = 8000;
+const MODE = process.env.WITNESS_MODE || 'refusal';
 const server = http.createServer((req, res) => {
   if (req.url !== '/json/version') { res.statusCode = 404; res.end(); return; }
   res.setHeader('content-type', 'application/json');
@@ -31,7 +32,7 @@ wss.on('connection', (sock) => sock.on('message', (raw) => {
   const m = JSON.parse(String(raw));
   if (m.method === 'Tracing.requestMemoryDump') { setTimeout(() => sendIf(sock, { id: m.id, result: { success: false, dumpGuid: '0x5' } }), REPLY_DELAY_MS); return; }
   if (m.method === 'Tracing.end') {
-    sendIf(sock, { id: m.id, result: {} });
+    if (MODE !== 'blocked-end') sendIf(sock, { id: m.id, result: {} });
     setTimeout(() => { sendIf(sock, { method: 'Tracing.dataCollected', params: { value: EVENTS } }); sendIf(sock, { method: 'Tracing.tracingComplete', params: {} }); }, FLUSH_DELAY_MS);
     return;
   }
@@ -52,10 +53,11 @@ check('refusal recorded: dumpGuid 0x5 and dumpSuccess false (not hidden)', !!h &
 check('eventsSeen 2 (the holder and the other pid events are both collected)', !!h && h.eventsSeen === 2, h && h.eventsSeen);
 check('matchedDump true: the holder process dump for the requested guid is present despite the refusal', !!h && h.matchedDump === true, h && h.matchedDump);
 check('residentSetBytes equals the holder process total (5.8 GB)', !!h && h.residentSetBytes === 5800000000, h && h.residentSetBytes);
+check('tracingCompleteAtMs recorded (the flush finished before the guard)', !!h && typeof h.tracingCompleteAtMs === 'number', h && h.tracingCompleteAtMs);
 const pa = h && h.partitionAlloc;
 check('partitionAlloc total is the three partitions (550 MB)', !!pa && pa.totalBytes === 550 * MB, pa && pa.totalBytes);
 check('topAllocators includes the v8 heap at 80 MB', !!h && Array.isArray(h.topAllocators) && h.topAllocators.some((a) => a.name === 'v8/isolate_1/heap_spaces' && a.sizeBytes === 80 * MB), h && h.topAllocators);
 for (const c of checks) console.log((c.ok ? 'PASS ' : 'FAIL ') + c.name + ' got=' + c.got);
 const red = checks.filter((c) => !c.ok).length;
-console.log('HOLDER MEMDUMP REFUSAL WITNESS (' + readerPath + '): ' + (red === 0 ? 'GREEN' : 'RED'));
+console.log('HOLDER MEMDUMP REFUSAL WITNESS [' + MODE + '] (' + readerPath + '): ' + (red === 0 ? 'GREEN' : 'RED'));
 process.exit(red === 0 ? 0 : 1);

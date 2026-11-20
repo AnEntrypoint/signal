@@ -6,6 +6,7 @@ const muts = {
   'old-guard': ['}, 40000);', '}, 20000);'],
   'summarize-on-success': ['  summarize(events);', '  if (out.dumpSuccess) summarize(events);'],
   'no-wait-complete': ['  await completed;', ''],
+  'await-end-reply': ["  send('Tracing.end').then(() => { out.endReplyAtMs = Date.now(); }, () => {});", "  await send('Tracing.end');"],
 };
 for (const [name, [a, b]] of Object.entries(muts)) {
   if (src.split(a).length - 1 !== 1) throw new Error('anchor count for ' + name);
