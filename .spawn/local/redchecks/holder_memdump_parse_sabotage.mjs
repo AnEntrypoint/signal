@@ -2,12 +2,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 const [readerPath, outDir] = process.argv.slice(2);
 const src = fs.readFileSync(readerPath, 'utf8');
-const SEL = "e.name === 'explicitly_triggered' && e.id === out.dumpGuid";
 const muts = {
   'drop-event-ids': ['  out.dumpEventIds = [...new Set(dumps.map((e) => String(e.id)))].slice(0, 10);', ''],
-  'fallback-to-any': ['const pick = requested.length ? requested[requested.length - 1] : undefined;', 'const pick = requested.length ? requested[requested.length - 1] : dumps[dumps.length - 1];'],
-  'id-only': [SEL, 'e.id === out.dumpGuid'],
-  'name-only': [SEL, "e.name === 'explicitly_triggered'"],
+  'no-pid-filter': ["e.pid === HOLDER && e.name === 'ProcessMemoryDump'", "e.name === 'ProcessMemoryDump'"],
+  'no-name-filter': ["e.name === 'ProcessMemoryDump' && (e.ph === 'b' || e.ph === 'e') && ", ''],
+  'no-guid-filter': [' && e.args && e.args.dump_guid === out.dumpGuid);', ');'],
+  'v-old-shape': ['  out.matchedDump = requested.length > 0;', "  out.matchedDump = requested.length > 0 || dumps.some((e) => e.name === 'explicitly_triggered' && e.id === out.dumpGuid);"],
 };
 for (const [name, [a, b]] of Object.entries(muts)) {
   if (src.split(a).length - 1 !== 1) throw new Error('anchor count for ' + name);

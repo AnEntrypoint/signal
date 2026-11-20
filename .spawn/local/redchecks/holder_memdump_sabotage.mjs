@@ -3,9 +3,9 @@ const L = '/workspace/signal/world/signal-stage/.spawn/local/';
 const src = fs.readFileSync(L + 'holder-memdump.mjs', 'utf8');
 const outDir = process.argv[2] || '/tmp/verify';
 const cases = [
-  ['no-pid-filter', [['e.ph === \'v\' && e.pid === HOLDER && ', 'e.ph === \'v\' && ']]],
-  ['no-guid-filter', [["e.name === 'explicitly_triggered' && e.id === out.dumpGuid", "e.name === 'explicitly_triggered'"]]],
-  ['no-name-filter', [["e.name === 'explicitly_triggered' && ", '']]],
+  ['no-pid-filter', [["e.pid === HOLDER && e.name === 'ProcessMemoryDump'", "e.name === 'ProcessMemoryDump'"]]],
+  ['no-guid-filter', [[" && e.args && e.args.dump_guid === out.dumpGuid);", ");"]]],
+  ['no-name-filter', [["e.name === 'ProcessMemoryDump' && (e.ph === 'b' || e.ph === 'e') && ", '']]],
   ['no-child-exclusion', [['/^partition_alloc\\/partitions\\/[^/]+$/.test(r.name)', '/^partition_alloc\\/partitions\\//.test(r.name)']]],
   ['drop-partition', [['  out.partitionAlloc = { totalBytes: parts.reduce((s, p) => s + p.sizeBytes, 0), partitions: parts };', '']]],
   ['drop-rss', [['  out.residentSetBytes = sizeOf(procTotals.attrs, \'resident_set_bytes\');', '']]],

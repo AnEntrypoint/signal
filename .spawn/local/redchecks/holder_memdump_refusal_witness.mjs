@@ -7,17 +7,8 @@ const readerPath = process.argv[2] || '/workspace/signal/world/signal-stage/.spa
 const MB = 1024 * 1024;
 const hexOf = (n) => n.toString(16);
 const alloc = (bytes) => ({ attrs: { size: { type: 'scalar', units: 'bytes', value: hexOf(bytes) } } });
-const dumpFor = (pid, id) => ({ ph: 'v', pid, id, name: 'explicitly_triggered', args: { dumps: {
-  allocators: {
-    'partition_alloc/partitions/fast_malloc': alloc(300 * MB),
-    'partition_alloc/partitions/blink_gc': alloc(200 * MB),
-    'partition_alloc/partitions/array_buffer': alloc(50 * MB),
-    'partition_alloc/allocated_objects': alloc(1 * MB),
-    'v8/isolate_1/heap_spaces': alloc(80 * MB),
-  },
-  process_totals: { attrs: { resident_set_bytes: { type: 'scalar', units: 'bytes', value: hexOf(5800000000) } } },
-} } });
-const EVENTS = [dumpFor(4242, '0x5'), dumpFor(9999, '0x5')];
+const memEvent = (ph, pid, guid, scale) => ({ ph, pid, id: '0x14c', cat: 'disabled-by-default-memory-infra', name: 'ProcessMemoryDump', args: ph === 'e' ? { dump_guid: guid, dumps: { allocators: { 'partition_alloc/partitions/fast_malloc': { attrs: { size: { type: 'scalar', units: 'bytes', value: (300 * 1048576 * scale).toString(16) } } }, 'partition_alloc/partitions/fast_malloc/child': { attrs: { size: { type: 'scalar', units: 'bytes', value: (7 * 1048576 * scale).toString(16) } } }, 'partition_alloc/partitions/blink_gc': { attrs: { size: { type: 'scalar', units: 'bytes', value: (200 * 1048576 * scale).toString(16) } } }, 'partition_alloc/partitions/array_buffer': { attrs: { size: { type: 'scalar', units: 'bytes', value: (50 * 1048576 * scale).toString(16) } } }, 'partition_alloc/allocated_objects': { attrs: { size: { type: 'scalar', units: 'bytes', value: (1048576 * scale).toString(16) } } }, 'v8/isolate_1/heap_spaces': { attrs: { size: { type: 'scalar', units: 'bytes', value: (80 * 1048576 * scale).toString(16) } } } }, process_totals: { attrs: { resident_set_bytes: { type: 'scalar', units: 'bytes', value: (5800000000 * scale).toString(16) } } } } } : { dump_guid: guid } });
+const EVENTS = [memEvent('b', 4242, '0x5', 1), memEvent('e', 4242, '0x5', 1), memEvent('e', 9999, '0x5', 1)];
 const REPLY_DELAY_MS = 15000;
 const FLUSH_DELAY_MS = 8000;
 const MODE = process.env.WITNESS_MODE || 'refusal';
@@ -51,7 +42,7 @@ check('reader exit 0 and HOLDER_MEMDUMP line', rr.status === 0 && h !== null, rr
 check('field pid present and equal', !!h && h.pid === 4242, h && h.pid);
 check('field error absent: the reply arrived and tracingComplete was received before the guard', !!h && h.error === null, h && h.error);
 check('refusal recorded: dumpGuid 0x5 and dumpSuccess false (not hidden)', !!h && h.dumpGuid === '0x5' && h.dumpSuccess === false, h && [h.dumpGuid, h.dumpSuccess]);
-check('eventsSeen 2 (the holder and the other pid events are both collected)', !!h && h.eventsSeen === 2, h && h.eventsSeen);
+check('eventsSeen 3 (the holder begin and end and the other pid end are all collected)', !!h && h.eventsSeen === 3, h && h.eventsSeen);
 check('matchedDump true: the holder process dump for the requested guid is present despite the refusal', !!h && h.matchedDump === true, h && h.matchedDump);
 check('residentSetBytes equals the holder process total (5.8 GB)', !!h && h.residentSetBytes === 5800000000, h && h.residentSetBytes);
 check('buffer usage samples arrived during the wait (the trace kept filling)', !!h && h.bufferUsageSamples >= 1 && !!h.lastBufferUsage && h.lastBufferUsage.eventCount === 5000, h && [h.bufferUsageSamples, h.lastBufferUsage]);

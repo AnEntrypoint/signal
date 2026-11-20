@@ -7,19 +7,8 @@ const readerPath = process.argv[2] || '/workspace/signal/world/signal-stage/.spa
 const MB = 1024 * 1024;
 const hexOf = (n) => n.toString(16);
 const alloc = (bytes) => ({ attrs: { size: { type: 'scalar', units: 'bytes', value: hexOf(bytes) }, effective_size: { type: 'scalar', units: 'bytes', value: hexOf(bytes) } } });
-const dumpFor = (pid, id, scale) => ({ ph: 'v', pid, id, name: 'explicitly_triggered', args: { dumps: {
-  allocators: {
-    'partition_alloc/partitions/fast_malloc': alloc(300 * MB * scale),
-    'partition_alloc/partitions/fast_malloc/buckets': alloc(100 * MB * scale),
-    'partition_alloc/partitions/blink_gc': alloc(200 * MB * scale),
-    'partition_alloc/partitions/array_buffer': alloc(50 * MB * scale),
-    'partition_alloc/allocated_objects': alloc(1 * MB * scale),
-    'v8/isolate_1/heap_spaces': alloc(80 * MB * scale),
-    'skia/gpu': alloc(20 * MB * scale),
-  },
-  process_totals: { attrs: { resident_set_bytes: { type: 'scalar', units: 'bytes', value: hexOf(5800000000 * scale) } } },
-} } });
-const EVENTS = [dumpFor(4242, 'G42', 1), dumpFor(9999, 'G42', 10), dumpFor(4242, 'OTHER', 3)];
+const memEvent = (ph, pid, guid, scale) => ({ ph, pid, id: '0x14c', cat: 'disabled-by-default-memory-infra', name: 'ProcessMemoryDump', args: ph === 'e' ? { dump_guid: guid, dumps: { allocators: { 'partition_alloc/partitions/fast_malloc': { attrs: { size: { type: 'scalar', units: 'bytes', value: (300 * 1048576 * scale).toString(16) } } }, 'partition_alloc/partitions/fast_malloc/child': { attrs: { size: { type: 'scalar', units: 'bytes', value: (7 * 1048576 * scale).toString(16) } } }, 'partition_alloc/partitions/blink_gc': { attrs: { size: { type: 'scalar', units: 'bytes', value: (200 * 1048576 * scale).toString(16) } } }, 'partition_alloc/partitions/array_buffer': { attrs: { size: { type: 'scalar', units: 'bytes', value: (50 * 1048576 * scale).toString(16) } } }, 'partition_alloc/allocated_objects': { attrs: { size: { type: 'scalar', units: 'bytes', value: (1048576 * scale).toString(16) } } }, 'v8/isolate_1/heap_spaces': { attrs: { size: { type: 'scalar', units: 'bytes', value: (80 * 1048576 * scale).toString(16) } } } }, process_totals: { attrs: { resident_set_bytes: { type: 'scalar', units: 'bytes', value: (5800000000 * scale).toString(16) } } } } } : { dump_guid: guid } });
+const EVENTS = [memEvent('b', 4242, 'G42', 1), memEvent('e', 4242, 'G42', 1), memEvent('e', 9999, 'G42', 10), memEvent('e', 4242, 'OTHER', 3)];
 const server = http.createServer((req, res) => {
   if (req.url !== '/json/version') { res.statusCode = 404; res.end(); return; }
   res.setHeader('content-type', 'application/json');
@@ -50,7 +39,7 @@ check('field pid present and equal', h && h.pid === 4242, h && h.pid);
 check('field error absent', h && h.error === null, h && h.error);
 check('field dumpGuid and dumpSuccess present', h && h.dumpGuid === 'G42' && h.dumpSuccess === true, h && [h.dumpGuid, h.dumpSuccess]);
 check('field requestedAtMs and completedAtMs present in order', h && typeof h.requestedAtMs === 'number' && typeof h.completedAtMs === 'number' && h.completedAtMs >= h.requestedAtMs, h && [h.requestedAtMs, h.completedAtMs]);
-check('field eventsSeen present (3)', h && h.eventsSeen === 3, h && h.eventsSeen);
+check('field eventsSeen present (4)', h && h.eventsSeen === 4, h && h.eventsSeen);
 check('matchedDump true: the dump with the requested id was used', h && h.matchedDump === true, h && h.matchedDump);
 check('residentSetBytes equals the holder process total (5.8 GB), not the other pid', h && h.residentSetBytes === 5800000000, h && h.residentSetBytes);
 const pa = h && h.partitionAlloc;

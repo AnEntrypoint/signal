@@ -5,23 +5,40 @@ const require = createRequire('/config/.gmnew/pw/node_modules/');
 const { WebSocketServer } = require('ws');
 const readerPath = process.argv[2] || '/workspace/signal/world/signal-stage/.spawn/local/holder-memdump.mjs';
 const MB = 1048576;
+const HOLDER_PID = 4242;
 const hexOf = (n) => n.toString(16);
-const alloc = (bytes) => ({ attrs: { size: { type: 'scalar', units: 'bytes', value: hexOf(bytes) } } });
-const dumpFor = (pid, id, scale, name) => ({ ph: 'v', pid, id, name, cat: 'disabled-by-default-memory-infra', args: { dumps: {
+const sizeAttrs = (bytes) => ({ attrs: { size: { type: 'scalar', units: 'bytes', value: hexOf(bytes) } } });
+const dumpsFor = (scale) => ({
   allocators: {
-    'partition_alloc/partitions/fast_malloc': alloc(300 * MB * scale),
-    'partition_alloc/partitions/blink_gc': alloc(200 * MB * scale),
-    'partition_alloc/partitions/array_buffer': alloc(50 * MB * scale),
-    'partition_alloc/allocated_objects': alloc(1 * MB * scale),
-    'v8/isolate_1/heap_spaces': alloc(80 * MB * scale),
+    'partition_alloc/partitions/fast_malloc': sizeAttrs(300 * MB * scale),
+    'partition_alloc/partitions/blink_gc': sizeAttrs(200 * MB * scale),
+    'partition_alloc/partitions/array_buffer': sizeAttrs(50 * MB * scale),
+    'partition_alloc/allocated_objects': sizeAttrs(1 * MB * scale),
+    'v8/isolate_1/heap_spaces': sizeAttrs(80 * MB * scale),
   },
   process_totals: { attrs: { resident_set_bytes: { type: 'scalar', units: 'bytes', value: hexOf(5800000000 * scale) } } },
-} } });
-const PERIODIC = { args: { dumps: { level_of_detail: 'detailed', process_totals: { is_peak_rss_resettable: true, peak_resident_set_size: 'd62a000', private_footprint_bytes: '279d000' } } }, cat: 'disabled-by-default-memory-infra', id: '0x0', name: 'periodic_interval', ph: 'v', pid: 4242, tid: -1, ts: 44449750854 };
+});
+const PERIODIC = { args: { dumps: { level_of_detail: 'detailed', process_totals: { is_peak_rss_resettable: true, peak_resident_set_size: 'd62a000', private_footprint_bytes: '279d000' } } }, cat: 'disabled-by-default-memory-infra', id: '0x0', name: 'periodic_interval', ph: 'v', pid: HOLDER_PID, tid: -1, ts: 44449750854 };
+const memBegin = (pid, guid, name = 'ProcessMemoryDump') => ({ ph: 'b', pid, id: '0x14c', cat: 'disabled-by-default-memory-infra', name, args: { dump_guid: guid } });
+const memEnd = (pid, guid, scale, name = 'ProcessMemoryDump') => ({ ph: 'e', pid, id: '0x14c', cat: 'disabled-by-default-memory-infra', name, args: { dump_guid: guid, dumps: dumpsFor(scale) } });
+const oldV = (pid, id, scale) => ({ ph: 'v', pid, id, name: 'explicitly_triggered', cat: 'disabled-by-default-memory-infra', args: { dumps: dumpsFor(scale) } });
 const CASES = {
-  'requested-present': { events: () => [PERIODIC, dumpFor(4242, 'G42', 1, 'explicitly_triggered'), dumpFor(9999, 'G42', 10, 'explicitly_triggered'), dumpFor(4242, 'OTHER', 3, 'explicitly_triggered')] },
-  'only-periodic': { events: () => [PERIODIC] },
-  'name-mismatch': { events: () => [dumpFor(4242, 'G42', 1, 'periodic_interval')] },
+  'requested-present': {
+    events: () => [PERIODIC, memBegin(HOLDER_PID, 'G42'), memBegin(HOLDER_PID, 'G42', 'GlobalMemoryDump'), memEnd(HOLDER_PID, 'G42', 1), memEnd(9999, 'G42', 10), memEnd(HOLDER_PID, 'OTHER', 3)],
+    expect: { residentSetBytes: 5800000000, partitionTotalBytes: 550 * MB, matchedDump: true, requestedEvents: 2, requestedShapes: { 'b|ProcessMemoryDump': 1, 'e|ProcessMemoryDump': 1 }, requestedEndArgKeys: ['dump_guid', 'dumps'], dumpEventIds: ['0x0'], dumpNames: { periodic_interval: 1 } },
+  },
+  'only-periodic': {
+    events: () => [PERIODIC],
+    expect: { residentSetBytes: null, partitionTotalBytes: null, matchedDump: false, requestedEvents: 0, requestedShapes: {}, requestedEndArgKeys: null, dumpEventIds: ['0x0'], dumpNames: { periodic_interval: 1 } },
+  },
+  'old-v-shape': {
+    events: () => [PERIODIC, oldV(HOLDER_PID, 'G42', 1)],
+    expect: { residentSetBytes: null, partitionTotalBytes: null, matchedDump: false, requestedEvents: 0, requestedShapes: {}, requestedEndArgKeys: null, dumpEventIds: ['0x0', 'G42'], dumpNames: { periodic_interval: 1, explicitly_triggered: 1 } },
+  },
+  'begin-only': {
+    events: () => [PERIODIC, memBegin(HOLDER_PID, 'G42')],
+    expect: { residentSetBytes: null, partitionTotalBytes: null, matchedDump: true, requestedEvents: 1, requestedShapes: { 'b|ProcessMemoryDump': 1 }, requestedEndArgKeys: null, dumpEventIds: ['0x0'], dumpNames: { periodic_interval: 1 } },
+  },
 };
 const runCase = async (name) => {
   const cfg = CASES[name];
@@ -44,29 +61,27 @@ const runCase = async (name) => {
   }));
   await new Promise((r) => server.listen(0, '127.0.0.1', r));
   const port = server.address().port;
-  const rr = await new Promise((resolve) => { const c = spawn('node', [readerPath, String(port), '4242']); let o = ''; c.stdout.on('data', (d) => { o += d; }); c.on('exit', (code) => { server.close(); server.closeAllConnections?.(); wss.close(); resolve({ status: code, stdout: o }); }); });
+  const rr = await new Promise((resolve) => { const c = spawn('node', [readerPath, String(port), String(HOLDER_PID)]); let o = ''; c.stdout.on('data', (d) => { o += d; }); c.on('exit', (code) => { server.close(); server.closeAllConnections?.(); wss.close(); resolve({ status: code, stdout: o }); }); });
   const line = (rr.stdout || '').split('\n').find((l) => l.startsWith('HOLDER_MEMDUMP '));
   let h = null;
   try { h = line ? JSON.parse(line.slice('HOLDER_MEMDUMP '.length)) : null; } catch { h = null; }
   const checks = [];
   const check = (n, ok, got) => checks.push({ n: name + ': ' + n, ok: Boolean(ok), got: String(JSON.stringify(got) ?? 'absent').slice(0, 160) });
   check('reader exit 0 and HOLDER_MEMDUMP line', rr.status === 0 && h !== null, rr.status);
-  const IDS_BY_CASE = { 'requested-present': ['0x0', 'G42', 'OTHER'], 'only-periodic': ['0x0'], 'name-mismatch': ['G42'] };
-  check('dumpEventIds lists the ids of the holder v events in order (fixture ids for the requested dump are assumptions)', !!h && JSON.stringify(h.dumpEventIds) === JSON.stringify(IDS_BY_CASE[name]), h && h.dumpEventIds);
   check('error absent (the reply and tracingComplete arrived)', !!h && h.error === null, h && h.error);
-  if (name === 'requested-present') {
-    check('requestedEvents 1: only the explicitly_triggered event with the requested guid', !!h && h.requestedEvents === 1, h && h.requestedEvents);
-    check('matchedDump true', !!h && h.matchedDump === true, h && h.matchedDump);
-    check('residentSetBytes is the requested holder dump (5.8 GB), not the periodic total, the other guid, or the other pid', !!h && h.residentSetBytes === 5800000000, h && h.residentSetBytes);
-    check('partitionAlloc total 550 MB from the requested dump', !!h && !!h.partitionAlloc && h.partitionAlloc.totalBytes === 550 * MB, h && h.partitionAlloc && h.partitionAlloc.totalBytes);
-    check('dumpNames counts the holder events by name (1 periodic, 2 explicit)', !!h && JSON.stringify(h.dumpNames) === JSON.stringify({ periodic_interval: 1, explicitly_triggered: 2 }), h && h.dumpNames);
-  } else if (name === 'only-periodic') {
-    check('no requested event: matchedDump false, requestedEvents 0', !!h && h.matchedDump === false && h.requestedEvents === 0, h && [h.matchedDump, h.requestedEvents]);
-    check('no fallback to the periodic total: residentSetBytes and partitionAlloc null', !!h && h.residentSetBytes === null && h.partitionAlloc === null, h && [h.residentSetBytes, h.partitionAlloc]);
-    check('dumpNames shows the periodic event only', !!h && JSON.stringify(h.dumpNames) === JSON.stringify({ periodic_interval: 1 }), h && h.dumpNames);
-  } else {
-    check('same guid under the periodic name is not the requested dump', !!h && h.requestedEvents === 0 && h.matchedDump === false, h && [h.requestedEvents, h.matchedDump]);
-    check('no partitions taken from the periodic-named event', !!h && h.partitionAlloc === null, h && h.partitionAlloc);
+  const got = {
+    residentSetBytes: h ? h.residentSetBytes : null,
+    partitionTotalBytes: h && h.partitionAlloc ? h.partitionAlloc.totalBytes : null,
+    matchedDump: h ? h.matchedDump : null,
+    requestedEvents: h ? h.requestedEvents : null,
+    requestedShapes: h ? h.requestedShapes : null,
+    requestedEndArgKeys: h ? h.requestedEndArgKeys : null,
+    dumpEventIds: h ? h.dumpEventIds : null,
+    dumpNames: h ? h.dumpNames : null,
+  };
+  for (const k of Object.keys(cfg.expect)) {
+    const label = k === 'residentSetBytes' || k === 'partitionTotalBytes' ? k + ' (from the e-event payload, ASSUMED shape)' : k;
+    check(label + ' = ' + JSON.stringify(cfg.expect[k]), JSON.stringify(got[k]) === JSON.stringify(cfg.expect[k]), got[k]);
   }
   return checks;
 };
