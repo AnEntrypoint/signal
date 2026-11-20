@@ -36,6 +36,7 @@ function makeFixture(root, oversize) {
   writeFileSync(join(root, 'assets/www.spawn.co/_ground_index.bin'), '<!DOCTYPE html><html><body><a href="/_next/static/more.js">m</a></body></html>\n');
   writeFileSync(join(root, 'assets/fixture/a.html'), '<html><body>pool</body></html>\n');
   writeFileSync(join(root, 'assets/fixture/ok.txt'), 'ready\n');
+  writeFileSync(join(root, 'assets/fixture/page.bin'), '<!DOCTYPE html><html><body><a href="/_next/static/more.js">m</a></body></html>\n');
   writeFileSync(join(root, 'assets/fixture/f.woff2'), Buffer.alloc(64, 7));
   writeFileSync(join(root, 'assets/fixture/tool.dmg'), Buffer.from([0, 1, 2, 255]));
   writeFileSync(join(root, 'assets/fixture/abc.bin'), Buffer.from([9, 8, 7, 255]));
@@ -48,6 +49,7 @@ function makeFixture(root, oversize) {
     { url: 'https://play.spawn.co/world-store/heads/abc/x.json', file: 'assets/fixture/x.json', status: 200 },
     { url: 'https://www.spawn.co/fonts/tool.dmg', file: 'assets/fixture/tool.dmg', status: 200 },
     { url: 'https://www.spawn.co/fonts/f.woff2', file: 'assets/fixture/f.woff2', status: 200 },
+    { url: 'https://www.spawn.co/fixture.co', file: 'assets/fixture/page.bin', status: 200, content_type: '' },
     { url: 'https://(?:p[1-9]', file: 'assets/fixture/missing.bin', status: 0 },
   ];
   writeFileSync(join(root, 'state/fetch-log.jsonl'), log.map((record) => JSON.stringify(record)).join('\n') + '\n');
@@ -94,10 +96,15 @@ const ROOT_REF_W = /(?<=["'\x60(=\s+,])\/(?=(?:__local|_next|_ready|ground|fonts
 const PREFIXED_REF = /(?<=["'\x60(=\s+,])\/signal\/[^\s"'\x60<>()\\,;]*/g;
 const CONTENT_TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.txt': 'text/plain; charset=utf-8' };
 
-function isTextW(path, type, body) {
+function isTextW(type, body) {
   if (TEXT_TYPES.includes(type)) return true;
   if (body.subarray(0, 8192).includes(0)) return false;
-  return path.endsWith('/') || extname(path) === '' || /\.(html|htm|js|mjs|css|json)$/.test(path);
+  try {
+    new TextDecoder('utf-8', { fatal: true }).decode(body);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function safeDecodeW(text) {
@@ -231,6 +238,7 @@ async function main() {
   check('a runtime image loader is rewritten to the captured path with a query', readFileSync(join(out, '_next/static/chunk.js'), 'utf8').includes('?w=') && !readFileSync(join(out, '_next/static/chunk.js'), 'utf8').includes('/image?url='));
   check('a binary download is a flat file, not an index page', exists('fonts/tool.dmg') && !exists('fonts/tool.dmg/index.html'));
   check('ready file is exported', exists('_ready/ok.txt'));
+  check('a page with no content type and a dot in its name is rebased like text', exists('__local/https:/www.spawn.co/fixture.co') && readFileSync(join(out, '__local/https:/www.spawn.co/fixture.co'), 'utf8').includes('href="/signal/_next/static/more.js"'));
   check('the page reference to ok.txt is exported under its decoded /__local/ name', exists('__local/https:/www.spawn.co/_ready/ok.txt'));
   check('a 404 reference is a miss, not a file', summary.misses >= 1 && !exists('fonts/absent.woff2'));
   const files = walk(out);
@@ -259,7 +267,7 @@ async function main() {
       const response = await fetch(base + page.path);
       const served = Buffer.from(await response.arrayBuffer());
       const type = (response.headers.get('content-type') || '').split(';')[0].trim();
-      const comparable = isTextW(page.path, type, served) ? Buffer.from(rebaseW(rewriteImagesW(served.toString('utf8').split(base).join('')))) : served;
+      const comparable = isTextW(type, served) ? Buffer.from(rebaseW(rewriteImagesW(served.toString('utf8').split(base).join('')))) : served;
       if (comparable.equals(readFileSync(join(out, page.rel)))) equal += 1;
       else differ.push(page.path);
     }

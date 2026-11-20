@@ -80,10 +80,19 @@ async function mapLimit(items, worker) {
   await Promise.all(lanes);
 }
 
-function isText(path, type, body) {
+function isText(type, body) {
   if (TEXT_TYPES.includes(type)) return true;
   if (body.subarray(0, 8192).includes(0)) return false;
-  return path.endsWith('/') || extname(path) === '' || /\.(html|htm|js|mjs|css|json)$/.test(path);
+  return isUtf8(body);
+}
+
+function isUtf8(body) {
+  try {
+    new TextDecoder('utf-8', { fatal: true }).decode(body);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 async function crawl(base, seeds) {
@@ -103,7 +112,7 @@ async function crawl(base, seeds) {
         return;
       }
       const type = (response.headers.get('content-type') || '').split(';')[0].trim();
-      if (!isText(path, type, body)) {
+      if (!isText(type, body)) {
         files.set(path, { body, type });
         return;
       }
