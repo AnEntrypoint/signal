@@ -80,6 +80,12 @@ async function mapLimit(items, worker) {
   await Promise.all(lanes);
 }
 
+function isText(path, type, body) {
+  if (TEXT_TYPES.includes(type)) return true;
+  if (body.subarray(0, 8192).includes(0)) return false;
+  return path.endsWith('/') || extname(path) === '' || /\.(html|htm|js|mjs|css|json)$/.test(path);
+}
+
 async function crawl(base, seeds) {
   const files = new Map();
   const misses = [];
@@ -97,7 +103,7 @@ async function crawl(base, seeds) {
         return;
       }
       const type = (response.headers.get('content-type') || '').split(';')[0].trim();
-      if (!TEXT_TYPES.includes(type)) {
+      if (!isText(path, type, body)) {
         files.set(path, { body, type });
         return;
       }

@@ -26,10 +26,12 @@ function makeFixture(root, oversize) {
   writeFileSync(join(root, 'raw/http/session-dev.body'), '<!DOCTYPE html><html><body>session</body></html>');
   writeFileSync(join(root, 'raw/http/dev-page.body'), '<!DOCTYPE html><html><head></head><body><img src="/fonts/f.woff2"><script src="https://www.spawn.co/_ready/ok.txt"></script></body></html>');
   let chunk = 'const more = "/_next/static/more.js";\nconst pool = "https://play.spawn.co/v4/client/pool/tome-ui/a.html";\nconst gone = "/fonts/absent.woff2";\n';
+  chunk += 'const page = "/ground/";\n';
   chunk += 'const tool = "/fonts/tool.dmg";\n';
   if (oversize) chunk += 'const big = "/fonts/big.woff2";\n';
   writeFileSync(join(root, 'assets/fixture/chunk.js'), chunk);
   writeFileSync(join(root, 'assets/www.spawn.co/__next_static_more.js'), 'console.log("more");\n');
+  writeFileSync(join(root, 'assets/www.spawn.co/_ground_index.bin'), '<!DOCTYPE html><html><body><a href="/_next/static/more.js">m</a></body></html>\n');
   writeFileSync(join(root, 'assets/fixture/a.html'), '<html><body>pool</body></html>\n');
   writeFileSync(join(root, 'assets/fixture/ok.txt'), 'ready\n');
   writeFileSync(join(root, 'assets/fixture/f.woff2'), Buffer.alloc(64, 7));
@@ -90,6 +92,12 @@ const ROOT_REF_W = /(?<=["'\x60(=\s+,])\/(?=(?:__local|_next|_ready|ground|fonts
 const PREFIXED_REF = /(?<=["'\x60(=\s+,])\/signal\/[^\s"'\x60<>()\\,;]*/g;
 const CONTENT_TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.txt': 'text/plain; charset=utf-8' };
 
+function isTextW(path, type, body) {
+  if (TEXT_TYPES.includes(type)) return true;
+  if (body.subarray(0, 8192).includes(0)) return false;
+  return path.endsWith('/') || extname(path) === '' || /\.(html|htm|js|mjs|css|json)$/.test(path);
+}
+
 function rebaseW(text) {
   return text.replace(ROOT_REF_W, () => '/signal/');
 }
@@ -125,7 +133,9 @@ async function projectChecks(dir, summary) {
   const texts = walk(dir).filter((file) => /\.(html|js|css|json)$/.test(file));
   const unrooted = texts.filter((file) => readFileSync(file, 'utf8').search(ROOT_REF_W) !== -1);
   const refs = new Set();
-  for (const file of texts) for (const match of readFileSync(file, 'utf8').matchAll(PREFIXED_REF)) refs.add(match[0]);
+  for (const file of texts) for (const match of readFileSync(file, 'utf8').matchAll(PREFIXED_REF)) refs.add(match[0].split('?')[0]);
+  const dynamic = [...refs].filter((ref) => /[\x24{}]/.test(ref));
+  dynamic.forEach((ref) => refs.delete(ref));
   const missing = new Set(summary.missPaths || []);
   const unresolved = [];
   for (const ref of refs) {
@@ -156,7 +166,7 @@ async function projectChecks(dir, summary) {
   check('the summary records the /signal/ base path', summary.base === '/signal/');
   check('no root-absolute reference is left outside /signal/ (' + unrooted.length + ' files)', unrooted.length === 0);
   check('the project URL form /signal/ serves the entry page', entryOk);
-  check('every /signal/ reference resolves, bar recorded misses (' + refs.size + ' refs, ' + unresolved.length + ' unresolved)', refs.size >= 3 && unexpected.length === 0);
+  check('every /signal/ reference resolves, bar recorded misses (' + refs.size + ' refs, ' + unresolved.length + ' unresolved, ' + dynamic.length + ' dynamic)', refs.size >= 3 && unexpected.length === 0);
   check('every resolved /signal/ reference returns the exported bytes (' + served + ' served)', served > 0 && mismatched.length === 0);
   if (mismatched.length) console.log('mismatched: ' + mismatched.slice(0, 5).join(', '));
   if (unexpected.length) console.log('unexpected unresolved: ' + unexpected.slice(0, 5).join(', '));
@@ -190,6 +200,7 @@ async function main() {
   check('pool module is exported under /session', exists('session/tome-ui/a.html'));
   check('font is exported', exists('fonts/f.woff2'));
   check('a file that is also a directory is written as <path>/index.html', exists('world-store/heads/abc/index.html') && exists('world-store/heads/abc/x.json'));
+  check('a page served as octet-stream is rebased like text', exists('ground/index.html') && readFileSync(join(out, 'ground/index.html'), 'utf8').includes('href="/signal/_next/static/more.js"'));
   check('a binary download is a flat file, not an index page', exists('fonts/tool.dmg') && !exists('fonts/tool.dmg/index.html'));
   check('ready file is exported', exists('_ready/ok.txt'));
   check('the page reference to ok.txt is exported under /__local/', exists('__local/' + encodeURIComponent('https://www.spawn.co/_ready/ok.txt')));
@@ -219,7 +230,7 @@ async function main() {
       const response = await fetch(base + page.path);
       const served = Buffer.from(await response.arrayBuffer());
       const type = (response.headers.get('content-type') || '').split(';')[0].trim();
-      const comparable = TEXT_TYPES.includes(type) ? Buffer.from(rebaseW(served.toString('utf8').split(base).join(''))) : served;
+      const comparable = isTextW(page.path, type, served) ? Buffer.from(rebaseW(served.toString('utf8').split(base).join(''))) : served;
       if (comparable.equals(readFileSync(join(out, page.rel)))) equal += 1;
       else differ.push(page.path);
     }
