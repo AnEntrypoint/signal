@@ -7,7 +7,7 @@ const readerPath = process.argv[2] || '/workspace/signal/world/signal-stage/.spa
 const MB = 1024 * 1024;
 const hexOf = (n) => n.toString(16);
 const alloc = (bytes) => ({ attrs: { size: { type: 'scalar', units: 'bytes', value: hexOf(bytes) }, effective_size: { type: 'scalar', units: 'bytes', value: hexOf(bytes) } } });
-const dumpFor = (pid, id, scale) => ({ ph: 'v', pid, id, args: { dumps: {
+const dumpFor = (pid, id, scale) => ({ ph: 'v', pid, id, name: 'explicitly_triggered', args: { dumps: {
   allocators: {
     'partition_alloc/partitions/fast_malloc': alloc(300 * MB * scale),
     'partition_alloc/partitions/fast_malloc/buckets': alloc(100 * MB * scale),
