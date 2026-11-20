@@ -9,6 +9,7 @@ const muts = {
   ],
   'drop-tracing-timing': [["if (m.method === 'Tracing.tracingComplete') { out.tracingCompleteAtMs = Date.now(); complete(); return; }", "if (m.method === 'Tracing.tracingComplete') { complete(); return; }"]],
   'no-page-close': [['{ out.pageClosed = true; }', '{ }']],
+  'drop-spin': [['  if (SPIN > 0) {', '  if (false) {']],
   'drop-event-ids': [["  out.dumpEventIds = [...new Set(events.filter((e) => e.ph === 'v' && e.args && e.args.dumps).map((e) => String(e.id)))].slice(0, 10);", '']],
 };
 for (const [name, pairs] of Object.entries(muts)) {

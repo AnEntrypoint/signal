@@ -14,6 +14,7 @@ const SCENARIOS = {
   'refused-some': { success: false, pids: [HOLDER_PID, PAGE_PID], scope: 'per-process' },
   'refused-none': { success: false, pids: [], scope: 'global' },
   'ok': { success: true, pids: [HOLDER_PID, PAGE_PID], scope: 'none' },
+  'spin': { success: true, pids: [HOLDER_PID, PAGE_PID], scope: 'none', spin: 2 },
 };
 const alloc = (bytes) => ({ attrs: { size: { type: 'scalar', units: 'bytes', value: bytes.toString(16) } } });
 const dumpFor = (pid) => {
@@ -41,7 +42,7 @@ const runScenario = async (name) => {
     if (m.method === 'Target.createTarget') { reply({ targetId: 'T1' }); return; }
     if (m.method === 'Target.attachToTarget') { reply({ sessionId: 'S1' }); return; }
     if (m.method === 'Target.closeTarget') { reply({ success: true }); return; }
-    if (m.method === 'Runtime.evaluate') { reply({ result: { type: 'number', value: LOAD } }); return; }
+    if (m.method === 'Runtime.evaluate') { reply({ result: { type: 'number', value: m.params.expression.includes('new Worker') ? 2 : LOAD } }); return; }
     if (m.method === 'Tracing.requestMemoryDump') { setTimeout(() => sendIf(sock, { id: m.id, result: { dumpGuid: '0xA', success: cfg.success } }), REPLY_DELAY_MS); return; }
     if (m.method === 'Tracing.end') {
       reply({});
@@ -55,7 +56,7 @@ const runScenario = async (name) => {
   }));
   await new Promise((r) => server.listen(0, '127.0.0.1', r));
   const port = server.address().port;
-  const rr = await new Promise((resolve) => { const c = spawn('node', [scriptPath, String(port), String(LOAD)]); let o = ''; c.stdout.on('data', (d) => { o += d; }); c.on('exit', (code) => resolve({ status: code, stdout: o })); });
+  const rr = await new Promise((resolve) => { const c = spawn('node', [scriptPath, String(port), String(LOAD), String(cfg.spin || 0), '60']); let o = ''; c.stdout.on('data', (d) => { o += d; }); c.on('exit', (code) => resolve({ status: code, stdout: o })); });
   server.close();
   server.closeAllConnections?.();
   wss.close();
@@ -73,6 +74,7 @@ const runScenario = async (name) => {
   check('page closed after the read', !!h && h.pageClosed === true, h && h.pageClosed);
   check('eventsSeen equals the events sent', !!h && h.eventsSeen === cfg.pids.length, h && h.eventsSeen);
   check('scope names the refusal', !!h && typeof h.scope === 'string' && h.scope.startsWith(cfg.scope), h && h.scope);
+  check('spin workers recorded as the spin count (null when not spinning)', !!h && h.spinWorkers === (cfg.spin || null), h && h.spinWorkers);
   if (cfg.pids.length) {
     check('load pid is the page renderer (array_buffer 310 MB)', !!h && h.loadPid === PAGE_PID && h.loadPidArrayBufferBytes === 310 * MB, h && [h.loadPid, h.loadPidArrayBufferBytes]);
     check('dump event ids include the requested guid 0xA', !!h && (h.dumpEventIds || []).includes('0xA'), h && h.dumpEventIds);

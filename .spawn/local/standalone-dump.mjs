@@ -2,9 +2,11 @@ const [port, loadArg] = process.argv.slice(2);
 const LOAD_MB = Number(loadArg || 300);
 const MB = 1048576;
 const LOAD_FRACTION = 0.9;
-const out = { port: Number(port), loadMb: LOAD_MB, loadAllocatedMb: null, targetId: null, sessionId: null, pageClosed: false, dumpGuid: null, dumpSuccess: false, requestedAtMs: null, requestReplyAtMs: null, endSentAtMs: null, endReplyAtMs: null, tracingCompleteAtMs: null, eventsSeen: 0, dumpedPids: [], loadPid: null, loadPidArrayBufferBytes: null, dumpEventIds: [], allocatorNames: [], scope: null, error: null };
+const SPIN = Number(process.argv[4] || 0);
+const GUARD_MS = Number(process.argv[5] || 150) * 1000;
+const out = { port: Number(port), loadMb: LOAD_MB, loadAllocatedMb: null, targetId: null, sessionId: null, pageClosed: false, dumpGuid: null, dumpSuccess: false, requestedAtMs: null, requestReplyAtMs: null, endSentAtMs: null, endReplyAtMs: null, tracingCompleteAtMs: null, eventsSeen: 0, dumpedPids: [], loadPid: null, loadPidArrayBufferBytes: null, dumpEventIds: [], allocatorNames: [], spinWorkers: null, scope: null, error: null };
 const finish = () => { console.log('STANDALONE_DUMP ' + JSON.stringify(out)); process.exit(0); };
-const guard = setTimeout(() => { out.error = 'timeout'; finish(); }, 150000);
+const guard = setTimeout(() => { out.error = 'timeout'; finish(); }, GUARD_MS);
 const sizeOf = (attrs, key) => (attrs && attrs[key] && attrs[key].units === 'bytes' ? parseInt(attrs[key].value, 16) : null);
 const summarize = (events) => {
   const latest = new Map();
@@ -53,6 +55,10 @@ const run = async () => {
   out.sessionId = attached.sessionId;
   const loaded = await send('Runtime.evaluate', { expression: '(() => { window.__load = []; for (let i = 0; i < ' + LOAD_MB + '; i++) { const b = new Uint8Array(1048576); b.fill(7); window.__load.push(b); } return window.__load.length; })()', returnByValue: true }, out.sessionId);
   out.loadAllocatedMb = loaded.result && loaded.result.value;
+  if (SPIN > 0) {
+    const spun = await send('Runtime.evaluate', { expression: '(() => { const url = URL.createObjectURL(new Blob(["for (;;) {}"])); for (let i = 0; i < ' + SPIN + '; i++) new Worker(url); return ' + SPIN + '; })()', returnByValue: true }, out.sessionId);
+    out.spinWorkers = spun.result && spun.result.value;
+  }
   await send('Tracing.start', { traceConfig: { recordMode: 'recordUntilFull', includedCategories: ['disabled-by-default-memory-infra'] }, transferMode: 'ReportEvents' });
   out.requestedAtMs = Date.now();
   const dump = await send('Tracing.requestMemoryDump', { deterministic: false, levelOfDetail: 'detailed' });
