@@ -7,6 +7,9 @@ const muts = {
   'no-pid-filter': ["e.pid === HOLDER && e.name === 'ProcessMemoryDump'", "e.name === 'ProcessMemoryDump'"],
   'no-name-filter': ["e.name === 'ProcessMemoryDump' && (e.ph === 'b' || e.ph === 'e') && ", ''],
   'no-guid-filter': [' && e.args && e.args.dump_guid === out.dumpGuid);', ');'],
+  'drop-periodic-pick': ["  const latest = periodic.reduce(", "  const latest = [].reduce("],
+  'no-periodic-pid-filter': ["e.ph === 'v' && e.name === 'periodic_interval' && e.pid === HOLDER", "e.ph === 'v' && e.name === 'periodic_interval'"],
+  'hex-as-decimal': ['parseInt(v, 16)', 'parseInt(v, 10)'],
   'v-old-shape': ['  out.matchedDump = requested.length > 0;', "  out.matchedDump = requested.length > 0 || dumps.some((e) => e.name === 'explicitly_triggered' && e.id === out.dumpGuid);"],
 };
 for (const [name, [a, b]] of Object.entries(muts)) {

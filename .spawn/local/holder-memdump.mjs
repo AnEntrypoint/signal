@@ -1,9 +1,10 @@
 const [port, holderPid] = process.argv.slice(2);
 const HOLDER = Number(holderPid);
-const out = { pid: HOLDER, mode: null, error: null, dumpGuid: null, dumpSuccess: false, requestedAtMs: null, completedAtMs: null, eventsSeen: 0, requestedEvents: 0, requestedShapes: {}, requestedEndArgKeys: null, dumpNames: {}, dumpEventIds: [], endReplyAtMs: null, tracingCompleteAtMs: null, bufferUsageSamples: 0, bufferUsageSeries: [], lastBufferUsage: null, matchedDump: false, residentSetBytes: null, partitionAlloc: null, topAllocators: [] };
+const out = { pid: HOLDER, mode: null, error: null, dumpGuid: null, dumpSuccess: false, requestedAtMs: null, completedAtMs: null, eventsSeen: 0, requestedEvents: 0, requestedShapes: {}, requestedEndArgKeys: null, dumpNames: {}, dumpEventIds: [], periodicSamples: 0, periodicProcessTotalsKeys: null, privateFootprintBytes: null, peakResidentSetBytes: null, endReplyAtMs: null, tracingCompleteAtMs: null, bufferUsageSamples: 0, bufferUsageSeries: [], lastBufferUsage: null, matchedDump: false, residentSetBytes: null, partitionAlloc: null, topAllocators: [] };
 const finish = () => { console.log('HOLDER_MEMDUMP ' + JSON.stringify(out)); process.exit(0); };
 const guard = setTimeout(() => { out.error = 'timeout'; finish(); }, 40000);
 const sizeOf = (attrs, key) => (attrs && attrs[key] && attrs[key].units === 'bytes' ? parseInt(attrs[key].value, 16) : null);
+const hexBytes = (v) => (typeof v === 'string' && /^[0-9a-f]+$/i.test(v) ? parseInt(v, 16) : null);
 const summarize = (events) => {
   const dumps = events.filter((e) => e.ph === 'v' && e.pid === HOLDER && e.args && e.args.dumps);
   out.dumpEventIds = [...new Set(dumps.map((e) => String(e.id)))].slice(0, 10);
@@ -13,6 +14,12 @@ const summarize = (events) => {
   const requestedEnd = requested.filter((e) => e.ph === 'e');
   out.requestedEndArgKeys = requestedEnd.length ? Object.keys(requestedEnd[0].args) : null;
   out.requestedEvents = requested.length;
+  const periodic = events.filter((e) => e.ph === 'v' && e.name === 'periodic_interval' && e.pid === HOLDER && e.args && e.args.dumps && e.args.dumps.process_totals);
+  out.periodicSamples = periodic.length;
+  const latest = periodic.reduce((best, e) => (best === null || e.ts > best.ts ? e : best), null);
+  out.periodicProcessTotalsKeys = latest ? Object.keys(latest.args.dumps.process_totals) : null;
+  out.privateFootprintBytes = latest ? hexBytes(latest.args.dumps.process_totals.private_footprint_bytes) : null;
+  out.peakResidentSetBytes = latest ? hexBytes(latest.args.dumps.process_totals.peak_resident_set_size) : null;
   out.matchedDump = requested.length > 0;
   const pick = requestedEnd.filter((e) => e.args.dumps).pop();
   if (!pick) return;
