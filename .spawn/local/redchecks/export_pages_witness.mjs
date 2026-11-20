@@ -34,10 +34,14 @@ function makeFixture(root, oversize) {
   writeFileSync(join(root, 'assets/fixture/ok.txt'), 'ready\n');
   writeFileSync(join(root, 'assets/fixture/f.woff2'), Buffer.alloc(64, 7));
   writeFileSync(join(root, 'assets/fixture/tool.dmg'), Buffer.from([0, 1, 2, 255]));
+  writeFileSync(join(root, 'assets/fixture/abc.bin'), Buffer.from([9, 8, 7, 255]));
+  writeFileSync(join(root, 'assets/fixture/x.json'), '{"ok":true}\n');
   const log = [
     { url: 'https://www.spawn.co/_next/static/chunk.js', file: 'assets/fixture/chunk.js', status: 200 },
     { url: 'https://play.spawn.co/v4/client/pool/tome-ui/a.html', file: 'assets/fixture/a.html', status: 200 },
     { url: 'https://www.spawn.co/_ready/ok.txt', file: 'assets/fixture/ok.txt', status: 200 },
+    { url: 'https://play.spawn.co/world-store/heads/abc', file: 'assets/fixture/abc.bin', status: 200 },
+    { url: 'https://play.spawn.co/world-store/heads/abc/x.json', file: 'assets/fixture/x.json', status: 200 },
     { url: 'https://www.spawn.co/fonts/tool.dmg', file: 'assets/fixture/tool.dmg', status: 200 },
     { url: 'https://www.spawn.co/fonts/f.woff2', file: 'assets/fixture/f.woff2', status: 200 },
     { url: 'https://(?:p[1-9]', file: 'assets/fixture/missing.bin', status: 0 },
@@ -185,6 +189,7 @@ async function main() {
   check('more.js is found only by a reference inside chunk.js', exists('_next/static/more.js'));
   check('pool module is exported under /session', exists('session/tome-ui/a.html'));
   check('font is exported', exists('fonts/f.woff2'));
+  check('a file that is also a directory is written as <path>/index.html', exists('world-store/heads/abc/index.html') && exists('world-store/heads/abc/x.json'));
   check('a binary download is a flat file, not an index page', exists('fonts/tool.dmg') && !exists('fonts/tool.dmg/index.html'));
   check('ready file is exported', exists('_ready/ok.txt'));
   check('the page reference to ok.txt is exported under /__local/', exists('__local/' + encodeURIComponent('https://www.spawn.co/_ready/ok.txt')));

@@ -117,16 +117,29 @@ function relFor(path, type) {
   return TEXT_TYPES.includes(type) ? trimmed + '/index.html' : trimmed;
 }
 
+function finalRels(files) {
+  const rels = new Map();
+  for (const path of files.keys()) rels.set(path, relFor(path, files.get(path).type));
+  const parents = new Set();
+  for (const rel of rels.values()) {
+    const parts = rel.split('/');
+    for (let i = 1; i < parts.length; i += 1) parents.add(parts.slice(0, i).join('/'));
+  }
+  for (const [path, rel] of rels) if (parents.has(rel)) rels.set(path, rel + '/index.html');
+  return rels;
+}
+
 function writeSite(files) {
   if (existsSync(join(OUT, '.nojekyll'))) rmSync(OUT, { recursive: true, force: true });
   else if (existsSync(OUT)) throw new Error(OUT + ' exists and is not a previous export; remove it by hand');
   mkdirSync(OUT, { recursive: true });
   writeFileSync(join(OUT, '.nojekyll'), '');
   const byRel = new Map();
+  const rels = finalRels(files);
   for (const path of Array.from(files.keys()).sort()) {
     const { body, type } = files.get(path);
     if (body.length > FILE_LIMIT) throw new Error(path + ' is ' + body.length + ' bytes, over the ' + FILE_LIMIT + ' byte per-file limit');
-    const rel = relFor(path, type);
+    const rel = rels.get(path);
     const abs = join(OUT, rel);
     if (existsSync(abs)) {
       if (!readFileSync(abs).equals(body)) throw new Error(path + ' collides with ' + rel + ' holding different bytes');
