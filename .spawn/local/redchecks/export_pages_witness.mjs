@@ -82,6 +82,8 @@ function main() {
   check('value bytes match the snapshot file', Buffer.compare(bytes(join(out, 'world-store/values/' + VALUE_HASH)) || Buffer.alloc(0), Buffer.from([1, 2, 3, 4])) === 0);
   check('post reply bytes match the snapshot file', Buffer.compare(bytes(join(out, 'post-replies/' + POST_SHA + '-0.bin')) || Buffer.alloc(0), Buffer.from('{"scan":1}\n')) === 0);
 
+  const kept = ['export-pages.mjs', 'static-source.mjs', 'world-store-values.mjs'].map((name) => readFileSync(join(HERE, '..', name), 'utf8'));
+  check('kept export files reference no removed server tooling', kept.every((text) => !/serve-local|grant-local|frame-gate-hook|probe-steps|render-probe|bound-watch/.test(text)));
   const red = makeFixture(join(WORK, 'red-seams'), { seams: 2 });
   const redSeams = runExport(join(WORK, 'red-seams'));
   check('red: a module with two transport seams fails the export', redSeams.status !== 0 && redSeams.stderr.includes('matched 2 times'));
