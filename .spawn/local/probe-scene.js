@@ -4,6 +4,7 @@ const OUT = '__OUT__';
 const TARGET = '__TARGET__';
 const KEEP_PREBORN = __KEEP__ === 1;
 fs.mkdirSync(OUT, { recursive: true });
+const mark = (label) => fs.appendFileSync(OUT + '/steps.log', JSON.stringify({ label, t: Date.now() }) + '\n');
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const capped = (p, ms, label) => Promise.race([p, wait(ms).then(() => label)]);
 const workerInit = () => {
@@ -578,9 +579,12 @@ page.on('worker', (w) => {
   w.on('close', () => { h.closedMs = Date.now() - t0; h.closedAt = Date.now(); });
   h.patch = 'creation';
 });
-await page.setViewportSize({ width: 1280, height: 800 });
+await page.setViewportSize({ width: __VIEW_W__, height: __VIEW_H__ });
+mark('viewport-set');
 await page.goto(TARGET, { waitUntil: 'commit', timeout: 120000 }).catch((e) => consoleLines.push('NAV ' + String(e.message).slice(0, 200)));
+mark('goto-commit');
 await wait(15000);
+mark('wait-15s');
 const workerSnap = async () => {
   const out = [];
   for (const h of handles) {
@@ -607,7 +611,9 @@ const snap = async (label) => {
   const html = await capped(page.evaluate(() => ({ shown: document.documentElement.classList.contains('spawn-world-shown'), stood: document.documentElement.hasAttribute('data-spawn-stood'), coi: window.crossOriginIsolated, reason: (window.__spawnHeldDocumentReleased || {}).reason || null, active: document.activeElement ? document.activeElement.tagName : null })).catch((e) => 'eval-fail'), 8000, 'eval-timeout');
   return { label, html, frames, workers: await workerSnap() };
 };
+mark('before-snap-start');
 const before = await snap('before-click');
+mark('before-snap-done');
 await page.screenshot({ path: OUT + '/before.png' }).catch(() => {});
 await page.evaluate(() => { if (document.activeElement) document.activeElement.blur(); document.body.focus(); }).catch(() => {});
 let gestureTries = 0;
