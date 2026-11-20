@@ -2,7 +2,7 @@ const [port, holderPid] = process.argv.slice(2);
 const HOLDER = Number(holderPid);
 const out = { pid: HOLDER, error: null, dumpGuid: null, dumpSuccess: false, requestedAtMs: null, completedAtMs: null, eventsSeen: 0, matchedDump: false, residentSetBytes: null, partitionAlloc: null, topAllocators: [] };
 const finish = () => { console.log('HOLDER_MEMDUMP ' + JSON.stringify(out)); process.exit(0); };
-const guard = setTimeout(() => { out.error = 'timeout'; finish(); }, 20000);
+const guard = setTimeout(() => { out.error = 'timeout'; finish(); }, 40000);
 const sizeOf = (attrs, key) => (attrs && attrs[key] && attrs[key].units === 'bytes' ? parseInt(attrs[key].value, 16) : null);
 const summarize = (events) => {
   const dumps = events.filter((e) => e.ph === 'v' && e.pid === HOLDER && e.args && e.args.dumps);
