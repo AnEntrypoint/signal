@@ -1,7 +1,8 @@
 import { execFileSync, spawn, spawnSync } from 'node:child_process';
-import { closeSync, existsSync, mkdirSync, openSync, readFileSync, readdirSync, rmSync, truncateSync, writeFileSync } from 'node:fs';
+import { closeSync, existsSync, mkdirSync, openSync, readFileSync, readdirSync, rmSync, statSync, truncateSync, writeFileSync } from 'node:fs';
+import http from 'node:http';
 import net from 'node:net';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, extname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -81,7 +82,94 @@ async function freePort() {
   });
 }
 
+const ROOT_REF_W = /(?<=["'\x60(=\s+,])\/(?=(?:__local|_next|_ready|ground|fonts|datadog|session|world-store)\/)/g;
+const PREFIXED_REF = /(?<=["'\x60(=\s+,])\/signal\/[^\s"'\x60<>()\\,;]*/g;
+const CONTENT_TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.txt': 'text/plain; charset=utf-8' };
+
+function rebaseW(text) {
+  return text.replace(ROOT_REF_W, () => '/signal/');
+}
+
+function resolveUnder(dir, rel) {
+  for (const candidate of [rel, rel + '/index.html']) {
+    const full = join(dir, candidate);
+    if (existsSync(full) && statSync(full).isFile()) return full;
+  }
+  return null;
+}
+
+function staticAt(dir) {
+  return http.createServer((req, res) => {
+    const path = new URL(req.url, 'http://witness.invalid').pathname;
+    if (path === '/signal') {
+      res.writeHead(301, { Location: '/signal/' });
+      res.end();
+      return;
+    }
+    const file = path.startsWith('/signal/') ? resolveUnder(dir, path.slice('/signal/'.length)) : null;
+    if (!file) {
+      res.writeHead(404, { 'Content-Type': 'text/plain' });
+      res.end('miss');
+      return;
+    }
+    res.writeHead(200, { 'Content-Type': CONTENT_TYPES[extname(file)] || 'application/octet-stream' });
+    res.end(readFileSync(file));
+  });
+}
+
+async function projectChecks(dir, summary) {
+  const texts = walk(dir).filter((file) => /\.(html|js|css|json)$/.test(file));
+  const unrooted = texts.filter((file) => readFileSync(file, 'utf8').search(ROOT_REF_W) !== -1);
+  const refs = new Set();
+  for (const file of texts) for (const match of readFileSync(file, 'utf8').matchAll(PREFIXED_REF)) refs.add(match[0]);
+  const missing = new Set(summary.missPaths || []);
+  const unresolved = [];
+  for (const ref of refs) {
+    const rel = ref.slice('/signal'.length);
+    if (!resolveUnder(dir, rel.slice(1))) unresolved.push(rel);
+  }
+  const unexpected = unresolved.filter((rel) => !missing.has(rel));
+  const server = staticAt(dir);
+  await new Promise((done) => server.listen(0, '127.0.0.1', done));
+  let entryOk = false;
+  const mismatched = [];
+  let served = 0;
+  try {
+    const base = 'http://127.0.0.1:' + server.address().port;
+    const entry = await fetch(base + '/signal/');
+    entryOk = entry.status === 200 && Buffer.from(await entry.arrayBuffer()).equals(readFileSync(join(dir, 'index.html')));
+    for (const ref of refs) {
+      const rel = ref.slice('/signal'.length);
+      if (unresolved.includes(rel)) continue;
+      const response = await fetch(base + ref);
+      const body = Buffer.from(await response.arrayBuffer());
+      served += 1;
+      if (response.status !== 200 || !body.equals(readFileSync(resolveUnder(dir, rel.slice(1))))) mismatched.push(ref);
+    }
+  } finally {
+    await new Promise((done) => server.close(done));
+  }
+  check('the summary records the /signal/ base path', summary.base === '/signal/');
+  check('no root-absolute reference is left outside /signal/ (' + unrooted.length + ' files)', unrooted.length === 0);
+  check('the project URL form /signal/ serves the entry page', entryOk);
+  check('every /signal/ reference resolves, bar recorded misses (' + refs.size + ' refs, ' + unresolved.length + ' unresolved)', refs.size >= 3 && unexpected.length === 0);
+  check('every resolved /signal/ reference returns the exported bytes (' + served + ' served)', served > 0 && mismatched.length === 0);
+  if (mismatched.length) console.log('mismatched: ' + mismatched.slice(0, 5).join(', '));
+  if (unexpected.length) console.log('unexpected unresolved: ' + unexpected.slice(0, 5).join(', '));
+}
+
+async function checkOnly() {
+  const summary = JSON.parse(readFileSync(process.env.WITNESS_CHECK_SUMMARY, 'utf8'));
+  await projectChecks(process.env.WITNESS_CHECK_DIR, summary);
+  console.log(failed.length === 0 ? 'GREEN ' + passed + ' checks' : 'RED ' + failed.length + ' failed: ' + failed.join('; '));
+  process.exitCode = failed.length === 0 ? 0 : 1;
+}
+
 async function main() {
+  if (process.env.WITNESS_CHECK_DIR) {
+    await checkOnly();
+    return;
+  }
   const root = join(WORK, 'site');
   makeFixture(root, false);
   const run = runExport(root, []);
@@ -126,7 +214,7 @@ async function main() {
       const response = await fetch(base + page.path);
       const served = Buffer.from(await response.arrayBuffer());
       const type = (response.headers.get('content-type') || '').split(';')[0].trim();
-      const comparable = TEXT_TYPES.includes(type) ? Buffer.from(served.toString('utf8').split(base).join('')) : served;
+      const comparable = TEXT_TYPES.includes(type) ? Buffer.from(rebaseW(served.toString('utf8').split(base).join(''))) : served;
       if (comparable.equals(readFileSync(join(out, page.rel)))) equal += 1;
       else differ.push(page.path);
     }
@@ -137,6 +225,7 @@ async function main() {
   check('every exported page equals the server response for its path (' + equal + '/' + summary.pages.length + ')', summary.pages.length >= 6 && equal === summary.pages.length);
   if (differ.length) console.log('differ: ' + differ.join(', '));
 
+  await projectChecks(out, summary);
   const big = join(WORK, 'site-big');
   makeFixture(big, true);
   const bigRun = runExport(big, []);

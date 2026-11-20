@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 
 const SNAPSHOT_ROOT = resolve(process.env.SNAPSHOT_ROOT || '/workspace/signal');
 const OUT = resolve(process.env.PAGES_OUT || join(SNAPSHOT_ROOT, 'pages-export'));
+const BASE_PATH = process.env.PAGES_BASE || '/signal/';
 const SERVER = resolve(process.env.EXPORT_SERVER || fileURLToPath(new URL('./serve-local.mjs', import.meta.url)));
 const REPLACEMENTS = join(dirname(SERVER), 'replacements', 'map.json');
 const FILE_LIMIT = 100 * 1024 * 1024;
@@ -22,6 +23,12 @@ const LOG_FILES = ['state/fetch-log.jsonl', 'state/local-engine-fetch.jsonl', 's
 
 const sleep = (ms) => new Promise((done) => setTimeout(done, ms));
 const sha256 = (buffer) => createHash('sha256').update(buffer).digest('hex');
+
+const ROOT_REF = /(?<=["'\x60(=\s+,])\/(?=(?:__local|_next|_ready|ground|fonts|datadog|session|world-store)\/)/g;
+
+function rebase(text) {
+  return BASE_PATH === '/' ? text : text.replace(ROOT_REF, () => BASE_PATH);
+}
 
 function mappingUrls() {
   const urls = [];
@@ -96,7 +103,7 @@ async function crawl(base, seeds) {
       }
       const text = body.toString('utf8').split(base).join('');
       for (const match of text.matchAll(REF)) frontier.push(match[0].split('?')[0]);
-      files.set(path, { body: Buffer.from(text, 'utf8'), type });
+      files.set(path, { body: Buffer.from(rebase(text), 'utf8'), type });
     });
   }
   return { files, misses };
@@ -191,7 +198,9 @@ async function exportSite() {
     files: pages.length + 1,
     bytes,
     largest: { rel: largest.rel, bytes: largest.bytes },
+    base: BASE_PATH,
     misses: crawled.misses.length,
+    missPaths: crawled.misses.map((miss) => miss.slice(miss.indexOf(' ') + 1)),
     missSample: crawled.misses.slice(0, 10),
     pages,
   };
