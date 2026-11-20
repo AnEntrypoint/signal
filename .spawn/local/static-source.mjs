@@ -305,7 +305,10 @@ export function openSource(root) {
     }
     if (/^\/session(?:\/world:[^/]+)?\/?$/.test(pathname)) return ok(types['.html'], withLocalizer(rewrite(readFileSync(join(root, SESSION_BODY), 'utf8'))));
     if (pathname.startsWith('/session/')) return miss(404, 'session path miss: ' + pathname);
-    if (pathname === '/kernel-witness') return ok(types['.json'], '{}');
+    if (pathname === '/kernel-witness') {
+      const found = localPathFor('https://play.spawn.co/kernel-witness');
+      return found ? fromFile(found, TEXT_EXTENSIONS) : miss(404, 'kernel-witness snapshot miss');
+    }
     if (pathname.startsWith('/world-store/')) return worldStore(pathname, url.search);
     if (pathname === '/api/version') return ok(types['.json'], JSON.stringify(API_VERSION));
     if (pathname.startsWith('/__local/')) return localRoute(pathname);
