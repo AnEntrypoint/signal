@@ -48,6 +48,7 @@ const CASES = {
 };
 const runCase = async (name) => {
   const cfg = CASES[name];
+  const sentStart = [];
   const server = http.createServer((req, res) => {
     if (req.url !== '/json/version') { res.statusCode = 404; res.end(); return; }
     res.setHeader('content-type', 'application/json');
@@ -57,6 +58,7 @@ const runCase = async (name) => {
   const sendIf = (sock, msg) => { if (sock.readyState === 1) sock.send(JSON.stringify(msg)); };
   wss.on('connection', (sock) => sock.on('message', (raw) => {
     const m = JSON.parse(String(raw));
+    if (m.method === 'Tracing.start') sentStart.push(m.params);
     if (m.method === 'Tracing.requestMemoryDump') { sendIf(sock, { id: m.id, result: { dumpGuid: 'G42', success: true } }); return; }
     if (m.method === 'Tracing.end') {
       sendIf(sock, { id: m.id, result: {} });
@@ -77,6 +79,7 @@ const runCase = async (name) => {
   const checks = [];
   const check = (n, ok, got) => checks.push({ n: name + ': ' + n, ok: Boolean(ok), got: String(JSON.stringify(got) ?? 'absent').slice(0, 160) });
   check('reader exit 0 and HOLDER_MEMDUMP line', rr.status === 0 && h !== null, rr.status);
+  check('Tracing.start keeps only the memory-infra category (-* excludes the default categories)', sentStart.length === 1 && JSON.stringify(sentStart[0].traceConfig.includedCategories) === JSON.stringify(['-*', 'disabled-by-default-memory-infra']), sentStart.length && sentStart[0].traceConfig);
   check('raw events file holds every event the reader received', fs.existsSync(rawPath) && JSON.parse(fs.readFileSync(rawPath, 'utf8')).length === cfg.events().length, rawPath);
   check('error absent (the reply and tracingComplete arrived)', !!h && h.error === null, h && h.error);
   const got = {

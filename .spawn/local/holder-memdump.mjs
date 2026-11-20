@@ -52,7 +52,7 @@ const run = async () => {
     if (m.error) w.reject(new Error(m.error.message)); else w.resolve(m.result);
   };
   const send = (method, params) => new Promise((resolve, reject) => { const id = ++seq; waiting.set(id, { resolve, reject }); sock.send(JSON.stringify({ id, method, params: params || {} })); });
-  await send('Tracing.start', { traceConfig: { recordMode: 'recordUntilFull', includedCategories: ['disabled-by-default-memory-infra'] }, transferMode: 'ReportEvents', bufferUsageReportingInterval: 1000 });
+  await send('Tracing.start', { traceConfig: { recordMode: 'recordUntilFull', includedCategories: ['-*', 'disabled-by-default-memory-infra'] }, transferMode: 'ReportEvents', bufferUsageReportingInterval: 1000 });
   const NO_DUMP_HOLD_MS = 3000;
   out.mode = process.env.HOLDER_MODE === 'no-dump' ? 'no-dump' : 'dump';
   if (out.mode === 'no-dump') await new Promise((res) => setTimeout(res, NO_DUMP_HOLD_MS));
