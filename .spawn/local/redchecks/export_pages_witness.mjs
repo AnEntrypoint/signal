@@ -25,16 +25,19 @@ function makeFixture(root, oversize) {
   writeFileSync(join(root, 'raw/http/session-dev.body'), '<!DOCTYPE html><html><body>session</body></html>');
   writeFileSync(join(root, 'raw/http/dev-page.body'), '<!DOCTYPE html><html><head></head><body><img src="/fonts/f.woff2"><script src="https://www.spawn.co/_ready/ok.txt"></script></body></html>');
   let chunk = 'const more = "/_next/static/more.js";\nconst pool = "https://play.spawn.co/v4/client/pool/tome-ui/a.html";\nconst gone = "/fonts/absent.woff2";\n';
+  chunk += 'const tool = "/fonts/tool.dmg";\n';
   if (oversize) chunk += 'const big = "/fonts/big.woff2";\n';
   writeFileSync(join(root, 'assets/fixture/chunk.js'), chunk);
   writeFileSync(join(root, 'assets/www.spawn.co/__next_static_more.js'), 'console.log("more");\n');
   writeFileSync(join(root, 'assets/fixture/a.html'), '<html><body>pool</body></html>\n');
   writeFileSync(join(root, 'assets/fixture/ok.txt'), 'ready\n');
   writeFileSync(join(root, 'assets/fixture/f.woff2'), Buffer.alloc(64, 7));
+  writeFileSync(join(root, 'assets/fixture/tool.dmg'), Buffer.from([0, 1, 2, 255]));
   const log = [
     { url: 'https://www.spawn.co/_next/static/chunk.js', file: 'assets/fixture/chunk.js', status: 200 },
     { url: 'https://play.spawn.co/v4/client/pool/tome-ui/a.html', file: 'assets/fixture/a.html', status: 200 },
     { url: 'https://www.spawn.co/_ready/ok.txt', file: 'assets/fixture/ok.txt', status: 200 },
+    { url: 'https://www.spawn.co/fonts/tool.dmg', file: 'assets/fixture/tool.dmg', status: 200 },
     { url: 'https://www.spawn.co/fonts/f.woff2', file: 'assets/fixture/f.woff2', status: 200 },
     { url: 'https://(?:p[1-9]', file: 'assets/fixture/missing.bin', status: 0 },
   ];
@@ -94,6 +97,7 @@ async function main() {
   check('more.js is found only by a reference inside chunk.js', exists('_next/static/more.js'));
   check('pool module is exported under /session', exists('session/tome-ui/a.html'));
   check('font is exported', exists('fonts/f.woff2'));
+  check('a binary download is a flat file, not an index page', exists('fonts/tool.dmg') && !exists('fonts/tool.dmg/index.html'));
   check('ready file is exported', exists('_ready/ok.txt'));
   check('the page reference to ok.txt is exported under /__local/', exists('__local/' + encodeURIComponent('https://www.spawn.co/_ready/ok.txt')));
   check('a 404 reference is a miss, not a file', summary.misses >= 1 && !exists('fonts/absent.woff2'));

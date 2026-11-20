@@ -14,7 +14,6 @@ const REPLACEMENTS = join(dirname(SERVER), 'replacements', 'map.json');
 const FILE_LIMIT = 100 * 1024 * 1024;
 const CONCURRENCY = 16;
 const STATIC_PREFIXES = ['/_next/', '/_ready/', '/ground/', '/fonts/', '/datadog/'];
-const SITE_EXTENSIONS = ['.html', '.htm', '.js', '.mjs', '.css', '.json', '.txt', '.svg', '.wasm', '.webp', '.png', '.jpg', '.jpeg', '.ico', '.woff2', '.ttf', '.ktx2', '.glb', '.mp3', '.mp4', '.dict', '.bin'];
 const SESSION_MODULE_EXTENSIONS = ['.mjs', '.json', '.html'];
 const TEXT_TYPES = ['text/html', 'text/javascript', 'text/css', 'application/json'];
 const REF = /\/(?:__local|_next|_ready|ground|fonts|datadog|session|world-store)\/[^\s"'<>(){}\\,;]*/g;
@@ -92,22 +91,23 @@ async function crawl(base, seeds) {
       }
       const type = (response.headers.get('content-type') || '').split(';')[0].trim();
       if (!TEXT_TYPES.includes(type)) {
-        files.set(path, body);
+        files.set(path, { body, type });
         return;
       }
       const text = body.toString('utf8').split(base).join('');
       for (const match of text.matchAll(REF)) frontier.push(match[0].split('?')[0]);
-      files.set(path, Buffer.from(text, 'utf8'));
+      files.set(path, { body: Buffer.from(text, 'utf8'), type });
     });
   }
   return { files, misses };
 }
 
-function relFor(path) {
+function relFor(path, type) {
   const trimmed = path.replace(/^\/+/, '').replace(/\/+$/, '');
   if (trimmed === '' || path.endsWith('/')) return join(trimmed, 'index.html');
   const last = trimmed.slice(trimmed.lastIndexOf('/') + 1);
-  return SITE_EXTENSIONS.includes(extname(last).toLowerCase()) ? trimmed : trimmed + '/index.html';
+  if (/\.[A-Za-z0-9]{1,8}$/.test(last)) return trimmed;
+  return TEXT_TYPES.includes(type) ? trimmed + '/index.html' : trimmed;
 }
 
 function writeSite(files) {
@@ -117,9 +117,9 @@ function writeSite(files) {
   writeFileSync(join(OUT, '.nojekyll'), '');
   const byRel = new Map();
   for (const path of Array.from(files.keys()).sort()) {
-    const body = files.get(path);
+    const { body, type } = files.get(path);
     if (body.length > FILE_LIMIT) throw new Error(path + ' is ' + body.length + ' bytes, over the ' + FILE_LIMIT + ' byte per-file limit');
-    const rel = relFor(path);
+    const rel = relFor(path, type);
     const abs = join(OUT, rel);
     if (existsSync(abs)) {
       if (!readFileSync(abs).equals(body)) throw new Error(path + ' collides with ' + rel + ' holding different bytes');
