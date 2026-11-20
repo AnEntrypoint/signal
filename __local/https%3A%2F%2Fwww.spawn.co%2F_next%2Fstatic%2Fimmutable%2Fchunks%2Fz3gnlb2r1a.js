@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,122707,t=>{"use strict";var e=t.i(843476),r=t.i(80697),i=t.i(271645);t.s(["f",0,function(t){if("string"!=typeof t)return t;let s=(0,r.N)(t);if(0===s.length)return t;let l=[],n=0;for(let e of s)l.push(t.slice(n,e)),n=e;return l.push(t.slice(n)),l.map((t,r)=>(0,e.jsxs)(i.Fragment,{children:[r>0?(0,e.jsx)("wbr",{}):null,t]},r))}])}]);

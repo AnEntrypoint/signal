@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,506916,e=>{"use strict";let t;e.s(["f",0,function(e){return(t??=new TextDecoder("utf-8",{fatal:!1,ignoreBOM:!0})).decode(e)}])}]);

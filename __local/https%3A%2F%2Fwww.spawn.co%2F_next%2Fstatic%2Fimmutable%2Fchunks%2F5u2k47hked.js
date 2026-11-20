@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,680235,o=>{"use strict";var e=o.i(286602),t=o.i(892326);o.s(["openPersonProfile",0,function(o,i=null){(0,e.Y)(),(0,e.i)(o,i),t.useStudioStore.getState().askRoomPopover()}])}]);

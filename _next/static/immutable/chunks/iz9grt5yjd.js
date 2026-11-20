@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,957770,e=>{"use strict";let t=Object.freeze([]);e.s(["f",0,t])}]);

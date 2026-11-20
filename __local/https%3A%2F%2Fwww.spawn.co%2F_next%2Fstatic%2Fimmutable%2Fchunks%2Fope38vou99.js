@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,974729,o=>{"use strict";o.s(["D",0,function(o,i){return o.is(i?`${i}.world_of_app_id`:"world_of_app_id",null)},"t",0,o=>o.world_of_app_id??o.id])}]);

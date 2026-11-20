@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,942798,a=>{"use strict";a.s(["t",0,"game-modal","L",0,"data-game-play","A",0,"data-in-place"])}]);

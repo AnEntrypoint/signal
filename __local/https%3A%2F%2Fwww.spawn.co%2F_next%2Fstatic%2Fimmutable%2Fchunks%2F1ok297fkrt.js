@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,745640,e=>{"use strict";var t=e.i(711532),a=e.i(271645),i=e.i(114550);let o=()=>()=>{},r=()=>!1;e.s(["f",0,function(e){let c=(0,a.useSyncExternalStore)(o,t.Q,r);return"game"===(0,i.f)("make-makes-a-game",e&&!c)||c}])}]);

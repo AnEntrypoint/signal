@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,808479,e=>{"use strict";let r={all:["game-notes"],maker:e=>[...r.all,e,"maker"],order:e=>[...r.all,e,"order"],threads:e=>[...r.all,e,"threads"],threadPages:(e,t,a)=>[...r.threads(e),t,a],writer:()=>[...r.all,"writer"]};e.s(["f",0,r])}]);

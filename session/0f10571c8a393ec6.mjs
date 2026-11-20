@@ -1,0 +1,5 @@
+;const{B57:W,h5p:R}=$Ss;
+var O=typeof setImmediate==="function"?setImmediate:void 0,f=typeof setTimeout==="function"?setTimeout:void 0,D,a=[],P=!1,y=function(o,s){if(D===void 0)D=new MessageChannel,D.port1.onmessage=function(){P=!0,a.shift()?.()};a.push(o);let t=W();D.port2.postMessage(null),R("hop",s,W()-t)},k=function(o,s){let t=f;if(P&&t!==void 0)P=!1,t(o,0);else y(o,s)},r=4,x=function(o){if(typeof MessageChannel>"u"||O!==void 0)o();else y(o,"arm")},_=function(o,s){if(O!==void 0)O(o);else if(typeof MessageChannel>"u")f?.(o,0);else k(o,s)},K=(o)=>o!==null&&typeof o==="object"&&("postTask"in o)&&typeof o.postTask==="function",E={priority:"user-visible"},C={priority:"user-blocking"},b=function(o,s=!1){let t=Reflect.get(globalThis,"scheduler");if(K(t)){t.postTask(o,s?C:E);return}_(o,"task")},w=()=>new Promise((o)=>_(o,"yield"));var d=()=>({kind:"worker-stood"}),F=(o)=>typeof o==="object"&&o!==null&&o.kind==="worker-stood";;
+Object.assign($Ss,{Gja:b,JsY:d,UNn:F,ftn:r,sIE:w,y0q:x});
+
+;import{S as $Ss}from"./8470e5fcd747a5a5.mjs";export{F as UNn,b as Gja,d as JsY,r as ftn,w as sIE,x as y0q};

@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,212001,e=>{"use strict";var t=e.i(810565),r=e.i(417695);e.s(["f",0,function(){if("u"<typeof document)return"";let e=Reflect.get(window,t.f);if("string"==typeof e)return e;let n=(0,r.r)("session",t.z);null!==n&&(0,r.p)("session",t.z);let o=(0,t.$)(n,document.referrer);return Reflect.set(window,t.f,o),o}])}]);

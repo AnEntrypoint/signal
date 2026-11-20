@@ -1,0 +1,1 @@
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,324276,(o=>{"use strict";let e={mode:"hold V",note:"key V",holding:"live \xb7 holding V"},t={mode:"hold the mic",note:"hold the mic",holding:"live \xb7 holding the mic"};o.s(["f",0,function(o){return o?t:e}])})]);

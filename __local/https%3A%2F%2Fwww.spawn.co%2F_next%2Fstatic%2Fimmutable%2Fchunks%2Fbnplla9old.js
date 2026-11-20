@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,25180,t=>{"use strict";t.i(608283);var e=t.i(873821);String.raw`^/(?:@|%40)`,t.s(["Q",0,function(t){let e=t.split(/[?#]/,1)[0]??"",o=e;try{o=decodeURIComponent(e)}catch{o=e}return o.replace(/^\/+/,"")},"i",0,function(t){return"1"===((0,e.v)(t,"spawn_desktop_app")??void 0)}])}]);

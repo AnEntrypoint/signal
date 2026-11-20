@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,195135,t=>{"use strict";let s=/\.(?:md|txt)$/iu,e=/^world\.assets(?:\/[\s\S]*)?\.yaml$/u,r=t=>/^(?:tools|art|port|docs)\/|(?:^|\/)(?:tests?|__tests__)\/|\.(?:test|spec)\.[cm]?js$/u.test(t),o=/^art\/(?:[^/]+\/)*[^/]+\.[a-z0-9]{1,8}\.yml$/iu,c=t=>s.test(t)||r(t)&&!o.test(t)||"scripts/architecture.json"===t||e.test(t);t.s(["C",0,r,"i",0,t=>{let s=!1;for(let e of t){if(!c(e))return!1;s=!0}return s}],195135)}]);

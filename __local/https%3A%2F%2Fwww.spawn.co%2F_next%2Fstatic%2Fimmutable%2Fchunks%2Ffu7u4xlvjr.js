@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,894951,t=>{"use strict";var o=t.i(947414);class n{constructor(){this.componentControls=new Set}subscribe(t){return this.componentControls.add(t),()=>this.componentControls.delete(t)}start(t,o){this.componentControls.forEach(n=>{n.start(t.nativeEvent||t,o)})}cancel(){this.componentControls.forEach(t=>{t.cancel()})}stop(){this.componentControls.forEach(t=>{t.stop()})}}let s=()=>new n;t.s(["N",0,n,"G",0,function(){return(0,o.f)(s)}])}]);

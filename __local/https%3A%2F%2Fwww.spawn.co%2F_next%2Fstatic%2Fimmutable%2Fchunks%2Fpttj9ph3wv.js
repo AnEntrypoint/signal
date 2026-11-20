@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,342610,a=>{"use strict";a.s(["e",0,"That game did not start. Try again.","T",0,"new game","r",0,"No answer came back. The game may still start: look in Make before you try again."])}]);

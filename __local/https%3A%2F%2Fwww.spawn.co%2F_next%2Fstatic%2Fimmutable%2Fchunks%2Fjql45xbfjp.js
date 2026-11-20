@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,514879,t=>{"use strict";t.s(["desktopAppShellChunk",0,()=>t.A(165309)])},282310,function(t){t.n(t.i(514879))}]);

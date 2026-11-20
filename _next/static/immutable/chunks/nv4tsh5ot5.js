@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,856510,o=>{"use strict";o.s(["mobileTabBarDoor",0,()=>o.A(933684)])}]);

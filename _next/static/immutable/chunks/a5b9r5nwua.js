@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,87614,e=>{"use strict";var o=e.i(388661),r=e.i(537100);let i="social",l={error:"error",warn:"warn",info:"log",debug:"log"};e.s(["f",0,function(e,s={},a="info"){(0,r.shipBrowserLog)(i,e,{layer:"social",event:e,realm:"page",...s},a),(0,o.k)({origin:"parent",source:i,level:l[a],message:`${e} ${(0,o.y)(s)}`})}])}]);

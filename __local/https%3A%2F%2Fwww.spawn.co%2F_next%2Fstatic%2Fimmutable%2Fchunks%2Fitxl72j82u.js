@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,174199,e=>{"use strict";var r=e.i(266027),t=e.i(917471);e.s(["f",0,function(e){return(0,r.f)({queryKey:t.f.credits(e??""),enabled:!!e,staleTime:1/0,queryFn:async()=>{let r=await fetch(`/api/projects/${e}/credits`),t=await r.json();if(!r.ok||!t.ok||!t.credits)throw Error(t.error??`credits read failed (${r.status})`);return t.credits}})}])}]);

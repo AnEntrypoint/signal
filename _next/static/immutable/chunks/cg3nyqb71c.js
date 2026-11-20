@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,50304,e=>{"use strict";var i=e.i(843476),n=e.i(898653);e.s(["f",0,function({className:e}){return(0,i.jsx)("span",{className:(0,n.c)("rounded-hairline border border-sign/25 bg-sign/10 px-1 py-px font-pixel text-xs leading-4 text-sign",e),children:"agent"})}])}]);

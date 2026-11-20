@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,74909,t=>{"use strict";var e=t.i(873821);let n="spawn_joined";t.s(["c",0,function(t){let o=(0,e.v)(t??null,n);return""===o?null:o},"p",0,function(){document.cookie=`${n}=; Path=/; Max-Age=0; SameSite=Lax`}])}]);

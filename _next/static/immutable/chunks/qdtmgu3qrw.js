@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,847975,e=>{"use strict";var o=e.i(381225),i=e.i(686078),t=e.i(537100);let s="share_opened_by_game";e.s(["f",0,function(e,a){let r={...null===e?{}:{app_id:e},opened:a};(0,t.shipBrowserLog)("social",s,{event:s,share_open:r,...(0,o.f)("the game share read")},"info"),(0,i.H)(s,r)}])}]);

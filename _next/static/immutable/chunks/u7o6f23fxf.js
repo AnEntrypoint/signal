@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,363031,e=>{"use strict";var i=e.i(843476),s=e.i(638518),t=e.i(792711),o=e.i(84251);e.s(["PressSheet",0,function({appId:e,appName:h,homeOf:n,open:r,onClose:l}){return(0,i.jsx)(s.Z,{open:r,onClose:l,title:(0,t.D)({name:h,published:!0,homeOf:n})||t.G,height:"fill",children:(0,i.jsx)(o.PressPane,{appId:e,appName:h,homeOf:n,chrome:"sheet"})})}])}]);

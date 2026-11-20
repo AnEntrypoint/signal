@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,110758,e=>{"use strict";var n=e.i(66536);let o={"--page-column":`${n.m.column}px`},p="phone:rounded-none phone:border-0 phone:bg-transparent phone:shadow-none phone:px-0 phone:[--plate-inset:theme(spacing.gutter)]",h=`${p} phone:border-t`;e.s(["K",0,"phone:flex phone:min-h-screen phone:flex-col phone:justify-center phone:pb-0","F",0,"phone:mx-0 phone:w-full phone:max-w-none phone:px-gutter","w",0,o,"V",0,p,"b",0,h])}]);

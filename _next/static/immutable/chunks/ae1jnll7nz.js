@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,144080,e=>{"use strict";var t=e.i(271645),i=e.i(498768);e.s(["SaviCellLive",0,function({isCoarsePointer:e,reads:l=!1,onRead:u}){let c=(0,i.O)(!0),o=(0,i.Y)(c),n=(0,i.K)(c,e,l,o);return(0,t.useEffect)(()=>{u({mark:c,saviName:o,label:n})},[c,o,n,u]),null}])}]);

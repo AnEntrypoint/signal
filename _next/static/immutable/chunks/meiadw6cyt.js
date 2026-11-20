@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,294065,n=>{"use strict";n.s(["P",0,function(n,t,u){return null!==t&&null!==u&&n.source===t&&n.origin===u},"E",0,function(n){try{let t=new URL(n).origin;return"null"===t?null:t}catch{return null}}])}]);

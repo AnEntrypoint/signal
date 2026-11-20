@@ -1,0 +1,3 @@
+
+var l=null,w=function(m){l=m},q=function(m){throw Error(`builtin/postfx is the engine's look vocabulary \u2014 "${String(m)}" cannot be written; a look script composes its own functions over grade/vignette/grain/\u2026`)},A=new Proxy({},{get(m,j){if(typeof j!=="string")return;if(!l)throw Error(`builtin/postfx is only available inside a look script's build: "${j}" was read outside any active post pipeline build`);return l[j]},has(m,j){return typeof j==="string"&&l!==null&&j in l},ownKeys(){return l?Reflect.ownKeys(l):[]},getOwnPropertyDescriptor(m,j){if(typeof j!=="string"||!l||!(j in l))return;return{configurable:!0,enumerable:!0,writable:!1,value:l[j]}},set:(m,j)=>q(j),defineProperty:(m,j)=>q(j),deleteProperty:(m,j)=>q(j)});
+export{A as Wpu,w as IP6};

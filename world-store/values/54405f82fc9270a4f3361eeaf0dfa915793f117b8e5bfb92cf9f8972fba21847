@@ -1,0 +1,46 @@
+
+
+
+import { float, vec2, vec3, floor, fract, abs, max, atan2, mod, step, smoothstep, mix, length, varying, positionLocal, positionGeometry, instanceIndex } from "builtin/tsl";
+import { MeshBasicNodeMaterial } from "builtin/three";
+import { tripClock, stripes } from "./lib/trip.js";
+import { inside, LY, LZ, GRAPH, fam, light, cut, pinch } from "./tunnel-lib.js";
+
+export function material(ctx) {
+  const m = new MeshBasicNodeMaterial();
+  const c = tripClock(ctx), F = fam(c);
+  const i = float(instanceIndex), dir = step(3.5, i).mul(2).sub(1), k = mod(i, 4);
+  const pl = positionLocal, d = float(LZ).sub(pl.z);
+
+  const nh = c.pick(39, 3).add(2), pitch = mix(40, 90, c.rnd(39));
+
+  const a0 = d.div(pitch).sub(c.sec.mul(c.dir).div(mix(48, 96, c.rnd(35)))).add(k.div(nh));
+  const ang = mix(a0, float(0.5).sub(a0), step(3.5, i)).mul(6.2831853);
+  const cs = ang.cos(), sn = ang.sin(), px = pl.x, py = pl.y.sub(LY);
+
+  const ps = pinch(c, d).s.mul(float(1).add(d.sub(3).mul(3.14159265 / 6).cos().mul(0.085)));
+  m.positionNode = vec3(px.mul(cs).sub(py.mul(sn)).mul(ps), px.mul(sn).add(py.mul(cs)).mul(ps).add(LY), pl.z);
+  const keep = varying(step(k, nh.sub(0.5)));
+  const vi = varying(i), vk = varying(k);
+  const g = positionGeometry, dg = float(LZ).sub(g.z);
+  const isBead = step(0.3, length(g.xy.sub(vec2(5.5, LY))));
+  const L = light(c, dg).L;
+  const bw = stripes(dg.div(0.75).add(c.bar.mul(0.5)), 1, 0.06);
+  const ta = atan2(g.y.sub(LY), g.x.sub(5.5)).div(6.2831853).mul(4), tw = dg.div(0.5).sub(c.bar.mul(0.5));
+  const da = abs(fract(ta.add(tw)).sub(0.5)), db = abs(fract(ta.sub(tw)).sub(0.5)), dm = max(da, db);
+  const cellOn = step(dm, 0.4).mul(step(0.14, dm));
+  const isBW = step(0.5, mod(vk, 2));
+  const mask = mix(cellOn, bw, isBW);
+  const lit = mix(mix(F.acc, F.b, step(0.5, fract(dg.div(6)))), mix(F.a, vec3(1, 1, 1), step(60.35, c.sec).mul(step(c.sec, 180.35))), isBW);
+  const tube = mix(GRAPH, lit, L).mul(mask);
+
+  const bj = floor(dg.div(1.5)), bz = abs(fract(dg.div(1.5)).sub(0.5)).mul(1.5);
+  const chase = step(mod(bj.sub(floor(c.beat).mul(step(0.5, c.live))).add(vk.mul(2)), 8), 1.5);
+  const beadLit = mix(F.hot(bj.add(vk)), F.a, step(0.27, bz));
+  const beadCol = mix(GRAPH.mul(1.6), beadLit, max(chase, L.mul(0.5))).mul(float(1).sub(step(0.19, bz).mul(step(bz, 0.27))));
+  m.colorNode = mix(tube, beadCol, isBead).mul(smoothstep(192, 186, c.sec));
+  m.opacityNode = inside().mul(cut(c)).mul(keep);
+  m.alphaTest = 0.5;
+  m.fog = false;
+  return m;
+}

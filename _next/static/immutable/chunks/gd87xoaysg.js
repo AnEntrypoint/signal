@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,185664,e=>{"use strict";e.S([703366,"NavSearch,U,PORTAL_PANEL_MARGIN,E,PORTAL_PANEL_MARGIN_PHONE,$,PORTAL_PANEL_MAX,h,RowTile,M,packShelves,W,shelfCapacity,a,shelfStep,F",0,788914,"SEARCH_DEBOUNCE_MS,p"])}]);

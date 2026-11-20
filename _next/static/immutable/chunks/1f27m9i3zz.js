@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,665827,t=>{"use strict";t.S([498526,"PendingFrameOnSoftEntry,N"])}]);

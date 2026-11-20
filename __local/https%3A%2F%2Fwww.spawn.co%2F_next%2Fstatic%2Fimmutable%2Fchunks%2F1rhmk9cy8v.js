@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,45923,t=>{"use strict";function e(t){return!1===t.works_on_mobile||!1===t.mobile_playable}t.s(["y",0,function(t,o,n){if(!n)return t;let l=[],r=[];for(let n of t)(e(o(n))?r:l).push(n);return 0===l.length||0===r.length?t:[...l,...r]},"f",0,e])}]);

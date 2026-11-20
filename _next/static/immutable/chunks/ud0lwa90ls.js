@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,746078,i=>{"use strict";var t=i.i(558947),e=i.i(735787),o=i.i(810457);let n={WebkitAppRegion:"drag"};i.s(["i",0,n,"W",0,{WebkitAppRegion:"no-drag"},"l",0,function(){let i=(0,o.Z)(),r=(0,e.f)(),c=(0,t.f)();return!i||r||c?void 0:n}])}]);

@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,258918,e=>{"use strict";let a=e.i(619035).t+5e3;e.s(["C",0,a,"O",0,"/api/apps/create","W",0,"spawn:create-intent","o",0,"spawn:den-early","D",0,"denEarly","y",0,"spawn:made-after","z",0,"spawn:makegame"])}]);

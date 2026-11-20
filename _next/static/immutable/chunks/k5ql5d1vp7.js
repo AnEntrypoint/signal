@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,690855,e=>{"use strict";e.s(["Z",0,"spawn:kernel:spec-save","F",0,"spawn:kernel:terrain-persist"])}]);

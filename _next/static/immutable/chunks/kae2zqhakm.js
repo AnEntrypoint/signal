@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,264570,e=>{"use strict";var c=e.i(95187);let r=(0,c.createServerReference)("40d62bb2830c99fc06fcd883f38eaa436355a43916",c.callServer,void 0,c.findSourceMapURL,"readNotifications");e.s(["f",0,r])}]);

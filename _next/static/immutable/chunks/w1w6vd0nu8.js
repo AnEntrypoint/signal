@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,981739,e=>{"use strict";var t=e.i(843476),o=e.i(271645);let n=(0,o.createContext)(null);e.s(["PhoenixWorld",0,function({worldId:e,appId:r,title:u,children:i}){let l=(0,o.useMemo)(()=>({worldId:e,appId:r,title:u}),[e,r,u]);return(0,t.jsx)(n.Provider,{value:l,children:i})},"usePhoenixWorld",0,function(){return(0,o.useContext)(n)}])}]);

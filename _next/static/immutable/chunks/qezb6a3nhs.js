@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,426934,t=>{"use strict";var e=t.i(271645),n=t.i(437052);let o=(0,e.createContext)(null),r={paint:n.L,contained:!1};t.s(["GroundPaintContext",0,o,"OnSpawnGround",0,function({children:t}){return(0,e.createElement)(o.Provider,{value:r},t)}])}]);

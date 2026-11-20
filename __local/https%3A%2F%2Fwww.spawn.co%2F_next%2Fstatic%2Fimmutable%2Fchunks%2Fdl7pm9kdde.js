@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,737806,t=>{"use strict";let e=(0,t.i(271645).createContext)({transformPagePoint:t=>t,isStatic:!1,reducedMotion:"never"});t.s(["f",0,e])}]);

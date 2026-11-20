@@ -1,0 +1,1 @@
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,255317,(e=>{"use strict";var t=e.i(843476),o=e.i(143622),i=e.i(81739);let n=(0,o.f)(()=>(0,i._)((()=>e.A(283081))).then((e=>({default:e.PhoenixFrame}))),{loadableGenerated:{modules:[22219]}});e.s(["PhoenixStage",0,(function(e){return(0,t.jsx)(n,{...e})})])})]);

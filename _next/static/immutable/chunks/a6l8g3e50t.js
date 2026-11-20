@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,930203,e=>{"use strict";e.s(["f",0,{faceAspect:2/3,spinePct:10,spineRestDeg:-75,spineSquareDeg:-90,shelfTurnDeg:16,turnDeg:35,lensPerWidth:3,lidOpenDeg:-180,lidDelaySeconds:.18,openMs:900}])}]);

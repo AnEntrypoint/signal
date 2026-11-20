@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,660521,t=>{"use strict";var e=t.i(510269),r=t.i(898653);t.s(["U",0,{transform:"translateY(-50%)"},"s",0,function(t){return{className:(0,r.c)("pointer-events-none absolute right-full top-1/2 mr-1 w-max max-w-[min(18rem,calc(100vw-5rem))] break-words rounded-hairline bg-surface-scrim px-1 py-px text-right font-pixel text-xs leading-tight text-white/75",t),[e._]:""}}])}]);

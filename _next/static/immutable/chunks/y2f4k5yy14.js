@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,850660,t=>{"use strict";var e=t.i(244497);t.s(["f",0,function(t,n){if((0,e.B)(n,{userAct:!0,origin:"surface"}))return"Spawn updated while this window was open. Reload to finish this.";let i=function(t){if("object"!=typeof t||null===t)return null;let e=t.digest;return"string"==typeof e&&e.length>0?e:null}(n);return console.error(`${t} (digest ${i??"none"}):`,n),t}])}]);

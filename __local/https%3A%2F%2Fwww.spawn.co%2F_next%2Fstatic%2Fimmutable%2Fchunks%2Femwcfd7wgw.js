@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,427580,r=>{"use strict";var t=r.i(417695);let e="spawn:phoenix-worlds";function n(){try{let r=JSON.parse((0,t.r)("local",e)??"[]");return Array.isArray(r)?r.filter(r=>"string"==typeof r):[]}catch{return[]}}r.s(["n",0,function(r){return n().includes(r)},"r",0,function(r){let i=n();i.includes(r)||(0,t.B)("local",e,JSON.stringify([...i,r].slice(-64)))}])}]);

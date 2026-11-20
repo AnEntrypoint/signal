@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,387303,e=>{"use strict";e.S([28529,"FacePlate,D,GameBox3D,J,GameBoxStatic,_,NoArtPlate,h,PHONE_IDLE_TILT_X,w,PHONE_TILT_SHIFT_CLASS,N,SPINE_SQUARE_DEG,Y,pictureSizesOf,Q,spineWallAngle,C",0,351480,"SPINE_REST_DEG,C",0,344364,"BOX_ART_CACHE_VERSION,F,getBoxArtImageUrl,m"])}]);

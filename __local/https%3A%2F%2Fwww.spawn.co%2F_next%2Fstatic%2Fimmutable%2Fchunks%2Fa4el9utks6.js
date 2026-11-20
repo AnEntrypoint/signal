@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,65880,[[["static/immutable/chunks/pvt83lz0jz.js",["static/immutable/chunks/8s6tapddke.js","static/immutable/chunks/3thqvqdyh6.js","static/immutable/chunks/aquez6qia8.js","static/immutable/chunks/bgc8vihnh6.js","static/immutable/chunks/glw9gor3tl.js","static/immutable/chunks/3j9sznarc5.js"],[2,2,1,1,1,3]]],866843]]);

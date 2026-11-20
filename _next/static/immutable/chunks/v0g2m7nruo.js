@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,596806,e=>{"use strict";e.s(["f",0,function(e){let t=new MessageEvent("message",{data:e.data,origin:e.origin,...void 0===e.lastEventId?{}:{lastEventId:e.lastEventId}});return Object.defineProperty(t,"source",{value:e.source??null}),t}])}]);

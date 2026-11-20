@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,795599,r=>{"use strict";var t=r.i(672125);r.s(["Y",0,function(r){return!!r.isCreator||r.answered&&(0,t.A)({isCreator:!1,crew:(0,t.q)(r.permission),visitorSeat:r.visitorSeat})},"M",0,function(r){return"live"!==r}])}]);

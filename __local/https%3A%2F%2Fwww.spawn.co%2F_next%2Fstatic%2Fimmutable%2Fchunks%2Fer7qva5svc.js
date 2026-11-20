@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,361608,o=>{"use strict";o.s(["f",0,function(o,t){if(!Number.isFinite(o)||!Number.isFinite(t))return"";let e=Math.max(0,Math.floor((t-o)/1e3));return e<60?"now":e<3600?`${Math.floor(e/60)}m`:e<86400?`${Math.floor(e/3600)}h`:e<604800?`${Math.floor(e/86400)}d`:e<3024e3?`${Math.floor(e/604800)}w`:`${Math.floor(e/2592e3)}mo`}])}]);

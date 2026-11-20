@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,331098,e=>{"use strict";let p={pending:"webgpu-adapter-pending",paused:"webgpu-adapter-paused",off:"webgpu-adapter-off"};e.s(["G",0,p,"p",0,function(e,u){return null===u||e!==p.pending&&e!==p.paused&&e!==p.off?e:u>=15e4?p.off:p.paused}])}]);

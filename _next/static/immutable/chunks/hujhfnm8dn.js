@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,897146,t=>{"use strict";let e=!1,n=new Set;t.s(["p",0,function(t){return e?(n.add(t),()=>{n.delete(t)}):(t(),null)},"n",0,function(){e=!1,0!==n.size&&setTimeout(()=>{if(e)return;let t=[...n];for(let e of(n.clear(),t))e()},0)},"v",0,function(){e=!0},"C",0,function(){return e}])}]);

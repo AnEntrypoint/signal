@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,187767,t=>{"use strict";var e=t.i(843476),o=t.i(967116),i=t.i(171715),l=t.i(960354);t.s(["GameCellNotesDot",0,function({appId:t,open:n}){return(0,i.f)(),(0,o.f)(t).length>0&&!n?(0,e.jsx)(l.r,{word:"newNotes"}):null}])}]);

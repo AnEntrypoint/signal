@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,638074,e=>{"use strict";var t=e.i(110758);let n=`${t.V} phone:max-w-none phone:items-stretch phone:py-0`;e.s(["O",0,"relative flex min-h-screen w-full flex-col items-center justify-center px-6 py-[104px] phone:px-gutter phone:py-16","C",0,n])}]);

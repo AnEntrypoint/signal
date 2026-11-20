@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,792539,e=>{"use strict";var t=e.i(247167),r=e.i(956374);e.s(["f",0,function(){var e;return e=new URLSearchParams(window.location.search),(0,r.A)(t.default.env.NEXT_PUBLIC_FF_PRESS_IN_PLACE,e.get("pressInPlace"),!0)}])}]);

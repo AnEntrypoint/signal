@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,246914,e=>{"use strict";var s=e.i(651958);let t=self;t.onmessage=e=>{(0,s.drawModelThumbnail)(e.data).then(e=>t.postMessage(e),e=>t.postMessage({error:String(e)}))},e.s([],246914)}]);

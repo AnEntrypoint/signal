@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,18405,t=>{"use strict";var i=t.i(843476),e=t.i(271645),l=t.i(178511);t.s(["f",0,function({onClick:t,loadingText:a,children:o,...c}){let[n,r]=e.useState(!1),s=async()=>{let i=setTimeout(()=>{r(!0)},200);try{await t()}finally{clearTimeout(i),r(!1)}};return(0,i.jsx)(l.K,{"aria-label":n&&a?a:void 0,...c,loading:n,onClick:s,children:o})}])}]);

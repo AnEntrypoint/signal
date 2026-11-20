@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,812205,t=>{"use strict";t.s(["sessionCardFollowDoor",0,()=>t.A(808695)])},808695,[["static/immutable/chunks/px870x8up4.js"],672390]]);

@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,671274,t=>{"use strict";let e;t.s(["f",0,function(t){if(!(e??=document.createElement("canvas").getContext("2d",{willReadFrequently:!0})))return null;let n=`${t.fontStyle} ${t.fontWeight} ${t.fontSize} ${t.fontFamily}`,l=parseFloat(t.letterSpacing)||0;return t=>(e.font=n,e.measureText(t).width+l*[...t].length)}])}]);

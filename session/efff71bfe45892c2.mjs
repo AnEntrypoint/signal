@@ -1,0 +1,5 @@
+
+;var z="client/frame-tail",F="ui-view",J=`${z}/${F}`,y="(untimed)",Z=8;var $=32;var h="engine";var K={[z]:{owner:h,note:"the engine's own work after your scripts ran this tick (the HUD sample, the approach pass, the picture's bookkeeping) none of it is your code; this time is the engine's to bring down, never yours to trim"},[y]:{owner:h,note:"the engine's own work between its systems this tick (the walk from one system to the next and the tick's seal); none of it is your code; this time is the engine's to bring down, never yours to trim"},[J]:{owner:h,note:"the engine's own sample of what your HUD reads, taken each tick: your render never runs in it, and a HUD that reads what it shows is right as written; this time is the engine's to bring down, never the HUD's to give up"}};var a=45,g=16,G=8,P=8,p="(other)",C=y,D="(stalled)";var f=q("runtime/sim-attribution",{snapshot:"live-channel"});var k=q("runtime/sim-attribution-provider",{snapshot:"live-channel",versioned:!0});
+;
+
+;import{$_w as q}from"./4f765d71501e87ea.mjs";export{$ as djt,C as YWS,D as hh2,G as HSN,P as E2i,Z as dwv,a as PcA,g as ttk,p as Ln0,y as zQv,z as vI9};

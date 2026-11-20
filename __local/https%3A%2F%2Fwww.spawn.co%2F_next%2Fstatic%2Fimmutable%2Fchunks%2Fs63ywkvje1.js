@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,586196,e=>{"use strict";var t=e.i(847975),i=e.i(3940),o=e.i(892326);let c=null;e.s(["j",0,function(e){c=e},"U",0,function(e={}){let l=e.windowObject??window,n=c?.url||l.location.href.replace(/#.*$/,""),u=(0,i.d)()?"sheet":"copy";(0,i.Q)("game_share",n,c?.title??void 0),(0,t.f)(o.useStudioStore.getState().effectiveAppId,u)}])}]);

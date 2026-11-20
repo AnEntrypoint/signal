@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,586318,t=>{"use strict";var e=t.i(271645);t.i(843476);var o=e.createContext(void 0);t.s(["f",0,function(t){let r=e.useContext(o);return t||r||"ltr"}])}]);

@@ -1,0 +1,1 @@
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,357488,(e=>{"use strict";let t=(0,e.i(944296).f)((e=>({request:null,openBox:t=>e({request:t}),clearBoxOpen:()=>e({request:null})})));e.s(["f",0,t])})]);

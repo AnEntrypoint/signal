@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,656071,t=>{"use strict";var e=t.i(15038),o=t.i(479821),n=t.i(514093);let s=null;t.s(["e",0,function(t,e){null!==s&&t.postMessage(s,e)},"u",0,function(t,i){s={type:e.IP,version:1,...t};let l=(0,n.B)(i);l?.contentWindow?.postMessage(s,(0,o.f)(l))}])}]);

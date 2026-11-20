@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,608375,e=>{"use strict";var t=e.i(140880),r=e.i(266497);e.s(["pendingKernelFrameOf",0,function(e){let i=e.querySelector(`iframe[${r.a}="true"]`);return null!==i&&(0,t.$)(i.getAttribute("data-preview-for-src"))?i:null}])}]);

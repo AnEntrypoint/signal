@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,512119,o=>{"use strict";o.s(["O",0,18e5,"H",0,"x-spawn-room-mode"])}]);

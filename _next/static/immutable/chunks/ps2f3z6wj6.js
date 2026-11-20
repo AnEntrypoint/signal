@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,202452,t=>{"use strict";var e=t.i(417695);t.s(["f",0,function(t,r){let o;try{o=new URL(window.location.href)}catch{return!1}let a=o.searchParams.get(t);return null!==a&&((0,e.B)("local",r,"1"===a?"1":"0"),o.searchParams.delete(t),window.history.replaceState(window.history.state,"",o.toString()),!0)}])}]);

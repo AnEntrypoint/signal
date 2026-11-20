@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,283980,c=>{"use strict";var e=c.i(361843);c.s(["O",0,"character-viewer-v2","s",0,"den-figure","T",0,function(c,s){let t=c=>{try{fetch(c,{credentials:"same-origin"}).catch(()=>{})}catch{}};t(`${c}${c.includes("?")?"&":"?"}_cache=${s}`),t(`${e.m}basis_transcoder.js`),t(`${e.m}basis_transcoder.wasm`)}])}]);

@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,542898,e=>{"use strict";e.s(["m",0,()=>window.matchMedia?.("(pointer: coarse)").matches===!0,"$",0,function(e,t){fetch(e,{method:"POST",headers:{"content-type":"application/json"},credentials:"same-origin",keepalive:!0,body:JSON.stringify(t)}).catch(()=>void 0)}])}]);

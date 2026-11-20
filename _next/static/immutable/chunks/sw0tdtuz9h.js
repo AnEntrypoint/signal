@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,679107,e=>{"use strict";var n=e.i(686078),t=e.i(135679),o=e.i(271645);e.s(["DesktopLinksProof",0,function(){let{user:e}=(0,t.U)(),i=!!e&&!e.is_anonymous,s=(0,o.useRef)(!1);return(0,o.useEffect)(()=>{if(!i||s.current)return;let e=window.spawn?.desktopLinks;e&&"function"==typeof e.prove&&(s.current=!0,e.prove().then(e=>{e&&(0,n.H)("desktop_links_opened_at_launch")}))},[i]),null}])},799923,function(e){e.n(e.i(679107))}]);

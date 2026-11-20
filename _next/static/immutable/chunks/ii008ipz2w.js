@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,916857,e=>{"use strict";String(31536e3);let t=Object.freeze({"image/png":"png","image/jpeg":"jpg","image/webp":"webp"}),g=Object.keys(t).join(",");e.s(["s",0,g,"F",0,4194304,"E",0,t])}]);

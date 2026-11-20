@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,726019,o=>{"use strict";o.s(["phoenixCardFollowDoor",0,()=>o.A(876544)])}]);

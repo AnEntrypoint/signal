@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,684640,e=>{"use strict";e.s(["T",0,864e5,"u",0,"heldClaim","R",0,"spawn.heldClaim.v1","k",0,/^[hs]\.[0-9a-f]{32}(?:\.[0-9a-z-]{1,16}){0,2}$/,"L",0,"warm"])}]);

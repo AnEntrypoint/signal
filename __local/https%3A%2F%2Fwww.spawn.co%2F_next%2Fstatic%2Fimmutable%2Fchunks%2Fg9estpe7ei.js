@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,72873,t=>{"use strict";let e="data-kiln-script",r=`function (doc) { var script = doc.createElement('script'); script.setAttribute(${JSON.stringify(e)}, ''); return script; }`;t.s(["e",0,e,"c",0,r,"D",0,function(t){let r=t.createElement("script");return r.setAttribute(e,""),r}])}]);

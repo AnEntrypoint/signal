@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,412934,i=>{"use strict";var n=i.i(135679),t=i.i(318855),l=i.i(722796);i.s(["FriendListWire",0,function(){let{user:i}=(0,n.U)();return(0,t.n)(i&&!i.is_anonymous?i.id:null),(0,l.v)(i?.id??null),null}])}]);

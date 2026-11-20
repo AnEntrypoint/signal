@@ -1,0 +1,1 @@
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,125871,(t=>{"use strict";let e="app::",$="::player::",o=((t,e)=>`${t}${$}${e}`);t.s(["Q",0,$,"$",0,o,"T",0,((t,$)=>`${e}${o(t,$)}`),"x",0,t=>`${e}${t}`])})]);

@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,362114,t=>{"use strict";t.s(["V",0,9e3,"w",0,3500,"R",0,40,"h",0,function(t){return Math.min(9e3,3500+40*t.length)}])}]);

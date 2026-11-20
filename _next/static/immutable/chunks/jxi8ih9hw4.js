@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,136948,a=>{"use strict";var i=a.i(893119);function e(a,i,e){return null!==i&&null!==e?a.replace(/^Savi\b/,()=>e):a}a.s(["w",0,e,"W",0,function(a,i){return a.mark===i.mark&&a.saviName===i.saviName&&a.label===i.label},"f",0,function(a,n=!1,r=!1,t=null){if("working"===a)return e(i.v.saviWorking,a,t);let l=n?"":" (Tab)";return"unread"===a?`${e(i.v.saviFinished,a,t)}${l}`:`${r?"Read Savi's chat":"Talk to Savi"}${l}`}])}]);

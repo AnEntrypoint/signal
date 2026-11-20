@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,318546,t=>{"use strict";let e=new WeakMap;t.s(["f",0,function(t){let l=e.get(t);if(l)return l;let n=t.getContext("2d",{willReadFrequently:!0});if(!n)return null;let r={bitmap:t,ctx:n};return e.set(t,r),r}])}]);

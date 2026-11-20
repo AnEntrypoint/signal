@@ -1,0 +1,28 @@
+# spawn-scene v2 yaml objects
+companion-worm-1:
+  castShadow: false
+  feetPosition: {attach: camera, depth: 0.12, x: 0, y: 0}
+  id: companion-worm-1
+  material: {kind: scripted, params: {k0: -1, k1: -1, n: 1, "on": 0, seed: 0, t0: 0}, script: scripts/companion-worm-mat.js}
+  physics: none
+  primitive: {kind: scripted, params: {}, script: scripts/companion-worm-geo.js}
+  receiveShadow: false
+  tags: [trip, companion-worm]
+companion-worm-2:
+  castShadow: false
+  feetPosition: {attach: camera, depth: 0.12, x: 0, y: 0}
+  id: companion-worm-2
+  material: {kind: scripted, params: {k0: -1, k1: -1, n: 2, "on": 0, seed: 0, t0: 0}, script: scripts/companion-worm-mat.js}
+  physics: none
+  primitive: {kind: scripted, params: {}, script: scripts/companion-worm-geo.js}
+  receiveShadow: false
+  tags: [trip, companion-worm]
+companion-worm-3:
+  castShadow: false
+  feetPosition: {attach: camera, depth: 0.12, x: 0, y: 0}
+  id: companion-worm-3
+  material: {kind: scripted, params: {k0: -1, k1: -1, n: 3, "on": 0, seed: 0, t0: 0}, script: scripts/companion-worm-mat.js}
+  physics: none
+  primitive: {kind: scripted, params: {}, script: scripts/companion-worm-geo.js}
+  receiveShadow: false
+  tags: [trip, companion-worm]

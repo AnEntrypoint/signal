@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,401192,o=>{"use strict";o.s(["v",0,function(o){return"object"!=typeof o||null===o||Array.isArray(o)||"core"!==o.source?null:o},"X",0,function(o){let{v:t,at:r,place:e,wall:u,unread:c,arrival:i}=o;return{v:t,at:r,place:e,...void 0!==u?{wall:u}:{},...void 0!==c?{unread:c}:{},...void 0!==i?{arrival:i}:{}}}])}]);

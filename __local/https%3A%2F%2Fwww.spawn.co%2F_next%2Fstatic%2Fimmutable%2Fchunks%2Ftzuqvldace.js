@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,827962,e=>{"use strict";e.S([789247,"BROWSER_HOST,$,pageFetch,U,relayPlayerCapsuleMessage,J,ridePlayerCapsule,L",0,181811,"PLAYER_CAPSULE_MESSAGE_TYPE,_,describeRejectedPlayerCapsuleMessage,Y,parsePlayerCapsuleMessage,K,playerCapsuleR2Key,U"])}]);

@@ -1,0 +1,116 @@
+// THE SUN-EYE's disc (r 13): sigil pupil, seven counter-rotating iris bands of target dots, a row of target beads,
+// a crown of flame teeth. Graphite at rest; a mirrored clock hand and the kick's outward ripple carry the light.
+// ascent: rose curves r = cos(k*theta) drawn on per bar, k stepping through a seed-picked p/q sequence.
+// peak:   p6m kaleidoscope fold (6 rotations + mirrors) with Truchet quarter-arcs in each wedge.
+// return: the power map r -> 31.2^u * r^(1-2u), a homotopy to circle inversion (pupil and rim swap), then shrink to the point.
+import { MeshBasicNodeMaterial, DoubleSide } from "builtin/three";
+import { positionGeometry, float, vec2, vec3, smoothstep, step, mix, length, atan2, hash } from "builtin/tsl";
+import { tripClock, shown, win, SEC, stripes } from "./lib/trip.js";
+import { held } from "./field-lib.js";
+import { TAU, PI, sel, breath, ripple, barStep, order, sweep, fam, relight, allLit } from "./sun-lib.js";
+
+export function material(ctx) {
+  const c = tripClock(ctx), F = fam(c), sec = c.sec, N = order(c);
+  const p = positionGeometry.xy;
+  const br = breath(sec);
+  // return: inversion homotopy then shrink
+  const u = smoothstep(180.35, 183.35, sec), s = smoothstep(183.35, 186.35, sec);
+  const rRaw = length(p).max(0.001);
+  const shrink = float(1).sub(s.mul(0.97));
+  const rMask = rRaw.div(shrink);
+  const rInv = float(31.2).pow(u).mul(rRaw.pow(float(1).sub(u.mul(2)))).div(shrink);
+  const rr = rInv.div(float(1).add(ripple(c, rInv).mul(0.05)).add(br.mul(0.03)));
+  const tm = atan2(p.x.abs(), p.y); // angle from the top, 0..pi, the same on both sides (mirror)
+  const rip = ripple(c, rr);
+  const asc = win(c.sec, SEC.ascent), peak = F.peak;
+  const gg = c.pick(61, 3).lessThan(0.5).toFloat().mul(float(1).sub(peak)); // graphite-and-gold deal
+  const L = sweep(c, tm).mul(float(1).sub(gg)).max(rip.mul(0.55)).max(allLit(c));
+  const cutVar = c.pick(64, 3);
+
+  // pupil sigil {n/m}, the roll's signature
+  const si = c.pick(63, 4);
+  const n = sel(si, [5, 7, 8, 9]), m = sel(si, [2, 3, 3, 4]);
+  const th = atan2(p.x, p.y), R = float(1.85), wdg = float(TAU).div(n);
+  const h = R.mul(m.mul(PI).div(n).cos()), hl = R.mul(m.mul(PI).div(n).sin());
+  const a0 = th.sub(m.mul(PI).div(n)).add(wdg.mul(0.5)).div(wdg).fract().mul(wdg).sub(wdg.mul(0.5));
+  let dS = float(9);
+  for (let j = -2; j <= 2; j++) {
+    const aj = a0.add(wdg.mul(j)), px = rr.mul(aj.cos()), py = rr.mul(aj.sin());
+    dS = dS.min(length(vec2(px.sub(h), py.abs().sub(hl).max(0))));
+  }
+  const sigil = smoothstep(0.09, 0.035, dS).mul(step(rr, 2.3));
+  const rimB = step(2.4, rr).mul(step(rr, 2.68));
+  const rimDot = smoothstep(0.12, 0.08, length(vec2(tm.div(PI).mul(N.mul(4)).fract().sub(0.5).mul(rr.mul(PI).div(N.mul(4))), rr.sub(2.54))));
+
+  // iris bands 2.7..9
+  const inIris = step(2.7, rr).mul(step(rr, 9.0));
+  const bx = rr.sub(2.7).div(0.9), bi = bx.floor().clamp(0, 6), bf = bx.fract();
+  const sgn = float(1).sub(bi.mod(2).mul(2));
+  const fill = smoothstep(0.08, 0.14, bf).mul(smoothstep(0.92, 0.86, bf));
+  const cellsB = N.mul(bi.add(2)).mul(0.5).floor();
+  const rotB = sgn.mul(c.dir).mul(sec).mul(TAU).div(bi.mul(8).add(64)).mul(mix(0.7, 1.3, c.rnd(61)));
+  const fB = tm.add(rotB).div(PI).mul(cellsB).fract();
+  const dB = length(vec2(fB.sub(0.5).mul(rr.mul(PI).div(cellsB)), bf.sub(0.5).mul(0.9)));
+  const radB = float(0.24).mul(float(1).add(br.sub(0.5).mul(0.3).mul(sgn))); // counter-breath
+  const dotB = step(dB, radB), coreB = step(dB, radB.mul(0.45));
+  const bandCol = F.at(bi.div(6));
+  // peak: p6m fold + Truchet
+  const w6 = float(PI / 3), a6 = th.div(w6).fract().sub(0.5).abs().mul(w6);
+  const q = vec2(rr.mul(a6.cos()), rr.mul(a6.sin())).div(0.9);
+  const cell = q.floor(), fq = q.fract();
+  const flip = step(0.5, hash(cell.x.mul(7.13).add(cell.y.mul(13.7)).add(c.seed.mul(0.618))));
+  const fx = mix(fq.x, float(1).sub(fq.x), flip);
+  const dT = length(vec2(fx, fq.y)).sub(0.5).abs().min(length(vec2(fx.sub(1), fq.y.sub(1))).sub(0.5).abs());
+  const truchet = smoothstep(0.11, 0.05, dT).mul(peak);
+  // ascent: rose curves, k = p/q stepping on the bar
+  const ks = c.pick(62, 3).mul(4).add(c.bar.floor().mod(4));
+  const kp = sel(ks, [3, 5, 7, 4, 2, 7, 5, 6, 5, 3, 8, 7]), kq = sel(ks, [1, 2, 3, 1, 1, 2, 3, 1, 1, 2, 3, 4]);
+  const k = kp.div(kq);
+  let dR = float(9);
+  for (let j = 0; j < 4; j++) dR = dR.min(rr.sub(k.mul(tm.add(TAU * j)).cos().abs().mul(6.1).add(2.8)).abs());
+  const reveal = step(tm.div(PI), smoothstep(0.0, 0.8, c.bar.fract()));
+  const rose = smoothstep(0.17, 0.07, dR).mul(reveal).mul(asc).mul(inIris);
+  const roseCol = F.at(tm.div(PI).add(sec.div(24)).fract());
+
+  // the bead row at 9.6: target dots, turning against the teeth
+  const inRow = step(9.1, rr).mul(step(rr, 10.1));
+  const cellsR = N.mul(2);
+  const fR = tm.sub(c.dir.mul(sec).mul(TAU / 80)).div(PI).mul(cellsR).fract();
+  const dRw = length(vec2(fR.sub(0.5).mul(rr.mul(PI).div(cellsR)), rr.sub(9.6))).div(br.sub(0.5).mul(-0.2).add(1));
+  const tOut = step(dRw, 0.44), tRing = step(dRw, 0.31), tCore = step(dRw, 0.2);
+
+  // flame teeth 10.3..13
+  const cellsT = N.mul(1.5);
+  const tf = tm.add(c.dir.mul(sec).mul(TAU / 96).mul(mix(0.7, 1.3, c.rnd(65)))).div(PI).mul(cellsT).add(rr.sub(10.3).mul(0.05));
+  const tlen = mix(float(2.7), float(1.6), tf.floor().mod(2)).mul(rip.mul(0.08).add(1));
+  const tw = tf.fract().sub(0.5).abs().mul(2);
+  const tooth = step(10.1, rr).mul(step(tw, float(1).sub(rr.sub(10.1).div(tlen)).max(0).pow(0.9)));
+  const toothCol = mix(F.at(0.1), F.at(0.9), rr.sub(10.1).div(2.7)).mul(mix(1, 0.18, stripes(rr, 2.2, 0.06)));
+
+  // self-cutout, one of three by the roll: target cores as holes / one band in three, stepping each 2 bars / a mirrored wedge stepping on the bar
+  const cut0 = step(cutVar, 0.5).mul(coreB.mul(inIris).mul(fill).max(tCore.mul(inRow)));
+  const cut1 = step(0.5, cutVar).mul(step(cutVar, 1.5)).mul(inIris).mul(step(bi.add(c.bar.div(2).floor()).mod(3), 0.5));
+  const wi = tm.div(PI).mul(N).floor();
+  const cut2 = step(1.5, cutVar).mul(step(2.7, rr)).mul(step(rr, 10.1)).mul(step(wi.sub(barStep(c).floor().mod(N)).abs(), 0.5));
+  const cut = cut0.max(cut1).max(cut2);
+
+  // compose
+  let col = vec3(0);
+  col = col.add(F.gold.mul(sigil).mul(rip.mul(0.5).add(0.5)));
+  col = col.add(relight(F.at(0.5), L).mul(rimB).mul(rimDot));
+  const irisBase = relight(bandCol, L).mul(fill).mul(float(1).sub(truchet.mul(0.6)));
+  const irisDots = relight(F.hot(), L).mul(coreB);
+  const irisCol = mix(irisBase, irisDots, dotB).add(relight(F.at(bi.div(6).add(0.5)), L).mul(truchet).mul(fill));
+  col = col.add(mix(irisCol, roseCol.mul(1.05), rose).mul(inIris));
+  const rowCol = mix(mix(relight(F.hot(), L), vec3(0), tRing.sub(tCore)), relight(F.at(0.4), L), tCore).mul(tOut);
+  col = col.add(rowCol.mul(inRow));
+  col = col.add(relight(toothCol, L.max(gg)).mul(tooth));
+
+  const solid = step(rr, 10.1).max(tooth).mul(step(rMask, 13.1));
+  const mt = new MeshBasicNodeMaterial();
+  mt.side = DoubleSide;
+  mt.colorNode = col;
+  mt.opacityNode = held(c, "sky", shown(c, "sky", rMask.div(13)), 0.8).mul(solid).mul(float(1).sub(cut));
+  mt.alphaTest = 0.5; mt.toneMapped = false;
+  return mt;
+}

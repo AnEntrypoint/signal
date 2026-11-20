@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,573577,e=>{"use strict";e.s(["j",0,"2026-10-11T02:22:00Z","D",0,["kid"],"t",0,"Spawn is for 13 and up today.","f",0,function(e,n){return null===n.minAge||void 0===n.minAge?e.unratedGames:(!n.hard||!!e.hard18)&&(null===e.maxGameAge||n.minAge<=e.maxGameAge)}])}]);

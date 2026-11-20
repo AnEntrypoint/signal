@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,603456,e=>{"use strict";var o=e.i(843476),t=e.i(638518),i=e.i(792711),n=e.i(788889);e.s(["WorldSheet",0,function({appId:e,names:r,maker:s,open:l,onClose:h}){return(0,o.jsx)(t.Z,{open:l,onClose:h,title:r?.shown??i.G,height:"fill",children:(0,o.jsx)(n.WorldPane,{appId:e,names:r,chrome:"sheet",maker:s})})}])}]);

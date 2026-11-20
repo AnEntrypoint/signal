@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,858669,e=>{"use strict";e.i(792365);var t=e.i(878063);e.i(290133),e.s(["f",0,function(e,o){if(null===o)return`${e.pathname}${e.search}`;let r=new URLSearchParams(e.search);for(let e of["room","roomId"])r.get(e)===o&&r.delete(e);let a=(0,t.D)(e.pathname),l=a.ok&&a.value.room===o?(0,t.A)({...a.value,room:null}):e.pathname,n=r.toString();return n.length>0?`${l}?${n}`:l}])}]);

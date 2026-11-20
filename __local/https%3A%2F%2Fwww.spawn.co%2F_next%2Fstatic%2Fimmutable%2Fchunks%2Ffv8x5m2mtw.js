@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,804356,i=>{"use strict";i.i(792365);var s=i.i(526759),e=i.i(671040),n=i.i(417695);let o="spawn:invite-door";i.s(["R",0,function(){return(0,e.H)((0,n.r)("session",o)).headline},"J",0,function(i){(0,s.x)(i)?(0,n.B)("session",o,i):(0,n.p)("session",o)}])}]);

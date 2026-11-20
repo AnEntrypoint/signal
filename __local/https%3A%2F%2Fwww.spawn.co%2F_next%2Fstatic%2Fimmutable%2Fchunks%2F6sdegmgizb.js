@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,798834,e=>{"use strict";e.s(["R",0,["whats-new","reviews","verdict","boards","trophies","story","way-on"],"a",0,["verdict","boards","way-on"],"C",0,e=>e?.unread||e?.boards?0:6e4])}]);

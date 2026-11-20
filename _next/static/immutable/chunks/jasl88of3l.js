@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,929874,r=>{"use strict";var t=r.i(878247);r.s(["performPlatePress",0,function(r){switch(r.press){case"party-join":(0,t.iL)(r.who);return;case"party-portal":(0,t.j$)();return}}])}]);

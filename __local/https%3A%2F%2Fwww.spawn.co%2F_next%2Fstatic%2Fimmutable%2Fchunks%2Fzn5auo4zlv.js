@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,848264,e=>{"use strict";e.S([286602,"NEAR_FAR_MAX,U,NEAR_LOG_MAX,K,__resetNearForTests,L,applyKernelNearMessage,X,handGameItsHands,B,keepGameHands,Y,linkPlaceOf,Q,postFriendsWord,w,postSocialWord,g,readNearState,R,releaseGameHands,M,sayFriends,d,sayNamesHidden,F,sayNear,N,subscribeNear,h,tookInviteWanted,_,tookPersonWanted,p,useLinkPlace,q,useNearPick,e,wantInviteFace,a,wantPersonFace,i",0,108826,"mintSayNonce,r"])}]);

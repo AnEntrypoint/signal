@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,816468,o=>{"use strict";var t=o.i(686078),e=o.i(170857);o.s(["f",0,function(){let o=(0,e.J)();(0,t.H)("make_opened",{from:o?.from??"site",...o?.ms===null||o?.ms===void 0?{}:{ms:Math.round(o.ms)}})}])}]);

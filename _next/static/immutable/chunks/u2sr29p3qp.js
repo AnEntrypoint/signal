@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,103056,t=>{"use strict";var e=t.i(271645);let o=()=>()=>{},r=()=>0;t.s(["f",0,function(){let t=!1;return(0,e.useSyncExternalStore)(o,r,()=>(t=!0,0)),t}])}]);

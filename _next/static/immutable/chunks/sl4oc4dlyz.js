@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(()=>{"use strict";(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,95187,(e,r,t)=>{Object.defineProperty(t,"__esModule",{value:!0});var c={callServer:function(){return o.callServer},createServerReference:function(){return l.createServerReference},findSourceMapURL:function(){return u.findSourceMapURL}};for(var n in c)Object.defineProperty(t,n,{enumerable:!0,get:c[n]});let o=e.r(411380),u=e.r(996236),l=e.r(235326)},411380,e=>{e.S([310024,0,849659,"callServer,f"])}])})();

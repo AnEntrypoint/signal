@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,352827,e=>{"use strict";var t=e.i(843476),n=e.i(271645),u=e.i(62706);let l=(0,n.createContext)(null);e.s(["l",0,function({appId:e,children:o}){let{data:r,isLoading:i}=(0,u.f)({appId:e}),c=(0,n.useMemo)(()=>({appId:e,app:r??null,isLoading:i}),[e,r,i]);return(0,t.jsx)(l.Provider,{value:c,children:o})},"k",0,function(){return(0,n.useContext)(l)}])}]);

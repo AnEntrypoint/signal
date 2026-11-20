@@ -1,0 +1,5 @@
+;;
+;;var o=Object.hasOwn;var M=function(t){if(t===null||typeof t!=="object"||Array.isArray(t))return!1;let g=Object.getPrototypeOf(t);return g===Object.prototype||g===null},z=(t)=>ArrayBuffer.isView(t)&&!(t instanceof DataView),B=(t,g)=>z(g)&&Object.getPrototypeOf(t)===Object.getPrototypeOf(g)&&r(t,g,g.length),W=m();function Q(t,g){if(t===g)return!0;if(typeof t==="object"&&typeof g==="object"&&t!==null&&g!==null&&(W.get(t)?.deref()===g||W.get(g)?.deref()===t))return!1;return x(t,g)}function x(t,g){if(t===g)return!0;if(typeof t!=="object"||t===null)return!1;if(Array.isArray(t)){if(!Array.isArray(g)||t.length!==g.length)return!1;for(let h=0;h<t.length;h+=1)if(t[h]!==g[h]&&!x(t[h],g[h]))return!1;return!0}if(z(t))return B(t,g);if(!M(t)||!M(g))return!1;let f=0;for(let h in t){if(!o(t,h))continue;if(f+=1,!o(g,h)||!x(t[h],g[h]))return!1}for(let h in g)if(o(g,h)&&--f<0)return!1;return f===0}
+;
+
+;import"./26ceb10f-49e18729068cd5df.mjs";import"./914c3c6b-e73d45b60479cb39.mjs";import{XBU as m}from"./5484a777-e1e49d428a1f3b31.mjs";import{ff6 as r}from"./914c3c6b-e73d45b60479cb39.mjs";export{Q as Cwn};

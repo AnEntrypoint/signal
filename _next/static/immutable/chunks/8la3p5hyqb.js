@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,403893,e=>{"use strict";var n=e.i(266027),i=e.i(400117),o=e.i(818789);e.s(["I",0,function(e,r){return(0,n.f)({queryKey:o.f.mine(e??"none"),queryFn:()=>(0,i.O)(e,{mine:!0}),enabled:!!e&&r,refetchOnWindowFocus:!0})},"y",0,function(e,r){return(0,n.f)({queryKey:o.f.list(e??"none"),queryFn:()=>(0,i.O)(e),enabled:!!e&&r,refetchOnWindowFocus:!0})}])}]);

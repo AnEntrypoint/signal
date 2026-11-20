@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,524796,t=>{"use strict";var n=t.i(960305);function e(t){return[...new Set(t??[])]}t.s(["q",0,e,"Y",0,function(t){let u=e(t.frameUrls);return{name:t.name,displayName:t.displayName,picture:t.thumbnailUrl?(0,n.u)(t.thumbnailUrl):null,turnFrames:u.length>1?u.map(n.u):null,maker:t.author,likeCount:t.likeCount,installCount:t.installCount,commentCount:t.commentCount,priceSpoins:t.priceSpoins,tags:t.tags}}])}]);

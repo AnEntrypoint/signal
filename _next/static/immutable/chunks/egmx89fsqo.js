@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,405334,e=>{"use strict";var c=e.i(95187);let r=(0,c.createServerReference)("406bcb18d6c1fbe979af6192d9d828cd2bc2f9affd",c.callServer,void 0,c.findSourceMapURL,"getPostedGames");e.s(["f",0,r])}]);

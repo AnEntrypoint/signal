@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,383876,t=>{"use strict";let e=t=>t.normalize("NFKC").replace(/\s+/g," ").trim().toLowerCase();function o(t,o){return e(t)===e(o)?null:o}t.s(["w",0,"a hidden trophy","x",0,"has it too","i",0,"have it","u",0,"of players have it","P",0,(t,e)=>`${t} / ${e}`,"Z",0,o,"r",0,function(t,e,r=" \xb7 "){let i=o(t,e);return null===i?t:`${t}${r}${i}`}])}]);

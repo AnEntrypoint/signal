@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,559600,e=>{"use strict";var r=e.i(95187);let c=(0,r.createServerReference)("4083882233ea65741869b6bff023e0858932c98fdf",r.callServer,void 0,r.findSourceMapURL,"unarchiveApp");e.s(["f",0,c])}]);

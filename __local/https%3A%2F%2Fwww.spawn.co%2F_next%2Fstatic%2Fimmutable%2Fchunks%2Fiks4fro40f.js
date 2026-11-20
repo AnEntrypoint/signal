@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,865164,o=>{"use strict";o.s(["doorActCompleteDoor",0,()=>o.A(506184)])}]);

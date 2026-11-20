@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,377732,t=>{"use strict";var i=t.i(843476),e=t.i(831327),u=t.i(178511);t.s(["SubmitButton",0,function({children:t,pendingText:o="Submitting...",...n}){let{pending:r}=(0,e.useSendFormStatus)();return(0,i.jsx)(u.K,{type:"submit","aria-label":r?o:void 0,...n,loading:r,children:t})}])}]);

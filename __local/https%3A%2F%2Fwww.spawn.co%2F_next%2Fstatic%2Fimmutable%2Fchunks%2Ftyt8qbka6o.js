@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,155732,e=>{"use strict";var t=e.i(360700),o=e.i(632135);e.s(["writeLeaveBootMarker",0,function(){let e=(0,o.Z)();if(!e)return;let i=(0,t.b)();(0,t.D)(e.session,i,e.local),(0,t.Q)(e,i)}])}]);

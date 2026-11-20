@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,726033,t=>{"use strict";var o=t.i(854472),e=t.i(523828),i=t.i(221813);t.s(["f",0,function(t,n){if(t.startsWith("/")){let r=(0,o.o)(t,window.location.href);return r?(0,e.z)({handle:r}):(0,i.w)(t,n.pathname,n.router),!0}return!!/^https?:\/\//.test(t)&&(window.open(t,"_blank"),!0)}])}]);

@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,146802,A=>{"use strict";A.S([463883,"DOOR_COPY,m,GlobalAuthModalHost,_",0,195404,"CLAIM_AUTH_VALUE,F,CREATE_AUTH_VALUE,R,SAVE_AUTH_VALUE,$,SIGN_IN_AUTH_VALUE,m"])}]);

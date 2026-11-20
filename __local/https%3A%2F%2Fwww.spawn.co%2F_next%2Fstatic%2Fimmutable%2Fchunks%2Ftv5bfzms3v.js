@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,582610,t=>{"use strict";var n=t.i(271645),e=t.i(134920);let l=new Map,u=(0,e.f)(),o=()=>null;t.s(["r",0,function(t){l.set(t.worldId,t),u.notify()},"Y",0,function(t){return(0,n.useSyncExternalStore)(u.subscribe,()=>null===t?null:l.get(t)??null,o)}])}]);

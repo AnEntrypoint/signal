@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,257452,t=>{"use strict";t.s(["t",0,function(t,e){return"admin"===t||e},"s",0,function(t){return null!==t&&"viewer"!==t.role}])}]);

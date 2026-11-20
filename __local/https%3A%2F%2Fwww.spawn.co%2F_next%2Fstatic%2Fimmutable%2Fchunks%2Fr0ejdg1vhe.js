@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,73645,e=>{"use strict";var t=e.i(843476),s=e.i(178511),i=e.i(898653);let r=(0,e.i(271645).forwardRef)(({className:e,...r},a)=>(0,t.jsx)(s.K,{ref:a,type:"button",variant:"navGhost",size:"xs-icon",className:(0,i.c)("relative [&_svg]:size-[18px]",e),...r}));r.displayName="BarIconButton",e.s(["$",0,"border-surface-raised-rule bg-surface-raised text-white","Q",0,r])}]);

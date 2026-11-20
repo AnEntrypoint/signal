@@ -1,0 +1,56 @@
+{
+ "rows": [
+  {
+   "path": "am/final.mdl",
+   "file": "./vosk-ru-am-final.mdl-a2e413364027862f.gz"
+  },
+  {
+   "path": "conf/mfcc.conf",
+   "file": "./vosk-ru-conf-mfcc-0cb5fb48bcbaa098.conf"
+  },
+  {
+   "path": "conf/model.conf",
+   "file": "./vosk-ru-conf-model-b87863eff2264325.conf"
+  },
+  {
+   "path": "ivector/final.dubm",
+   "file": "./vosk-ru-ivector-final.dubm-6a41bee883c6002f.gz"
+  },
+  {
+   "path": "ivector/final.ie",
+   "file": "./vosk-ru-ivector-final.ie-db9e97856952ab00.gz"
+  },
+  {
+   "path": "ivector/final.mat",
+   "file": "./vosk-ru-ivector-final-9580b5f20b83ff54.mat"
+  },
+  {
+   "path": "ivector/global_cmvn.stats",
+   "file": "./vosk-ru-ivector-global_cmvn-03586b3bd4575ba3.stats"
+  },
+  {
+   "path": "ivector/online_cmvn.conf",
+   "file": "./vosk-ru-ivector-online_cmvn-856950a37dc14436.conf"
+  },
+  {
+   "path": "ivector/splice.conf",
+   "file": "./vosk-ru-ivector-splice-4c58464cacb954ac.conf"
+  },
+  {
+   "path": "graph/Gr.fst",
+   "file": "./vosk-ru-graph-Gr.fst-96fa14251ca8c7d8.gz"
+  },
+  {
+   "path": "graph/HCLr.fst",
+   "file": "./vosk-ru-graph-HCLr.fst-df8bde0a6449cd79.gz"
+  },
+  {
+   "path": "graph/disambig_tid.int",
+   "file": "./vosk-ru-graph-disambig_tid-d87846b48df58064.int"
+  },
+  {
+   "path": "graph/phones/word_boundary.int",
+   "file": "./vosk-ru-graph-phones-word_boundary-f55e7830be87fc93.int"
+  }
+ ]
+}

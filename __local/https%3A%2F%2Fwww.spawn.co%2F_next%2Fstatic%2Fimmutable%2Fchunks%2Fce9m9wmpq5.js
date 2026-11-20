@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,935510,t=>{"use strict";let e;t.i(247167),"u">typeof window?(e=document.documentElement.dataset.dplId,document.documentElement.removeAttribute("data-dpl-id")):e=globalThis.NEXT_DEPLOYMENT_ID||void 0,t.s(["U",0,function(t=!1){return""},"a",0,function(){return e}])}]);

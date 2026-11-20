@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,990221,e=>{"use strict";var l=e.i(761096);let n="spawn:kernel:settings-open",t=["sound","voice","look","keys","screen","live"],o=e=>t.includes(e);e.s(["U",0,n,"Q",0,o,"I",0,function(e){if(!(0,l.s)(e)||e.type!==n)return null;let t=(0,l.v)(e.key);return void 0===e.page||null===e.page?{page:null,...t}:o(e.page)?{page:e.page,...t}:null}])}]);

@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,22893,n=>{"use strict";var o=n.i(271645);let t=null,e=new Set;function r(n){for(let o of(t=n,e))o()}let l=()=>t;function u(n){return e.add(n),()=>void e.delete(n)}n.s(["J",0,function(n){t?.worldId===n&&r(null)},"L",0,function(n){t&&t.worldId===n.worldId&&t.ref===n.ref&&t.roomId===n.roomId||r(n)},"D",0,function(){return t},"F",0,function(){return(0,o.useSyncExternalStore)(u,l,()=>null)}])}]);

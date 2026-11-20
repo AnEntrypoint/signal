@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,579080,894881,t=>{"use strict";t.s([],579080);let s="";t.s(["Q",0,{prod:s,staging:"https://next.spawn.co",dev:"http://localhost:3000"},"y",0,s],894881)}]);

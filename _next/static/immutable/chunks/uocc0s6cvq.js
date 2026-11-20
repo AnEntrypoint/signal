@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,645349,i=>{"use strict";var t=i.i(843476),e=i.i(265803),r=i.i(437052),s=i.i(898653),c=i.i(638074),n=i.i(939977);i.s(["ErrorPage",0,function({paint:i=r.L,ground:o=!0,marker:a,className:l,pageClassName:d,...u}){let h={className:(0,s.c)(c.O,d),"data-world-tombstone":a},m=(0,t.jsx)(n.f,{paint:i,className:(0,s.c)(c.C,l),...u});return o?(0,t.jsx)(e.OnGround,{paint:i,...h,children:m}):(0,t.jsx)("div",{...h,children:m})}])}]);

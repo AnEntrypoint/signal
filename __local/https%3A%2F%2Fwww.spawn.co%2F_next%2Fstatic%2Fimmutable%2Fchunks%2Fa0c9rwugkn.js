@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,661243,e=>{"use strict";var t=e.i(271645),i=e.i(33635);function o(e,t){return e.filter(e=>e.voice&&e.id!==t)}e.s(["u",0,function(){let e=(0,i.useSocialRoster)();return(0,t.useMemo)(()=>o(e,(0,i.socialHello)()?.id??null),[e])},"t",0,o])}]);

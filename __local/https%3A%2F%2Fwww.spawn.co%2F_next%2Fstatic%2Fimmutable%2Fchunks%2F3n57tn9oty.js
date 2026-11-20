@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,688073,t=>{"use strict";let e="posture",o="spawn-isolate",n=RegExp(`(?:^|;\\s*)${o}=document(?:;|$)`);t.s(["Y",0,"isolate-and-require-corp","m",0,o,"Z",0,e,"b",0,function(t){return null!==t&&n.test(t)},"a",0,function(t){return"card"===t.get(e)}])}]);

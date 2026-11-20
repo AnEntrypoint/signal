@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,403592,s=>{"use strict";var l=s.i(273573),e=s.i(96185);s.s(["z",0,function(s){let i=(0,e.X)(s);if("desktop"===i.class)return null;let o=(0,l.f)(s.platform,s.userAgent);return"android"===o?{deviceClass:i.class,os:"android"}:"ios"===o||"macos"===o?{deviceClass:i.class,os:"ios"}:null},"e",0,function(s,l){return null===l?null:s.find(s=>"walled"===s.verdict&&s.deviceClass===l.deviceClass&&s.os===l.os)??null}])}]);

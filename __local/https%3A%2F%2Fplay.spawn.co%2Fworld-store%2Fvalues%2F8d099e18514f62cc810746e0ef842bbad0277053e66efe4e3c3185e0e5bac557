@@ -1,0 +1,271 @@
+
+
+
+
+
+
+
+
+
+
+
+
+import { time, float, vec2, vec3, smoothstep, step, audioSpectrum, select, mix, positionWorld, atan, atan2 } from "builtin/tsl";
+import SCORE from "./data/score.yml";
+import ENERGY from "./data/energy.yml";
+
+
+export const KICK_RUNS = (() => { const r = []; let a = -1; ENERGY.bars.forEach((b, i) => { const on = b[1] >= 0.6; if (on && a < 0) a = i; if (!on && a >= 0) { r.push([ENERGY.firstBeat + a * ENERGY.bar, ENERGY.firstBeat + i * ENERGY.bar]); a = -1; } }); if (a >= 0) r.push([ENERGY.firstBeat + a * ENERGY.bar, ENERGY.firstBeat + ENERGY.bars.length * ENERGY.bar]); return r; })();
+
+export { SCORE };
+export const SEC = SCORE.sections;
+export const BPS = SCORE.bpm / 60;
+export function tripClock(ctx) {
+  const t0 = ctx.param("t0", 0), on = ctx.param("on", 0);
+
+
+  const tdur = ctx.param("tdur", SCORE.duration);
+  const rolled = time.sub(t0).add(3600).mod(3600).min(tdur);
+  const tt = select(on.greaterThan(0.5), rolled, time.mod(SCORE.duration));
+  const C = [0, ENERGY.visions[0][0], ENERGY.visions[0][1], ENERGY.visions[1][0], ENERGY.visions[1][1], SCORE.duration];
+  const TA = [float(0), ctx.param("ta1", C[1]), ctx.param("ta2", C[2]), ctx.param("ta3", C[3]), ctx.param("ta4", C[4]), tdur];
+  let warped = float(0);
+  for (let i = 0; i < 5; i++) warped = warped.add(tt.sub(TA[i]).clamp(0, TA[i + 1].sub(TA[i]).max(0.001)).mul(float(C[i + 1] - C[i]).div(TA[i + 1].sub(TA[i]).max(0.001))));
+  const real = select(on.greaterThan(0.5), warped, tt);
+
+
+  let sec = real, seamD = float(99);
+  SCORE.deck.segments.forEach(([a, b], i) => {
+    const s0 = ctx.param("ds" + i, a), r = ctx.param("dr" + i, 1);
+    const inS = step(a, real).mul(float(1).sub(step(b, real)));
+    sec = sec.add(inS.mul(s0.add(real.sub(a).mul(r)).sub(real)));
+    seamD = seamD.min(real.sub(a).abs()).min(real.sub(b).abs());
+  });
+  seamD = select(on.greaterThan(0.5), seamD, float(99));
+
+  if (ctx.params && ctx.params.vw0 !== undefined) { sec = real; seamD = float(99); }
+  const beat = tt.sub(ctx.param("fb", SCORE.firstBeat)).mul(ctx.param("bps", BPS));
+
+
+  const k0 = ctx.param("k0", -1), k1 = ctx.param("k1", -1);
+  const live = smoothstep(k0.sub(0.05), k0, real).mul(float(1).sub(smoothstep(k1, k1.add(0.05), real)));
+  const env = (b, k) => b.fract().mul(k).negate().exp().mul(live);
+
+
+
+
+  const seed = ctx.param("seed", 0);
+  const rnd = (n) => seed.add(1).mul(n * 12.9898 + 78.233).sin().mul(43758.5453).fract();
+  const pick = (n, k) => rnd(n).mul(k).floor().min(k - 1);
+  return {
+    seed, rnd, pick, hue: rnd(1), dir: rnd(2).step(0.5).mul(2).sub(1),
+    sec, real, tt, seamD, beat, on, live, bar: beat.div(4), phrase: beat.div(32),
+    kick: env(beat, 4.5), half: env(beat.div(2).add(0.5), 6), barHit: env(beat.div(4), 6),
+    bass: audioSpectrum(0.08), high: audioSpectrum(0.75),
+  };
+}
+
+
+export function win(sec, range, fade = 1.5) {
+  return smoothstep(range[0] - fade * 0.5, range[0] + fade * 0.5, sec).mul(smoothstep(range[1] + fade * 0.5, range[1] - fade * 0.5, sec));
+}
+
+
+export function pal(t) {
+  const c = float(t).add(vec3(0.0, 0.33, 0.67)).mul(6.28318).cos().mul(0.5).add(0.5);
+  const lo = c.x.min(c.y).min(c.z), hi = c.x.max(c.y).max(c.z);
+  return c.sub(lo).div(hi.sub(lo).add(0.001)).pow(vec3(1.4));
+}
+
+export function stripes(x, n, w = 0.02) {
+  const f = float(x).mul(n).fract();
+  return smoothstep(0.5 - w, 0.5, f).mul(smoothstep(1.0, 1.0 - w, f));
+}
+
+export const HUE = {
+  blue: [0.05, 0.12, 1.0], violet: [0.45, 0.05, 1.0], magenta: [1.0, 0.05, 0.6], red: [1.0, 0.08, 0.05],
+  orange: [1.0, 0.38, 0.02], yellow: [1.0, 0.85, 0.05], green: [0.1, 1.0, 0.15], cyan: [0.05, 0.9, 1.0], white: [1, 1, 1],
+};
+
+
+
+
+
+
+
+
+
+const salt = (name) => { let h = 7; for (const ch of name) h = (h * 31 + ch.charCodeAt(0)) % 9973; return h; };
+function pieceLag(name) {
+  const h = salt(name), kind = h % 3, size = 2.5 + (h % 5) * 1.5;
+  const P = positionWorld;
+  let id;
+  if (kind === 0) {
+
+    const q = P.sub(vec3(0, 15, 0)), ax = q.x.abs(), az = q.z.sub(q.y.mul(0.3)).abs();
+    const oct = ax.max(az).add(ax.min(az).mul(0.4142));
+    const lane = atan(q.x, q.z.sub(q.y.mul(0.3))).div(6.2831853).add(0.5).mul(16 + (h % 3) * 8).floor();
+    const run = lane.mul(1.618).fract().mul(0.6).add(0.7);
+
+    const seg = oct.div(size * 2).mul(run).floor();
+    return seg.div(14).add(lane.mul(0.37).fract().mul(0.25)).fract().mul(SCORE.piece ?? 2.25); }
+  else if (kind === 1) id = P.sub(vec3(0, 15, 0)).length().div(size).floor();
+
+
+
+
+  else id = atan(P.x, P.y.sub(15)).div(6.2831853).add(0.5).mul(12 + (h % 4) * 4).floor()
+    .add(P.z.div(size * 2).floor().mul(7.13));
+  const r = id.add(h * 0.731).sin().mul(43758.5453).fract();
+  return r.mul(SCORE.piece ?? 2.25);
+}
+const SCENE_STARTS = new Set(Object.values(SCORE.sections).map(([a]) => a));
+
+
+function shuffleBand(c, name, d) {
+  const dd = float(d).clamp(0, 1), q = dd.mul(14).floor();
+  const hsh = q.add(salt(name) % 97).add(c.seed.mul(0.618)).mul(12.9898).sin().mul(43758.5453).fract();
+  return hsh.mul(0.8).add(dd.mul(0.2));
+}
+export function shown(c, name, d = 0) {
+
+
+
+
+
+
+  const turn = ((String(name).split("").reduce((q, ch) => q * 31 + ch.charCodeAt(0), 7) % 997) / 997);
+
+
+
+
+
+
+
+
+
+  const band = shuffleBand(c, name, d);
+
+
+  const seamO = pieceLag(name).div(SCORE.piece ?? 2.25).mul(0.25).add(band.mul(0.35)).add(turn * 0.45).mul(0.6);
+  const seamGate = smoothstep(seamO, seamO.add(0.18), c.seamD.div(SCORE.deck.seam).clamp(0, 1));
+  const lag = band.mul(SCORE.wipe).add(pieceLag(name));
+  let v = float(0);
+  for (const [a0, b] of SCORE.layers[name]) {
+
+
+    const a = SCENE_STARTS.has(a0) ? a0 - SCORE.wipe - (SCORE.piece ?? 2.25) - 0.2 : a0;
+    v = v.add(smoothstep(a, a + 1.2, c.sec.sub(lag)).mul(smoothstep(b + 1.2, b, c.sec.sub(lag))));
+  }
+  return v.clamp(0, 1).mul(seamGate).mul(drift(c, name, d));
+}
+
+
+
+
+function drift(c, name, d) {
+  const h = salt(name);
+  const p1 = 17 + (h % 7) * 4.5, p2 = 29 + (h % 5) * 6.5;
+  const ph = c.rnd(20 + (h % 40)).mul(6.2831853);
+  const tide = c.sec.mul(6.2831853 / p1).add(ph).sin().mul(0.6)
+    .add(c.sec.mul(6.2831853 / p2).sub(ph.mul(1.7)).sin().mul(0.4)).mul(0.5).add(0.5);
+  const ebb = smoothstep(0.55, 0.12, tide).mul(0.8);
+  const rank = pieceLag(name).div(SCORE.piece ?? 2.25).mul(0.65).add(float(1).sub(shuffleBand(c, name, d)).mul(0.35));
+  return smoothstep(ebb, ebb.add(0.04), rank);
+}
+
+
+export function lens(c, key) {
+  let v = float(0);
+
+  for (const name in SCORE.lens) v = v.add(win(c.sec, SEC[name], 8).mul(SCORE.lens[name][key]));
+
+
+  v = v.mul(smoothstep(0.3, 4, c.seamD));
+  return v.add(key === "hyper" ? 0.14 : 0);
+}
+
+
+export function bendUv(c, uv, aspect = 1.78) {
+  const breath = c.sec.mul(6.28318 / 12).sin().mul(0.5).add(0.5);
+  const k = lens(c, "bulge").mul(mix(0.6, 1.4, c.rnd(3))).mul(breath.mul(0.4).add(0.8)).add(c.kick.mul(0.04));
+  const p0 = uv.sub(0.5).mul(vec2(aspect, 1));
+  const r = p0.length();
+  const a = lens(c, "swirl").mul(c.dir).mul(mix(0.6, 1.5, c.rnd(4))).mul(float(1).sub(r.mul(1.3)).clamp(0, 1)).mul(c.sec.mul(6.28318 / 24).sin());
+
+
+  void a; const p1 = p0;
+
+  const p2 = p1.div(float(1).add(k.min(0.45).mul(r.mul(r)).mul(1.6)).max(0.83));
+
+
+
+
+
+  const hRaw = lens(c, "hyper").mul(mix(0.7, 1.3, c.rnd(5)));
+  const h = hRaw.div(hRaw.add(0.6)).mul(0.34).min(0.2), th = c.sec.mul(6.28318 / 24).mul(c.dir).add(c.rnd(6).mul(6.28318));
+  const ax = h.mul(th.cos()), ay = h.mul(th.sin());
+  const zx = p2.x.mul(1.6), zy = p2.y.mul(1.6);
+  const nx = zx.add(ax), ny = zy.add(ay);
+  const dx = float(1).add(ax.mul(zx)).add(ay.mul(zy)), dy = ax.mul(zy).sub(ay.mul(zx));
+  const dd = dx.mul(dx).add(dy.mul(dy)).max(0.02);
+  const p3 = vec2(nx.mul(dx).add(ny.mul(dy)).div(dd).sub(ax), ny.mul(dx).sub(nx.mul(dy)).div(dd).sub(ay)).div(1.6);
+
+  const r3 = p3.length().max(0.0005);
+  const oct = r3.log().div(1.3863).add(c.sec.div(12)).fract();
+  void oct; const p4 = p3;
+  const px = p4.x;
+  return vec2(px, p4.y).div(vec2(aspect, 1)).add(0.5);
+}
+
+
+
+
+
+export function visionShown(ctx, c, d = 0) {
+  const a = ctx.param("vw0", -1), b = ctx.param("vw1", -1);
+  const s = c.sec.sub(float(d).clamp(0, 1).mul(1.5));
+  return smoothstep(a, a.add(0.2), s).mul(float(1).sub(smoothstep(b, b.add(0.2), s))                                                                               ).mul(b.greaterThan(0).select(float(1), float(0))).mul(c.on);
+}
+
+export function visionU(ctx, c) {
+  const a = ctx.param("vw0", -1), b = ctx.param("vw1", -1);
+  return c.sec.sub(a).div(b.sub(a).max(0.01)).clamp(0, 1);
+}
+
+
+
+
+
+export function stage(c, from, to, inBars = 2, outBars = 2) {
+  const b = 60 / SCORE.bpm * 4;
+  return smoothstep(from, from + inBars * b, c.sec).mul(smoothstep(to, to - outBars * b, c.sec));
+}
+
+export const maskIris = (p, d) => step(float(d), float(p).mul(1.02));
+
+export const maskLid = (p, y) => step(float(y).abs(), float(p).mul(1.02));
+
+export const maskClock = (p, a) => step(float(a).div(6.28318).add(0.5).fract(), float(p).mul(1.001));
+
+export const maskEclipse = (p, x, y, dir = 1) => step(float(1), vec2(float(x).sub(float(p).mul(2.2 * dir)), float(y)).length());
+
+export const maskBeads = (p, k) => step(float(k), float(p).mul(1.02));
+
+export const maskDraw = (p, u) => step(float(u), float(p).mul(1.01));
+export const nib = (p, u, w = 0.02) => smoothstep(w, 0, float(u).sub(float(p)).abs());
+
+export const climb = (c) => c.high.mul(1.6).clamp(0, 1);
+
+export const inv = (x) => float(1).sub(x);
+export const is = (v, i) => step(v.sub(i).abs(), 0.5);
+export const sgn = (r) => step(0.5, r).mul(2).sub(1);
+export const ang2 = (x, y) => atan2(x, y.add(0.0001));
+export const smin = (a, b, k) => { const h = b.sub(a).div(2 * k).add(0.5).clamp(0, 1); return mix(b, a, h).sub(h.mul(inv(h)).mul(k)); };
+export const segH = (q, A, B) => { const BA = B.sub(A), pa = q.sub(A); const h = pa.dot(BA).div(BA.dot(BA).max(0.0001)).clamp(0, 1); return { d: pa.sub(BA.mul(h)).length(), h }; };
+export const capsule = (q, a, b, r) => segH(q, Array.isArray(a) ? vec2(a[0], a[1]) : a, Array.isArray(b) ? vec2(b[0], b[1]) : b).d.sub(r);
+export const rbox = (q, c, hx, hy, r) => { const d = q.sub(vec2(c[0], c[1])).abs().sub(vec2(hx - r, hy - r)); return d.max(0).length().add(d.x.max(d.y).min(0)).sub(r); };
+export const strokeAA = (aa) => (d, w) => inv(smoothstep(float(w), aa.add(w), d));
+export const ioU = (u) => (a, b, x, y) => smoothstep(a, b, u).mul(inv(smoothstep(x, y, u)));
+export const famPick = (fams, fam, j) => fams.reduce((acc, f, i) => acc.add(f[j].mul(is(fam, i))), vec3(0));
+export const NEON = { BLU: vec3(0.007, 0.014, 1.0), VIO: vec3(0.195, 0.007, 1.0), PNK: vec3(1.0, 0.005, 0.318), ORA: vec3(1.0, 0.144, 0.0015), YEL: vec3(1.0, 0.693, 0.004), GRN: vec3(0.01, 1.0, 0.019), W: vec3(1, 1, 1), BG: vec3(0.0025, 0.002, 0.009) };

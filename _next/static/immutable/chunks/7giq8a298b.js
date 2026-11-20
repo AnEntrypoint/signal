@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,726019,t=>{"use strict";t.s(["phoenixCardFollowDoor",0,()=>t.A(876544)])},876544,[[["static/immutable/chunks/mogc7xuq8h.js",["static/immutable/chunks/szggopnfl0.js","static/immutable/chunks/px870x8up4.js","static/immutable/chunks/127lncl2p4.js"],[2,2,2]]],25124]]);

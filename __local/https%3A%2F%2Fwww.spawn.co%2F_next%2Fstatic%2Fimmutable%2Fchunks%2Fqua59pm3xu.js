@@ -1,0 +1,1 @@
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,806694,(t=>{"use strict";var e=t.i(134920),n=t.i(271645);let i=0,o=(0,e.f)();t.s(["R",0,(function(){i+=1,o.notify();let t=!1;return(()=>{t||(t=!0,i-=1,o.notify())})}),"y",0,(function(){return(0,n.useSyncExternalStore)(o.subscribe,()=>i>0,(()=>!1))})])})]);

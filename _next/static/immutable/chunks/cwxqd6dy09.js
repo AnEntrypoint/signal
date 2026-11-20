@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,872143,e=>{"use strict";var t=e.i(271645),l=e.i(134981);e.s(["RailHeldReader",0,function({onHeld:e}){let u=(0,l.t)(e=>e.held&&e.up);return(0,t.useEffect)(()=>{e(u)},[u,e]),null}])}]);

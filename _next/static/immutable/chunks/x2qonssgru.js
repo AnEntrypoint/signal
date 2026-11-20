@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,145836,t=>{"use strict";var e=t.i(134920);let i=[],o=i,c=(0,e.f)(),n=c.subscribe;t.s(["E",0,function(t){let e=t??i;e!==o&&(o=e,c.notify())},"L",0,function(){return o},"S",0,n])}]);

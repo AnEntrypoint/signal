@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,327214,e=>{"use strict";let t="spawn:kernel:boot-progress",o=e=>"number"==typeof e&&Number.isFinite(e)&&e>=0;e.s(["Q",0,t,"U",0,e=>"object"==typeof e&&null!==e&&e.type===t&&o(e.engine)&&o(e.world)])}]);

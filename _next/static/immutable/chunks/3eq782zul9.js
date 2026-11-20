@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,707074,t=>{"use strict";let e="person-card",s=`[data-testid="${e}"], [data-testid="person-more-menu"]`;t.s(["n",0,e,"N",0,"data-person-shelves","I",0,"data-steps-off","M",0,function(t){return t instanceof Element&&null!==t.closest(s)}])}]);

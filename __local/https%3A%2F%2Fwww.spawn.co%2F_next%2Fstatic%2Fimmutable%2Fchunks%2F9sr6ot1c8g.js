@@ -1,0 +1,2 @@
+//# allFunctionsCalledOnLoad
+(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,547407,t=>{"use strict";var n=t.i(271645),e=t.i(167425),i=t.i(426934);t.s(["f",0,function(){let t=(0,n.useContext)(i.GroundPaintContext);return(0,n.useSyncExternalStore)(e.l,()=>{if(t?.contained)return t.paint;let n=(0,e.g)();return null===n?t?.paint??null:(0,e.P)(n)},()=>t?.paint??null)}])}]);
