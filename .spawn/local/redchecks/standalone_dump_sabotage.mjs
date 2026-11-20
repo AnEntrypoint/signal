@@ -11,6 +11,7 @@ const muts = {
   'no-page-close': [['{ out.pageClosed = true; }', '{ }']],
   'drop-spin': [['  if (SPIN > 0) {', '  if (false) {']],
   'drop-sample': [['  out.sampleDumpEvent = sampleEvent ? JSON.stringify(sampleEvent).slice(0, 1500) : null;', '  out.sampleDumpEvent = null;']],
+  'fallback-any': ["    if (!(e.name === 'explicitly_triggered' && e.id === out.dumpGuid)) continue;", ''],
   'drop-event-ids': [["  out.dumpEventIds = [...new Set(events.filter((e) => e.ph === 'v' && e.args && e.args.dumps).map((e) => String(e.id)))].slice(0, 10);", '']],
 };
 for (const [name, pairs] of Object.entries(muts)) {

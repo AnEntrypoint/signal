@@ -4,17 +4,18 @@ const MB = 1048576;
 const LOAD_FRACTION = 0.9;
 const SPIN = Number(process.argv[4] || 0);
 const GUARD_MS = Number(process.argv[5] || 150) * 1000;
-const out = { port: Number(port), loadMb: LOAD_MB, loadAllocatedMb: null, targetId: null, sessionId: null, pageClosed: false, dumpGuid: null, dumpSuccess: false, requestedAtMs: null, requestReplyAtMs: null, endSentAtMs: null, endReplyAtMs: null, tracingCompleteAtMs: null, eventsSeen: 0, dumpedPids: [], loadPid: null, loadPidArrayBufferBytes: null, dumpEventIds: [], allocatorNames: [], spinWorkers: null, sampleDumpEvent: null, scope: null, error: null };
+const out = { port: Number(port), loadMb: LOAD_MB, loadAllocatedMb: null, targetId: null, sessionId: null, pageClosed: false, dumpGuid: null, dumpSuccess: false, requestedAtMs: null, requestReplyAtMs: null, endSentAtMs: null, endReplyAtMs: null, tracingCompleteAtMs: null, eventsSeen: 0, dumpedPids: [], loadPid: null, loadPidArrayBufferBytes: null, dumpEventIds: [], allocatorNames: [], spinWorkers: null, sampleDumpEvent: null, periodicPids: [], requestedPids: [], scope: null, error: null };
 const finish = () => { console.log('STANDALONE_DUMP ' + JSON.stringify(out)); process.exit(0); };
 const guard = setTimeout(() => { out.error = 'timeout'; finish(); }, GUARD_MS);
 const sizeOf = (attrs, key) => (attrs && attrs[key] && attrs[key].units === 'bytes' ? parseInt(attrs[key].value, 16) : null);
 const summarize = (events) => {
+  out.periodicPids = [...new Set(events.filter((e) => e.ph === 'v' && e.name === 'periodic_interval' && e.args && e.args.dumps).map((e) => e.pid))].sort((a, b) => a - b);
   const latest = new Map();
   for (const e of events) {
     if (e.ph !== 'v' || !e.args || !e.args.dumps) continue;
-    const matched = e.id === out.dumpGuid;
-    const prev = latest.get(e.pid);
-    if (!prev || (matched && !prev.matched)) latest.set(e.pid, { e, matched });
+    if (!(e.name === 'explicitly_triggered' && e.id === out.dumpGuid)) continue;
+
+    latest.set(e.pid, { e, matched: true });
   }
   out.dumpedPids = [...latest.entries()].sort((a, b) => a[0] - b[0]).map(([pid, { e, matched }]) => {
     const rows = Object.entries(e.args.dumps.allocators || {}).map(([name, a]) => ({ name, sizeBytes: sizeOf(a.attrs, 'size') })).filter((r) => r.sizeBytes !== null);
@@ -26,6 +27,7 @@ const summarize = (events) => {
   out.sampleDumpEvent = sampleEvent ? JSON.stringify(sampleEvent).slice(0, 1500) : null;
   out.dumpEventIds = [...new Set(events.filter((e) => e.ph === 'v' && e.args && e.args.dumps).map((e) => String(e.id)))].slice(0, 10);
   out.allocatorNames = Object.keys(events.find((e) => e.ph === 'v' && e.args && e.args.dumps)?.args.dumps.allocators || {}).slice(0, 40);
+  out.requestedPids = out.dumpedPids.map((p) => p.pid);
   const candidates = out.dumpedPids.filter((p) => p.arrayBufferBytes !== null && p.arrayBufferBytes >= LOAD_MB * MB * LOAD_FRACTION);
   const best = candidates.length ? candidates.reduce((a, b) => (b.arrayBufferBytes > a.arrayBufferBytes ? b : a)) : null;
   out.loadPid = best ? best.pid : null;

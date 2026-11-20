@@ -25,8 +25,9 @@ const dumpFor = (pid) => {
     'partition_alloc/partitions/array_buffer': alloc(sizes.array_buffer * MB),
     'partition_alloc/allocated_objects': alloc(1 * MB),
   };
-  return { ph: 'v', pid, id: '0xA', args: { dumps: { allocators, process_totals: { attrs: { resident_set_bytes: { type: 'scalar', units: 'bytes', value: (6144 * MB).toString(16) } } } } } };
+  return { ph: 'v', pid, id: '0xA', name: 'explicitly_triggered', args: { dumps: { allocators, process_totals: { attrs: { resident_set_bytes: { type: 'scalar', units: 'bytes', value: (6144 * MB).toString(16) } } } } } };
 };
+const periodicFor = (pid) => ({ ph: 'v', pid, id: '0x0', name: 'periodic_interval', args: { dumps: { process_totals: { attrs: { resident_set_bytes: { type: 'scalar', units: 'bytes', value: (6144 * MB).toString(16) } } } } } });
 const runScenario = async (name) => {
   const cfg = SCENARIOS[name];
   const server = http.createServer((req, res) => {
@@ -47,7 +48,7 @@ const runScenario = async (name) => {
     if (m.method === 'Tracing.end') {
       reply({});
       setTimeout(() => {
-        if (cfg.pids.length) sendIf(sock, { method: 'Tracing.dataCollected', params: { value: cfg.pids.map((p) => dumpFor(p)) } });
+        sendIf(sock, { method: 'Tracing.dataCollected', params: { value: [...cfg.pids.map((p) => dumpFor(p)), ...[4242, 5555].map((p) => periodicFor(p))] } });
         sendIf(sock, { method: 'Tracing.tracingComplete', params: {} });
       }, FLUSH_DELAY_MS);
       return;
@@ -72,7 +73,9 @@ const runScenario = async (name) => {
   check('reply after the request, tracingComplete after the reply', !!h && typeof h.requestReplyAtMs === 'number' && h.requestReplyAtMs >= h.requestedAtMs && typeof h.tracingCompleteAtMs === 'number' && h.tracingCompleteAtMs >= h.requestReplyAtMs, h && [h.requestedAtMs, h.requestReplyAtMs, h.tracingCompleteAtMs]);
   check('Tracing.end sent before tracingComplete', !!h && typeof h.endSentAtMs === 'number' && typeof h.tracingCompleteAtMs === 'number' && h.endSentAtMs <= h.tracingCompleteAtMs, h && [h.endSentAtMs, h.tracingCompleteAtMs]);
   check('page closed after the read', !!h && h.pageClosed === true, h && h.pageClosed);
-  check('eventsSeen equals the events sent', !!h && h.eventsSeen === cfg.pids.length, h && h.eventsSeen);
+  check('requestedPids equal the pids that sent explicitly_triggered events', !!h && JSON.stringify(h.requestedPids) === JSON.stringify(cfg.pids), h && h.requestedPids);
+  check('periodicPids list the pids that sent periodic totals (both scenarios)', !!h && JSON.stringify(h.periodicPids) === JSON.stringify([4242, 5555]), h && h.periodicPids);
+  check('eventsSeen equals the events sent (requested plus two periodic decoys)', !!h && h.eventsSeen === cfg.pids.length + 2, h && h.eventsSeen);
   check('scope names the refusal', !!h && typeof h.scope === 'string' && h.scope.startsWith(cfg.scope), h && h.scope);
   check('spin workers recorded as the spin count (null when not spinning)', !!h && h.spinWorkers === (cfg.spin || null), h && h.spinWorkers);
   if (cfg.pids.length) {
