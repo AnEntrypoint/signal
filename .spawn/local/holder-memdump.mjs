@@ -1,6 +1,7 @@
 import { writeFileSync } from 'node:fs';
 const [port, holderPid] = process.argv.slice(2);
 const events = [];
+const EXTRA_CATEGORIES = (process.env.HOLDER_EXTRA_CATEGORIES || '').split(',').filter(Boolean);
 const HOLDER = Number(holderPid);
 const out = { pid: HOLDER, mode: null, error: null, dumpGuid: null, dumpSuccess: false, requestedAtMs: null, completedAtMs: null, eventsSeen: 0, requestedEvents: 0, requestedShapes: {}, requestedEndArgKeys: null, dumpNames: {}, dumpEventIds: [], periodicSamples: 0, periodicProcessTotalsKeys: null, privateFootprintBytes: null, peakResidentSetBytes: null, endReplyAtMs: null, tracingCompleteAtMs: null, bufferUsageSamples: 0, bufferUsageSeries: [], lastBufferUsage: null, matchedDump: false, residentSetBytes: null, partitionAlloc: null, topAllocators: [] };
 const finish = () => { if (process.env.HOLDER_EVENTS_OUT) writeFileSync(process.env.HOLDER_EVENTS_OUT, JSON.stringify(events)); console.log('HOLDER_MEMDUMP ' + JSON.stringify(out)); process.exit(0); };
@@ -52,7 +53,7 @@ const run = async () => {
     if (m.error) w.reject(new Error(m.error.message)); else w.resolve(m.result);
   };
   const send = (method, params) => new Promise((resolve, reject) => { const id = ++seq; waiting.set(id, { resolve, reject }); sock.send(JSON.stringify({ id, method, params: params || {} })); });
-  await send('Tracing.start', { traceConfig: { recordMode: 'recordUntilFull', includedCategories: ['-*', 'disabled-by-default-memory-infra'] }, transferMode: 'ReportEvents', bufferUsageReportingInterval: 1000 });
+  await send('Tracing.start', { traceConfig: { recordMode: 'recordUntilFull', includedCategories: ['-*', 'disabled-by-default-memory-infra', ...EXTRA_CATEGORIES] }, transferMode: 'ReportEvents', bufferUsageReportingInterval: 1000 });
   const NO_DUMP_HOLD_MS = 3000;
   out.mode = process.env.HOLDER_MODE === 'no-dump' ? 'no-dump' : 'dump';
   if (out.mode === 'no-dump') await new Promise((res) => setTimeout(res, NO_DUMP_HOLD_MS));

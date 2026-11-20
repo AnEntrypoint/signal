@@ -11,7 +11,8 @@ const muts = {
   'no-periodic-pid-filter': ["e.ph === 'v' && e.name === 'periodic_interval' && e.pid === HOLDER", "e.ph === 'v' && e.name === 'periodic_interval'"],
   'hex-as-decimal': ['parseInt(v, 16)', 'parseInt(v, 10)'],
   'drop-raw-save': ['if (process.env.HOLDER_EVENTS_OUT) writeFileSync(process.env.HOLDER_EVENTS_OUT, JSON.stringify(events)); ', ''],
-  'drop-star-category': ["['-*', 'disabled-by-default-memory-infra']", "['disabled-by-default-memory-infra']"],
+  'drop-star-category': ["['-*', 'disabled-by-default-memory-infra', ...EXTRA_CATEGORIES]", "['disabled-by-default-memory-infra', ...EXTRA_CATEGORIES]"],
+  'drop-extra-categories': ["'disabled-by-default-memory-infra', ...EXTRA_CATEGORIES]", "'disabled-by-default-memory-infra']"],
   'v-old-shape': ['  out.matchedDump = requested.length > 0;', "  out.matchedDump = requested.length > 0 || dumps.some((e) => e.name === 'explicitly_triggered' && e.id === out.dumpGuid);"],
 };
 for (const [name, [a, b]] of Object.entries(muts)) {

@@ -33,6 +33,11 @@ const CASES = {
     events: () => [periodicAt(HOLDER_PID, 1, '100'), periodicAt(HOLDER_PID, 5, '200'), periodicAt(9999, 9, 'ff')],
     expect: { residentSetBytes: null, partitionTotalBytes: null, matchedDump: false, requestedEvents: 0, requestedShapes: {}, requestedEndArgKeys: null, dumpEventIds: ['0x0'], dumpNames: { periodic_interval: 2 }, periodicSamples: 2, periodicProcessTotalsKeys: ['is_peak_rss_resettable', 'peak_resident_set_size', 'private_footprint_bytes'], privateFootprintBytes: parseInt('200', 16), peakResidentSetBytes: parseInt('d62a000', 16) },
   },
+  'extra-categories': {
+    extra: 'toplevel,mojom',
+    events: () => [PERIODIC],
+    expect: { residentSetBytes: null, partitionTotalBytes: null, matchedDump: false, requestedEvents: 0, requestedShapes: {}, requestedEndArgKeys: null, dumpEventIds: ['0x0'], dumpNames: { periodic_interval: 1 }, periodicSamples: 1, periodicProcessTotalsKeys: ['is_peak_rss_resettable', 'peak_resident_set_size', 'private_footprint_bytes'], privateFootprintBytes: parseInt('279d000', 16), peakResidentSetBytes: parseInt('d62a000', 16) },
+  },
   'only-periodic': {
     events: () => [PERIODIC],
     expect: { residentSetBytes: null, partitionTotalBytes: null, matchedDump: false, requestedEvents: 0, requestedShapes: {}, requestedEndArgKeys: null, dumpEventIds: ['0x0'], dumpNames: { periodic_interval: 1 }, periodicSamples: 1, periodicProcessTotalsKeys: ['is_peak_rss_resettable', 'peak_resident_set_size', 'private_footprint_bytes'], privateFootprintBytes: parseInt('279d000', 16), peakResidentSetBytes: parseInt('d62a000', 16) },
@@ -72,6 +77,7 @@ const runCase = async (name) => {
   const rawPath = '/tmp/verify/witness-holder-events-' + name + '.json';
   fs.rmSync(rawPath, { force: true });
   process.env.HOLDER_EVENTS_OUT = rawPath;
+  process.env.HOLDER_EXTRA_CATEGORIES = cfg.extra || '';
   const rr = await new Promise((resolve) => { const c = spawn('node', [readerPath, String(port), String(HOLDER_PID)]); let o = ''; c.stdout.on('data', (d) => { o += d; }); c.on('exit', (code) => { server.close(); server.closeAllConnections?.(); wss.close(); resolve({ status: code, stdout: o }); }); });
   const line = (rr.stdout || '').split('\n').find((l) => l.startsWith('HOLDER_MEMDUMP '));
   let h = null;
@@ -79,7 +85,7 @@ const runCase = async (name) => {
   const checks = [];
   const check = (n, ok, got) => checks.push({ n: name + ': ' + n, ok: Boolean(ok), got: String(JSON.stringify(got) ?? 'absent').slice(0, 160) });
   check('reader exit 0 and HOLDER_MEMDUMP line', rr.status === 0 && h !== null, rr.status);
-  check('Tracing.start keeps only the memory-infra category (-* excludes the default categories)', sentStart.length === 1 && JSON.stringify(sentStart[0].traceConfig.includedCategories) === JSON.stringify(['-*', 'disabled-by-default-memory-infra']), sentStart.length && sentStart[0].traceConfig);
+  check('Tracing.start keeps only the memory-infra category (-* excludes the default categories)', sentStart.length === 1 && JSON.stringify(sentStart[0].traceConfig.includedCategories) === JSON.stringify(['-*', 'disabled-by-default-memory-infra', ...(cfg.extra ? cfg.extra.split(',') : [])]), sentStart.length && sentStart[0].traceConfig);
   check('raw events file holds every event the reader received', fs.existsSync(rawPath) && JSON.parse(fs.readFileSync(rawPath, 'utf8')).length === cfg.events().length, rawPath);
   check('error absent (the reply and tracingComplete arrived)', !!h && h.error === null, h && h.error);
   const got = {
