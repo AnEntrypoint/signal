@@ -1,53 +1,33 @@
 #!/usr/bin/env node
-import { execFileSync, spawn } from 'node:child_process';
+import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
-import net from 'node:net';
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, extname, join, relative, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { openSource } from './static-source.mjs';
 
 const SNAPSHOT_ROOT = resolve(process.env.SNAPSHOT_ROOT || '/workspace/signal');
 const OUT = resolve(process.env.PAGES_OUT || join(SNAPSHOT_ROOT, 'pages-export'));
 const BASE_PATH = process.env.PAGES_BASE || '/signal/';
-const SERVER = resolve(process.env.EXPORT_SERVER || fileURLToPath(new URL('./serve-local.mjs', import.meta.url)));
-const REPLACEMENTS = join(dirname(SERVER), 'replacements', 'map.json');
 const FILE_LIMIT = 100 * 1024 * 1024;
 const CONCURRENCY = 16;
+const VALUE_HELPER = 'world-store-values.mjs';
 const STATIC_PREFIXES = ['/_next/', '/_ready/', '/ground/', '/fonts/', '/datadog/'];
 const SESSION_MODULE_EXTENSIONS = ['.mjs', '.json', '.html'];
 const TEXT_TYPES = ['text/html', 'text/javascript', 'text/css', 'application/json'];
 const REF = /\/(?:__local|_next|_ready|ground|fonts|datadog|session|world-store)\/[^\s"'<>(){}\\,;]*/g;
+const MODULE_NAME = /\b((?:[a-z][a-z-]*-)?[0-9a-f]{16}|[0-9a-f]{8}-[0-9a-f]{16}|[a-z][a-z-]*)\.(?:mjs|json)\b/g;
+const OUTER_ASSET = /\/(?:savi|mark)\/[^\s"'<>()\\]+|\/(?:favicon\.ico|icon\.png|apple-icon\.png)\?[^\s"'<>()\\]*/g;
 const POOL = '/v4/client/pool/';
-const LOG_FILES = ['state/fetch-log.jsonl', 'state/local-engine-fetch.jsonl', 'state/local-engine-runtime.jsonl'];
 
-const sleep = (ms) => new Promise((done) => setTimeout(done, ms));
 const sha256 = (buffer) => createHash('sha256').update(buffer).digest('hex');
 
-const ROOT_REF = /(?<=["'\x60(=\s+,])\/(?=(?:__local|_next|_ready|ground|fonts|datadog|session|world-store)\/)/g;
+const ROOT_REF = /(?<=["'\x60(=\s+,}])\/(?=(?:(?:__local|_next|_ready|ground|fonts|datadog|session|world-store|savi|mark)\/|favicon\.ico|icon\.png|apple-icon\.png|kernel-witness|manifest\.webmanifest))/g;
 
 function rebase(text) {
   return BASE_PATH === '/' ? text : text.replace(ROOT_REF, () => BASE_PATH);
 }
 
-function mappingUrls() {
-  const urls = [];
-  for (const name of LOG_FILES) {
-    const file = join(SNAPSHOT_ROOT, name);
-    if (!existsSync(file)) continue;
-    for (const line of readFileSync(file, 'utf8').split('\n')) {
-      let record;
-      try {
-        record = JSON.parse(line);
-      } catch {
-        continue;
-      }
-      if (record.file && (record.status === undefined || record.status === 200)) urls.push(record.url);
-    }
-  }
-  if (existsSync(REPLACEMENTS)) for (const entry of JSON.parse(readFileSync(REPLACEMENTS, 'utf8'))) urls.push(entry.url);
-  return urls;
-}
 
 function seedsFor(url) {
   if (!url) return [];
@@ -95,7 +75,58 @@ function isUtf8(body) {
   }
 }
 
-async function crawl(base, seeds) {
+function moduleRefs(path, text) {
+  const bare = path.split('?')[0];
+  let base = null;
+  if (/\.(?:mjs|json)$/.test(bare)) base = bare.slice(0, bare.lastIndexOf('/') + 1);
+  else if (bare.startsWith('/session/')) base = bare.replace(/\/?$/, '/');
+  if (base === null) return [];
+  return [...new Set(Array.from(text.matchAll(MODULE_NAME), (m) => base + m[0]))];
+}
+
+const SEAM = /([\w$]+)=\(\$,Z\)=>([\w$]+)!==null\?\2\(\$,Z\):fetch\(\$,Z\)/g;
+const POST_PLACEHOLDER = '__POST_REPLIES__';
+
+function rewriteSeams(text) {
+  const matches = [...text.matchAll(SEAM)];
+  if (matches.length === 0) return text;
+  if (matches.length > 1) throw new Error('transport seam matched ' + matches.length + ' times in one module');
+  const replaced = text.replace(SEAM, (match, name, hook) => name + '=($,Z)=>__replayFetch($,Z,' + hook + ')');
+  return 'import { replayFetch as __replayFetch } from "' + BASE_PATH + VALUE_HELPER + '";\n' + replaced;
+}
+
+function snapshotPostReplies(root) {
+  const replies = new Map();
+  for (const line of readFileSync(join(root, 'state', 'fetch-log.jsonl'), 'utf8').split('\n')) {
+    if (!line.trim()) continue;
+    const record = JSON.parse(line);
+    if (record.method !== 'POST' || record.served !== true || !record.file || !existsSync(join(root, record.file))) continue;
+    const url = new URL(record.url);
+    const route = url.pathname + url.search;
+    const list = replies.get(record.request_sha256) ?? [];
+    const seen = list.find((reply) => reply.route === route);
+    if (seen !== undefined) {
+      if (seen.file !== record.file) throw new Error('POST body ' + record.request_sha256 + ' has two replies for ' + route);
+      continue;
+    }
+    list.push({ route, file: record.file, type: record.content_type, name: record.request_sha256 + '-' + list.length + '.bin' });
+    replies.set(record.request_sha256, list);
+  }
+  return replies;
+}
+
+function snapshotValueHashes(root) {
+  const hashes = new Set();
+  for (const line of readFileSync(join(root, 'state', 'fetch-log.jsonl'), 'utf8').split('\n')) {
+    if (!line.trim()) continue;
+    const record = JSON.parse(line);
+    const match = /world-store\/values\/([0-9a-f]{64})(?:\?|$)/.exec(record.url || '');
+    if (match && record.file && record.served !== false && existsSync(join(root, record.file))) hashes.add(match[1]);
+  }
+  return [...hashes];
+}
+
+async function crawl(source, seeds) {
   const files = new Map();
   const misses = [];
   const seen = new Set();
@@ -105,20 +136,27 @@ async function crawl(base, seeds) {
     batch.forEach((path) => seen.add(path));
     frontier = [];
     await mapLimit(batch, async (path) => {
-      const response = await fetch(base + path);
-      const body = Buffer.from(await response.arrayBuffer());
-      if (response.status !== 200) {
-        misses.push(response.status + ' ' + path);
+      const served = source.serve(path);
+      if (served.status !== 200) {
+        misses.push(served.status + ' ' + path);
         return;
       }
-      const type = (response.headers.get('content-type') || '').split(';')[0].trim();
+      const body = served.body;
+      const type = served.type.split(';')[0].trim();
+      const bare = path.split('?')[0];
+      if (bare.startsWith('/world-store/values/')) {
+        files.set(bare, { body, type });
+        return;
+      }
       if (!isText(type, body)) {
         files.set(path, { body, type });
         return;
       }
-      const text = rewriteImages(body.toString('utf8').split(base).join(''));
+      const raw = body.toString('utf8');
+      const text = rewriteImages(raw);
+      for (const name of moduleRefs(path, raw)) frontier.push(name);
       for (const match of text.matchAll(REF)) frontier.push(match[0].split('?')[0]);
-      files.set(path, { body: Buffer.from(rebase(text), 'utf8'), type });
+      files.set(path, { body: Buffer.from(rewriteSeams(rebase(text)), 'utf8'), type });
     });
   }
   return { files, misses };
@@ -139,8 +177,9 @@ function rewriteImages(text) {
 }
 
 function relFor(path, type) {
-  const decoded = safeDecode(path);
+  const decoded = safeDecode(path.split('?')[0]);
   const trimmed = decoded.replace(/^\/+/, '').replace(/\/+$/, '');
+  if (trimmed.startsWith('world-store/values/')) return trimmed;
   if (trimmed === '' || decoded.endsWith('/')) return join(trimmed, 'index.html');
   const last = trimmed.slice(trimmed.lastIndexOf('/') + 1);
   if (/\.[A-Za-z0-9]{1,8}$/.test(last)) return trimmed;
@@ -182,60 +221,54 @@ function writeSite(files) {
   return Array.from(byRel.values()).sort((a, b) => (a.rel < b.rel ? -1 : 1));
 }
 
-async function freePort() {
-  return new Promise((ok, fail) => {
-    const probe = net.createServer();
-    probe.once('error', fail);
-    probe.listen(0, '127.0.0.1', () => {
-      const port = probe.address().port;
-      probe.close(() => ok(port));
-    });
-  });
-}
 
-async function startServer(port) {
-  const child = spawn(process.execPath, [SERVER], {
-    env: Object.assign({}, process.env, { SNAPSHOT_ROOT, PORT: String(port), HOST: '127.0.0.1' }),
-    stdio: ['ignore', 'ignore', 'inherit'],
-  });
-  for (let attempt = 0; attempt < 300; attempt += 1) {
-    if (child.exitCode !== null) throw new Error('serve-local exited with ' + child.exitCode);
-    try {
-      const health = await fetch('http://127.0.0.1:' + port + '/__health');
-      if (health.ok) return child;
-    } catch {
-      await sleep(100);
-      continue;
-    }
-    await sleep(100);
+
+
+function poolModuleNames(root) {
+  const names = new Set();
+  for (const file of readdirSync(join(root, 'assets', 'play.spawn.co'))) {
+    const match = /^_v4_client_pool_(.+\.(?:mjs|json))$/.exec(file);
+    if (match) names.add(match[1]);
   }
-  child.kill('SIGTERM');
-  throw new Error('serve-local did not answer /__health');
-}
-
-async function stopServer(child) {
-  if (child.exitCode !== null) return;
-  const exited = new Promise((done) => child.once('exit', done));
-  child.kill('SIGTERM');
-  await exited;
+  return names;
 }
 
 async function exportSite() {
-  const port = await freePort();
-  const base = 'http://127.0.0.1:' + port;
-  const child = await startServer(port);
-  let crawled;
-  try {
-    const seeds = ['/'];
-    for (const url of mappingUrls()) seeds.push(...seedsFor(url));
-    crawled = await crawl(base, seeds);
-  } finally {
-    await stopServer(child);
+  const source = openSource(SNAPSHOT_ROOT);
+  const seeds = ['/', '/kernel-witness'];
+  for (const url of source.urls()) seeds.push(...seedsFor(url));
+  if (process.env.PAGES_SEEDS) seeds.push(...readFileSync(process.env.PAGES_SEEDS, 'utf8').split('\n').filter(Boolean));
+  for (const match of source.serve("/").body.toString("utf8").matchAll(OUTER_ASSET)) seeds.push(match[0]);
+  const hashes = snapshotValueHashes(SNAPSHOT_ROOT);
+  seeds.push(...hashes.map((hash) => '/world-store/values/' + hash));
+  const crawled = await crawl(source, seeds);
+  const poolNames = poolModuleNames(SNAPSHOT_ROOT);
+  const named = new Set();
+  for (const [path, file] of crawled.files) {
+    if (!/javascript|html/.test(file.type || '')) continue;
+    for (const match of file.body.toString('utf8').matchAll(MODULE_NAME)) if (poolNames.has(match[0])) named.add(match[0]);
   }
+  const extra = [...named].map((name) => '/__local/' + name).filter((path) => !crawled.files.has(path));
+  const extraCrawl = await crawl(source, extra);
+  for (const [path, file] of extraCrawl.files) crawled.files.set(path, file);
+  crawled.misses.push(...extraCrawl.misses);
+  const postReplies = snapshotPostReplies(SNAPSHOT_ROOT);
+  const postEntries = [...postReplies.values()].flat();
+  for (const reply of postEntries) crawled.files.set('/post-replies/' + reply.name, { body: readFileSync(join(SNAPSHOT_ROOT, reply.file)), type: 'application/octet-stream' });
+  const helperTemplate = readFileSync(new URL('./' + VALUE_HELPER, import.meta.url), 'utf8');
+  if (helperTemplate.split(POST_PLACEHOLDER).length !== 2) throw new Error(POST_PLACEHOLDER + ' must appear exactly once in ' + VALUE_HELPER);
+  const postTable = Object.fromEntries([...postReplies].map(([sha, list]) => [sha, list.map((reply) => ({ route: reply.route, name: reply.name, type: reply.type }))]));
+  crawled.files.set('/' + VALUE_HELPER, { body: Buffer.from(helperTemplate.replace(POST_PLACEHOLDER, () => JSON.stringify(postTable)), 'utf8'), type: 'text/javascript' });
   const pages = writeSite(crawled.files);
   const bytes = pages.reduce((sum, page) => sum + page.bytes, 0);
   const largest = pages.reduce((best, page) => (page.bytes > best.bytes ? page : best), { rel: '', bytes: 0 });
   writeFileSync(join(SNAPSHOT_ROOT, 'pages-export.sha256'), pages.map((page) => page.sha256 + '  ' + page.rel).join('\n') + '\n');
+  const exportedValues = pages.filter((page) => /^world-store\/values\/[0-9a-f]{64}$/.test(page.rel)).length;
+  const seamFiles = [...crawled.files.values()].filter((file) => file.body.includes('__replayFetch(')).length;
+  if (seamFiles === 0) throw new Error('no transport seam found in the export');
+  const exportedPosts = pages.filter((page) => /^post-replies\/[0-9a-f]{64}-\d+\.bin$/.test(page.rel)).length;
+  if (exportedPosts !== postEntries.length) throw new Error('exported ' + exportedPosts + ' of ' + postEntries.length + ' post replies');
+  if (exportedValues !== hashes.length) throw new Error('exported ' + exportedValues + ' of ' + hashes.length + ' snapshot values');
   const summary = {
     out: OUT,
     files: pages.length + 1,
@@ -245,6 +278,9 @@ async function exportSite() {
     misses: crawled.misses.length,
     missPaths: crawled.misses.map((miss) => miss.slice(miss.indexOf(' ') + 1)),
     missSample: crawled.misses.slice(0, 10),
+    values: { snapshot: hashes.length, exported: exportedValues },
+    posts: { snapshot: postEntries.length, exported: exportedPosts },
+    seams: seamFiles,
     pages,
   };
   writeFileSync(join(SNAPSHOT_ROOT, 'pages-export.summary.json'), JSON.stringify(summary, null, 2) + '\n');

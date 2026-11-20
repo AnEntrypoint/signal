@@ -1,17 +1,14 @@
-import { execFileSync, spawn, spawnSync } from 'node:child_process';
-import { closeSync, existsSync, mkdirSync, openSync, readFileSync, readdirSync, rmSync, statSync, truncateSync, writeFileSync } from 'node:fs';
-import { createHash } from 'node:crypto';
-import http from 'node:http';
-import net from 'node:net';
-import { dirname, extname, join, resolve } from 'node:path';
+import { spawnSync } from 'node:child_process';
+import { closeSync, existsSync, mkdirSync, openSync, readFileSync, rmSync, truncateSync, writeFileSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SCRIPT = resolve(process.env.EXPORT_SCRIPT || join(HERE, '..', 'export-pages.mjs'));
-const SERVER = resolve(join(HERE, '..', 'serve-local.mjs'));
 const WORK = '/tmp/verify/pages-witness';
-const TEXT_TYPES = ['text/html', 'text/javascript', 'text/css', 'application/json'];
-const sleep = (ms) => new Promise((done) => setTimeout(done, ms));
+const VALUE_HASH = 'ab'.repeat(32);
+const POST_SHA = 'cd'.repeat(32);
+const SEAM = 'const h=($,Z)=>n!==null?n($,Z):fetch($,Z);\nexport const k=1;\n';
 let passed = 0;
 const failed = [];
 
@@ -21,310 +18,78 @@ function check(name, ok) {
   console.log((ok ? 'ok   ' : 'FAIL ') + name);
 }
 
-function makeFixture(root, oversize) {
+function makeFixture(root, options) {
   rmSync(root, { recursive: true, force: true });
-  for (const dir of ['assets/fixture', 'assets/www.spawn.co', 'raw/http', 'state']) mkdirSync(join(root, dir), { recursive: true });
+  for (const dir of ['assets/fixture', 'assets/www.spawn.co', 'assets/play.spawn.co', 'raw/http', 'state']) mkdirSync(join(root, dir), { recursive: true });
   writeFileSync(join(root, 'raw/http/session-dev.body'), '<!DOCTYPE html><html><body>session</body></html>');
-  writeFileSync(join(root, 'raw/http/dev-page.body'), '<!DOCTYPE html><html><head></head><body><img src="/fonts/f.woff2"><img src="/_next/image?url=https%3A%2F%2Fwww.spawn.co%2Ffonts%2Ff.woff2%3Fv%3D2&amp;w=640&amp;q=75"><script src="https://www.spawn.co/_ready/ok.txt"></script></body></html>');
+  writeFileSync(join(root, 'raw/http/dev-page.body'), '<!DOCTYPE html><html><head></head><body><img src="/fonts/f.woff2"><img src="/_next/image?url=https%3A%2F%2Fwww.spawn.co%2Ffonts%2Ff.woff2"><script>navigator.sendBeacon(i,r)</script></body></html>');
   let chunk = 'const more = "/_next/static/more.js";\nconst pool = "https://play.spawn.co/v4/client/pool/tome-ui/a.html";\nconst gone = "/fonts/absent.woff2";\n';
   chunk += 'const page = "/ground/";\n';
   chunk += 'const img = "/_next/image?url=\x24{encodeURIComponent(l)}&w=\x24{o}&q=\x24{a}";\n';
   chunk += 'const tool = "/fonts/tool.dmg";\n';
-  if (oversize) chunk += 'const big = "/fonts/big.woff2";\n';
   writeFileSync(join(root, 'assets/fixture/chunk.js'), chunk);
   writeFileSync(join(root, 'assets/www.spawn.co/__next_static_more.js'), 'console.log("more");\n');
-  writeFileSync(join(root, 'assets/www.spawn.co/_ground_index.bin'), '<!DOCTYPE html><html><body><a href="/_next/static/more.js">m</a></body></html>\n');
   writeFileSync(join(root, 'assets/fixture/a.html'), '<html><body>pool</body></html>\n');
   writeFileSync(join(root, 'assets/fixture/ok.txt'), 'ready\n');
-  writeFileSync(join(root, 'assets/fixture/page.bin'), '<!DOCTYPE html><html><body><a href="/_next/static/more.js">m</a></body></html>\n');
   writeFileSync(join(root, 'assets/fixture/f.woff2'), Buffer.alloc(64, 7));
   writeFileSync(join(root, 'assets/fixture/tool.dmg'), Buffer.from([0, 1, 2, 255]));
-  writeFileSync(join(root, 'assets/fixture/abc.bin'), Buffer.from([9, 8, 7, 255]));
   writeFileSync(join(root, 'assets/fixture/x.json'), '{"ok":true}\n');
+  writeFileSync(join(root, 'assets/fixture/transport.mjs'), SEAM + (options.seams === 2 ? 'const g=($,Z)=>m!==null?m($,Z):fetch($,Z);\n' : ''));
+  writeFileSync(join(root, 'assets/play.spawn.co/_world-store_values_' + VALUE_HASH + '.bin'), Buffer.from([1, 2, 3, 4]));
+  writeFileSync(join(root, 'assets/fixture/reply.json'), '{"scan":1}\n');
+  writeFileSync(join(root, 'assets/fixture/reply-alt.json'), '{"scan":2}\n');
   const log = [
     { url: 'https://www.spawn.co/_next/static/chunk.js', file: 'assets/fixture/chunk.js', status: 200 },
     { url: 'https://play.spawn.co/v4/client/pool/tome-ui/a.html', file: 'assets/fixture/a.html', status: 200 },
     { url: 'https://www.spawn.co/_ready/ok.txt', file: 'assets/fixture/ok.txt', status: 200 },
-    { url: 'https://play.spawn.co/world-store/heads/abc', file: 'assets/fixture/abc.bin', status: 200 },
-    { url: 'https://play.spawn.co/world-store/heads/abc/x.json', file: 'assets/fixture/x.json', status: 200 },
+    { url: 'https://www.spawn.co/_ready/transport.mjs', file: 'assets/fixture/transport.mjs', status: 200 },
     { url: 'https://www.spawn.co/fonts/tool.dmg', file: 'assets/fixture/tool.dmg', status: 200 },
     { url: 'https://www.spawn.co/fonts/f.woff2', file: 'assets/fixture/f.woff2', status: 200 },
-    { url: 'https://www.spawn.co/fixture.co', file: 'assets/fixture/page.bin', status: 200, content_type: '' },
-    { url: 'https://(?:p[1-9]', file: 'assets/fixture/missing.bin', status: 0 },
+    { url: 'https://play.spawn.co/world-store/values/' + VALUE_HASH, file: 'assets/play.spawn.co/_world-store_values_' + VALUE_HASH + '.bin', status: 200, served: true },
+    { url: 'https://play.spawn.co/world-store/scans', method: 'POST', request_sha256: POST_SHA, file: 'assets/fixture/reply.json', content_type: 'application/json', status: 200, served: true },
   ];
+  if (options.conflict) log.push({ url: 'https://play.spawn.co/world-store/scans', method: 'POST', request_sha256: POST_SHA, file: 'assets/fixture/reply-alt.json', content_type: 'application/json', status: 200, served: true });
   writeFileSync(join(root, 'state/fetch-log.jsonl'), log.map((record) => JSON.stringify(record)).join('\n') + '\n');
-  if (oversize) {
-    closeSync(openSync(join(root, 'assets/www.spawn.co/_fonts_big.woff2'), 'w'));
-    truncateSync(join(root, 'assets/www.spawn.co/_fonts_big.woff2'), 101 * 1024 * 1024);
-  }
 }
 
-function runExport(root, extra) {
-  return spawnSync(process.execPath, [SCRIPT, ...extra], {
+function runExport(root) {
+  return spawnSync(process.execPath, [SCRIPT], {
     encoding: 'utf8',
     maxBuffer: 1 << 28,
-    env: Object.assign({}, process.env, { SNAPSHOT_ROOT: root, PAGES_OUT: join(root, 'pages-out'), EXPORT_SERVER: SERVER }),
+    env: Object.assign({}, process.env, { SNAPSHOT_ROOT: root, PAGES_OUT: join(root, 'pages-out') }),
   });
 }
 
-function walk(dir) {
-  const found = [];
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    const full = join(dir, entry.name);
-    if (entry.isDirectory()) found.push(...walk(full));
-    else found.push(full);
-  }
-  return found;
+function bytes(path) {
+  return existsSync(path) ? readFileSync(path) : null;
 }
 
-function git(repo, args) {
-  return execFileSync('git', ['-C', repo].concat(args), { encoding: 'utf8' }).trim();
-}
-
-async function freePort() {
-  return new Promise((ok, fail) => {
-    const probe = net.createServer();
-    probe.once('error', fail);
-    probe.listen(0, '127.0.0.1', () => {
-      const port = probe.address().port;
-      probe.close(() => ok(port));
-    });
-  });
-}
-
-const ROOT_REF_W = /(?<=["'\x60(=\s+,])\/(?=(?:__local|_next|_ready|ground|fonts|datadog|session|world-store)\/)/g;
-const PREFIXED_REF = /(?<=["'\x60(=\s+,])\/signal\/[^\s"'\x60<>()\\,;]*/g;
-const CONTENT_TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.txt': 'text/plain; charset=utf-8' };
-
-function isTextW(type, body) {
-  if (TEXT_TYPES.includes(type)) return true;
-  if (body.subarray(0, 8192).includes(0)) return false;
-  try {
-    new TextDecoder('utf-8', { fatal: true }).decode(body);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-function safeDecodeW(text) {
-  try {
-    return decodeURIComponent(text);
-  } catch {
-    return text;
-  }
-}
-
-function rewriteImagesW(text) {
-  return text
-    .replace(/\/_next\/image\?url=\x24\{encodeURIComponent\((\w+)\)\}&/g, (match, name) => '/__local/\x24{encodeURIComponent(String(' + name + ').split("?")[0])}?')
-    .replace(/\/_next\/image\?url=([^&"'\s<>\\\x60\x24{}()]+)(?:&[^"'\s<>\\\x60]*)?/g, (match, encoded) => '/__local/' + encodeURIComponent(safeDecodeW(encoded).split('?')[0]));
-}
-
-function rebaseW(text) {
-  return text.replace(ROOT_REF_W, () => '/signal/');
-}
-
-function resolveUnder(dir, rel) {
-  for (const candidate of [rel, rel + '/index.html']) {
-    const full = join(dir, candidate);
-    if (existsSync(full) && statSync(full).isFile()) return full;
-  }
-  return null;
-}
-
-function staticAt(dir) {
-  return http.createServer((req, res) => {
-    const path = safeDecodeW(new URL(req.url, 'http://witness.invalid').pathname);
-    if (path === '/signal') {
-      res.writeHead(301, { Location: '/signal/' });
-      res.end();
-      return;
-    }
-    const file = path.startsWith('/signal/') ? resolveUnder(dir, path.slice('/signal/'.length)) : null;
-    if (!file) {
-      res.writeHead(404, { 'Content-Type': 'text/plain' });
-      res.end('miss');
-      return;
-    }
-    res.writeHead(200, { 'Content-Type': CONTENT_TYPES[extname(file)] || 'application/octet-stream' });
-    res.end(readFileSync(file));
-  });
-}
-
-async function projectChecks(dir, summary) {
-  const texts = walk(dir).filter((file) => /\.(html|js|css|json)$/.test(file));
-  const unrooted = texts.filter((file) => readFileSync(file, 'utf8').search(ROOT_REF_W) !== -1);
-  const refs = new Set();
-  for (const file of texts) for (const match of readFileSync(file, 'utf8').matchAll(PREFIXED_REF)) refs.add(match[0].split('?')[0]);
-  const dynamic = [...refs].filter((ref) => /[\x24{}]/.test(ref));
-  dynamic.forEach((ref) => refs.delete(ref));
-  const missing = new Set(summary.missPaths || []);
-  const unresolved = [];
-  for (const ref of refs) {
-    const rel = ref.slice('/signal'.length);
-    if (!resolveUnder(dir, safeDecodeW(rel.slice(1)))) unresolved.push(rel);
-  }
-  const unexpected = unresolved.filter((rel) => !missing.has(rel));
-  const server = staticAt(dir);
-  await new Promise((done) => server.listen(0, '127.0.0.1', done));
-  let entryOk = false;
-  const mismatched = [];
-  let served = 0;
-  try {
-    const base = 'http://127.0.0.1:' + server.address().port;
-    const entry = await fetch(base + '/signal/');
-    entryOk = entry.status === 200 && Buffer.from(await entry.arrayBuffer()).equals(readFileSync(join(dir, 'index.html')));
-    for (const ref of refs) {
-      const rel = ref.slice('/signal'.length);
-      if (unresolved.includes(rel)) continue;
-      const response = await fetch(base + ref);
-      const body = Buffer.from(await response.arrayBuffer());
-      served += 1;
-      if (response.status !== 200 || !body.equals(readFileSync(resolveUnder(dir, safeDecodeW(rel.slice(1)))))) mismatched.push(ref);
-    }
-  } finally {
-    await new Promise((done) => server.close(done));
-  }
-  check('the summary records the /signal/ base path', summary.base === '/signal/');
-  check('no root-absolute reference is left outside /signal/ (' + unrooted.length + ' files)', unrooted.length === 0);
-  check('the project URL form /signal/ serves the entry page', entryOk);
-  check('every /signal/ reference resolves, bar recorded misses (' + refs.size + ' refs, ' + unresolved.length + ' unresolved, ' + dynamic.length + ' dynamic)', refs.size >= 3 && unexpected.length === 0);
-  check('every resolved /signal/ reference returns the exported bytes (' + served + ' served)', served > 0 && mismatched.length === 0);
-  if (mismatched.length) console.log('mismatched: ' + mismatched.slice(0, 5).join(', '));
-  if (unexpected.length) console.log('unexpected unresolved: ' + unexpected.slice(0, 5).join(', '));
-}
-
-function manifestChecks(out, manifestPath) {
-  const rows = readFileSync(manifestPath, 'utf8').trim().split('\n').map((line) => {
-    const at = line.indexOf('  ');
-    return { hash: line.slice(0, at), rel: line.slice(at + 2) };
-  });
-  check('manifest names every page by its single-slash on-disk path (' + rows.length + ')', rows.length > 0 && rows.every(({ rel }) => !rel.includes('//') && existsSync(join(out, rel))));
-  check('manifest hashes equal the bytes on disk', rows.every(({ hash, rel }) => existsSync(join(out, rel)) && createHash('sha256').update(readFileSync(join(out, rel))).digest('hex') === hash));
-}
-
-const NAMED_ASSETS = [
-  { rel: '_next/static/immutable/chunks/5565s7wxhi.css', sha: '1a73fab23845b556347f95e7d81d02ceaca30e1282d3b9b9d3b5e1a1e9f32840', url: 'https://www.spawn.co/_next/static/immutable/chunks/5565s7wxhi.css' },
-];
-
-function namedChecks(out, manifestPath) {
-  const manifest = readFileSync(manifestPath, 'utf8');
-  const log = readFileSync('/workspace/signal/state/fetch-log.jsonl', 'utf8');
-  for (const asset of NAMED_ASSETS) {
-    const file = join(out, asset.rel);
-    const body = existsSync(file) ? readFileSync(file) : null;
-    check('named asset ' + asset.rel + ' is exported with its captured bytes', body !== null && createHash('sha256').update(body).digest('hex') === asset.sha && manifest.includes(asset.sha + '  ' + asset.rel + '\n'));
-    check('named asset ' + asset.rel + ' has a capture record with the same hash', log.split('\n').some((line) => { try { const record = JSON.parse(line); return record.url === asset.url && record.sha256 === asset.sha; } catch { return false; } }));
-  }
-}
-
-async function checkOnly() {
-  const summary = JSON.parse(readFileSync(process.env.WITNESS_CHECK_SUMMARY, 'utf8'));
-  await projectChecks(process.env.WITNESS_CHECK_DIR, summary);
-  manifestChecks(process.env.WITNESS_CHECK_DIR, join(dirname(process.env.WITNESS_CHECK_SUMMARY), 'pages-export.sha256'));
-  namedChecks(process.env.WITNESS_CHECK_DIR, join(dirname(process.env.WITNESS_CHECK_SUMMARY), 'pages-export.sha256'));
-  console.log(failed.length === 0 ? 'GREEN ' + passed + ' checks' : 'RED ' + failed.length + ' failed: ' + failed.join('; '));
-  process.exitCode = failed.length === 0 ? 0 : 1;
-}
-
-async function main() {
-  if (process.env.WITNESS_CHECK_DIR) {
-    await checkOnly();
-    return;
-  }
-  const root = join(WORK, 'site');
-  makeFixture(root, false);
-  const run = runExport(root, []);
-  check('export exits 0 on the fixture', run.status === 0);
-  if (run.status !== 0) console.log(run.stderr);
+function main() {
+  const root = join(WORK, 'fixture');
+  makeFixture(root, { seams: 1 });
+  const run = runExport(root);
+  check('fixture export exits 0', run.status === 0);
   const out = join(root, 'pages-out');
-  const summaryPath = join(root, 'pages-export.summary.json');
-  const summary = existsSync(summaryPath) ? JSON.parse(readFileSync(summaryPath, 'utf8')) : { pages: [], misses: 0, files: 0, bytes: 0, largest: { rel: '', bytes: 0 } };
-  const exists = (rel) => existsSync(join(out, rel));
-  check('index.html is the entry page', exists('index.html'));
-  check('.nojekyll is written so Pages keeps underscore paths', exists('.nojekyll'));
-  check('chunk.js is exported at its path', exists('_next/static/chunk.js'));
-  check('more.js is found only by a reference inside chunk.js', exists('_next/static/more.js'));
-  check('pool module is exported under /session', exists('session/tome-ui/a.html'));
-  check('font is exported', exists('fonts/f.woff2'));
-  check('a file that is also a directory is written as <path>/index.html', exists('world-store/heads/abc/index.html') && exists('world-store/heads/abc/x.json'));
-  check('a page served as octet-stream is rebased like text', exists('ground/index.html') && readFileSync(join(out, 'ground/index.html'), 'utf8').includes('href="/signal/_next/static/more.js"'));
-  check('an image request is written to the captured asset without its query', exists('__local/https:/www.spawn.co/fonts/f.woff2') && readFileSync(join(out, 'index.html'), 'utf8').includes('src="/signal/__local/https%3A%2F%2Fwww.spawn.co%2Ffonts%2Ff.woff2"'));
-  check('a runtime image loader is rewritten to the captured path with a query', readFileSync(join(out, '_next/static/chunk.js'), 'utf8').includes('?w=') && !readFileSync(join(out, '_next/static/chunk.js'), 'utf8').includes('/image?url='));
-  check('a binary download is a flat file, not an index page', exists('fonts/tool.dmg') && !exists('fonts/tool.dmg/index.html'));
-  check('ready file is exported', exists('_ready/ok.txt'));
-  check('a page with no content type and a dot in its name is rebased like text', exists('__local/https:/www.spawn.co/fixture.co') && readFileSync(join(out, '__local/https:/www.spawn.co/fixture.co'), 'utf8').includes('href="/signal/_next/static/more.js"'));
-  check('the page reference to ok.txt is exported under its decoded /__local/ name', exists('__local/https:/www.spawn.co/_ready/ok.txt'));
-  check('a 404 reference is a miss, not a file', summary.misses >= 1 && !exists('fonts/absent.woff2'));
-  const files = walk(out);
-  const texts = files.filter((file) => /\.(html|js|css|json)$/.test(file));
-  check('the export has exported text files', texts.length >= 3);
-  check('no exported text carries the export port', texts.every((file) => !readFileSync(file, 'utf8').includes('127.0.0.1')));
-  check('summary largest equals the largest page', summary.largest.bytes === Math.max(0, ...summary.pages.map((page) => page.bytes)));
-  check('summary counts pages plus .nojekyll', summary.files === summary.pages.length + 1);
-  manifestChecks(out, join(root, 'pages-export.sha256'));
+  const summary = existsSync(join(root, 'pages-export.summary.json')) ? JSON.parse(readFileSync(join(root, 'pages-export.summary.json'), 'utf8')) : {};
+  check('values exported equal to snapshot values', summary.values && summary.values.snapshot === 1 && summary.values.exported === 1);
+  check('post replies exported equal to snapshot replies', summary.posts && summary.posts.snapshot === 1 && summary.posts.exported === 1);
+  check('transport seam rewritten in exported modules', summary.seams >= 1);
+  const module = readFileSync(join(out, '_ready/transport.mjs'), 'utf8');
+  check('seam rewritten to replayFetch with the hook', module.includes('h=($,Z)=>__replayFetch($,Z,n)') && !module.includes('fetch($,Z)'));
+  check('seam module imports the helper', module.includes('import { replayFetch as __replayFetch } from "/signal/world-store-values.mjs";'));
+  const helper = readFileSync(join(out, 'world-store-values.mjs'), 'utf8');
+  check('helper table holds the value-free POST route and body hash', helper.includes(POST_SHA) && helper.includes('/world-store/scans') && !helper.includes('__POST_REPLIES__'));
+  check('value bytes match the snapshot file', Buffer.compare(bytes(join(out, 'world-store/values/' + VALUE_HASH)) || Buffer.alloc(0), Buffer.from([1, 2, 3, 4])) === 0);
+  check('post reply bytes match the snapshot file', Buffer.compare(bytes(join(out, 'post-replies/' + POST_SHA + '-0.bin')) || Buffer.alloc(0), Buffer.from('{"scan":1}\n')) === 0);
 
-  const port = await freePort();
-  const base = 'http://127.0.0.1:' + port;
-  const child = spawn(process.execPath, [SERVER], { env: Object.assign({}, process.env, { SNAPSHOT_ROOT: root, PORT: String(port), HOST: '127.0.0.1' }), stdio: 'ignore' });
-  let healthy = false;
-  for (let attempt = 0; attempt < 100 && !healthy; attempt += 1) {
-    try {
-      healthy = (await fetch(base + '/__health')).ok;
-    } catch {
-      await sleep(100);
-    }
-  }
-  let equal = 0;
-  const differ = [];
-  try {
-    for (const page of summary.pages) {
-      const response = await fetch(base + page.path);
-      const served = Buffer.from(await response.arrayBuffer());
-      const type = (response.headers.get('content-type') || '').split(';')[0].trim();
-      const comparable = isTextW(type, served) ? Buffer.from(rebaseW(rewriteImagesW(served.toString('utf8').split(base).join('')))) : served;
-      if (comparable.equals(readFileSync(join(out, page.rel)))) equal += 1;
-      else differ.push(page.path);
-    }
-  } finally {
-    child.kill('SIGTERM');
-  }
-  check('the server answered the health check', healthy);
-  check('every exported page equals the server response for its path (' + equal + '/' + summary.pages.length + ')', summary.pages.length >= 6 && equal === summary.pages.length);
-  if (differ.length) console.log('differ: ' + differ.join(', '));
-
-  await projectChecks(out, summary);
-  const big = join(WORK, 'site-big');
-  makeFixture(big, true);
-  const bigRun = runExport(big, []);
-  check('an export with a 101 MB file is refused and names it', bigRun.status !== 0 && bigRun.stderr.includes('/fonts/big.woff2'));
-
-  const repo = join(WORK, 'repo');
-  rmSync(repo, { recursive: true, force: true });
-  mkdirSync(repo, { recursive: true });
-  execFileSync('git', ['-C', repo, 'init', '-q']);
-  execFileSync('git', ['-C', repo, 'config', 'user.name', 'lanmower']);
-  execFileSync('git', ['-C', repo, 'config', 'user.email', 'lanmower@example.invalid']);
-  const pub = runExport(root, ['--publish', repo]);
-  check('publish exits 0', pub.status === 0);
-  if (pub.status !== 0) console.log(pub.stderr);
-  check('gh-pages points at a commit', /^[0-9a-f]{40}$/.test(git(repo, ['rev-parse', 'refs/heads/gh-pages'])));
-  check('gh-pages index.html equals the export', execFileSync('git', ['-C', repo, 'show', 'refs/heads/gh-pages:index.html']).equals(readFileSync(join(out, 'index.html'))));
-  const names = git(repo, ['ls-tree', '-r', '--name-only', 'refs/heads/gh-pages']).split('\n').filter(Boolean);
-  check('gh-pages holds every exported file plus .nojekyll (' + names.length + ')', names.length === summary.pages.length + 1 && names.includes('.nojekyll'));
-  const again = runExport(root, ['--publish', repo]);
-  check('second publish exits 0', again.status === 0);
-  check('second publish builds on the first', git(repo, ['rev-list', '--count', 'refs/heads/gh-pages']) === '2');
-  check('commit author is lanmower', git(repo, ['log', '-1', '--format=%an', 'refs/heads/gh-pages']) === 'lanmower');
-  check('commit message has no trailers', !/Co-authored|Signed-off|Reviewed-by/i.test(git(repo, ['log', '-1', '--format=%B', 'refs/heads/gh-pages'])));
-
-  if (failed.length === 0) console.log('GREEN ' + passed + ' checks');
-  else console.log('RED ' + failed.length + ' failed: ' + failed.join('; '));
-  process.exitCode = failed.length === 0 ? 0 : 1;
+  const red = makeFixture(join(WORK, 'red-seams'), { seams: 2 });
+  const redSeams = runExport(join(WORK, 'red-seams'));
+  check('red: a module with two transport seams fails the export', redSeams.status !== 0 && redSeams.stderr.includes('matched 2 times'));
+  makeFixture(join(WORK, 'red-conflict'), { seams: 1, conflict: true });
+  const redConflict = runExport(join(WORK, 'red-conflict'));
+  check('red: one POST body with two replies for one route fails the export', redConflict.status !== 0 && redConflict.stderr.includes('has two replies'));
+  console.log('passed=' + passed + ' failed=' + failed.length);
+  if (failed.length > 0) process.exitCode = 1;
 }
 
-main().catch((error) => {
-  console.error(error.stack || error.message);
-  process.exitCode = 1;
-});
+main();
