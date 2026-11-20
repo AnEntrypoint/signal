@@ -75,6 +75,8 @@ const runScenario = async (name) => {
   check('scope names the refusal', !!h && typeof h.scope === 'string' && h.scope.startsWith(cfg.scope), h && h.scope);
   if (cfg.pids.length) {
     check('load pid is the page renderer (array_buffer 310 MB)', !!h && h.loadPid === PAGE_PID && h.loadPidArrayBufferBytes === 310 * MB, h && [h.loadPid, h.loadPidArrayBufferBytes]);
+    check('dump event ids include the requested guid 0xA', !!h && (h.dumpEventIds || []).includes('0xA'), h && h.dumpEventIds);
+    check('allocator names include the page array_buffer partition', !!h && (h.allocatorNames || []).includes('partition_alloc/partitions/array_buffer'), h && h.allocatorNames);
     check('holder dump lists 550 MB of partitions', !!h && (h.dumpedPids || []).some((p) => p.pid === HOLDER_PID && p.partitionTotalBytes === 550 * MB), h && h.dumpedPids);
   } else {
     check('no load pid when no process dumped', !!h && h.loadPid === null, h && h.loadPid);

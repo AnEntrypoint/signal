@@ -2,7 +2,7 @@ const [port, loadArg] = process.argv.slice(2);
 const LOAD_MB = Number(loadArg || 300);
 const MB = 1048576;
 const LOAD_FRACTION = 0.9;
-const out = { port: Number(port), loadMb: LOAD_MB, loadAllocatedMb: null, targetId: null, sessionId: null, pageClosed: false, dumpGuid: null, dumpSuccess: false, requestedAtMs: null, requestReplyAtMs: null, endSentAtMs: null, endReplyAtMs: null, tracingCompleteAtMs: null, eventsSeen: 0, dumpedPids: [], loadPid: null, loadPidArrayBufferBytes: null, scope: null, error: null };
+const out = { port: Number(port), loadMb: LOAD_MB, loadAllocatedMb: null, targetId: null, sessionId: null, pageClosed: false, dumpGuid: null, dumpSuccess: false, requestedAtMs: null, requestReplyAtMs: null, endSentAtMs: null, endReplyAtMs: null, tracingCompleteAtMs: null, eventsSeen: 0, dumpedPids: [], loadPid: null, loadPidArrayBufferBytes: null, dumpEventIds: [], allocatorNames: [], scope: null, error: null };
 const finish = () => { console.log('STANDALONE_DUMP ' + JSON.stringify(out)); process.exit(0); };
 const guard = setTimeout(() => { out.error = 'timeout'; finish(); }, 150000);
 const sizeOf = (attrs, key) => (attrs && attrs[key] && attrs[key].units === 'bytes' ? parseInt(attrs[key].value, 16) : null);
@@ -20,6 +20,8 @@ const summarize = (events) => {
     const arrayBuffer = rows.find((r) => r.name === 'partition_alloc/partitions/array_buffer');
     return { pid, matched, partitionTotalBytes: partitions.reduce((s, p) => s + p.sizeBytes, 0), arrayBufferBytes: arrayBuffer ? arrayBuffer.sizeBytes : null, residentSetBytes: sizeOf((e.args.dumps.process_totals || {}).attrs, 'resident_set_bytes') };
   });
+  out.dumpEventIds = [...new Set(events.filter((e) => e.ph === 'v' && e.args && e.args.dumps).map((e) => String(e.id)))].slice(0, 10);
+  out.allocatorNames = Object.keys(events.find((e) => e.ph === 'v' && e.args && e.args.dumps)?.args.dumps.allocators || {}).slice(0, 40);
   const candidates = out.dumpedPids.filter((p) => p.arrayBufferBytes !== null && p.arrayBufferBytes >= LOAD_MB * MB * LOAD_FRACTION);
   const best = candidates.length ? candidates.reduce((a, b) => (b.arrayBufferBytes > a.arrayBufferBytes ? b : a)) : null;
   out.loadPid = best ? best.pid : null;
