@@ -13,7 +13,7 @@ page.on('response', (r) => { if (r.status() >= 400 && reqs.length < 50000) reqs.
 page.on('response', (r) => { if (r.status() < 400 && okUrls.size < 50000) okUrls.add(r.url()); });
 page.on('requestfailed', (r) => { if (failed.length < 2000) failed.push({ u: r.url(), err: String(r.failure() && r.failure().errorText) }); });
 await page.setViewportSize({ width: 1280, height: 800 });
-await page.goto('http://127.0.0.1:__PORT__/signal/', { waitUntil: 'load', timeout: 150000 }).catch((e) => errs.push('NAV ' + String(e.message).slice(0, 200)));
+await page.goto('https://anentrypoint.github.io:__PORT__/signal/', { waitUntil: 'load', timeout: 150000 }).catch((e) => errs.push('NAV ' + String(e.message).slice(0, 200)));
 await new Promise((r) => setTimeout(r, 60000));
 const out = [];
 for (const f of page.frames()) {

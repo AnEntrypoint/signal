@@ -102,11 +102,11 @@ run() {
   mkdir -p "$RUN/serve"
   ln -sfn "$SITE" "$RUN/serve/signal"
   bash "$HERE/proc-check.sh" before || { echo "ABORT: browser-witness processes present before the run"; return 2; }
-  setsid python3 "$HERE/browser-cors-server.py" "$PORT" "$RUN/serve" > "$RUN/static-server.out" 2>&1 &
+  openssl req -x509 -newkey rsa:2048 -nodes -keyout "$RUN/key.pem" -out "$RUN/cert.pem" -days 1 -subj "/CN=anentrypoint.github.io" > /dev/null 2>&1 || { echo "ABORT: certificate"; return 1; }; setsid python3 "$HERE/browser-cors-server.py" "$PORT" "$RUN/serve" "$RUN/cert.pem" "$RUN/key.pem" > "$RUN/static-server.out" 2>&1 &
   reg static $!
-  for i in $(seq 1 40); do curl -sf "http://127.0.0.1:$PORT/signal/" > /dev/null && break; sleep 0.5; done
-  echo "static port=$PORT http=$(curl -s -o /dev/null -w %{http_code} "http://127.0.0.1:$PORT/signal/")"
-  setsid env DISPLAY=:1 /usr/bin/chromium --user-data-dir="$RUN/profile" --remote-debugging-port="$CHROME" --host-resolver-rules="MAP * ~NOTFOUND, EXCLUDE localhost, EXCLUDE 127.0.0.1" --no-first-run --no-default-browser-check --enable-unsafe-webgpu --enable-features=Vulkan,WebGPU --use-angle=vulkan --use-vulkan=swiftshader --use-webgpu-adapter=swiftshader --enable-unsafe-swiftshader about:blank > "$RUN/browser.out" 2>&1 &
+  for i in $(seq 1 40); do curl -skf --resolve "anentrypoint.github.io:$PORT:127.0.0.1" "https://anentrypoint.github.io:$PORT/signal/" > /dev/null && break; sleep 0.5; done
+  echo "static port=$PORT http=$(curl -sk --resolve "anentrypoint.github.io:$PORT:127.0.0.1" -o /dev/null -w %{http_code} "https://anentrypoint.github.io:$PORT/signal/")"
+  setsid env DISPLAY=:1 /usr/bin/chromium --user-data-dir="$RUN/profile" --remote-debugging-port="$CHROME" --host-resolver-rules="MAP github.io 127.0.0.1, MAP *.github.io 127.0.0.1, MAP * ~NOTFOUND, EXCLUDE localhost, EXCLUDE 127.0.0.1" --ignore-certificate-errors --no-first-run --no-default-browser-check --enable-unsafe-webgpu --enable-features=Vulkan,WebGPU --use-angle=vulkan --use-vulkan=swiftshader --use-webgpu-adapter=swiftshader --enable-unsafe-swiftshader about:blank > "$RUN/browser.out" 2>&1 &
   reg browser $!
   for i in $(seq 1 60); do curl -sf "http://127.0.0.1:$CHROME/json/version" > "$RUN/version.json" && break; sleep 0.5; done
   WS=$(node -e "console.log(JSON.parse(require('fs').readFileSync('$RUN/version.json','utf8')).webSocketDebuggerUrl)")

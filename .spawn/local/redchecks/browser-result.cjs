@@ -7,7 +7,7 @@ const pageErrors = t.errs || [];
 const okUrls = new Set(t.okUrls || []);
 const failedRequests = (t.failed || []).filter((f) => !okUrls.has(f.u));
 const abortedThenLoaded = (t.failed || []).length - failedRequests.length;
-const local = /^http:\/\/127\.0\.0\.1:/;
+const local = /^https:\/\/([a-z0-9-]+\.)*github\.io:\d+\//;
 const badStatus = reqs.filter((r) => r.s >= 400).map((r) => 'HTTP ' + r.s + ' ' + r.u);
 const failedLoads = failedRequests.map((f) => 'FAILED ' + f.err + ' ' + f.u);
 const external = reqs.filter((r) => r.m && !local.test(r.u) && !/^(blob|data|about):/.test(r.u)).map((r) => 'EXTERNAL REQUEST ' + r.u);
