@@ -18,10 +18,10 @@ const sandboxAccepted = consoles.filter((c) => /^warning /.test(c) && /can escap
 const consoleBad = [...consoleErrs, ...consoleFlagged].map((c) => 'CONSOLE ' + c.slice(0, 1200));
 const pageBad = pageErrors.map((e) => 'PAGE ERROR ' + e);
 const session = (t.frames || []).filter((f) => /session/.test(String(f.url)));
-const framesDrawn = session.some((f) => f.info && (f.info.canvases || []).some((c) => c !== '0x0'));
+const framesDrawn = session.some((f) => f.info && f.info.shown === true && (f.info.canvases || []).some((c) => c !== '0x0'));
 const fails = [...badStatus, ...failedLoads, ...external, ...consoleBad, ...pageBad];
 if (posts.length) fails.push('POST REQUESTS ' + posts.length);
-if (!framesDrawn) fails.push('FRAMES NOT DRAWN');
+if (!framesDrawn) fails.push('WORLD NOT SHOWN');
 const unique = [...new Set(fails)];
 const res = { http404: badStatus.filter((l) => l.startsWith('HTTP 404 ')).length, http405: badStatus.filter((l) => l.startsWith('HTTP 405 ')).length, httpOther: badStatus.filter((l) => !/^HTTP (404|405) /.test(l)).length, failedRequests: failedLoads.length, abortedThenLoaded, externalRequests: external.length, consoleErrors: consoleErrs.length, consoleWarningsFlagged: consoleFlagged.length, sandboxWarningsAccepted: sandboxAccepted.length, pageErrors: pageErrors.length, postRequests: posts.length, sessionCanvases: session.map((f) => (f.info && f.info.canvases) || null), framesDrawn };
 fs.writeFileSync(dir + '/result.json', JSON.stringify({ ...res, failures: unique }, null, 1));
