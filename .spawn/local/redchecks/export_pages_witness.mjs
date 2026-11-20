@@ -204,10 +204,26 @@ function manifestChecks(out, manifestPath) {
   check('manifest hashes equal the bytes on disk', rows.every(({ hash, rel }) => existsSync(join(out, rel)) && createHash('sha256').update(readFileSync(join(out, rel))).digest('hex') === hash));
 }
 
+const NAMED_ASSETS = [
+  { rel: '_next/static/immutable/chunks/5565s7wxhi.css', sha: '1a73fab23845b556347f95e7d81d02ceaca30e1282d3b9b9d3b5e1a1e9f32840', url: 'https://www.spawn.co/_next/static/immutable/chunks/5565s7wxhi.css' },
+];
+
+function namedChecks(out, manifestPath) {
+  const manifest = readFileSync(manifestPath, 'utf8');
+  const log = readFileSync('/workspace/signal/state/fetch-log.jsonl', 'utf8');
+  for (const asset of NAMED_ASSETS) {
+    const file = join(out, asset.rel);
+    const body = existsSync(file) ? readFileSync(file) : null;
+    check('named asset ' + asset.rel + ' is exported with its captured bytes', body !== null && createHash('sha256').update(body).digest('hex') === asset.sha && manifest.includes(asset.sha + '  ' + asset.rel + '\n'));
+    check('named asset ' + asset.rel + ' has a capture record with the same hash', log.split('\n').some((line) => { try { const record = JSON.parse(line); return record.url === asset.url && record.sha256 === asset.sha; } catch { return false; } }));
+  }
+}
+
 async function checkOnly() {
   const summary = JSON.parse(readFileSync(process.env.WITNESS_CHECK_SUMMARY, 'utf8'));
   await projectChecks(process.env.WITNESS_CHECK_DIR, summary);
   manifestChecks(process.env.WITNESS_CHECK_DIR, join(dirname(process.env.WITNESS_CHECK_SUMMARY), 'pages-export.sha256'));
+  namedChecks(process.env.WITNESS_CHECK_DIR, join(dirname(process.env.WITNESS_CHECK_SUMMARY), 'pages-export.sha256'));
   console.log(failed.length === 0 ? 'GREEN ' + passed + ' checks' : 'RED ' + failed.length + ' failed: ' + failed.join('; '));
   process.exitCode = failed.length === 0 ? 0 : 1;
 }
