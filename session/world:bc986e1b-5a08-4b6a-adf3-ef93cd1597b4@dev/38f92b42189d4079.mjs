@@ -1,0 +1,5 @@
+
+;;;var K=function(Q,$,j,X){let Z=j?.now()??0,E=W(Q),S=E&&X!==void 0&&X!==null?X.rebuild(Q):void 0,z=S;if(z===void 0&&E)z=H(Q);if(j!==void 0)Z=j.mark("rebuild",Z);if(z===null)return{ok:!1,miss:"mismatch"};let B=z??Q,J=S!==void 0&&X!==void 0&&X!==null?X.signature(B):M(B);if(j!==void 0)Z=j.mark("sign",Z);if(J!==$)return{ok:!1,miss:"mismatch"};let C=L(B);if(j!==void 0)j.mark("parse",Z);if(C.wireRef===!0||C.signature!==$)return{ok:!1,miss:"mismatch"};return{ok:!0,value:C}},P=(function(Q){let $;try{$=L(Q)}catch{return{ok:!1,miss:"mismatch"}}if($.wireRef===!0||M(Q)!==$.signature)return{ok:!1,miss:"mismatch"};return{ok:!0,value:$}});var D=function(Q,$){let j=2*(Q.y*$.z-Q.z*$.y),X=2*(Q.z*$.x-Q.x*$.z),Z=2*(Q.x*$.y-Q.y*$.x);return{x:$.x+Q.w*j+(Q.y*Z-Q.z*X),y:$.y+Q.w*X+(Q.z*j-Q.x*Z),z:$.z+Q.w*Z+(Q.x*X-Q.y*j)}};var x=Math.PI*2;
+;
+
+;import{NSA as H,zCm as W}from"./62c1d624-446bcc83da8bafa8.mjs";import{QTq as L}from"./b4b16ffc-b21518d2745f1c31.mjs";import{bbN as M}from"./dd9a8f5d49ff1d5a.mjs";export{D as MMY,K as NyN,P as QFC};

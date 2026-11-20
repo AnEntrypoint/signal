@@ -1,6 +1,25 @@
 <!doctype html>
 <html lang="en">
-<head><script>(function(){var hosted=['https://play.spawn.co','https://www.spawn.co','https://kiln.spawn.co'];function localize(value){var text=String(value);if(text.indexOf('https://play.spawn.co/session/world%3A')===0)return location.origin+'/signal/session/'+text.slice('https://play.spawn.co/session/'.length);if(/^https:\/\/[a-z0-9-]+\.spawnfile\.io\//.test(text))return location.origin+'/signal/__local/'+encodeURIComponent(text);for(var i=0;i<hosted.length;i++){if(text.indexOf(hosted[i])===0){return location.origin+'/signal/__local/'+encodeURIComponent(text);}}return value;}var descriptor=Object.getOwnPropertyDescriptor(HTMLIFrameElement.prototype,'src');Object.defineProperty(HTMLIFrameElement.prototype,'src',{configurable:true,enumerable:descriptor.enumerable,get:descriptor.get,set:function(value){return descriptor.set.call(this,localize(value));}});var setAttribute=Element.prototype.setAttribute;Element.prototype.setAttribute=function(name,value){return setAttribute.call(this,name,name==='src'&&this instanceof HTMLIFrameElement?localize(value):value);};var nativeFetch=window.fetch;window.fetch=function(input,init){if(typeof input==='string'){input=localize(input);}return nativeFetch.call(this,input,init);};var railStyle=document.createElement('style');railStyle.textContent='[data-rail-group]{display:none!important}';document.documentElement.appendChild(railStyle);})();</script>
+<head><script>(function(){var api=/^(?:https?:\/\/[^/]+)?\/api\//;var f=window.fetch;window.fetch=function(input,init){var u=typeof input==="string"?input:input&&input.url||"";if(api.test(u))return Promise.reject(new TypeError("static build"));return f.call(this,input,init)};if(navigator.sendBeacon){var b=navigator.sendBeacon.bind(navigator);navigator.sendBeacon=function(u){return api.test(String(u))?false:b.apply(null,arguments)}}})();</script><script>(function(){
+var hosted=['https://play.spawn.co','https://www.spawn.co','https://kiln.spawn.co'];
+function localize(value){
+var base=location.pathname.replace(/\/session\/.*$/,'').replace(/\/$/,'');
+var text=String(value);
+if(text.indexOf(location.origin+'/')===0&&text.indexOf(location.origin+base+'/')!==0)text=text.slice(location.origin.length);
+if(text.charAt(0)==='/'&&text.charAt(1)!=='/'&&/^\/(?:world-store\/|kernel-witness|_next\/|savi\/|mark\/|ground\/|fonts\/|datadog\/|_ready\/)/.test(text))return location.origin+base+text;
+if(text.indexOf('https://play.spawn.co/session/world%3A')===0)return location.origin+base+'/signal/session/'+text.slice('https://play.spawn.co/session/'.length);
+if(/^https:\/\/[a-z0-9-]+\.spawnfile\.io\//.test(text))return location.origin+base+'/signal/__local/'+encodeURIComponent(text);
+for(var i=0;i<hosted.length;i++){if(text.indexOf(hosted[i])===0)return location.origin+base+'/signal/__local/'+encodeURIComponent(text);}
+return value;
+}
+var descriptor=Object.getOwnPropertyDescriptor(HTMLIFrameElement.prototype,'src');
+Object.defineProperty(HTMLIFrameElement.prototype,'src',{configurable:true,enumerable:descriptor.enumerable,get:descriptor.get,set:function(value){return descriptor.set.call(this,localize(value));}});
+var setAttribute=Element.prototype.setAttribute;
+Element.prototype.setAttribute=function(name,value){return setAttribute.call(this,name,name==='src'&&this instanceof HTMLIFrameElement?localize(value):value);};
+var nativeFetch=window.fetch;
+window.fetch=function(input,init){if(typeof input==='string'){input=localize(input);}else if(input instanceof URL){input=localize(String(input));}else if(input instanceof Request){var moved=localize(input.url);if(moved!==input.url)input=new Request(moved,input);}return nativeFetch.call(this,input,init);};
+var railStyle=document.createElement('style');railStyle.textContent='[data-rail-group]{display:none!important}';document.documentElement.appendChild(railStyle);
+})();</script>
 <meta charset="utf-8">
 <title>realm shell (local replacement)</title>
 </head>

@@ -1,0 +1,10 @@
+var $c0F,$c0N=[],$c0T=[function(){return[()=>"(function(q){let A=Math.floor(q.position.length/3),C=(u)=>u===null||A>0&&u.length!==A*4;if(C(q.joints))q.joints=new Uint16Array(A*4);if(C(q.weights)){let u=new Float32Array(A*4);for(let z=0;z<A;z++)u[z*4]=1;q.weights=u}})"]}],$c0XU=[0];function $c0C(n){return($c0F||($c0F=new Array(1)))[n]||$c0A(n)}function $c0XE(n){var S=$c0XU,l=0,r=S.length-1,m;while(l<r){m=l+r+1>>1;if(S[m]<=n)l=m;else r=m-1}return $c0E($c0XN($c0T[l]()[n-S[l]](),(n+2768803782983680)))}function $c0A(n){var g=$c0XE(n);(globalThis.__spawnColdEvaled||(globalThis.__spawnColdEvaled=[0,0]))[0]++;$c0F[n]=g;if($c0N[n]!==1){$c0N[n]=1;(globalThis.__spawnColdCalled||(globalThis.__spawnColdCalled=[])).push((n+2768803782983680))}return g}var $c0S,$c0D=()=>eval($c0S);function $c0E(s){$c0S=s;return $c0D()}function $c0XN(s,k){return globalThis.__spawnColdNamed?s+"\n//# sourceURL=spawn-cold/"+k:s}
+
+var X=[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1],Z=(q)=>q?.part===!0;function _(q){let A=new Uint8Array(q.nodes.length);for(let C of q.skins){if(C.part===!0)continue;for(let u of C.joints)if(u>=0&&u<A.length)A[u]=1}return A}function $(q,A,C){let u=q.nodes;for(let z=C;z>=0&&z<u.length;z=u[z].parent)if(A[z]===1)return z;return-1}function B(a){return (B=$c0C(0)).call(this,a)}function D(q,A={}){let{nodes:C,meshes:u,skins:z}=q;if(z.length===0)return q;let V=_(q),J=new Uint8Array(u.length),K=!1,L=!1,M=!1;for(let H=0;H<C.length;H++){let F=C[H],G=F.meshIndex;if(G===null||G<0||G>=u.length)continue;let R=F.skinIndex!==null&&Z(z[F.skinIndex])||F.skinIndex===null&&$(q,V,H)>=0;if(R)K=!0;else if(F.skinIndex!==null)L=!0,M||=u[G].primitives.some((U)=>U.joints!==null&&U.weights!==null);J[G]=R&&J[G]!==2?1:2}if(!K)return q;let W=A.streams??(L?M:!0);for(let H=0;H<C.length;H++){let F=C[H],G=F.meshIndex;if(G===null||J[G]!==1)continue;e(F,z,H,W,u,G);}return q}
+;
+
+function e(F,z,H,W,u,G){if(F.skinIndex===null)F.skinIndex=z.length,z.push({name:F.name,joints:[H],inverseBindMatrices:Float32Array.from(X),part:!0});if(W)for(let Q of u[G].primitives)B(Q)
+}
+function d(){}
+
+;export{$ as JPv,D as t7h,Z as JpE,_ as WgY};

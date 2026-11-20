@@ -1,0 +1,12 @@
+import{C as $c0K}from"./52e971dc2a986655.mjs";var $c0C,$c0T=[function(){return[()=>"(function(J,G,Q,V,$){let C=V<0?Q+V:Q,H=C+Math.abs(V),j=1/0,W=-1/0,P=1/0,Y=-1/0;for(let Z=0;Z<4;Z+=1){let B=Z<2?J:G,O=Z%2===0?C:H,E=B*Math.cos(O),R=B*Math.sin(O);if(E<j)j=E;if(E>W)W=E;if(R<P)P=R;if(R>Y)Y=R}for(let Z=Math.ceil(C/(Math.PI/2));Z*(Math.PI/2)<=H;Z+=1){let B=G*Math.cos(Z*(Math.PI/2)),O=G*Math.sin(Z*(Math.PI/2));if(B<j)j=B;if(B>W)W=B;if(O<P)P=O;if(O>Y)Y=O}$[0]=(W-j)/2,$[1]=(Y-P)/2})",()=>"(function(J,G,Q,V,$,C,H,j,W,P,Y,Z){if(J===0)return 0;let B=w(V*(1-2*(j*j+W*W))+$*2*(H*j+P*W)+C*2*(H*W-P*j));let O=w(V*2*(H*j-P*W)+$*(1-2*(H*H+W*W))+C*2*(j*W+P*H));return z(J,G,Q,B*Math.abs(Y),O*Math.abs(Z))})"]}],$c0XU=[0];var $c0S,$c0D=()=>eval($c0S);function $c0E(s){$c0S=s;return $c0D()}$c0C=$c0K($c0T,$c0XU,$c0E,2,4135943046955008);
+;const{V1m:N}=$Lr;
+var I=Math.PI*2;var K=(J,G)=>typeof J==="number"&&Number.isFinite(J)?J:G;var d=!1;var A=1,X=2,k=4;function M(a,b,c,d,e){return (M=$c0C(0)).call(this,a,b,c,d,e)}var D=[0,0];function _(J){let G=[0,0,0];let v$1;q:{let Q=(typeof J==="string"?{kind:J}:N(J)?J:null);if(Q===null||Q.basis==="flat"){v$1=0;break q;}switch(Q.kind){case"plane":{v$1=(G[0]=A,G[1]=Math.abs(K(Q.width,1))/2,G[2]=Math.abs(K(Q.height,1))/2,A);break q;}case"circle":case"ring":{if((f=g(Q,G))!==e){v$1=f;break q;}}case"torus":{if((f=i(Q,G))!==e){v$1=f;break q;}}default:{v$1=0;break q;}}}if(v$1===0)return null;return{form:G[0],a:G[1],b:G[2]}}function z(J,G,Q,V,$){switch(J){case A:case k:return Math.abs(V)*G+Math.abs($)*Q;case X:return G*Math.sqrt(V*V+$*$);default:return 0}}var w=(J)=>Math.abs(J)<0.000001?0:J;function c(a,b,d,e,f,g,h,i,j,k,l,m){return (c=$c0C(1)).call(this,a,b,d,e,f,g,h,i,j,k,l,m)}var h=(J,G,Q,V)=>J===0?0:z(J,G,Q,0,Math.abs(V));function x(J){if(!((typeof J==="string"?{kind:J}:N(J)?J:null)?.kind==="sphere"))return 0;let G=J.radius;return typeof G==="number"&&Number.isFinite(G)&&G>0?G:0.5}
+;
+
+function g(Q,G){{let V=Math.abs(Q.kind==="circle"?K(Q.radius,0.5):K(Q.outerRadius,1)),$=K(Q.thetaLength,I);if((Math.abs($)>=I-0.000000001))return G[0]=X,G[1]=V,G[2]=V,X;return M(Q.kind==="circle"?0:Math.min(Math.abs(K(Q.innerRadius,0.5)),V),V,K(Q.thetaStart,0),$,D),G[0]=k,G[1]=D[0],G[2]=D[1],k}
+return e}
+function i(Q,G){{let V=Math.abs(K(Q.radius,1)),$=Math.abs(K(Q.tube,0.4)),C=K(Q.arc,I);if((Math.abs(C)>=I-0.000000001))return G[0]=X,G[1]=V+$,G[2]=V+$,X;return M(V,V,0,C,D),G[0]=k,G[1]=D[0]+$,G[2]=D[1]+$,k}
+return e}
+function e(){}var f;
+
+;import{R as $Lr}from"./52e971dc2a986655.mjs";export{_ as OYZ,c as z6U,d as dbo,h as f4I,x as a54};

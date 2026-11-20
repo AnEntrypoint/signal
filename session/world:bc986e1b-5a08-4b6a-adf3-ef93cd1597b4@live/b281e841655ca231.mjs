@@ -1,0 +1,6 @@
+import{C as $c0K}from"./52e971dc2a986655.mjs";var $c0C,$c0T=[function(){return[()=>'(()=>({textureSample:"vec4<f32>(0.0)",textureSampleLevel:"vec4<f32>(0.0)",textureSampleBias:"vec4<f32>(0.0)",textureSampleGrad:"vec4<f32>(0.0)",textureLoad:"vec4<f32>(0.0)",textureGather:"vec4<f32>(0.0)",textureDimensions:"vec2<u32>(1u)",textureNumLayers:"1u",textureNumLevels:"1u"}))',()=>'(function(J,K){if(K.length===0)return J;let Q=new Set(K.map((q)=>q.variable)),W=J.replace(/\\/\\/[^\\n]*/g,""),j=Q.has(H)?Y(W):W,Z="",z=0;for(let q of j.matchAll(/\\b(texture\\w+)\\s*\\(\\s*(\\w+)\\b/g)){if(q.index<z)continue;let $=(k??=$c0I(0))[q[1]];if($===void 0||!Q.has(q[2]))continue;let F=j.indexOf("(",q.index);for(let R=0;F<j.length;F+=1)if(j[F]==="(")R+=1;else if(j[F]===")"&&--R===0)break;Z+=`${j.slice(z,q.index)}${$}`,z=F+1}return z===0?j:Z+j.slice(z)})']}],$c0XU=[0];var $c0S,$c0D=()=>eval($c0S);function $c0E(s){$c0S=s;return $c0D()}$c0C=$c0K($c0T,$c0XU,$c0E,2,1716627899940864);var $c0I=$c0C.i;
+;const{Bsr:H,C3r:V,a18:Y,uBa:b}=$Lr;
+var g=[{binding:V,variable:H},{binding:b,variable:"airVolume"},{binding:11,variable:"cloudShadowField"}],k;function X(a,b){return (X=$c0C(1)).call(this,a,b)}
+;
+
+;import{R as $Lr}from"./52e971dc2a986655.mjs";export{X as vmN,g as hn5};
