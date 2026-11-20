@@ -20,6 +20,15 @@ for (const f of page.frames()) {
   const info = await f.evaluate(() => { let n = 0; const t0 = performance.now(); return new Promise((res) => { const cv = [...document.querySelectorAll('canvas')].map((c) => c.width + 'x' + c.height); const g = () => { n += 1; if (performance.now() - t0 < 3000) requestAnimationFrame(g); else res({ canvases: cv, frames3s: n, title: document.title.slice(0, 60), body: (document.body && document.body.innerText || '').length, shown: document.documentElement.classList.contains('spawn-world-shown') }); }; requestAnimationFrame(g); }); }).catch((e) => ({ err: String(e.message).slice(0, 120) }));
   out.push({ url: f.url().slice(0, 140), info });
 }
+const sess = page.frames().find((f) => f.url().includes('/session/'));
+if (sess) {
+  const pick = await sess.evaluate(() => { let best = -1; let area = 0; [...document.querySelectorAll('canvas')].forEach((c, i) => { if (c.width * c.height > area) { area = c.width * c.height; best = i; } }); return best; }).catch(() => -1);
+  if (pick >= 0) {
+    await sess.locator('canvas').nth(pick).screenshot({ path: OUT + '/canvas-a.png' }).catch(() => {});
+    await new Promise((r) => setTimeout(r, 4000));
+    await sess.locator('canvas').nth(pick).screenshot({ path: OUT + '/canvas-b.png' }).catch(() => {});
+  }
+}
 fs.writeFileSync(OUT + '/trace.json', JSON.stringify({ reqs, consoles, errs, failed, okUrls: [...okUrls], frames: out }, null, 1));
 await page.screenshot({ path: OUT + '/shot.png' }).catch(() => {});
 console.log(JSON.stringify({ reqN: reqs.length, errs: errs.length, consoles: consoles.length, frames: out.map((f) => ({ u: f.url.slice(0, 60), i: f.info })) }));

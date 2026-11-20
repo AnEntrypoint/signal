@@ -131,6 +131,7 @@ run() {
   playwriter session delete "$ID" > /dev/null 2>&1
   WL=$(printenv WITNESS_LEAK)
   if [ "$WL" = 1 ]; then python3 -c "import time; time.sleep(900)" "$HERE/browser-witness-leak-$$" & LP=$!; sleep 0.5; echo "LEAK_PID=$LP"; fi
+  python3 -I "$HERE/pixel-compare.py" "$RUN/canvas-a.png" "$RUN/canvas-b.png" > "$RUN/pixel.json"
   node "$HERE/browser-result.cjs" "$RUN"
   ARC=$?
   echo "analysis rc=$ARC"
