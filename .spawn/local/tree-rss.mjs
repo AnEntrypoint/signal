@@ -11,7 +11,12 @@ export function parsePs(text) {
 export function classify(row, leaderPid) {
   if (row.pid === leaderPid) return 'browser';
   const type = row.args.match(/--type=([a-z-]+)/);
-  return type ? type[1] : 'other';
+  if (!type) return 'other';
+  if (type[1] === 'utility') {
+    const sub = row.args.match(/--utility-sub-type=([A-Za-z0-9.]+)/);
+    return sub ? 'utility:' + sub[1] : 'utility';
+  }
+  return type[1];
 }
 
 export function summarize(rows, groupId) {
@@ -23,7 +28,8 @@ export function summarize(rows, groupId) {
     byType[kind] = (byType[kind] || 0) + row.rss;
     total += row.rss;
   }
-  return { groupId, count: members.length, totalKb: total, byType };
+  const top = members.slice().sort((a, b) => b.rss - a.rss).slice(0, 3).map((row) => ({ pid: row.pid, kind: classify(row, groupId), rssKb: row.rss }));
+  return { groupId, count: members.length, totalKb: total, byType, top };
 }
 
 export function readRows() {

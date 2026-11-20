@@ -15,7 +15,10 @@ setsid env DISPLAY=:1 /usr/bin/chromium --user-data-dir="$OUT/profile" --remote-
 echo $! > "$OUT/browser.pid"
 for i in $(seq 1 60); do curl -sf http://127.0.0.1:9333/json/version > "$OUT/version.json" && break; sleep 0.5; done
 WS=$(node -e "console.log(JSON.parse(require('fs').readFileSync('$OUT/version.json','utf8')).webSocketDebuggerUrl)")
+PWS=$(pgrep -f playwriter-ws-server | tr "\n" " ")
 ID=$(playwriter session new --direct "$WS" 2>&1 | grep -o 'Session [0-9]*' | awk '{print $2}')
+echo "$ID" > "$OUT/session.id"
+for p in $(pgrep -f playwriter-ws-server); do case " $PWS " in *" $p "*) ;; *) echo "$p" > "$OUT/ws.pid";; esac; done
 setsid bash .spawn/local/bound-watch.sh "$OUT" > /dev/null 2>&1 & echo $! > "$OUT/watch.pid"
 setsid bash .spawn/local/tree-sample.sh "$OUT" > /dev/null 2>&1 & echo $! > "$OUT/sample.pid"
 PROBE="${PROBE:-.spawn/local/probe-page.js}"
@@ -26,6 +29,8 @@ cut -c1-4000 "$OUT/probe.out"
 kill -- -"$(cat $OUT/browser.pid)" 2>/dev/null
 kill "$(cat $OUT/watch.pid)" 2>/dev/null
 kill "$(cat $OUT/sample.pid)" 2>/dev/null
+if [ -n "$ID" ]; then playwriter session delete "$ID" > /dev/null 2>&1; fi
+if [ -f "$OUT/ws.pid" ]; then kill "$(cat $OUT/ws.pid)" 2>/dev/null; fi
 if [ "$MODE" = serve ]; then kill -- -"$(cat $OUT/server.pid)" 2>/dev/null; fi
 sleep 2
 echo "after: browser alive=$(kill -0 $(cat $OUT/browser.pid) 2>/dev/null && echo yes || echo no)"

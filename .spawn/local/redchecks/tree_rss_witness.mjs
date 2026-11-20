@@ -24,11 +24,12 @@ check('parsePs reads every fixture row', rows.length === 7);
 check('parsePs reads the pid, ppid, pgid, rss and args fields', rows[1].pid === 101 && rows[1].ppid === 100 && rows[1].pgid === 100 && rows[1].rss === 50000 && rows[1].args.includes('--type=renderer'));
 check('the group leader is the browser', classify(rows[0], 100) === 'browser');
 check('a --type=renderer member is the renderer', classify(rows[1], 100) === 'renderer');
-check('an unknown --type is kept by its name', classify(rows[3], 100) === 'utility');
+check('a utility member is keyed by its sub-type', classify(rows[3], 100) === 'utility:network.mojom.NetworkService');
 const sum = summarize(rows, 100);
 check('the group total counts every member of group 100 (84000 KB)', sum.totalKb === 84000 && sum.count === 5);
 check('the group total excludes the other group', sum.totalKb !== 84000 + 99999 + 7000);
 check('the renderer total is 50000 KB', sum.byType.renderer === 50000);
+check('top lists the largest member first (renderer pid 101)', sum.top.length === 3 && sum.top[0].pid === 101 && sum.top[0].kind === 'renderer' && sum.top[0].rssKb === 50000);
 check('the browser total is 10000 KB', sum.byType.browser === 10000);
 
 const leader = spawn(process.execPath, ['-e', 'const b = Buffer.alloc(64 * 1024 * 1024, 1); setInterval(() => {}, 1000);'], { stdio: 'ignore', detached: true });
