@@ -1,0 +1,68 @@
+const [port, loadArg] = process.argv.slice(2);
+const LOAD_MB = Number(loadArg || 300);
+const MB = 1048576;
+const LOAD_FRACTION = 0.9;
+const out = { port: Number(port), loadMb: LOAD_MB, loadAllocatedMb: null, targetId: null, sessionId: null, pageClosed: false, dumpGuid: null, dumpSuccess: false, requestedAtMs: null, requestReplyAtMs: null, endSentAtMs: null, endReplyAtMs: null, tracingCompleteAtMs: null, eventsSeen: 0, dumpedPids: [], loadPid: null, loadPidArrayBufferBytes: null, scope: null, error: null };
+const finish = () => { console.log('STANDALONE_DUMP ' + JSON.stringify(out)); process.exit(0); };
+const guard = setTimeout(() => { out.error = 'timeout'; finish(); }, 150000);
+const sizeOf = (attrs, key) => (attrs && attrs[key] && attrs[key].units === 'bytes' ? parseInt(attrs[key].value, 16) : null);
+const summarize = (events) => {
+  const latest = new Map();
+  for (const e of events) {
+    if (e.ph !== 'v' || !e.args || !e.args.dumps) continue;
+    const matched = e.id === out.dumpGuid;
+    const prev = latest.get(e.pid);
+    if (!prev || (matched && !prev.matched)) latest.set(e.pid, { e, matched });
+  }
+  out.dumpedPids = [...latest.entries()].sort((a, b) => a[0] - b[0]).map(([pid, { e, matched }]) => {
+    const rows = Object.entries(e.args.dumps.allocators || {}).map(([name, a]) => ({ name, sizeBytes: sizeOf(a.attrs, 'size') })).filter((r) => r.sizeBytes !== null);
+    const partitions = rows.filter((r) => /^partition_alloc\/partitions\/[^/]+$/.test(r.name));
+    const arrayBuffer = rows.find((r) => r.name === 'partition_alloc/partitions/array_buffer');
+    return { pid, matched, partitionTotalBytes: partitions.reduce((s, p) => s + p.sizeBytes, 0), arrayBufferBytes: arrayBuffer ? arrayBuffer.sizeBytes : null, residentSetBytes: sizeOf((e.args.dumps.process_totals || {}).attrs, 'resident_set_bytes') };
+  });
+  const candidates = out.dumpedPids.filter((p) => p.arrayBufferBytes !== null && p.arrayBufferBytes >= LOAD_MB * MB * LOAD_FRACTION);
+  const best = candidates.length ? candidates.reduce((a, b) => (b.arrayBufferBytes > a.arrayBufferBytes ? b : a)) : null;
+  out.loadPid = best ? best.pid : null;
+  out.loadPidArrayBufferBytes = best ? best.arrayBufferBytes : null;
+  out.scope = out.dumpSuccess ? (out.dumpedPids.length ? 'none: the dump succeeded' : 'success with no pid events') : (out.dumpedPids.length ? 'per-process: the global request was refused, ' + out.dumpedPids.length + ' processes still dumped' : 'global: refused and no process dumped');
+};
+const run = async () => {
+  const ver = await (await fetch('http://127.0.0.1:' + port + '/json/version')).json();
+  const sock = new WebSocket(ver.webSocketDebuggerUrl);
+  await new Promise((res, rej) => { sock.onopen = res; sock.onerror = () => rej(new Error('websocket failed')); });
+  let seq = 0;
+  const waiting = new Map();
+  const events = [];
+  let complete = null;
+  const completed = new Promise((res) => { complete = res; });
+  sock.onmessage = (ev) => {
+    const m = JSON.parse(String(ev.data));
+    if (m.method === 'Tracing.dataCollected') { events.push(...((m.params && m.params.value) || [])); return; }
+    if (m.method === 'Tracing.tracingComplete') { out.tracingCompleteAtMs = Date.now(); complete(); return; }
+    const w = waiting.get(m.id);
+    if (!w) return;
+    waiting.delete(m.id);
+    if (m.error) w.reject(new Error(m.error.message)); else w.resolve(m.result);
+  };
+  const send = (method, params, sessionId) => new Promise((resolve, reject) => { const id = ++seq; waiting.set(id, { resolve, reject }); const msg = { id, method, params: params || {} }; if (sessionId) msg.sessionId = sessionId; sock.send(JSON.stringify(msg)); });
+  const created = await send('Target.createTarget', { url: 'about:blank' });
+  out.targetId = created.targetId;
+  const attached = await send('Target.attachToTarget', { targetId: out.targetId, flatten: true });
+  out.sessionId = attached.sessionId;
+  const loaded = await send('Runtime.evaluate', { expression: '(() => { window.__load = []; for (let i = 0; i < ' + LOAD_MB + '; i++) { const b = new Uint8Array(1048576); b.fill(7); window.__load.push(b); } return window.__load.length; })()', returnByValue: true }, out.sessionId);
+  out.loadAllocatedMb = loaded.result && loaded.result.value;
+  await send('Tracing.start', { traceConfig: { recordMode: 'recordUntilFull', includedCategories: ['disabled-by-default-memory-infra'] }, transferMode: 'ReportEvents' });
+  out.requestedAtMs = Date.now();
+  const dump = await send('Tracing.requestMemoryDump', { deterministic: false, levelOfDetail: 'detailed' });
+  out.requestReplyAtMs = Date.now();
+  out.dumpGuid = dump.dumpGuid || null;
+  out.dumpSuccess = dump.success === true;
+  out.endSentAtMs = Date.now();
+  send('Tracing.end').then(() => { out.endReplyAtMs = Date.now(); }, () => {});
+  await completed;
+  out.eventsSeen = events.length;
+  summarize(events);
+  await send('Target.closeTarget', { targetId: out.targetId }).then(() => { out.pageClosed = true; }, () => {});
+  sock.close();
+};
+run().then(() => { clearTimeout(guard); finish(); }, (e) => { clearTimeout(guard); out.error = String(e.message).slice(0, 200); finish(); });
