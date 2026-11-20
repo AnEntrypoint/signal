@@ -107,7 +107,7 @@ async function crawl(base, seeds) {
         files.set(path, { body, type });
         return;
       }
-      const text = body.toString('utf8').split(base).join('');
+      const text = rewriteImages(body.toString('utf8').split(base).join(''));
       for (const match of text.matchAll(REF)) frontier.push(match[0].split('?')[0]);
       files.set(path, { body: Buffer.from(rebase(text), 'utf8'), type });
     });
@@ -115,9 +115,24 @@ async function crawl(base, seeds) {
   return { files, misses };
 }
 
+function safeDecode(text) {
+  try {
+    return decodeURIComponent(text);
+  } catch {
+    return text;
+  }
+}
+
+function rewriteImages(text) {
+  return text
+    .replace(/\/_next\/image\?url=\x24\{encodeURIComponent\((\w+)\)\}&/g, (match, name) => '/__local/\x24{encodeURIComponent(String(' + name + ').split("?")[0])}?')
+    .replace(/\/_next\/image\?url=([^&"'\s<>\\\x60\x24{}()]+)(?:&[^"'\s<>\\\x60]*)?/g, (match, encoded) => '/__local/' + encodeURIComponent(safeDecode(encoded).split('?')[0]));
+}
+
 function relFor(path, type) {
-  const trimmed = path.replace(/^\/+/, '').replace(/\/+$/, '');
-  if (trimmed === '' || path.endsWith('/')) return join(trimmed, 'index.html');
+  const decoded = safeDecode(path);
+  const trimmed = decoded.replace(/^\/+/, '').replace(/\/+$/, '');
+  if (trimmed === '' || decoded.endsWith('/')) return join(trimmed, 'index.html');
   const last = trimmed.slice(trimmed.lastIndexOf('/') + 1);
   if (/\.[A-Za-z0-9]{1,8}$/.test(last)) return trimmed;
   return TEXT_TYPES.includes(type) ? trimmed + '/index.html' : trimmed;

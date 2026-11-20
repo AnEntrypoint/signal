@@ -24,9 +24,10 @@ function makeFixture(root, oversize) {
   rmSync(root, { recursive: true, force: true });
   for (const dir of ['assets/fixture', 'assets/www.spawn.co', 'raw/http', 'state']) mkdirSync(join(root, dir), { recursive: true });
   writeFileSync(join(root, 'raw/http/session-dev.body'), '<!DOCTYPE html><html><body>session</body></html>');
-  writeFileSync(join(root, 'raw/http/dev-page.body'), '<!DOCTYPE html><html><head></head><body><img src="/fonts/f.woff2"><script src="https://www.spawn.co/_ready/ok.txt"></script></body></html>');
+  writeFileSync(join(root, 'raw/http/dev-page.body'), '<!DOCTYPE html><html><head></head><body><img src="/fonts/f.woff2"><img src="/_next/image?url=https%3A%2F%2Fwww.spawn.co%2Ffonts%2Ff.woff2%3Fv%3D2&amp;w=640&amp;q=75"><script src="https://www.spawn.co/_ready/ok.txt"></script></body></html>');
   let chunk = 'const more = "/_next/static/more.js";\nconst pool = "https://play.spawn.co/v4/client/pool/tome-ui/a.html";\nconst gone = "/fonts/absent.woff2";\n';
   chunk += 'const page = "/ground/";\n';
+  chunk += 'const img = "/_next/image?url=\x24{encodeURIComponent(l)}&w=\x24{o}&q=\x24{a}";\n';
   chunk += 'const tool = "/fonts/tool.dmg";\n';
   if (oversize) chunk += 'const big = "/fonts/big.woff2";\n';
   writeFileSync(join(root, 'assets/fixture/chunk.js'), chunk);
@@ -98,6 +99,20 @@ function isTextW(path, type, body) {
   return path.endsWith('/') || extname(path) === '' || /\.(html|htm|js|mjs|css|json)$/.test(path);
 }
 
+function safeDecodeW(text) {
+  try {
+    return decodeURIComponent(text);
+  } catch {
+    return text;
+  }
+}
+
+function rewriteImagesW(text) {
+  return text
+    .replace(/\/_next\/image\?url=\x24\{encodeURIComponent\((\w+)\)\}&/g, (match, name) => '/__local/\x24{encodeURIComponent(String(' + name + ').split("?")[0])}?')
+    .replace(/\/_next\/image\?url=([^&"'\s<>\\\x60\x24{}()]+)(?:&[^"'\s<>\\\x60]*)?/g, (match, encoded) => '/__local/' + encodeURIComponent(safeDecodeW(encoded).split('?')[0]));
+}
+
 function rebaseW(text) {
   return text.replace(ROOT_REF_W, () => '/signal/');
 }
@@ -112,7 +127,7 @@ function resolveUnder(dir, rel) {
 
 function staticAt(dir) {
   return http.createServer((req, res) => {
-    const path = new URL(req.url, 'http://witness.invalid').pathname;
+    const path = safeDecodeW(new URL(req.url, 'http://witness.invalid').pathname);
     if (path === '/signal') {
       res.writeHead(301, { Location: '/signal/' });
       res.end();
@@ -140,7 +155,7 @@ async function projectChecks(dir, summary) {
   const unresolved = [];
   for (const ref of refs) {
     const rel = ref.slice('/signal'.length);
-    if (!resolveUnder(dir, rel.slice(1))) unresolved.push(rel);
+    if (!resolveUnder(dir, safeDecodeW(rel.slice(1)))) unresolved.push(rel);
   }
   const unexpected = unresolved.filter((rel) => !missing.has(rel));
   const server = staticAt(dir);
@@ -158,7 +173,7 @@ async function projectChecks(dir, summary) {
       const response = await fetch(base + ref);
       const body = Buffer.from(await response.arrayBuffer());
       served += 1;
-      if (response.status !== 200 || !body.equals(readFileSync(resolveUnder(dir, rel.slice(1))))) mismatched.push(ref);
+      if (response.status !== 200 || !body.equals(readFileSync(resolveUnder(dir, safeDecodeW(rel.slice(1)))))) mismatched.push(ref);
     }
   } finally {
     await new Promise((done) => server.close(done));
@@ -201,9 +216,11 @@ async function main() {
   check('font is exported', exists('fonts/f.woff2'));
   check('a file that is also a directory is written as <path>/index.html', exists('world-store/heads/abc/index.html') && exists('world-store/heads/abc/x.json'));
   check('a page served as octet-stream is rebased like text', exists('ground/index.html') && readFileSync(join(out, 'ground/index.html'), 'utf8').includes('href="/signal/_next/static/more.js"'));
+  check('an image request is written to the captured asset without its query', exists('__local/https:/www.spawn.co/fonts/f.woff2') && readFileSync(join(out, 'index.html'), 'utf8').includes('src="/signal/__local/https%3A%2F%2Fwww.spawn.co%2Ffonts%2Ff.woff2"'));
+  check('a runtime image loader is rewritten to the captured path with a query', readFileSync(join(out, '_next/static/chunk.js'), 'utf8').includes('?w=') && !readFileSync(join(out, '_next/static/chunk.js'), 'utf8').includes('/image?url='));
   check('a binary download is a flat file, not an index page', exists('fonts/tool.dmg') && !exists('fonts/tool.dmg/index.html'));
   check('ready file is exported', exists('_ready/ok.txt'));
-  check('the page reference to ok.txt is exported under /__local/', exists('__local/' + encodeURIComponent('https://www.spawn.co/_ready/ok.txt')));
+  check('the page reference to ok.txt is exported under its decoded /__local/ name', exists('__local/https:/www.spawn.co/_ready/ok.txt'));
   check('a 404 reference is a miss, not a file', summary.misses >= 1 && !exists('fonts/absent.woff2'));
   const files = walk(out);
   const texts = files.filter((file) => /\.(html|js|css|json)$/.test(file));
@@ -230,7 +247,7 @@ async function main() {
       const response = await fetch(base + page.path);
       const served = Buffer.from(await response.arrayBuffer());
       const type = (response.headers.get('content-type') || '').split(';')[0].trim();
-      const comparable = isTextW(page.path, type, served) ? Buffer.from(rebaseW(served.toString('utf8').split(base).join(''))) : served;
+      const comparable = isTextW(page.path, type, served) ? Buffer.from(rebaseW(rewriteImagesW(served.toString('utf8').split(base).join('')))) : served;
       if (comparable.equals(readFileSync(join(out, page.rel)))) equal += 1;
       else differ.push(page.path);
     }
