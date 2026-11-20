@@ -1,6 +1,6 @@
 const [port, holderPid] = process.argv.slice(2);
 const HOLDER = Number(holderPid);
-const out = { pid: HOLDER, error: null, dumpGuid: null, dumpSuccess: false, requestedAtMs: null, completedAtMs: null, eventsSeen: 0, requestedEvents: 0, dumpNames: {}, endReplyAtMs: null, tracingCompleteAtMs: null, bufferUsageSamples: 0, lastBufferUsage: null, matchedDump: false, residentSetBytes: null, partitionAlloc: null, topAllocators: [] };
+const out = { pid: HOLDER, error: null, dumpGuid: null, dumpSuccess: false, requestedAtMs: null, completedAtMs: null, eventsSeen: 0, requestedEvents: 0, dumpNames: {}, endReplyAtMs: null, tracingCompleteAtMs: null, bufferUsageSamples: 0, bufferUsageSeries: [], lastBufferUsage: null, matchedDump: false, residentSetBytes: null, partitionAlloc: null, topAllocators: [] };
 const finish = () => { console.log('HOLDER_MEMDUMP ' + JSON.stringify(out)); process.exit(0); };
 const guard = setTimeout(() => { out.error = 'timeout'; finish(); }, 40000);
 const sizeOf = (attrs, key) => (attrs && attrs[key] && attrs[key].units === 'bytes' ? parseInt(attrs[key].value, 16) : null);
@@ -31,7 +31,7 @@ const run = async () => {
   const completed = new Promise((res) => { complete = res; });
   sock.onmessage = (ev) => {
     const m = JSON.parse(String(ev.data));
-    if (m.method === 'Tracing.bufferUsage') { const bu = m.params || {}; out.bufferUsageSamples += 1; out.lastBufferUsage = { atMs: Date.now(), percentFull: bu.percentFull ?? null, eventCount: bu.eventCount ?? null }; return; }
+    if (m.method === 'Tracing.bufferUsage') { const bu = m.params || {}; out.bufferUsageSamples += 1; const sample = { atMs: Date.now(), percentFull: bu.percentFull ?? null, eventCount: bu.eventCount ?? null }; out.bufferUsageSeries.push(sample); out.lastBufferUsage = sample; return; }
     if (m.method === 'Tracing.dataCollected') { events.push(...((m.params && m.params.value) || [])); return; }
     if (m.method === 'Tracing.tracingComplete') { out.tracingCompleteAtMs = Date.now(); complete(); return; }
     const w = waiting.get(m.id);

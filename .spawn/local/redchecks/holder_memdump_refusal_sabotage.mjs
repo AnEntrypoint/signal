@@ -6,6 +6,7 @@ const muts = {
   'old-guard': ['}, 40000);', '}, 20000);'],
   'summarize-on-success': ['  summarize(events);', '  if (out.dumpSuccess) summarize(events);'],
   'drop-buffer-usage': ["if (m.method === 'Tracing.bufferUsage') {", 'if (false) {'],
+  'keep-last-only': ['out.bufferUsageSeries.push(sample); ', ''],
   'no-wait-complete': ['  await completed;', ''],
   'await-end-reply': ["  send('Tracing.end').then(() => { out.endReplyAtMs = Date.now(); }, () => {});", "  await send('Tracing.end');"],
 };

@@ -55,6 +55,7 @@ check('eventsSeen 2 (the holder and the other pid events are both collected)', !
 check('matchedDump true: the holder process dump for the requested guid is present despite the refusal', !!h && h.matchedDump === true, h && h.matchedDump);
 check('residentSetBytes equals the holder process total (5.8 GB)', !!h && h.residentSetBytes === 5800000000, h && h.residentSetBytes);
 check('buffer usage samples arrived during the wait (the trace kept filling)', !!h && h.bufferUsageSamples >= 1 && !!h.lastBufferUsage && h.lastBufferUsage.eventCount === 5000, h && [h.bufferUsageSamples, h.lastBufferUsage]);
+check('buffer usage series keeps every sample (at least 2 for a 23 s wait)', !!h && Array.isArray(h.bufferUsageSeries) && h.bufferUsageSeries.length >= 2, h && h.bufferUsageSeries && h.bufferUsageSeries.length);
 check('tracingCompleteAtMs recorded (the flush finished before the guard)', !!h && typeof h.tracingCompleteAtMs === 'number', h && h.tracingCompleteAtMs);
 const pa = h && h.partitionAlloc;
 check('partitionAlloc total is the three partitions (550 MB)', !!pa && pa.totalBytes === 550 * MB, pa && pa.totalBytes);
