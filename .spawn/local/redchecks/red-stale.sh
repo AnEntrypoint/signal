@@ -4,7 +4,7 @@ HERE=$(cd "$(dirname "$0")" && pwd)
 REPO=$(cd "$HERE/../../.." && pwd)
 T=$(mktemp -d "$HERE/.red-stale.XXXXXX")
 mkdir "$T/site"
-git -C "$REPO" archive origin/gh-pages | tar -x -C "$T/site"
+git -C "$REPO" archive "${STALE_REF:-cf87fbf6f1853fc7263bff217b70f95882d8bed8}" | tar -x -C "$T/site"
 LOG=$T/witness.log
 timeout 700 bash "$HERE/browser-witness.sh" "$T/site" > "$LOG" 2>&1 &
 W=$!
