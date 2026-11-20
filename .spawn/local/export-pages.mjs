@@ -4,7 +4,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import net from 'node:net';
 import { tmpdir } from 'node:os';
-import { dirname, extname, join, resolve } from 'node:path';
+import { dirname, extname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const SNAPSHOT_ROOT = resolve(process.env.SNAPSHOT_ROOT || '/workspace/signal');
@@ -160,8 +160,8 @@ function writeSite(files) {
   for (const path of Array.from(files.keys()).sort()) {
     const { body, type } = files.get(path);
     if (body.length > FILE_LIMIT) throw new Error(path + ' is ' + body.length + ' bytes, over the ' + FILE_LIMIT + ' byte per-file limit');
-    const rel = rels.get(path);
-    const abs = join(OUT, rel);
+    const abs = join(OUT, rels.get(path));
+    const rel = relative(OUT, abs);
     if (existsSync(abs)) {
       if (!readFileSync(abs).equals(body)) throw new Error(path + ' collides with ' + rel + ' holding different bytes');
     } else {

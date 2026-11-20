@@ -1,5 +1,6 @@
 import { execFileSync, spawn, spawnSync } from 'node:child_process';
 import { closeSync, existsSync, mkdirSync, openSync, readFileSync, readdirSync, rmSync, statSync, truncateSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import http from 'node:http';
 import net from 'node:net';
 import { dirname, extname, join, resolve } from 'node:path';
@@ -187,9 +188,19 @@ async function projectChecks(dir, summary) {
   if (unexpected.length) console.log('unexpected unresolved: ' + unexpected.slice(0, 5).join(', '));
 }
 
+function manifestChecks(out, manifestPath) {
+  const rows = readFileSync(manifestPath, 'utf8').trim().split('\n').map((line) => {
+    const at = line.indexOf('  ');
+    return { hash: line.slice(0, at), rel: line.slice(at + 2) };
+  });
+  check('manifest names every page by its single-slash on-disk path (' + rows.length + ')', rows.length > 0 && rows.every(({ rel }) => !rel.includes('//') && existsSync(join(out, rel))));
+  check('manifest hashes equal the bytes on disk', rows.every(({ hash, rel }) => existsSync(join(out, rel)) && createHash('sha256').update(readFileSync(join(out, rel))).digest('hex') === hash));
+}
+
 async function checkOnly() {
   const summary = JSON.parse(readFileSync(process.env.WITNESS_CHECK_SUMMARY, 'utf8'));
   await projectChecks(process.env.WITNESS_CHECK_DIR, summary);
+  manifestChecks(process.env.WITNESS_CHECK_DIR, join(dirname(process.env.WITNESS_CHECK_SUMMARY), 'pages-export.sha256'));
   console.log(failed.length === 0 ? 'GREEN ' + passed + ' checks' : 'RED ' + failed.length + ' failed: ' + failed.join('; '));
   process.exitCode = failed.length === 0 ? 0 : 1;
 }
@@ -228,6 +239,7 @@ async function main() {
   check('no exported text carries the export port', texts.every((file) => !readFileSync(file, 'utf8').includes('127.0.0.1')));
   check('summary largest equals the largest page', summary.largest.bytes === Math.max(0, ...summary.pages.map((page) => page.bytes)));
   check('summary counts pages plus .nojekyll', summary.files === summary.pages.length + 1);
+  manifestChecks(out, join(root, 'pages-export.sha256'));
 
   const port = await freePort();
   const base = 'http://127.0.0.1:' + port;
