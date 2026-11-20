@@ -99,6 +99,16 @@ function patchSummaryBase(text) {
   return text.replace(SUMMARY_CALLER, () => SUMMARY_CALLER.replace('let a=v7();', 'let a=null;'));
 }
 
+const REALM_HOST = 'let r=RiI(e)?.sharedHost??e;if(!TW2(r))return null;let i=tdy.get(r);if(i!==void 0)return\x60\x24{t}-\x24{i}.\x24{whv}\x60;return r.includes(".")?\x60\x24{t}-\x24{r}\x60:\x60\x24{t}.\x24{r}\x60});';
+const REALM_HOST_PREFIX = 'let r=RiI(e)?.sharedHost??e;if(!TW2(r))return null;let i=tdy.get(r);';
+
+function patchRealmHost(text) {
+  const count = text.split(REALM_HOST).length - 1;
+  if (count === 0) return text;
+  if (count > 1) throw new Error('realm host builder matched ' + count + ' times in one module');
+  return text.replace(REALM_HOST, () => 'return null});');
+}
+
 function patchPreloads(text) {
   return text.replace(PRELOAD_STALE_RE, (match, head, rest) => head + '/signal/world-store/' + rest.replace(/%2F/g, '/') + '"');
 }
@@ -172,7 +182,7 @@ async function crawl(source, seeds) {
       const text = rewriteImages(raw);
       for (const name of moduleRefs(path, raw)) frontier.push(name);
       for (const match of text.matchAll(REF)) frontier.push(match[0].split('?')[0]);
-      files.set(path, { body: Buffer.from(rewriteSeams(patchPreloads(patchSummaryBase(rebase(text)))), 'utf8'), type });
+      files.set(path, { body: Buffer.from(rewriteSeams(patchPreloads(patchSummaryBase(patchRealmHost(rebase(text))))), 'utf8'), type });
     });
   }
   return { files, misses };
@@ -277,6 +287,7 @@ async function exportSite() {
   crawled.files.set('/' + VALUE_HELPER, { body: Buffer.from(helperTemplate.replace(POST_PLACEHOLDER, () => JSON.stringify(postTable)), 'utf8'), type: 'text/javascript' });
   for (const file of crawled.files.values()) {
     const text = file.body.toString('utf8');
+    if (text.includes(REALM_HOST_PREFIX)) throw new Error('realm host builder still reads the page host');
     if (text.includes(SUMMARY_CALLER_UNPATCHED)) throw new Error('summary base is still wired to the snapshot origin in a module');
     if (text.includes(PRELOAD_STALE)) throw new Error('a preload points at a URL the page does not fetch');
   }
