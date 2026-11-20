@@ -1,6 +1,6 @@
 const [port, holderPid] = process.argv.slice(2);
 const HOLDER = Number(holderPid);
-const out = { pid: HOLDER, error: null, dumpGuid: null, dumpSuccess: false, requestedAtMs: null, completedAtMs: null, eventsSeen: 0, requestedEvents: 0, dumpNames: {}, dumpEventIds: [], endReplyAtMs: null, tracingCompleteAtMs: null, bufferUsageSamples: 0, bufferUsageSeries: [], lastBufferUsage: null, matchedDump: false, residentSetBytes: null, partitionAlloc: null, topAllocators: [] };
+const out = { pid: HOLDER, mode: null, error: null, dumpGuid: null, dumpSuccess: false, requestedAtMs: null, completedAtMs: null, eventsSeen: 0, requestedEvents: 0, dumpNames: {}, dumpEventIds: [], endReplyAtMs: null, tracingCompleteAtMs: null, bufferUsageSamples: 0, bufferUsageSeries: [], lastBufferUsage: null, matchedDump: false, residentSetBytes: null, partitionAlloc: null, topAllocators: [] };
 const finish = () => { console.log('HOLDER_MEMDUMP ' + JSON.stringify(out)); process.exit(0); };
 const guard = setTimeout(() => { out.error = 'timeout'; finish(); }, 40000);
 const sizeOf = (attrs, key) => (attrs && attrs[key] && attrs[key].units === 'bytes' ? parseInt(attrs[key].value, 16) : null);
@@ -42,9 +42,12 @@ const run = async () => {
   };
   const send = (method, params) => new Promise((resolve, reject) => { const id = ++seq; waiting.set(id, { resolve, reject }); sock.send(JSON.stringify({ id, method, params: params || {} })); });
   await send('Tracing.start', { traceConfig: { recordMode: 'recordUntilFull', includedCategories: ['disabled-by-default-memory-infra'] }, transferMode: 'ReportEvents', bufferUsageReportingInterval: 1000 });
-  out.requestedAtMs = Date.now();
-  const dump = await send('Tracing.requestMemoryDump', { deterministic: false, levelOfDetail: 'detailed' });
-  out.completedAtMs = Date.now();
+  const NO_DUMP_HOLD_MS = 3000;
+  out.mode = process.env.HOLDER_MODE === 'no-dump' ? 'no-dump' : 'dump';
+  if (out.mode === 'no-dump') await new Promise((res) => setTimeout(res, NO_DUMP_HOLD_MS));
+  out.requestedAtMs = out.mode === 'dump' ? Date.now() : null;
+  const dump = out.mode === 'dump' ? await send('Tracing.requestMemoryDump', { deterministic: false, levelOfDetail: 'detailed' }) : {};
+  out.completedAtMs = out.mode === 'dump' ? Date.now() : null;
   out.dumpGuid = dump.dumpGuid || null;
   out.dumpSuccess = dump.success === true;
   send('Tracing.end').then(() => { out.endReplyAtMs = Date.now(); }, () => {});
