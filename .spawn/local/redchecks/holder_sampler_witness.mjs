@@ -1,0 +1,47 @@
+import { spawn } from 'node:child_process';
+import { mkdirSync, writeFileSync, readFileSync, rmSync, existsSync } from 'node:fs';
+const readerPath = process.argv[2] || '/workspace/signal/world/signal-stage/.spawn/local/holder-sampler.mjs';
+const ROOT = '/tmp/verify/fakeproc';
+const OUT = '/tmp/verify/witness-sampler';
+rmSync(ROOT, { recursive: true, force: true });
+rmSync(OUT, { recursive: true, force: true });
+mkdirSync(OUT, { recursive: true });
+const PID = 4242;
+const statLine = (tid, comm, state, utime, stime) => tid + ' (' + comm + ') ' + state + ' 1 1 1 0 -1 4194560 100 0 0 0 ' + utime + ' ' + stime + ' 0 0 20 0 3 0 1 1 0 0';
+const writeTask = (tid, comm, state, utime, stime) => {
+  mkdirSync(ROOT + '/' + PID + '/task/' + tid, { recursive: true });
+  writeFileSync(ROOT + '/' + PID + '/task/' + tid + '/stat', statLine(tid, comm, state, utime, stime) + '\n');
+};
+writeTask(4242, 'CrRendererMain', 'S', 10, 2);
+writeTask(4300, 'Chrome_ChildIOThread', 'R', 5, 1);
+writeTask(4301, 'weird (name) x', 'S', 3, 0);
+setTimeout(() => writeTask(4242, 'CrRendererMain', 'D', 11, 2), 250);
+const runSampler = (root, pid, dur, interval, out) => new Promise((resolve) => {
+  const c = spawn('node', [readerPath, root, String(pid), String(dur), String(interval), out], {});
+  let o = '';
+  c.stdout.on('data', (d) => { o += d; });
+  c.on('exit', (code) => resolve({ status: code, stdout: o }));
+});
+const checks = [];
+const check = (name, ok, got) => checks.push({ name, ok: Boolean(ok), got: String(JSON.stringify(got) ?? 'absent').slice(0, 160) });
+const rr = await runSampler(ROOT, PID, 600, 100, OUT + '/fake.json');
+check('fake: sampler exit 0', rr.status === 0, rr.status);
+const fake = existsSync(OUT + '/fake.json') ? JSON.parse(readFileSync(OUT + '/fake.json', 'utf8')) : { samples: [] };
+const byTid = (tid) => fake.samples.filter((s) => s.tid === tid);
+check('fake: three tasks observed', new Set(fake.samples.map((s) => s.tid)).size === 3, [...new Set(fake.samples.map((s) => s.tid))]);
+check('fake: at least 4 samples for the main thread', byTid(4242).length >= 4, byTid(4242).length);
+check('fake: comm parsed for CrRendererMain', byTid(4242).every((s) => s.comm === 'CrRendererMain'), byTid(4242)[0] && byTid(4242)[0].comm);
+check('fake: comm with parentheses parsed whole', byTid(4301).every((s) => s.comm === 'weird (name) x'), byTid(4301)[0] && byTid(4301)[0].comm);
+check('fake: main thread starts in S', byTid(4242)[0] && byTid(4242)[0].state === 'S', byTid(4242)[0] && byTid(4242)[0].state);
+check('fake: main thread transitions to D after 250 ms', byTid(4242).some((s) => s.state === 'D' && s.t >= 200), byTid(4242).map((s) => s.state).join(''));
+check('fake: utime read from field 14', byTid(4300)[0] && byTid(4300)[0].utime === 5, byTid(4300)[0] && byTid(4300)[0].utime);
+check('fake: stime read from field 15', byTid(4300)[0] && byTid(4300)[0].stime === 1, byTid(4300)[0] && byTid(4300)[0].stime);
+const rl = await runSampler('/proc', process.pid, 200, 50, OUT + '/live.json');
+check('live: sampler exit 0 on own pid', rl.status === 0, rl.status);
+const live = existsSync(OUT + '/live.json') ? JSON.parse(readFileSync(OUT + '/live.json', 'utf8')) : { samples: [] };
+check('live: at least one thread read from /proc', live.samples.length >= 1, live.samples.length);
+check('live: states are kernel states', live.samples.every((s) => /^[RSDTtZXxKWPI]$/.test(s.state)), [...new Set(live.samples.map((s) => s.state))]);
+let fails = 0;
+for (const c of checks) { if (!c.ok) fails += 1; console.log((c.ok ? 'PASS ' : 'FAIL ') + c.name + ' got=' + c.got); }
+console.log('HOLDER SAMPLER WITNESS (' + readerPath + '): ' + (fails === 0 ? 'GREEN' : 'RED ' + fails));
+process.exit(fails === 0 ? 0 : 1);
