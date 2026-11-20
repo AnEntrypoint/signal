@@ -41,7 +41,7 @@ const run = async () => {
     if (m.error) w.reject(new Error(m.error.message)); else w.resolve(m.result);
   };
   const send = (method, params) => new Promise((resolve, reject) => { const id = ++seq; waiting.set(id, { resolve, reject }); sock.send(JSON.stringify({ id, method, params: params || {} })); });
-  await send('Tracing.start', { traceConfig: { recordMode: 'recordUntilFull', includedCategories: ['disabled-by-default-memory-infra'] }, transferMode: 'ReportEvents', bufferUsageReportingInterval: 1000 });
+  await send('Tracing.start', { traceConfig: { recordMode: 'recordUntilFull', includedCategories: ['disabled-by-default-memory-infra'], memoryDumpConfig: { triggers: [] } }, transferMode: 'ReportEvents', bufferUsageReportingInterval: 1000 });
   out.requestedAtMs = Date.now();
   const dump = await send('Tracing.requestMemoryDump', { deterministic: false, levelOfDetail: 'detailed' });
   out.completedAtMs = Date.now();
