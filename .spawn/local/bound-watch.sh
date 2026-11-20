@@ -19,7 +19,7 @@ while :; do
     HP=$(awk '/--type=renderer/ {print $1; exit}' "$OUT/bound.holder"); [ -n "$HP" ] || HP=$(awk 'NR==1 {print $1}' "$OUT/bound.holder")
     OVER=$(ps -eo pgid=,rss=,args= | awk -v g="$B" '$1==g && /--type=renderer/ && $2>1000000 {n++} END {print n+0}')
     timeout 10 node "${HOLDER_READER:-$(dirname "$0")/holder-read.mjs}" "${CDP_PORT:-9333}" "$HP" "$OVER" >> "$OUT/bound.holder" 2>> "$OUT/bound.holder.err"
-    timeout 45 node "${HOLDER_MEMDUMP:-$(dirname "$0")/holder-memdump.mjs}" "${CDP_PORT:-9333}" "$HP" >> "$OUT/bound.holder" 2>> "$OUT/bound.holder.err"
+    HOLDER_EVENTS_OUT="$OUT/holder-events.json" timeout 45 node "${HOLDER_MEMDUMP:-$(dirname "$0")/holder-memdump.mjs}" "${CDP_PORT:-9333}" "$HP" >> "$OUT/bound.holder" 2>> "$OUT/bound.holder.err"
     timeout 10 node "${HOLDER_PROC:-$(dirname "$0")/holder-proc.mjs}" /proc "$HP" /dev/shm >> "$OUT/bound.holder" 2>> "$OUT/bound.holder.err"
     kill -- -"$B" 2>/dev/null
     S=$(cat "$OUT/server.pid" 2>/dev/null)

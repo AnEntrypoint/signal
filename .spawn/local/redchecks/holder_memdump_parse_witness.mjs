@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import http from 'node:http';
 import { spawn } from 'node:child_process';
 import { createRequire } from 'node:module';
@@ -66,6 +67,9 @@ const runCase = async (name) => {
   }));
   await new Promise((r) => server.listen(0, '127.0.0.1', r));
   const port = server.address().port;
+  const rawPath = '/tmp/verify/witness-holder-events-' + name + '.json';
+  fs.rmSync(rawPath, { force: true });
+  process.env.HOLDER_EVENTS_OUT = rawPath;
   const rr = await new Promise((resolve) => { const c = spawn('node', [readerPath, String(port), String(HOLDER_PID)]); let o = ''; c.stdout.on('data', (d) => { o += d; }); c.on('exit', (code) => { server.close(); server.closeAllConnections?.(); wss.close(); resolve({ status: code, stdout: o }); }); });
   const line = (rr.stdout || '').split('\n').find((l) => l.startsWith('HOLDER_MEMDUMP '));
   let h = null;
@@ -73,6 +77,7 @@ const runCase = async (name) => {
   const checks = [];
   const check = (n, ok, got) => checks.push({ n: name + ': ' + n, ok: Boolean(ok), got: String(JSON.stringify(got) ?? 'absent').slice(0, 160) });
   check('reader exit 0 and HOLDER_MEMDUMP line', rr.status === 0 && h !== null, rr.status);
+  check('raw events file holds every event the reader received', fs.existsSync(rawPath) && JSON.parse(fs.readFileSync(rawPath, 'utf8')).length === cfg.events().length, rawPath);
   check('error absent (the reply and tracingComplete arrived)', !!h && h.error === null, h && h.error);
   const got = {
     residentSetBytes: h ? h.residentSetBytes : null,

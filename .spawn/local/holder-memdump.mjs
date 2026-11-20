@@ -1,7 +1,9 @@
+import { writeFileSync } from 'node:fs';
 const [port, holderPid] = process.argv.slice(2);
+const events = [];
 const HOLDER = Number(holderPid);
 const out = { pid: HOLDER, mode: null, error: null, dumpGuid: null, dumpSuccess: false, requestedAtMs: null, completedAtMs: null, eventsSeen: 0, requestedEvents: 0, requestedShapes: {}, requestedEndArgKeys: null, dumpNames: {}, dumpEventIds: [], periodicSamples: 0, periodicProcessTotalsKeys: null, privateFootprintBytes: null, peakResidentSetBytes: null, endReplyAtMs: null, tracingCompleteAtMs: null, bufferUsageSamples: 0, bufferUsageSeries: [], lastBufferUsage: null, matchedDump: false, residentSetBytes: null, partitionAlloc: null, topAllocators: [] };
-const finish = () => { console.log('HOLDER_MEMDUMP ' + JSON.stringify(out)); process.exit(0); };
+const finish = () => { if (process.env.HOLDER_EVENTS_OUT) writeFileSync(process.env.HOLDER_EVENTS_OUT, JSON.stringify(events)); console.log('HOLDER_MEMDUMP ' + JSON.stringify(out)); process.exit(0); };
 const guard = setTimeout(() => { out.error = 'timeout'; finish(); }, 40000);
 const sizeOf = (attrs, key) => (attrs && attrs[key] && attrs[key].units === 'bytes' ? parseInt(attrs[key].value, 16) : null);
 const hexBytes = (v) => (typeof v === 'string' && /^[0-9a-f]+$/i.test(v) ? parseInt(v, 16) : null);
@@ -37,7 +39,6 @@ const run = async () => {
   await new Promise((res, rej) => { sock.onopen = res; sock.onerror = () => rej(new Error('websocket failed')); });
   let seq = 0;
   const waiting = new Map();
-  const events = [];
   let complete = null;
   const completed = new Promise((res) => { complete = res; });
   sock.onmessage = (ev) => {
