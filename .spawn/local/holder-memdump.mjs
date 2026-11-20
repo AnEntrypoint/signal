@@ -1,6 +1,6 @@
 const [port, holderPid] = process.argv.slice(2);
 const HOLDER = Number(holderPid);
-const out = { pid: HOLDER, error: null, dumpGuid: null, dumpSuccess: false, requestedAtMs: null, completedAtMs: null, eventsSeen: 0, matchedDump: false, residentSetBytes: null, partitionAlloc: null, topAllocators: [] };
+const out = { pid: HOLDER, error: null, dumpGuid: null, dumpSuccess: false, requestedAtMs: null, completedAtMs: null, eventsSeen: 0, endReplyAtMs: null, tracingCompleteAtMs: null, matchedDump: false, residentSetBytes: null, partitionAlloc: null, topAllocators: [] };
 const finish = () => { console.log('HOLDER_MEMDUMP ' + JSON.stringify(out)); process.exit(0); };
 const guard = setTimeout(() => { out.error = 'timeout'; finish(); }, 40000);
 const sizeOf = (attrs, key) => (attrs && attrs[key] && attrs[key].units === 'bytes' ? parseInt(attrs[key].value, 16) : null);
@@ -30,7 +30,7 @@ const run = async () => {
   sock.onmessage = (ev) => {
     const m = JSON.parse(String(ev.data));
     if (m.method === 'Tracing.dataCollected') { events.push(...((m.params && m.params.value) || [])); return; }
-    if (m.method === 'Tracing.tracingComplete') { complete(); return; }
+    if (m.method === 'Tracing.tracingComplete') { out.tracingCompleteAtMs = Date.now(); complete(); return; }
     const w = waiting.get(m.id);
     if (!w) return;
     waiting.delete(m.id);
@@ -43,7 +43,7 @@ const run = async () => {
   out.completedAtMs = Date.now();
   out.dumpGuid = dump.dumpGuid || null;
   out.dumpSuccess = dump.success === true;
-  await send('Tracing.end');
+  send('Tracing.end').then(() => { out.endReplyAtMs = Date.now(); }, () => {});
   await completed;
   out.eventsSeen = events.length;
   summarize(events);
