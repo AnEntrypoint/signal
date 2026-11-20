@@ -87,6 +87,22 @@ function moduleRefs(path, text) {
 const SEAM = /([\w$]+)=\(\$,Z\)=>([\w$]+)!==null\?\2\(\$,Z\):fetch\(\$,Z\)/g;
 const POST_PLACEHOLDER = '__POST_REPLIES__';
 
+const SUMMARY_CALLER = 'function Bk(e,t,r,i,n,l,s=0,o){let a=v7();if(a===null)return null;';
+const SUMMARY_CALLER_UNPATCHED = 'let a=v7();if(a===null)return null;';
+const PRELOAD_STALE = '<link rel="preload" as="fetch" crossorigin href="/signal/__local/https%3A%2F%2Fplay.spawn.co%2Fworld-store%2F';
+const PRELOAD_STALE_RE = /(<link rel="preload" as="fetch" crossorigin href=")\/signal\/__local\/https%3A%2F%2Fplay\.spawn\.co%2Fworld-store%2F([^"]+)"/g;
+
+function patchSummaryBase(text) {
+  const count = text.split(SUMMARY_CALLER).length - 1;
+  if (count === 0) return text;
+  if (count > 1) throw new Error('summary base caller matched ' + count + ' times in one module');
+  return text.replace(SUMMARY_CALLER, () => SUMMARY_CALLER.replace('let a=v7();', 'let a=null;'));
+}
+
+function patchPreloads(text) {
+  return text.replace(PRELOAD_STALE_RE, (match, head, rest) => head + '/signal/world-store/' + rest.replace(/%2F/g, '/') + '"');
+}
+
 function rewriteSeams(text) {
   const matches = [...text.matchAll(SEAM)];
   if (matches.length === 0) return text;
@@ -156,7 +172,7 @@ async function crawl(source, seeds) {
       const text = rewriteImages(raw);
       for (const name of moduleRefs(path, raw)) frontier.push(name);
       for (const match of text.matchAll(REF)) frontier.push(match[0].split('?')[0]);
-      files.set(path, { body: Buffer.from(rewriteSeams(rebase(text)), 'utf8'), type });
+      files.set(path, { body: Buffer.from(rewriteSeams(patchPreloads(patchSummaryBase(rebase(text)))), 'utf8'), type });
     });
   }
   return { files, misses };
@@ -259,6 +275,11 @@ async function exportSite() {
   if (helperTemplate.split(POST_PLACEHOLDER).length !== 2) throw new Error(POST_PLACEHOLDER + ' must appear exactly once in ' + VALUE_HELPER);
   const postTable = Object.fromEntries([...postReplies].map(([sha, list]) => [sha, list.map((reply) => ({ route: reply.route, name: reply.name, type: reply.type }))]));
   crawled.files.set('/' + VALUE_HELPER, { body: Buffer.from(helperTemplate.replace(POST_PLACEHOLDER, () => JSON.stringify(postTable)), 'utf8'), type: 'text/javascript' });
+  for (const file of crawled.files.values()) {
+    const text = file.body.toString('utf8');
+    if (text.includes(SUMMARY_CALLER_UNPATCHED)) throw new Error('summary base is still wired to the snapshot origin in a module');
+    if (text.includes(PRELOAD_STALE)) throw new Error('a preload points at a URL the page does not fetch');
+  }
   const pages = writeSite(crawled.files);
   const bytes = pages.reduce((sum, page) => sum + page.bytes, 0);
   const largest = pages.reduce((best, page) => (page.bytes > best.bytes ? page : best), { rel: '', bytes: 0 });
