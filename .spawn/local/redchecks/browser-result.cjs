@@ -1,7 +1,7 @@
 const fs = require('fs');
 const dir = process.argv[2];
-const DRAW_PARITY = 0.5;
-const TRIVIAL_BOX = 128;
+const REGION_MARGIN = 40;
+const ALIVE_FRACTION = 0.25;
 const t = JSON.parse(fs.readFileSync(dir + '/trace.json', 'utf8'));
 const reqs = t.reqs || [];
 const consoles = t.consoles || [];
@@ -22,18 +22,28 @@ const pageBad = pageErrors.map((e) => 'PAGE ERROR ' + e);
 const session = (t.frames || []).filter((f) => String(f.url).includes('session'));
 const sessionInfo = session.map((f) => f.info || {});
 const shown = sessionInfo.some((i) => i.shown === true);
-const framesDrawn = sessionInfo.some((i) => (i.frames3s || 0) > 0);
+const worldInfo = sessionInfo.filter((i) => (i.canvases || []).some((c) => c !== '0x0'));
+const frames = worldInfo.reduce((m, i) => Math.max(m, i.frames3s || 0), 0);
 const pixel = fs.existsSync(dir + '/pixel.json') ? JSON.parse(fs.readFileSync(dir + '/pixel.json', 'utf8')) : { present: false, reason: 'pixel.json missing' };
 const live = process.env.LIVE_REFERENCE && fs.existsSync(process.env.LIVE_REFERENCE) ? JSON.parse(fs.readFileSync(process.env.LIVE_REFERENCE, 'utf8')) : null;
+const overlaps = (a, b) => a[0] < b[2] && a[2] > b[0] && a[1] < b[3] && a[3] > b[1];
 const draw = [];
-if (!framesDrawn) draw.push('FRAMES NOT DRAWN session frame ran no animation frames in 3 s');
+let liveBox = null;
 if (!pixel.present) draw.push('PIXEL NOT MEASURED ' + (pixel.reason || ''));
 else if (pixel.changed === 0) draw.push('PIXEL FROZEN session canvas unchanged over 4 s');
-else if (pixel.bboxW <= TRIVIAL_BOX && pixel.bboxH <= TRIVIAL_BOX) draw.push('PIXEL TRIVIAL changes confined to ' + pixel.bboxW + 'x' + pixel.bboxH + ' px');
 if (!live) draw.push('NO LIVE REFERENCE set LIVE_REFERENCE');
 else {
   if (live.shown !== shown) draw.push('PARITY SHOWN static ' + shown + ' live ' + live.shown);
-  if (live.pixel && live.pixel.present && pixel.present && pixel.changedFrac < live.pixel.changedFrac * DRAW_PARITY) draw.push('PARITY DRAW static changedFrac ' + pixel.changedFrac + ' below live ' + live.pixel.changedFrac);
+  const lb = live.pixel && live.pixel.present ? live.pixel.bbox : null;
+  liveBox = lb ? [lb[0] - REGION_MARGIN, lb[1] - REGION_MARGIN, lb[2] + REGION_MARGIN, lb[3] + REGION_MARGIN] : null;
+  const sb = pixel.present && pixel.bbox ? pixel.bbox : null;
+  if (!liveBox) draw.push('REGION NO LIVE REGION in the live reference');
+  else if (!sb) draw.push('REGION EMPTY static canvas changed nowhere');
+  else if (!overlaps(sb, liveBox)) draw.push('REGION OUTSIDE static ' + JSON.stringify(sb) + ' does not overlap live ' + JSON.stringify(liveBox));
+  const lf = typeof live.frames3s === 'number' ? live.frames3s : null;
+  const need = lf === null ? null : Math.ceil(ALIVE_FRACTION * lf);
+  if (lf === null) draw.push('ALIVE NO LIVE FRAME COUNT');
+  else if (frames <= 0 || frames < need) draw.push('ALIVE static frames ' + frames + ' below ' + need + ' (25% of live ' + lf + ')');
 }
 const fails = [...badStatus, ...failedLoads, ...external, ...consoleBad, ...pageBad, ...draw];
 if (posts.length) fails.push('POST REQUESTS ' + posts.length);
@@ -53,9 +63,10 @@ const res = {
   sessionCanvases: sessionInfo.map((i) => i.canvases || []),
   shown,
   liveShown: live ? live.shown : null,
-  framesDrawn,
-  pixel: { present: pixel.present, changed: pixel.changed, changedFrac: pixel.changedFrac, bboxW: pixel.bboxW, bboxH: pixel.bboxH },
-  livePixel: live && live.pixel ? { changed: live.pixel.changed, changedFrac: live.pixel.changedFrac, bboxW: live.pixel.bboxW, bboxH: live.pixel.bboxH } : null
+  alive: { static: frames, live: live ? live.frames3s : null },
+  region: { margin: REGION_MARGIN, staticBox: pixel.bbox || null, liveBox: live && live.pixel ? live.pixel.bbox : null, expandedLiveBox: liveBox },
+  pixel: { present: pixel.present, changed: pixel.changed, changedFrac: pixel.changedFrac },
+  livePixel: live && live.pixel ? { changed: live.pixel.changed, changedFrac: live.pixel.changedFrac } : null
 };
 fs.writeFileSync(dir + '/result.json', JSON.stringify({ ...res, failures: unique }, null, 1));
 console.log('RESULT ' + JSON.stringify(res));
