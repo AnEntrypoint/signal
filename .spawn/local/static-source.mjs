@@ -261,7 +261,6 @@ export function openSource(root) {
     }
     const found = localPathFor(external) || localPathFor('https://play.spawn.co' + pathname);
     if (found) return fromFile(found, TEXT_EXTENSIONS);
-    if (pathname.includes('/arrival-census/')) return ok(types['.json'], '{}');
     return miss(404, 'world-store snapshot miss: ' + external);
   }
 
