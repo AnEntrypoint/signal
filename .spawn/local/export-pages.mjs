@@ -293,7 +293,6 @@ function addBootTree(files) {
 async function exportSite() {
   const source = openSource(SNAPSHOT_ROOT);
   const seeds = ['/', '/kernel-witness'];
-  for (const url of source.urls()) seeds.push(...seedsFor(url));
   seeds.push(...readFileSync(process.env.PAGES_SEEDS || new URL('./runtime-seeds.txt', import.meta.url), 'utf8').split('\n').filter(Boolean));
   for (const match of source.serve("/").body.toString("utf8").matchAll(OUTER_ASSET)) seeds.push(match[0]);
   const hashes = snapshotValueHashes(SNAPSHOT_ROOT);
