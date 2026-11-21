@@ -24,7 +24,8 @@ const REALM_TO = 'characters' + TICK + ');let r=RiI(e)?.sharedHost??e;if(!TW2(r)
 const ALIVE_SCRIPT = '<script>(function(){var r=window.requestAnimationFrame.bind(window);window.requestAnimationFrame=function(cb){return setTimeout(function(){r(cb)},2000)}})();</script>';
 const REGION_PY = ['import sys', 'from PIL import Image, ImageDraw', 'a = Image.open(sys.argv[1]).convert("RGB")', 'b = a.copy()', 'ImageDraw.Draw(b).rectangle([4, 4, 51, 61], fill=(255, 0, 0))', 'b.save(sys.argv[2])', ''].join('\n');
 
-const frames = (shown) => ({ reqs: [], consoles: [], errs: [], failed: [], okUrls: [], frames: [{ url: FRAME_URL, info: { canvases: ['1280x800'], frames3s: 180, shown } }] });
+const WARM_END = 'info https://anentrypoint.github.io/signal/session/: [scripts] the warm arm ran 9 units in 30 ms and ended by the tree';
+const frames = (shown) => ({ reqs: [], consoles: [WARM_END], errs: [], failed: [], okUrls: [], frames: [{ url: FRAME_URL, info: { canvases: ['1280x800'], frames3s: 180, shown } }] });
 const PIXEL_OK = { present: true, w: 1280, h: 800, changed: 5000, changedFrac: 0.004883, bbox: [700, 500, 760, 560], bboxW: 60, bboxH: 60 };
 const LIVE_AHEAD = { source: 'live', shown: false, frames3s: 56, pixel: { present: true, changed: 2244, changedFrac: 0.002191, bbox: [639, 493, 713, 585] } };
 
@@ -103,6 +104,16 @@ const CHECKS = {
     if (mutate(s, REALM_FROM, REALM_TO) === 0) throw new Error('no realm rewrite to mutate');
     const w = witness(s, 900);
     return w.rc !== 0 && /FAIL HTTP 404 .*authored-realm-kept-f239caa792d8b017\.html/.test(w.log) && /FAIL HTTP 404 .*kernel-witness-host/.test(w.log);
+  })],
+  warm: ['RED_WARM', () => inTmp('warm', (t) => {
+    const live = path.join(t, 'live.json');
+    fs.writeFileSync(live, JSON.stringify(LIVE_AHEAD));
+    const cases = { healthy: frames(false), cut: Object.assign(frames(false), { consoles: [] }), tome: Object.assign(frames(false), { consoles: [WARM_END, 'warning https://anentrypoint.github.io/signal/session/: [Tome] player "p" spawned with no model, sprite, or primitive and no profile avatar to fall back to; it renders NOTHING'] }) };
+    for (const [name, trace] of Object.entries(cases)) { writeJson(path.join(t, name, 'trace.json'), trace); writeJson(path.join(t, name, 'pixel.json'), PIXEL_OK); }
+    const h = browserResult(path.join(t, 'healthy'), live);
+    const c = browserResult(path.join(t, 'cut'), live);
+    const u = browserResult(path.join(t, 'tome'), live);
+    return h.rc === 0 && c.rc !== 0 && /WARM ARM NEVER ENDED/.test(c.log) && u.rc !== 0 && /ENGINE NO VISUAL/.test(u.log);
   })],
   shown: ['RED_SHOWN', () => inTmp('shown', (t) => {
     const match = path.join(t, 'match');

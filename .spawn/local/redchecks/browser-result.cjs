@@ -54,6 +54,9 @@ else {
   if (lf === null) draw.push('ALIVE NO LIVE FRAME COUNT');
   else if (frames <= 0 || frames < need) draw.push('ALIVE static frames ' + frames + ' below ' + need + ' (25% of live ' + lf + ')');
 }
+const warmArmEnded = consoles.some((c) => /\[scripts\] the warm arm ran \d+ units/.test(c));
+if (!warmArmEnded) draw.push('WARM ARM NEVER ENDED no "[scripts] the warm arm ran" line: the warm loop never reached its tree and is still re-arming');
+for (const c of consoles.filter((c) => /\[Tome\].*(renders NOTHING|no renderable bounds)/.test(c))) draw.push('ENGINE NO VISUAL ' + c.slice(0, 220));
 const fails = [...badStatus, ...failedLoads, ...external, ...consoleBad, ...pageBad, ...draw];
 if (posts.length) fails.push('POST REQUESTS ' + posts.length);
 const unique = [...new Set(fails)];
