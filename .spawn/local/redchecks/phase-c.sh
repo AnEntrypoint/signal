@@ -36,7 +36,7 @@ say "WINDOW_START memory-headroom gate threshold=$TH kB (2.5 GiB) budget=$BUDGET
 vmstat 1 2 > "$L/vmstat-start.txt"
 cat "$L/vmstat-start.txt" >> "$L/window.log"
 say "VMSTAT_START second_sample si=$(awk 'NR==4{print $7}' "$L/vmstat-start.txt") so=$(awk 'NR==4{print $8}' "$L/vmstat-start.txt")"
-run live-reference bash "$R/live-reference.sh" "$L" 9491
+run live-reference bash "$R/live.sh" reference "$L" 9491
 if [ ! -s "$L/live-reference.json" ]; then say "ABORT live reference missing"; exit 3; fi
 export LIVE_REFERENCE=$L/live-reference.json
 run proc-before bash "$R/lib.sh" proc_check phase-c-before

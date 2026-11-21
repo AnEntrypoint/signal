@@ -24,7 +24,7 @@ done
 echo "gate clear=$clear_now"
 if [ "$clear_now" -ne 1 ]; then rm -rf "$GT"; echo GATE_BLOCKED; exit 3; fi
 if [ "x$LIVE_DIR" != "x" ]; then
-  bash "$HERE/live-reference.sh" "$LIVE_DIR" 9491
+  bash "$HERE/live.sh" reference "$LIVE_DIR" 9491
   export LIVE_REFERENCE="$LIVE_DIR/live-reference.json"
 fi
 bash "$HERE/lib.sh" proc_check gate-before
