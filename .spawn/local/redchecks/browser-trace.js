@@ -35,6 +35,16 @@ page.on('framedetached', (f) => logEv('detach', { f: f.url().slice(0, 220) }));
 await page.setViewportSize({ width: 1280, height: 800 });
 await page.addInitScript({ content: fs.readFileSync('__HERE__/seed-random.js', 'utf8') });
 await page.goto('https://anentrypoint.github.io:__PORT__/signal/', { waitUntil: 'load', timeout: 150000 }).catch((e) => errs.push('NAV ' + String(e.message).slice(0, 200)));
+await page.bringToFront().catch(() => {});
+const cdp = await page.context().newCDPSession(page).catch(() => null);
+if (cdp) await cdp.send('Performance.enable').catch(() => {});
+const cpu = [];
+const sampler = setInterval(async () => {
+  const vis = await page.evaluate(() => document.visibilityState).catch(() => 'ERR');
+  const m = cdp ? await cdp.send('Performance.getMetrics').catch(() => null) : null;
+  const pick = (k) => (m ? (m.metrics.find((x) => x.name === k) || {}).value : null);
+  cpu.push({ ms: Date.now() - t0, vis, script: pick('ScriptDuration'), task: pick('TaskDuration') });
+}, 2000);
 let canvasAtMs = -1;
 while (Date.now() - t0 < 150000) {
   await new Promise((r) => setTimeout(r, 2000));
@@ -42,7 +52,8 @@ while (Date.now() - t0 < 150000) {
   const n = sf0 ? await sf0.evaluate(() => document.querySelectorAll('canvas').length).catch(() => 0) : 0;
   if (n > 0) { canvasAtMs = Date.now() - t0; break; }
 }
-await new Promise((r) => setTimeout(r, 5000));
+await new Promise((r) => setTimeout(r, 60000));
+clearInterval(sampler);
 const out = [];
 for (const f of page.frames()) {
   const info = await f.evaluate(() => {
@@ -108,7 +119,7 @@ for (const f of page.frames()) states.push({ frame: f.url().slice(0, 200), state
   };
 }).catch((e) => ({ err: String(e.message).slice(0, 160) })) });
 fs.writeFileSync(OUT + '/state.json', JSON.stringify(states, null, 1));
-fs.writeFileSync(OUT + '/trace.json', JSON.stringify({ reqs, consoles, errs, failed, okUrls: [...okUrls], frames: out, ev, canvasAtMs, laneBits, latencyMs: Number(process.env.WITNESS_LATENCY_MS || 0) }, null, 1));
+fs.writeFileSync(OUT + '/trace.json', JSON.stringify({ reqs, consoles, errs, failed, okUrls: [...okUrls], frames: out, ev, canvasAtMs, cpu, laneBits, latencyMs: Number(process.env.WITNESS_LATENCY_MS || 0) }, null, 1));
 await page.screenshot({ path: OUT + '/shot.png' }).catch(() => {});
 console.log(JSON.stringify({ reqN: reqs.length, errs: errs.length, consoles: consoles.length, series: series.map((s) => ({ i: s.i, n: s.files.length })) }));
 await page.close();
