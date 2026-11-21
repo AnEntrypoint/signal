@@ -5,6 +5,7 @@ import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, 
 import { tmpdir } from 'node:os';
 import { dirname, extname, join, relative, resolve } from 'node:path';
 import { openSource } from './static-source.mjs';
+import { createPatcher, staticPatches } from './static-patches.mjs';
 
 const SNAPSHOT_ROOT = resolve(process.env.SNAPSHOT_ROOT || '/workspace/signal');
 const OUT = resolve(process.env.PAGES_OUT || join(SNAPSHOT_ROOT, 'pages-export'));
@@ -182,7 +183,7 @@ async function crawl(source, seeds) {
       const text = rewriteImages(raw);
       for (const name of moduleRefs(path, raw)) frontier.push(name);
       for (const match of text.matchAll(REF)) frontier.push(match[0].split('?')[0]);
-      files.set(path, { body: Buffer.from(rewriteSeams(patchSiteTree(patchPreloads(patchSummaryBase(patchRealmHost(rebase(text)))))), 'utf8'), type });
+      files.set(path, { body: Buffer.from(rewriteSeams(staticPatcher.patch(patchPreloads(patchSummaryBase(patchRealmHost(rebase(text)))))), 'utf8'), type });
     });
   }
   return { files, misses };
@@ -261,29 +262,10 @@ function poolModuleNames(root) {
 
 const BOOT_TREE = { world: 'bc986e1b5a084b6aadf3ef93cd1597b4', ref: 'dev', manifest: '19c1489dab3e655521417de663b683930e2cc29a10f23d859a384885d25cc8b7' };
 const EMPTY_SCANS = '{"v":1,"tag":"","hashes":[],"rows":[]}';
-const SITE_TREE_PATCHES = [
-  ['w=!c&&Gt()', 'w=!c'],
-  ['var r=decodeURIComponent(n.pathname.split("/")[2]||"")', 'var r=decodeURIComponent(n.pathname.split("/")[' + (BASE_PATH.split('/').filter(Boolean).length + 2) + ']||"")'],
-  ['var t=e.ok?e.headers.get("x-spawn-manifest"):null', 'var t=e.ok?(e.headers.get("x-spawn-manifest")||"' + BOOT_TREE.manifest + '"):null'],
-];
-const siteTreePatched = new Map(SITE_TREE_PATCHES.map(([from]) => [from, 0]));
-
-function patchSiteTree(text) {
-  return SITE_TREE_PATCHES.reduce((out, [from, to]) => {
-    const count = out.split(from).length - 1;
-    if (count > 1) throw new Error('site tree pattern matched ' + count + ' times in one file: ' + from);
-    if (count === 0) return out;
-    siteTreePatched.set(from, siteTreePatched.get(from) + 1);
-    return out.replace(from, () => to);
-  }, text);
-}
+const staticPatcher = createPatcher(staticPatches(BASE_PATH, BOOT_TREE.manifest));
 
 function addBootTree(files) {
-  for (const [from, patched] of siteTreePatched) if (patched === 0) throw new Error('site tree pattern not found in any file: ' + from);
-  for (const file of files.values()) {
-    const text = file.body.toString('utf8');
-    for (const [from] of SITE_TREE_PATCHES) if (text.includes(from)) throw new Error('site tree pattern left in a file: ' + from);
-  }
+  staticPatcher.verify(files);
   const manifest = files.get('/world-store/manifests/' + BOOT_TREE.manifest + '/with/ring-priced');
   if (!manifest) throw new Error('boot tree manifest is not in the export: ' + BOOT_TREE.manifest);
   files.set('/site-tree/boot/' + BOOT_TREE.world + '/' + BOOT_TREE.ref + '/with/ring-priced', { body: manifest.body, type: 'application/octet-stream' });

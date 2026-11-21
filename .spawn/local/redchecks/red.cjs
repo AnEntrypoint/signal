@@ -120,6 +120,15 @@ const CHECKS = {
     const changed = variant('changed', (dir) => fs.writeFileSync(path.join(dir, 'index.html'), 'hOme'));
     return same.status === 0 && missing.status !== 0 && /MISSING world-store/.test(text(missing)) && extra.status !== 0 && /EXTRA new.html/.test(text(extra)) && changed.status !== 0 && /DIFFERENT index.html/.test(text(changed));
   })],
+  patches: ['RED_PATCHES', () => inTmp('patches', (t) => {
+    const real = path.join(HERE, '..', 'static-patches.mjs');
+    const check = path.join(HERE, '..', 'static-patches.check.mjs');
+    const mutated = path.join(t, 'static-patches.mjs');
+    fs.writeFileSync(mutated, fs.readFileSync(real, 'utf8').replace('S.bare===', 'S.bare!=='));
+    const good = sh('node', [check, real]);
+    const bad = sh('node', [check, mutated]);
+    return good.status === 0 && /PATCHES_OK/.test(text(good)) && bad.status !== 0 && /PATCHES_FAILED|not found in any file/.test(text(bad));
+  })],
   tree: ['RED_TREE', () => inTmp('tree', (t) => {
     const live = path.join(t, 'live.json');
     fs.writeFileSync(live, JSON.stringify(Object.assign({}, LIVE_AHEAD, { siteTree: { boot: 200, scans: 200 }, engineLines: [TOME_ON_LIVE] })));

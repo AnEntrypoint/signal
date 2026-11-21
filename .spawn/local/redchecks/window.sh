@@ -35,7 +35,7 @@ for i in 1 2 3 4 5 6 7 8 9 10; do
   grep -q "WITNESS passed" "$OUT/witness-$i.out" && grep -q "FAIL COUNT 0" "$OUT/witness-$i.out" || FAILED=1
 done
 
-for n in chunk preload summary stale realm shown alive census kernel leak lanes pixel region tree reproduce; do
+for n in chunk preload summary stale realm shown alive census kernel leak lanes pixel region tree patches reproduce; do
   step "red-$n" 1100 node "$HERE/red.cjs" "$n" "$SITE" "$LIVE" || FAILED=1
   tail -n 1 "$OUT/red-$n.out" | grep -q "_OK$" || FAILED=1
 done
