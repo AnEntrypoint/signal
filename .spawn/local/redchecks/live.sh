@@ -12,17 +12,20 @@ case "$MODE" in
   *) echo "ABORT: mode must be reference or trace"; exit 2 ;;
 esac
 mkdir -p "$OUT"
+STAGE=$(mktemp -d "$HERE/.live-stage.XXXXXX")
 rm -rf "$OUT/profile"
 setsid env DISPLAY=:1 /usr/bin/chromium --user-data-dir="$OUT/profile" --remote-debugging-port="$CPORT" "${CHROME_BASE[@]}" about:blank > "$OUT/browser.out" 2>&1 &
 echo $! > "$OUT/browser.pid"
 wait_devtools "$CPORT" "$OUT/version.json"
 WS=$(node -e "console.log(JSON.parse(require('fs').readFileSync('$OUT/version.json','utf8')).webSocketDebuggerUrl)")
 open_session "$WS"
-node -e "const fs=require('fs');let t=fs.readFileSync(process.argv[1],'utf8');t=t.split('__OUT__').join(process.argv[2]).split('__LIVE__').join(process.argv[3]).split('__HERE__').join(process.argv[4]);fs.writeFileSync(process.argv[2]+'/probe.js',t)" "$HERE/$TPL" "$OUT" "$LIVE" "$HERE"
+node -e "const fs=require('fs');let t=fs.readFileSync(process.argv[1],'utf8');t=t.split('__OUT__').join(process.argv[5]).split('__LIVE__').join(process.argv[3]).split('__HERE__').join(process.argv[4]);fs.writeFileSync(process.argv[2]+'/probe.js',t)" "$HERE/$TPL" "$OUT" "$LIVE" "$HERE" "$STAGE"
 PLAYWRITER_EXEC_TIMEOUT=300000 timeout 330 playwriter -s "$SESSION_ID" -e "$(cat "$OUT/probe.js")" > "$OUT/probe.out" 2>&1 &
 T=$!
 wait $T
 PRC=$?
+cp -r "$STAGE"/. "$OUT"/
+rm -rf "$STAGE"
 close_session "$SESSION_ID"
 SNAP=$(mktemp)
 snapshot_to "$SNAP"
