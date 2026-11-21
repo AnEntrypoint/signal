@@ -39,9 +39,9 @@ say "VMSTAT_START second_sample si=$(awk 'NR==4{print $7}' "$L/vmstat-start.txt"
 run live-reference bash "$R/live-reference.sh" "$L" 9491
 if [ ! -s "$L/live-reference.json" ]; then say "ABORT live reference missing"; exit 3; fi
 export LIVE_REFERENCE=$L/live-reference.json
-run proc-before bash "$R/proc-check.sh" phase-c-before
+run proc-before bash "$R/lib.sh" proc_check phase-c-before
 run witness bash "$R/browser-witness.sh" "$S"
-run proc-after-witness bash "$R/proc-check.sh" phase-c-after-witness
+run proc-after-witness bash "$R/lib.sh" proc_check phase-c-after-witness
 run red-chunk bash "$R/red-chunk.sh" "$S"
 run red-preload bash "$R/red-preload.sh" "$S"
 run red-summary bash "$R/red-summary.sh" "$S"
@@ -54,7 +54,7 @@ run red-pixel bash "$R/red-pixel.sh" "$L"
 run red-census bash "$R/red-census.sh" "$S" "$S"
 run red-kernel bash "$R/red-kernel.sh" "$S" "$S"
 run red-leak bash "$R/red-leak.sh" "$S"
-run proc-after-red bash "$R/proc-check.sh" phase-c-after-red
+run proc-after-red bash "$R/lib.sh" proc_check phase-c-after-red
 say "MEM final kb=$(mem)"
 say "VMSTAT_END $(vmstat 1 2 | tail -n 1)"
 say "WINDOW_END fails=$(awk '$2!=0' "$L/rc.txt" | wc -l) waited=$WAITED s"

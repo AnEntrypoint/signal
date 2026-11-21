@@ -19,7 +19,7 @@ if [ -n "$LEAK" ]; then
   sleep 1
   kill -KILL "$LEAK" 2>/dev/null
 fi
-bash "$HERE/proc-check.sh" red-after-cleanup
+bash "$HERE/lib.sh" proc_check red-after-cleanup
 CRC=$?
 rm -f "$LOG"
 if [ "$RRC" -ne 0 ] && [ "$HIT" -eq 1 ] && [ "$CRC" -eq 0 ]; then echo RED_CHECK_OK; exit 0; fi

@@ -27,14 +27,14 @@ if [ "x$LIVE_DIR" != "x" ]; then
   bash "$HERE/live-reference.sh" "$LIVE_DIR" 9491
   export LIVE_REFERENCE="$LIVE_DIR/live-reference.json"
 fi
-bash "$HERE/proc-check.sh" gate-before
+bash "$HERE/lib.sh" proc_check gate-before
 timeout 700 bash "$HERE/browser-witness.sh" "$SITE" &
 W=$!
 echo "witness timeout pid=$W"
 wait $W
 WRC=$?
 echo "witness rc=$WRC"
-bash "$HERE/proc-check.sh" gate-after-witness $W
+bash "$HERE/lib.sh" proc_check gate-after-witness $W
 AR=$?
 timeout 700 bash "$HERE/red-leak.sh" "$SITE" &
 R=$!
@@ -42,7 +42,7 @@ echo "red-leak timeout pid=$R"
 wait $R
 RRC=$?
 echo "red-leak rc=$RRC"
-bash "$HERE/proc-check.sh" gate-after-red $R
+bash "$HERE/lib.sh" proc_check gate-after-red $R
 ZR=$?
 rm -rf "$GT"
 if [ "$WRC" -eq 0 ] && [ "$AR" -eq 0 ] && [ "$RRC" -eq 0 ] && [ "$ZR" -eq 0 ]; then echo GATE_WITNESS_AND_RED_PASSED; exit 0; fi
