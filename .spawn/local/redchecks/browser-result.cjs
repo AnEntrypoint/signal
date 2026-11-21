@@ -31,15 +31,24 @@ const draw = [];
 let liveBox = null;
 if (!pixel.present) draw.push('PIXEL NOT MEASURED ' + (pixel.reason || ''));
 else if (pixel.changedPairs !== undefined ? pixel.changedPairs === 0 : pixel.changed === 0) draw.push('PIXEL FROZEN session canvas unchanged across ' + (pixel.pairCount || 1) + ' consecutive pairs');
+const laneBits = t.laneBits === undefined ? null : t.laneBits;
 if (!live) draw.push('NO LIVE REFERENCE set LIVE_REFERENCE');
 else {
   if (live.shown !== shown) draw.push('PARITY SHOWN static ' + shown + ' live ' + live.shown);
+  if (live.laneBits !== undefined && String(live.laneBits) !== String(laneBits)) draw.push('LANE DRAW MISMATCH static ' + laneBits + ' live ' + live.laneBits);
+  const rule = live.pixel && live.pixel.regionRule ? live.pixel.regionRule : 'single';
   const lb = live.pixel && live.pixel.present ? live.pixel.bbox : null;
-  liveBox = lb ? [lb[0] - REGION_MARGIN, lb[1] - REGION_MARGIN, lb[2] + REGION_MARGIN, lb[3] + REGION_MARGIN] : null;
   const sb = pixel.present && pixel.bbox ? pixel.bbox : null;
-  if (!liveBox) draw.push('REGION NO LIVE REGION in the live reference');
-  else if (!sb) draw.push('REGION EMPTY static canvas changed nowhere');
-  else if (!overlaps(sb, liveBox)) draw.push('REGION OUTSIDE static ' + JSON.stringify(sb) + ' does not overlap live ' + JSON.stringify(liveBox));
+  if (rule === 'unreliable') {
+    liveBox = null;
+    if (!sb) draw.push('REGION EMPTY static canvas changed nowhere');
+    else if (sb[0] < 0 || sb[1] < 0 || sb[2] > 1280 || sb[3] > 800) draw.push('REGION OUTSIDE CANVAS static ' + JSON.stringify(sb));
+  } else {
+    liveBox = lb ? [lb[0] - REGION_MARGIN, lb[1] - REGION_MARGIN, lb[2] + REGION_MARGIN, lb[3] + REGION_MARGIN] : null;
+    if (!liveBox) draw.push('REGION NO LIVE REGION in the live reference');
+    else if (!sb) draw.push('REGION EMPTY static canvas changed nowhere');
+    else if (!overlaps(sb, liveBox)) draw.push('REGION OUTSIDE static ' + JSON.stringify(sb) + ' does not overlap live ' + JSON.stringify(liveBox));
+  }
   const lf = typeof live.frames3s === 'number' ? live.frames3s : null;
   const need = lf === null ? null : Math.ceil(ALIVE_FRACTION * lf);
   if (lf === null) draw.push('ALIVE NO LIVE FRAME COUNT');
@@ -65,6 +74,7 @@ const res = {
   liveShown: live ? live.shown : null,
   alive: { static: frames, live: live ? live.frames3s : null },
   region: { margin: REGION_MARGIN, staticBox: pixel.bbox || null, liveBox: live && live.pixel ? live.pixel.bbox : null, regionRule: live && live.pixel ? live.pixel.regionRule || "single" : null, expandedLiveBox: liveBox },
+  laneBits,
   pixel: { present: pixel.present, changed: pixel.changed, changedFrac: pixel.changedFrac },
   livePixel: live && live.pixel ? { changed: live.pixel.changed, changedFrac: live.pixel.changedFrac } : null
 };
