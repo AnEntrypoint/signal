@@ -8,16 +8,16 @@ printf '%s' '{"reqs":[],"consoles":[],"errs":[],"failed":[],"okUrls":[],"frames"
 cp "$SRC/live-reference.json" "$T/live.json"
 cp "$SRC/canvas-a.png" "$T/canvas-a.png"
 cp "$SRC/canvas-b.png" "$T/canvas-b.png"
-python3 -I "$HERE/pixel-compare.py" "$T/canvas-a.png" "$T/canvas-b.png" > "$T/run/pixel.json"
+python3 -I "$HERE/pixel.py" "$T/canvas-a.png" "$T/canvas-b.png" > "$T/run/pixel.json"
 LIVE_REFERENCE="$T/live.json" node "$HERE/browser-result.cjs" "$T/run" > "$T/drawn.out" 2>&1; D=$?
 cp "$T/canvas-a.png" "$T/canvas-b.png"
-python3 -I "$HERE/pixel-compare.py" "$T/canvas-a.png" "$T/canvas-b.png" > "$T/run/pixel.json"
+python3 -I "$HERE/pixel.py" "$T/canvas-a.png" "$T/canvas-b.png" > "$T/run/pixel.json"
 echo "MUTATED second shot is a copy of the first"
 LIVE_REFERENCE="$T/live.json" node "$HERE/browser-result.cjs" "$T/run" > "$T/frozen.out" 2>&1; F=$?
 grep "PIXEL FROZEN\|FAIL COUNT" "$T/frozen.out" | head -n 3
 cp "$SRC/canvas-b.png" "$T/canvas-b.png"
 cmp "$SRC/canvas-b.png" "$T/canvas-b.png" && echo RESTORED_CMP_SAME
-python3 -I "$HERE/pixel-compare.py" "$T/canvas-a.png" "$T/canvas-b.png" > "$T/run/pixel.json"
+python3 -I "$HERE/pixel.py" "$T/canvas-a.png" "$T/canvas-b.png" > "$T/run/pixel.json"
 echo "drawn pair rc=$D frozen pair rc=$F"
 HIT=0
 grep -q "PIXEL FROZEN" "$T/frozen.out" && HIT=1

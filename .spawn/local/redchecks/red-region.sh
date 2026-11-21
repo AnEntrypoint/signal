@@ -9,7 +9,7 @@ node -e "const fs=require('fs');const r=JSON.parse(fs.readFileSync(process.argv[
 cp "$SRC/ref/live-reference.json" "$T/live.json"
 cp "$SRC/ref/canvas-a.png" "$T/canvas-a.png"
 cp "$SRC/ref/canvas-b.png" "$T/canvas-b.png"
-python3 -I "$HERE/pixel-compare.py" "$T/canvas-a.png" "$T/canvas-b.png" > "$T/run/pixel.json"
+python3 -I "$HERE/pixel.py" "$T/canvas-a.png" "$T/canvas-b.png" > "$T/run/pixel.json"
 LIVE_REFERENCE="$T/live.json" node "$HERE/browser-result.cjs" "$T/run" > "$T/drawn.out" 2>&1; D=$?
 python3 -I - "$T/canvas-a.png" "$T/moved.png" <<'PY'
 import sys
@@ -20,13 +20,13 @@ ImageDraw.Draw(b).rectangle([4, 4, 51, 61], fill=(255, 0, 0))
 b.save(sys.argv[2])
 PY
 cp "$T/moved.png" "$T/canvas-b.png"
-python3 -I "$HERE/pixel-compare.py" "$T/canvas-a.png" "$T/canvas-b.png" > "$T/run/pixel.json"
+python3 -I "$HERE/pixel.py" "$T/canvas-a.png" "$T/canvas-b.png" > "$T/run/pixel.json"
 echo "MUTATED the changed region is moved to (4,4)"
 LIVE_REFERENCE="$T/live.json" node "$HERE/browser-result.cjs" "$T/run" > "$T/moved.out" 2>&1; M=$?
 grep "REGION\|FAIL COUNT" "$T/moved.out" | head -n 3
 cp "$SRC/ref/canvas-b.png" "$T/canvas-b.png"
 cmp "$SRC/ref/canvas-b.png" "$T/canvas-b.png" && echo RESTORED_CMP_SAME
-python3 -I "$HERE/pixel-compare.py" "$T/canvas-a.png" "$T/canvas-b.png" > "$T/run/pixel.json"
+python3 -I "$HERE/pixel.py" "$T/canvas-a.png" "$T/canvas-b.png" > "$T/run/pixel.json"
 echo "drawn pair rc=$D moved pair rc=$M"
 HIT=0
 grep -q "REGION OUTSIDE" "$T/moved.out" && HIT=1

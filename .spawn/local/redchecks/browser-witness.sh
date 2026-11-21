@@ -77,7 +77,7 @@ run() {
   close_session "$ID"
   WL=$(printenv WITNESS_LEAK)
   if [ "$WL" = 1 ]; then python3 -c "import time; time.sleep(900)" "$HERE/browser-witness-leak-$$" & LP=$!; sleep 0.5; echo "LEAK_PID=$LP"; fi
-  python3 -I "$HERE/pixel-series.py" "$RUN" > "$RUN/pixel.json"
+  python3 -I "$HERE/pixel.py" series "$RUN" > "$RUN/pixel.json"
   node "$HERE/browser-result.cjs" "$RUN"
   ARC=$?
   echo "analysis rc=$ARC"

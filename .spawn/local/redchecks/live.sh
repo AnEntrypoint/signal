@@ -31,7 +31,7 @@ rm -f "$SNAP"
 stop_pids $TREE
 echo "browser tree pids: $TREE"
 echo "probe rc=$PRC"
-python3 -I "$HERE/pixel-compare.py" "$OUT/canvas-a.png" "$OUT/canvas-b.png" > "$OUT/pixel.json"
+python3 -I "$HERE/pixel.py" "$OUT/canvas-a.png" "$OUT/canvas-b.png" > "$OUT/pixel.json"
 if [ "$MODE" = reference ]; then
 python3 -I - "$OUT" "$LIVE" > "$OUT/live-reference.json" <<'PY'
 import json, sys
