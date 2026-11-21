@@ -23,6 +23,10 @@ for i in $(seq 1 40); do
 done
 echo "gate clear=$clear_now"
 if [ "$clear_now" -ne 1 ]; then rm -rf "$GT"; echo GATE_BLOCKED; exit 3; fi
+if [ "x$LIVE_DIR" != "x" ]; then
+  bash "$HERE/live-reference.sh" "$LIVE_DIR" 9491
+  export LIVE_REFERENCE="$LIVE_DIR/live-reference.json"
+fi
 bash "$HERE/proc-check.sh" gate-before
 timeout 700 bash "$HERE/browser-witness.sh" "$SITE" &
 W=$!
