@@ -31,7 +31,7 @@ snapshot_to() {
 }
 
 descend_in() {
-  local snap=$1 frontier all next p
+  local snap=$1 frontier all= next p
   shift
   frontier="$*"
   while [ -n "$frontier" ]; do
