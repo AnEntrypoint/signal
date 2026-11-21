@@ -110,8 +110,12 @@ function patchRealmHost(text) {
   return text.replace(REALM_HOST, () => 'return null});');
 }
 
+const DEAD_PRELOAD = /<link rel="preload" as="fetch" crossorigin href="\/signal\/world-store\/git\/[0-9a-f]+\/ui\/b045b55fce1634c701a585b3012693fbc125cc3f0b2039e844b16cfcafecbff6\.css" \/>\n?/g;
+
 function patchPreloads(text) {
-  return text.replace(PRELOAD_STALE_RE, (match, head, rest) => head + '/signal/world-store/' + rest.replace(/%2F/g, '/') + '"');
+  return text
+    .replace(PRELOAD_STALE_RE, (match, head, rest) => head + '/signal/world-store/' + rest.replace(/%2F/g, '/') + '"')
+    .replace(DEAD_PRELOAD, '');
 }
 
 function rewriteSeams(text) {
@@ -303,6 +307,7 @@ async function exportSite() {
     if (text.includes(REALM_HOST_PREFIX)) throw new Error('realm host builder still reads the page host');
     if (text.includes(SUMMARY_CALLER_UNPATCHED)) throw new Error('summary base is still wired to the snapshot origin in a module');
     if (text.includes(PRELOAD_STALE)) throw new Error('a preload points at a URL the page does not fetch');
+    if (new RegExp(DEAD_PRELOAD.source).test(text)) throw new Error('a preload for a stylesheet the export does not hold is still in a page');
   }
   const pages = writeSite(crawled.files);
   const bytes = pages.reduce((sum, page) => sum + page.bytes, 0);
