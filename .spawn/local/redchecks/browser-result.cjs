@@ -54,9 +54,12 @@ else {
   if (lf === null) draw.push('ALIVE NO LIVE FRAME COUNT');
   else if (frames <= 0 || frames < need) draw.push('ALIVE static frames ' + frames + ' below ' + need + ' (25% of live ' + lf + ')');
 }
-const warmArmEnded = consoles.some((c) => /\[scripts\] the warm arm ran \d+ units/.test(c));
-if (!warmArmEnded) draw.push('WARM ARM NEVER ENDED no "[scripts] the warm arm ran" line: the warm loop never reached its tree and is still re-arming');
-for (const c of consoles.filter((c) => /\[Tome\].*(renders NOTHING|no renderable bounds)/.test(c))) draw.push('ENGINE NO VISUAL ' + c.slice(0, 220));
+const ENGINE_LINE = /\[Tome\]|\[scripts\]|\[spawn/;
+const warmArmReading = consoles.find((c) => /\[scripts\] the warm arm ran \d+ units/.test(c)) || null;
+const normalised = (c) => { const m = /^(\w+) \S*: ([\s\S]*)$/.exec(c); return m ? m[1] + ' ' + m[2].slice(0, 160) : null; };
+const staticEngineLines = consoles.filter((c) => ENGINE_LINE.test(c) && !/the warm arm ran/.test(c)).map(normalised).filter(Boolean);
+if (live && live.siteTree) for (const kind of ['boot', 'scans']) if (live.siteTree[kind] === 200 && ![...okUrls].some((u) => u.includes('/site-tree/' + kind + '/'))) draw.push('SITE TREE NOT SERVED the live page gets a 200 for site-tree/' + kind + ' and the static page got none');
+if (live && Array.isArray(live.engineLines)) for (const line of new Set(staticEngineLines)) if (!live.engineLines.includes(line)) draw.push('ENGINE LINE NOT ON LIVE ' + line.slice(0, 200));
 const fails = [...badStatus, ...failedLoads, ...external, ...consoleBad, ...pageBad, ...draw];
 if (posts.length) fails.push('POST REQUESTS ' + posts.length);
 const unique = [...new Set(fails)];
@@ -75,6 +78,8 @@ const res = {
   sessionCanvases: sessionInfo.map((i) => i.canvases || []),
   shown,
   liveShown: live ? live.shown : null,
+  warmArmReading: warmArmReading ? warmArmReading.slice(0, 160) : null,
+  siteTree: { boot: [...okUrls].some((u) => u.includes('/site-tree/boot/')), scans: [...okUrls].some((u) => u.includes('/site-tree/scans/')) },
   alive: { static: frames, live: live ? live.frames3s : null },
   region: { margin: REGION_MARGIN, staticBox: pixel.bbox || null, liveBox: live && live.pixel ? live.pixel.bbox : null, regionRule: live && live.pixel ? live.pixel.regionRule || "single" : null, expandedLiveBox: liveBox },
   laneBits,

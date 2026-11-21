@@ -1,6 +1,10 @@
 const fs = require('fs');
 const OUT = '__OUT__';
 const page = await context.newPage();
+const treeStatus = { boot: null, scans: null };
+const engineLines = new Set();
+page.on('response', (r) => { for (const kind of ['boot', 'scans']) if (r.url().includes('/site-tree/' + kind + '/')) treeStatus[kind] = r.status(); });
+page.on('console', (m) => { if (/\[Tome\]|\[scripts\]|\[spawn/.test(m.text()) && !/the warm arm ran/.test(m.text())) engineLines.add(m.type() + ' ' + m.text().slice(0, 160)); });
 await page.setViewportSize({ width: 1280, height: 800 });
 await page.bringToFront();
 await page.addInitScript({ content: fs.readFileSync('__HERE__/seed-random.js', 'utf8') });
@@ -31,6 +35,8 @@ if (sess) {
   }
 }
 if (sess) result.laneBits = await sess.evaluate(() => window.__spawnArrivalLaneBits ?? null).catch(() => 'ERR');
+result.siteTree = treeStatus;
+result.engineLines = [...engineLines].sort();
 fs.writeFileSync(OUT + '/live-probe.json', JSON.stringify(result, null, 1));
 console.log(JSON.stringify(result));
 await page.close();

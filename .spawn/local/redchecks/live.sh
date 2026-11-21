@@ -39,7 +39,7 @@ d, live = sys.argv[1], sys.argv[2]
 p = json.load(open(d + '/live-probe.json'))
 px = json.load(open(d + '/pixel.json'))
 info = p.get('info') or {}
-print(json.dumps({'source': 'live', 'url': live, 'session': p.get('session'), 'shown': info.get('shown'), 'canvases': info.get('canvases'), 'frames3s': info.get('frames3s'), 'laneBits': p.get('laneBits'), 'pixel': px}, indent=1))
+print(json.dumps({'source': 'live', 'url': live, 'session': p.get('session'), 'shown': info.get('shown'), 'canvases': info.get('canvases'), 'frames3s': info.get('frames3s'), 'laneBits': p.get('laneBits'), 'siteTree': p.get('siteTree'), 'engineLines': p.get('engineLines'), 'pixel': px}, indent=1))
 PY
 cat "$OUT/live-reference.json"
 else

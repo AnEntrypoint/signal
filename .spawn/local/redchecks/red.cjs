@@ -27,6 +27,9 @@ const REGION_PY = ['import sys', 'from PIL import Image, ImageDraw', 'a = Image.
 
 const WARM_END = 'info https://anentrypoint.github.io/signal/session/: [scripts] the warm arm ran 9 units in 30 ms and ended by the tree';
 const frames = (shown) => ({ reqs: [], consoles: [WARM_END], errs: [], failed: [], okUrls: [], frames: [{ url: FRAME_URL, info: { canvases: ['1280x800'], frames3s: 180, shown } }] });
+const TOME_LINE = 'warning https://anentrypoint.github.io/signal/session/: [Tome] lib/tracks.js: a top-level OWN lives on one machine';
+const TOME_ON_LIVE = 'warning [Tome] lib/tracks.js: a top-level OWN lives on one machine';
+const TOME_EXTRA = 'warning https://anentrypoint.github.io/signal/session/: [Tome] player "p" spawned with no model, sprite, or primitive; it renders NOTHING';
 const PIXEL_OK = { present: true, w: 1280, h: 800, changed: 5000, changedFrac: 0.004883, bbox: [700, 500, 760, 560], bboxW: 60, bboxH: 60 };
 const LIVE_AHEAD = { source: 'live', shown: false, frames3s: 56, pixel: { present: true, changed: 2244, changedFrac: 0.002191, bbox: [639, 493, 713, 585] } };
 
@@ -117,15 +120,26 @@ const CHECKS = {
     const changed = variant('changed', (dir) => fs.writeFileSync(path.join(dir, 'index.html'), 'hOme'));
     return same.status === 0 && missing.status !== 0 && /MISSING world-store/.test(text(missing)) && extra.status !== 0 && /EXTRA new.html/.test(text(extra)) && changed.status !== 0 && /DIFFERENT index.html/.test(text(changed));
   })],
-  warm: ['RED_WARM', () => inTmp('warm', (t) => {
+  tree: ['RED_TREE', () => inTmp('tree', (t) => {
     const live = path.join(t, 'live.json');
-    fs.writeFileSync(live, JSON.stringify(LIVE_AHEAD));
-    const cases = { healthy: frames(false), cut: Object.assign(frames(false), { consoles: [] }), tome: Object.assign(frames(false), { consoles: [WARM_END, 'warning https://anentrypoint.github.io/signal/session/: [Tome] player "p" spawned with no model, sprite, or primitive and no profile avatar to fall back to; it renders NOTHING'] }) };
+    fs.writeFileSync(live, JSON.stringify(Object.assign({}, LIVE_AHEAD, { siteTree: { boot: 200, scans: 200 }, engineLines: [TOME_ON_LIVE] })));
+    const base = frames(false);
+    const served = ['boot', 'scans'].map((kind) => 'https://anentrypoint.github.io/signal/site-tree/' + kind + '/x');
+    const cases = {
+      healthy: Object.assign({}, base, { okUrls: served, consoles: [WARM_END, TOME_LINE] }),
+      noWarm: Object.assign({}, base, { okUrls: served, consoles: [TOME_LINE] }),
+      noBoot: Object.assign({}, base, { okUrls: served.slice(1), consoles: [TOME_LINE] }),
+      noScans: Object.assign({}, base, { okUrls: served.slice(0, 1), consoles: [TOME_LINE] }),
+      extra: Object.assign({}, base, { okUrls: served, consoles: [TOME_LINE, TOME_EXTRA] }),
+    };
     for (const [name, trace] of Object.entries(cases)) { writeJson(path.join(t, name, 'trace.json'), trace); writeJson(path.join(t, name, 'pixel.json'), PIXEL_OK); }
-    const h = browserResult(path.join(t, 'healthy'), live);
-    const c = browserResult(path.join(t, 'cut'), live);
-    const u = browserResult(path.join(t, 'tome'), live);
-    return h.rc === 0 && c.rc !== 0 && /WARM ARM NEVER ENDED/.test(c.log) && u.rc !== 0 && /ENGINE NO VISUAL/.test(u.log);
+    const run = (name) => browserResult(path.join(t, name), live);
+    const healthy = run('healthy');
+    const noWarm = run('noWarm');
+    const noBoot = run('noBoot');
+    const noScans = run('noScans');
+    const extra = run('extra');
+    return healthy.rc === 0 && noWarm.rc === 0 && noBoot.rc !== 0 && /SITE TREE NOT SERVED.*site-tree\/boot/.test(noBoot.log) && noScans.rc !== 0 && /SITE TREE NOT SERVED.*site-tree\/scans/.test(noScans.log) && extra.rc !== 0 && /ENGINE LINE NOT ON LIVE/.test(extra.log);
   })],
   shown: ['RED_SHOWN', () => inTmp('shown', (t) => {
     const match = path.join(t, 'match');

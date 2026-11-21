@@ -22,7 +22,7 @@ const POOL = '/v4/client/pool/';
 
 const sha256 = (buffer) => createHash('sha256').update(buffer).digest('hex');
 
-const ROOT_REF = /(?<=["'\x60(=\s+,}])\/(?=(?:(?:__local|_next|_ready|ground|fonts|datadog|session|world-store|savi|mark)\/|favicon\.ico|icon\.png|apple-icon\.png|kernel-witness|manifest\.webmanifest))/g;
+const ROOT_REF = /(?<=["'\x60(=\s+,}])\/(?=(?:(?:__local|_next|_ready|ground|fonts|datadog|session|world-store|site-tree|savi|mark)\/|favicon\.ico|icon\.png|apple-icon\.png|kernel-witness|manifest\.webmanifest))/g;
 
 function rebase(text) {
   return BASE_PATH === '/' ? text : text.replace(ROOT_REF, () => BASE_PATH);
@@ -182,7 +182,7 @@ async function crawl(source, seeds) {
       const text = rewriteImages(raw);
       for (const name of moduleRefs(path, raw)) frontier.push(name);
       for (const match of text.matchAll(REF)) frontier.push(match[0].split('?')[0]);
-      files.set(path, { body: Buffer.from(rewriteSeams(patchPreloads(patchSummaryBase(patchRealmHost(rebase(text))))), 'utf8'), type });
+      files.set(path, { body: Buffer.from(rewriteSeams(patchSiteTree(patchPreloads(patchSummaryBase(patchRealmHost(rebase(text)))))), 'utf8'), type });
     });
   }
   return { files, misses };
@@ -259,6 +259,37 @@ function poolModuleNames(root) {
   return names;
 }
 
+const BOOT_TREE = { world: 'bc986e1b5a084b6aadf3ef93cd1597b4', ref: 'dev', manifest: '19c1489dab3e655521417de663b683930e2cc29a10f23d859a384885d25cc8b7' };
+const EMPTY_SCANS = '{"v":1,"tag":"","hashes":[],"rows":[]}';
+const SITE_TREE_PATCHES = [
+  ['w=!c&&Gt()', 'w=!c'],
+  ['var r=decodeURIComponent(n.pathname.split("/")[2]||"")', 'var r=decodeURIComponent(n.pathname.split("/")[' + (BASE_PATH.split('/').filter(Boolean).length + 2) + ']||"")'],
+  ['var t=e.ok?e.headers.get("x-spawn-manifest"):null', 'var t=e.ok?(e.headers.get("x-spawn-manifest")||"' + BOOT_TREE.manifest + '"):null'],
+];
+const siteTreePatched = new Map(SITE_TREE_PATCHES.map(([from]) => [from, 0]));
+
+function patchSiteTree(text) {
+  return SITE_TREE_PATCHES.reduce((out, [from, to]) => {
+    const count = out.split(from).length - 1;
+    if (count > 1) throw new Error('site tree pattern matched ' + count + ' times in one file: ' + from);
+    if (count === 0) return out;
+    siteTreePatched.set(from, siteTreePatched.get(from) + 1);
+    return out.replace(from, () => to);
+  }, text);
+}
+
+function addBootTree(files) {
+  for (const [from, patched] of siteTreePatched) if (patched === 0) throw new Error('site tree pattern not found in any file: ' + from);
+  for (const file of files.values()) {
+    const text = file.body.toString('utf8');
+    for (const [from] of SITE_TREE_PATCHES) if (text.includes(from)) throw new Error('site tree pattern left in a file: ' + from);
+  }
+  const manifest = files.get('/world-store/manifests/' + BOOT_TREE.manifest + '/with/ring-priced');
+  if (!manifest) throw new Error('boot tree manifest is not in the export: ' + BOOT_TREE.manifest);
+  files.set('/site-tree/boot/' + BOOT_TREE.world + '/' + BOOT_TREE.ref + '/with/ring-priced', { body: manifest.body, type: 'application/octet-stream' });
+  files.set('/site-tree/scans/' + BOOT_TREE.manifest + '/ring-priced', { body: Buffer.from(EMPTY_SCANS, 'utf8'), type: 'application/octet-stream' });
+}
+
 async function exportSite() {
   const source = openSource(SNAPSHOT_ROOT);
   const seeds = ['/', '/kernel-witness'];
@@ -285,6 +316,7 @@ async function exportSite() {
   if (helperTemplate.split(POST_PLACEHOLDER).length !== 2) throw new Error(POST_PLACEHOLDER + ' must appear exactly once in ' + VALUE_HELPER);
   const postTable = Object.fromEntries([...postReplies].map(([sha, list]) => [sha, list.map((reply) => ({ route: reply.route, name: reply.name, type: reply.type }))]));
   crawled.files.set('/' + VALUE_HELPER, { body: Buffer.from(helperTemplate.replace(POST_PLACEHOLDER, () => JSON.stringify(postTable)), 'utf8'), type: 'text/javascript' });
+  addBootTree(crawled.files);
   for (const file of crawled.files.values()) {
     const text = file.body.toString('utf8');
     if (text.includes(REALM_HOST_PREFIX)) throw new Error('realm host builder still reads the page host');

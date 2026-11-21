@@ -31,6 +31,8 @@ const combined = {
   framesRuns: runs.map((r) => r.frames3s),
   laneBits: lanesEqual ? laneRuns[0] : 'MIXED ' + JSON.stringify(laneRuns),
   laneBitsRuns: laneRuns,
+  siteTree: Object.fromEntries(['boot', 'scans'].map((kind) => [kind, runs.every((r) => r.siteTree && r.siteTree[kind] === 200) ? 200 : 'MIXED ' + JSON.stringify(runs.map((r) => (r.siteTree ? r.siteTree[kind] : null)))])),
+  engineLines: [...new Set(runs.flatMap((r) => r.engineLines || []))].sort(),
   lanesEqual,
   pixel: {
     present: boxes.length > 0,
