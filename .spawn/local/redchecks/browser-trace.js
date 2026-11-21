@@ -33,6 +33,7 @@ page.on('framenavigated', (f) => logEv('nav', { f: f.url().slice(0, 220) }));
 page.on('frameattached', (f) => logEv('attach', { f: f.url().slice(0, 220) }));
 page.on('framedetached', (f) => logEv('detach', { f: f.url().slice(0, 220) }));
 await page.setViewportSize({ width: 1280, height: 800 });
+await page.addInitScript({ content: fs.readFileSync('__HERE__/seed-random.js', 'utf8') });
 await page.goto('https://anentrypoint.github.io:__PORT__/signal/', { waitUntil: 'load', timeout: 150000 }).catch((e) => errs.push('NAV ' + String(e.message).slice(0, 200)));
 let canvasAtMs = -1;
 while (Date.now() - t0 < 150000) {
@@ -80,6 +81,7 @@ if (sess) {
     fs.copyFileSync(series[0].files[1], OUT + '/canvas-b.png');
   }
 }
+const laneBits = sess ? await sess.evaluate(() => window.__spawnArrivalLaneBits ?? null).catch(() => 'ERR') : 'NO_SESSION';
 fs.writeFileSync(OUT + '/series.json', JSON.stringify(series, null, 1));
 const states = [];
 for (const f of page.frames()) states.push({ frame: f.url().slice(0, 200), state: await f.evaluate(() => {
@@ -106,7 +108,7 @@ for (const f of page.frames()) states.push({ frame: f.url().slice(0, 200), state
   };
 }).catch((e) => ({ err: String(e.message).slice(0, 160) })) });
 fs.writeFileSync(OUT + '/state.json', JSON.stringify(states, null, 1));
-fs.writeFileSync(OUT + '/trace.json', JSON.stringify({ reqs, consoles, errs, failed, okUrls: [...okUrls], frames: out, ev, canvasAtMs, latencyMs: Number(process.env.WITNESS_LATENCY_MS || 0) }, null, 1));
+fs.writeFileSync(OUT + '/trace.json', JSON.stringify({ reqs, consoles, errs, failed, okUrls: [...okUrls], frames: out, ev, canvasAtMs, laneBits, latencyMs: Number(process.env.WITNESS_LATENCY_MS || 0) }, null, 1));
 await page.screenshot({ path: OUT + '/shot.png' }).catch(() => {});
 console.log(JSON.stringify({ reqN: reqs.length, errs: errs.length, consoles: consoles.length, series: series.map((s) => ({ i: s.i, n: s.files.length })) }));
 await page.close();

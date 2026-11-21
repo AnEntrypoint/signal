@@ -123,7 +123,7 @@ run() {
     case " $PW0 " in *" $p "*) ;; *) reg relay "$p" ;; esac
   done
   [ -z "$ID" ] && { echo "ABORT: no playwriter session: $(echo "$SESS" | head -c 400)"; return 1; }
-  sed -e "s#__OUT__#$RUN#g" -e "s#__PORT__#$PORT#g" "$HERE/browser-trace.js" > "$RUN/trace.js"
+  sed -e "s#__OUT__#$RUN#g" -e "s#__PORT__#$PORT#g" -e "s#__HERE__#$HERE#g" "$HERE/browser-trace.js" > "$RUN/trace.js"
   PLAYWRITER_EXEC_TIMEOUT=400000 timeout 420 playwriter -s "$ID" -e "$(cat "$RUN/trace.js")" > "$RUN/trace.out" 2>&1 &
   T=$!
   reg trace "$T"

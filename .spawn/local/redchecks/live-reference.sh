@@ -11,7 +11,7 @@ echo $! > "$OUT/browser.pid"
 for i in $(seq 1 60); do curl -sf http://127.0.0.1:$CPORT/json/version > "$OUT/version.json" && break; sleep 0.5; done
 WS=$(node -e "console.log(JSON.parse(require('fs').readFileSync('$OUT/version.json','utf8')).webSocketDebuggerUrl)")
 ID=$(playwriter session new --direct "$WS" 2>&1 | grep -o "Session [0-9]*" | awk '{print $2}')
-node -e "const fs=require('fs');let t=fs.readFileSync(process.argv[1],'utf8');t=t.split('__OUT__').join(process.argv[2]).split('__LIVE__').join(process.argv[3]);fs.writeFileSync(process.argv[2]+'/probe.js',t)" "$HERE/live-probe.tpl.js" "$OUT" "$LIVE"
+node -e "const fs=require('fs');let t=fs.readFileSync(process.argv[1],'utf8');t=t.split('__OUT__').join(process.argv[2]).split('__LIVE__').join(process.argv[3]).split('__HERE__').join(process.argv[4]);fs.writeFileSync(process.argv[2]+'/probe.js',t)" "$HERE/live-probe.tpl.js" "$OUT" "$LIVE" "$HERE"
 PLAYWRITER_EXEC_TIMEOUT=300000 timeout 330 playwriter -s "$ID" -e "$(cat "$OUT/probe.js")" > "$OUT/probe.out" 2>&1 &
 T=$!
 wait $T
@@ -35,6 +35,6 @@ d, live = sys.argv[1], sys.argv[2]
 p = json.load(open(d + '/live-probe.json'))
 px = json.load(open(d + '/pixel.json'))
 info = p.get('info') or {}
-print(json.dumps({'source': 'live', 'url': live, 'session': p.get('session'), 'shown': info.get('shown'), 'canvases': info.get('canvases'), 'frames3s': info.get('frames3s'), 'pixel': px}, indent=1))
+print(json.dumps({'source': 'live', 'url': live, 'session': p.get('session'), 'shown': info.get('shown'), 'canvases': info.get('canvases'), 'frames3s': info.get('frames3s'), 'laneBits': p.get('laneBits'), 'pixel': px}, indent=1))
 PY
 cat "$OUT/live-reference.json"
