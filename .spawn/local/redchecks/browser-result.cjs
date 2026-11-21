@@ -64,7 +64,7 @@ const res = {
   shown,
   liveShown: live ? live.shown : null,
   alive: { static: frames, live: live ? live.frames3s : null },
-  region: { margin: REGION_MARGIN, staticBox: pixel.bbox || null, liveBox: live && live.pixel ? live.pixel.bbox : null, expandedLiveBox: liveBox },
+  region: { margin: REGION_MARGIN, staticBox: pixel.bbox || null, liveBox: live && live.pixel ? live.pixel.bbox : null, regionRule: live && live.pixel ? live.pixel.regionRule || "single" : null, expandedLiveBox: liveBox },
   pixel: { present: pixel.present, changed: pixel.changed, changedFrac: pixel.changedFrac },
   livePixel: live && live.pixel ? { changed: live.pixel.changed, changedFrac: live.pixel.changedFrac } : null
 };
