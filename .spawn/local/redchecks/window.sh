@@ -27,12 +27,15 @@ step() {
   return "$rc"
 }
 
+step reproduce 1800 bash "$HERE/reproduce.sh" "$SITE" || FAILED=1
+tail -n 1 "$OUT/reproduce.out" | grep -q "^EXPORT_REPRODUCED" || FAILED=1
+
 for i in 1 2 3 4 5 6 7 8 9 10; do
   step "witness-$i" 900 bash "$HERE/browser-witness.sh" "$SITE" || FAILED=1
   grep -q "WITNESS passed" "$OUT/witness-$i.out" && grep -q "FAIL COUNT 0" "$OUT/witness-$i.out" || FAILED=1
 done
 
-for n in chunk preload summary stale realm shown alive census kernel leak lanes pixel region warm; do
+for n in chunk preload summary stale realm shown alive census kernel leak lanes pixel region warm reproduce; do
   step "red-$n" 1100 node "$HERE/red.cjs" "$n" "$SITE" "$LIVE" || FAILED=1
   tail -n 1 "$OUT/red-$n.out" | grep -q "_OK$" || FAILED=1
 done

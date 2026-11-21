@@ -8,6 +8,7 @@ const WITNESS = path.join(HERE, 'browser-witness.sh');
 const RESULT = path.join(HERE, 'browser-result.cjs');
 const PIXEL = path.join(HERE, 'pixel.py');
 const LIB = path.join(HERE, 'lib.sh');
+const COMPARE = path.join(HERE, '..', 'export-compare.mjs');
 const TICK = String.fromCharCode(96);
 const DOLLAR = String.fromCharCode(36);
 const DEV = 'session/world:bc986e1b-5a08-4b6a-adf3-ef93cd1597b4@dev';
@@ -104,6 +105,17 @@ const CHECKS = {
     if (mutate(s, REALM_FROM, REALM_TO) === 0) throw new Error('no realm rewrite to mutate');
     const w = witness(s, 900);
     return w.rc !== 0 && /FAIL HTTP 404 .*authored-realm-kept-f239caa792d8b017\.html/.test(w.log) && /FAIL HTTP 404 .*kernel-witness-host/.test(w.log);
+  })],
+  reproduce: ['RED_REPRODUCE', () => inTmp('reproduce', (t) => {
+    const deployed = path.join(t, 'deployed');
+    const files = { 'index.html': 'home', 'world-store/manifests/a/with/ring-priced': 'manifest', 'session/x.mjs': 'module' };
+    for (const [rel, body] of Object.entries(files)) { fs.mkdirSync(path.dirname(path.join(deployed, rel)), { recursive: true }); fs.writeFileSync(path.join(deployed, rel), body); }
+    const variant = (name, change) => { const dir = path.join(t, name); fs.cpSync(deployed, dir, { recursive: true }); change(dir); return sh('node', [COMPARE, dir, deployed]); };
+    const same = variant('same', () => {});
+    const missing = variant('missing', (dir) => fs.rmSync(path.join(dir, 'world-store'), { recursive: true }));
+    const extra = variant('extra', (dir) => fs.writeFileSync(path.join(dir, 'new.html'), 'x'));
+    const changed = variant('changed', (dir) => fs.writeFileSync(path.join(dir, 'index.html'), 'hOme'));
+    return same.status === 0 && missing.status !== 0 && /MISSING world-store/.test(text(missing)) && extra.status !== 0 && /EXTRA new.html/.test(text(extra)) && changed.status !== 0 && /DIFFERENT index.html/.test(text(changed));
   })],
   warm: ['RED_WARM', () => inTmp('warm', (t) => {
     const live = path.join(t, 'live.json');

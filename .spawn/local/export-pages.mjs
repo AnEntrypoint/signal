@@ -263,7 +263,7 @@ async function exportSite() {
   const source = openSource(SNAPSHOT_ROOT);
   const seeds = ['/', '/kernel-witness'];
   for (const url of source.urls()) seeds.push(...seedsFor(url));
-  if (process.env.PAGES_SEEDS) seeds.push(...readFileSync(process.env.PAGES_SEEDS, 'utf8').split('\n').filter(Boolean));
+  seeds.push(...readFileSync(process.env.PAGES_SEEDS || new URL('./runtime-seeds.txt', import.meta.url), 'utf8').split('\n').filter(Boolean));
   for (const match of source.serve("/").body.toString("utf8").matchAll(OUTER_ASSET)) seeds.push(match[0]);
   const hashes = snapshotValueHashes(SNAPSHOT_ROOT);
   seeds.push(...hashes.map((hash) => '/world-store/values/' + hash));
@@ -294,7 +294,7 @@ async function exportSite() {
   const pages = writeSite(crawled.files);
   const bytes = pages.reduce((sum, page) => sum + page.bytes, 0);
   const largest = pages.reduce((best, page) => (page.bytes > best.bytes ? page : best), { rel: '', bytes: 0 });
-  writeFileSync(join(SNAPSHOT_ROOT, 'pages-export.sha256'), pages.map((page) => page.sha256 + '  ' + page.rel).join('\n') + '\n');
+  writeFileSync(join(dirname(OUT), 'pages-export.sha256'), pages.map((page) => page.sha256 + '  ' + page.rel).join('\n') + '\n');
   const exportedValues = pages.filter((page) => /^world-store\/values\/[0-9a-f]{64}$/.test(page.rel)).length;
   const seamFiles = [...crawled.files.values()].filter((file) => file.body.includes('__replayFetch(')).length;
   if (seamFiles === 0) throw new Error('no transport seam found in the export');
@@ -315,7 +315,7 @@ async function exportSite() {
     seams: seamFiles,
     pages,
   };
-  writeFileSync(join(SNAPSHOT_ROOT, 'pages-export.summary.json'), JSON.stringify(summary, null, 2) + '\n');
+  writeFileSync(join(dirname(OUT), 'pages-export.summary.json'), JSON.stringify(summary, null, 2) + '\n');
   return summary;
 }
 
