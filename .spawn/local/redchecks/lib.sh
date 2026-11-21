@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 CHROME_BASE=(--no-first-run --no-default-browser-check --enable-unsafe-webgpu --enable-features=Vulkan,WebGPU --use-angle=vulkan --use-vulkan=swiftshader --use-webgpu-adapter=swiftshader --enable-unsafe-swiftshader)
+MEM_FLOOR_KB=2621440
 
 alive() {
   local s
@@ -103,6 +104,13 @@ proc_check() {
   if [ "$left" -eq 0 ]; then echo "PROC_CHECK $label clear"; return 0; fi
   echo "PROC_CHECK $label left=$left"
   return 1
+}
+
+mem_gate() {
+  local kb
+  kb=$(awk '/^MemAvailable:/{print $2}' /proc/meminfo)
+  echo "MEM $1 kb=$kb floor=$MEM_FLOOR_KB"
+  [ "$kb" -ge "$MEM_FLOOR_KB" ]
 }
 
 if [ "${BASH_SOURCE[0]}" = "$0" ]; then "$@"; fi
