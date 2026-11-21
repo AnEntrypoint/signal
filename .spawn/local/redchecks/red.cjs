@@ -75,21 +75,30 @@ const CHECKS = {
     const w = witness(s, 700);
     return w.rc !== 0 && /FAIL HTTP 404 .*60d2a80e-a7bd2cc76ec022ef\.mjs/.test(w.log);
   })],
-  preload: ['RED_PRELOAD', (site) => {
+  preload: ['RED_PRELOAD', (site) => inTmp('preload', (t) => {
     const dead = /rel="preload" as="fetch" crossorigin href="\/signal\/world-store\/git\/[0-9a-f]+\/ui\/b045b55fce1634c701a585b3012693fbc125cc3f0b2039e844b16cfcafecbff6\.css"/;
-    const walk = (dir, out) => {
-      for (const name of fs.readdirSync(dir)) {
-        const p = path.join(dir, name);
-        if (fs.statSync(p).isDirectory()) walk(p, out);
-        else if (name.endsWith('.html')) out.push(p);
-      }
-      return out;
+    const scan = (dir) => {
+      const hits = [];
+      const walk = (current) => {
+        for (const name of fs.readdirSync(current)) {
+          const p = path.join(current, name);
+          if (fs.statSync(p).isDirectory()) walk(p);
+          else if (name.endsWith('.html') && dead.test(fs.readFileSync(p, 'utf8'))) hits.push(path.relative(dir, p));
+        }
+      };
+      walk(dir);
+      return hits;
     };
-    const hits = walk(site, []).filter((f) => dead.test(fs.readFileSync(f, 'utf8')));
+    const hits = scan(site);
     console.log('dead preload pages: ' + hits.length);
-    hits.forEach((f) => console.log('HIT ' + path.relative(site, f)));
-    return hits.length === 0;
-  }],
+    hits.forEach((f) => console.log('HIT ' + f));
+    const probe = path.join(t, 'probe');
+    fs.mkdirSync(probe);
+    fs.writeFileSync(path.join(probe, 'index.html'), '<head><link rel="preload" as="fetch" crossorigin href="/signal/world-store/git/' + 'a'.repeat(32) + '/ui/b045b55fce1634c701a585b3012693fbc125cc3f0b2039e844b16cfcafecbff6.css" /></head>');
+    const caught = scan(probe).length === 1;
+    console.log('injected dead preload caught: ' + caught);
+    return hits.length === 0 && caught;
+  })],
   summary: ['RED_SUMMARY', (site) => inTmp('summary', (t) => {
     const s = copySite(site, t);
     if (mutate(s, SUMMARY_FROM, SUMMARY_TO) === 0) throw new Error('no summary patch to mutate');
