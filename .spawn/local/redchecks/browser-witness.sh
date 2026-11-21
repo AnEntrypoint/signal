@@ -2,6 +2,8 @@
 set -u
 HERE=$(cd "$(dirname "$0")" && pwd)
 SITE=$1
+: "${WITNESS_LATENCY_MS:=1100}"
+export WITNESS_LATENCY_MS
 [ -d "$SITE" ] || { echo "ABORT: site dir not found: $SITE"; exit 2; }
 SITE=$(cd "$SITE" && pwd)
 RUN=$(mktemp -d "$HERE/.browser-witness.XXXXXX")
@@ -102,7 +104,7 @@ run() {
   mkdir -p "$RUN/serve"
   ln -sfn "$SITE" "$RUN/serve/signal"
   bash "$HERE/proc-check.sh" before || { echo "ABORT: browser-witness processes present before the run"; return 2; }
-  openssl req -x509 -newkey rsa:2048 -nodes -keyout "$RUN/key.pem" -out "$RUN/cert.pem" -days 1 -subj "/CN=anentrypoint.github.io" > /dev/null 2>&1 || { echo "ABORT: certificate"; return 1; }; setsid python3 "$HERE/browser-cors-server.py" "$PORT" "$RUN/serve" "$RUN/cert.pem" "$RUN/key.pem" > "$RUN/static-server.out" 2>&1 &
+  openssl req -x509 -newkey rsa:2048 -nodes -keyout "$RUN/key.pem" -out "$RUN/cert.pem" -days 1 -subj "/CN=anentrypoint.github.io" > /dev/null 2>&1 || { echo "ABORT: certificate"; return 1; }; setsid node "$HERE/browser-h2-server.cjs" "$PORT" "$RUN/serve" "$RUN/cert.pem" "$RUN/key.pem" > "$RUN/static-server.out" 2>&1 &
   reg static $!
   for i in $(seq 1 40); do curl -skf --resolve "anentrypoint.github.io:$PORT:127.0.0.1" "https://anentrypoint.github.io:$PORT/signal/" > /dev/null && break; sleep 0.5; done
   echo "static port=$PORT http=$(curl -sk --resolve "anentrypoint.github.io:$PORT:127.0.0.1" -o /dev/null -w %{http_code} "https://anentrypoint.github.io:$PORT/signal/")"
@@ -131,7 +133,7 @@ run() {
   playwriter session delete "$ID" > /dev/null 2>&1
   WL=$(printenv WITNESS_LEAK)
   if [ "$WL" = 1 ]; then python3 -c "import time; time.sleep(900)" "$HERE/browser-witness-leak-$$" & LP=$!; sleep 0.5; echo "LEAK_PID=$LP"; fi
-  python3 -I "$HERE/pixel-compare.py" "$RUN/canvas-a.png" "$RUN/canvas-b.png" > "$RUN/pixel.json"
+  python3 -I "$HERE/pixel-series.py" "$RUN" > "$RUN/pixel.json"
   node "$HERE/browser-result.cjs" "$RUN"
   ARC=$?
   echo "analysis rc=$ARC"

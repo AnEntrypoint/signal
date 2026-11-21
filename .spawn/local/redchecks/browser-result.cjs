@@ -30,7 +30,7 @@ const overlaps = (a, b) => a[0] < b[2] && a[2] > b[0] && a[1] < b[3] && a[3] > b
 const draw = [];
 let liveBox = null;
 if (!pixel.present) draw.push('PIXEL NOT MEASURED ' + (pixel.reason || ''));
-else if (pixel.changed === 0) draw.push('PIXEL FROZEN session canvas unchanged over 4 s');
+else if (pixel.changedPairs !== undefined ? pixel.changedPairs === 0 : pixel.changed === 0) draw.push('PIXEL FROZEN session canvas unchanged across ' + (pixel.pairCount || 1) + ' consecutive pairs');
 if (!live) draw.push('NO LIVE REFERENCE set LIVE_REFERENCE');
 else {
   if (live.shown !== shown) draw.push('PARITY SHOWN static ' + shown + ' live ' + live.shown);
