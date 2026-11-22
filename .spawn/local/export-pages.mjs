@@ -121,7 +121,7 @@ function offBootPath(path) {
   const decoded = safeDecode(path);
   const world = /\/session\/world:[0-9a-f-]+@([^/?]+)/.exec(decoded);
   if (world) return world[1] !== BOOT_TREE.ref;
-  return /^\/session(\/|$)/.test(decoded) || decoded.startsWith('/__local/https://www.spawn.co/');
+  return /^\/session(\/|$)/.test(decoded) || decoded.startsWith('/__local/https://www.spawn.co/') || decoded.startsWith('/__local/https://spawnfile.io/desktop/');
 }
 
 async function crawl(source, seeds) {
