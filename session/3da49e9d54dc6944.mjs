@@ -1,4 +1,0 @@
-
-;var F=null;var S=function(l){throw Error(`builtin/postfx is the engine's look vocabulary \u2014 "${String(l)}" cannot be written; a look script composes its own functions over grade/vignette/grain/\u2026`)},d=new Proxy({},{get(l,m){if(typeof m!=="string")return;if(!F)throw Error(`builtin/postfx is only available inside a look script's build: "${m}" was read outside any active post pipeline build`);return F[m]},has(l,m){return typeof m==="string"&&F!==null&&m in F},ownKeys(){return F?Reflect.ownKeys(F):[]},getOwnPropertyDescriptor(l,m){if(typeof m!=="string"||!F||!(m in F))return;return{configurable:!0,enumerable:!0,writable:!1,value:F[m]}},set:(l,m)=>S(m),defineProperty:(l,m)=>S(m),deleteProperty:(l,m)=>S(m)});var O={records:{},entries:[["builtin/postfx",d]]};;
-
-;import"./1dc340d57b62442d.mjs";export{O as POSTFX_FAMILY};
