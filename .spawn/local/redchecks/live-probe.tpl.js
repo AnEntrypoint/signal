@@ -3,15 +3,20 @@ const OUT = '__OUT__';
 const page = await context.newPage();
 const treeStatus = { boot: null, scans: null };
 const engineLines = new Set();
+let warmArm = null;
 page.on('response', (r) => { for (const kind of ['boot', 'scans']) if (r.url().includes('/site-tree/' + kind + '/')) treeStatus[kind] = r.status(); });
-page.on('console', (m) => { if (/\[Tome\]|\[scripts\]|\[spawn/.test(m.text()) && !/the warm arm ran/.test(m.text())) engineLines.add(m.type() + ' ' + m.text().slice(0, 160)); });
+page.on('console', (m) => {
+  const line = m.type() + ' ' + m.text().slice(0, 160);
+  if (/the warm arm ran/.test(line)) warmArm = warmArm ?? line;
+  else if (/\[Tome\]|\[scripts\]|\[spawn/.test(line)) engineLines.add(line);
+});
 await page.setViewportSize({ width: 1280, height: 800 });
 await page.bringToFront();
 await page.addInitScript({ content: fs.readFileSync('__HERE__/seed-random.js', 'utf8') });
 await page.goto('__LIVE__', { waitUntil: 'domcontentloaded', timeout: 150000 }).catch((e) => console.log('NAV ' + String(e.message).slice(0, 200)));
 await new Promise((r) => setTimeout(r, 60000));
 const result = { session: null, info: null };
-const sess = page.frames().find((f) => /play\.spawn\.co\/session\//.test(f.url()));
+const sess = page.frames().find((f) => /\/session\/world(:|%3A)/.test(f.url()));
 if (sess) {
   result.session = sess.url().slice(0, 160);
   result.info = await sess.evaluate(() => new Promise((res) => {
@@ -37,6 +42,7 @@ if (sess) {
 if (sess) result.laneBits = await sess.evaluate(() => window.__spawnArrivalLaneBits ?? null).catch(() => 'ERR');
 result.siteTree = treeStatus;
 result.engineLines = [...engineLines].sort();
+result.warmArm = warmArm;
 fs.writeFileSync(OUT + '/live-probe.json', JSON.stringify(result, null, 1));
 console.log(JSON.stringify(result));
 await page.close();
