@@ -39,11 +39,13 @@ case "$PART" in
   verdict)
     for p in $PARTS; do grep -qx "PART $p OK" "$LOG" || { echo "WINDOW FAILED: part $p has no OK"; exit 1; }; done
     echo "WINDOW OK"
+    echo "verdict_DONE 0"
     exit 0 ;;
   *) echo "part must be one of: $PARTS verdict"; exit 2 ;;
 esac
 
 echo "LEFT $(ps -eo args= | grep -c '[b]rowser-witness.sh\|[r]ed.cjs')" >> "$LOG"
-[ "$FAILED" -eq 0 ] && { echo "PART $PART OK" >> "$LOG"; exit 0; }
-echo "PART $PART FAILED" >> "$LOG"
-exit 1
+RESULT=FAILED; [ "$FAILED" -eq 0 ] && RESULT=OK
+echo "PART $PART $RESULT" >> "$LOG"
+echo "${PART}_DONE $FAILED"
+exit "$FAILED"
