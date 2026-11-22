@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,388559,o=>{"use strict";var t=o.i(616352),r=o.i(271645);let c=!1;o.s(["C",0,function(o,t){return r=>o("compat_wall_forward_clicked",{scenario:"platform-door",trigger:t,kind:r})},"h",0,function(o,e,a,i,l=!0){(0,r.useEffect)(()=>{l&&!c&&(c=!0,o("compat_wall_shown",{scenario:"platform-door",trigger:e,door:a,from:(0,t.d)(i??"",!0)}))},[o,e,a,i,l])}])}]);

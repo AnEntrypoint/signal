@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,103775,t=>{"use strict";t.s(["F",0,"data-early-act","w",0,"data-hold-press"])}]);

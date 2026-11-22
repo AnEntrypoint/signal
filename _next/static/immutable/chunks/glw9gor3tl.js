@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,117091,e=>{"use strict";var n=e.i(226019),i=e.i(888510),r=e.i(133579);e.i(169806),e.s(["v",0,function(e){let i=e.games?.world_id;return i&&(0,r.H)(e.games?.engine_version)?{worldId:i,link:(0,n.K)(i,"live")}:null},"_",0,function(e){let n=e.profiles?.username,r=e.games?.adventure_name;return n&&r?(0,i.C)(n,r,e.games?.engine_version):null}])}]);

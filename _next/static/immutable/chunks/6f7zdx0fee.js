@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,810565,e=>{"use strict";e.i(792365);let r="spawn.pageReferrer",a="__spawnPageReferrer";e.s(["W",0,"/api/telemetry/frame-crash","r",0,/^[0-9a-f]{8}$/,"j",0,"spawn-page","f",0,a,"z",0,r,"b",0,"__spawnPageReload","T",0,"spawn.pageReload","i",0,"pageReload","$",0,function(e,r){if(null===e)return r;try{let a=JSON.parse(e);return null!==a&&"string"==typeof a.r&&a.u===r?a.r:r}catch{return r}}])}]);

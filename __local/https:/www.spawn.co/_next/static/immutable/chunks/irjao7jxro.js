@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,914142,t=>{"use strict";var o=t.i(361608);t.s(["f",0,function(t,e){let n=(0,o.f)(t,e);return""===n?"":"now"===n?"just now":`${n} ago`}])}]);

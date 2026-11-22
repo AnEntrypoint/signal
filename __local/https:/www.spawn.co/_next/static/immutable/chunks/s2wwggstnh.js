@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,235200,t=>{"use strict";var a=t.i(956681);let e=`^/@@?${a.$}$`,o=`^/@@?${a.$}/[a-z0-9][a-z0-9_-]*(?:@[A-Za-z0-9._-]+)?(?!/v(?:/|$))(?:/[A-Za-z0-9._:+~@%-]+){0,2}$`;t.s(["z",0,e,"r",0,o])}]);

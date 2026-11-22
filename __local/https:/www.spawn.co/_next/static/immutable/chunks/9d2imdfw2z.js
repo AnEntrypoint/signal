@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,612290,o=>{"use strict";o.s(["friendListWireDoor",0,()=>o.A(620951),"mailWireDoor",0,()=>o.A(721778),"standbySwapDoor",0,()=>o.A(765958)])}]);

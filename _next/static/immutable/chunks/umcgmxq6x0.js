@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,635173,t=>{"use strict";t.s(["f",0,function(t,e=document){for(let r of e.querySelectorAll('iframe[data-spawn-kernel-frame="true"]')){if(t.source!==r.contentWindow)continue;let e=function(t){let e=t.getAttribute("src");if(!e)return null;try{return new URL(e,window.location.href).origin}catch{return null}}(r);if(!e||t.origin===e)return!0}return!1}])}]);

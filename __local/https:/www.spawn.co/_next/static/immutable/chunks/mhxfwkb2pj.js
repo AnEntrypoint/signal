@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,757749,l=>{"use strict";let e={all:["all-finance-queries"],walletBalance:l=>[...e.all,"wallet-balance",l],payoutSetup:l=>[...e.all,"payout-setup",l]};l.s(["f",0,e])}]);

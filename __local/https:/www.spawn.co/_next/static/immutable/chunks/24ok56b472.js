@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,183665,t=>{"use strict";let e=/^[A-Za-z0-9._-]{1,64}$/,s=/^\.+$/;t.s(["T",0,e,"U",0,"letters, digits, '.', '_' and '-', up to 64 characters","G",0,function(t){return"string"==typeof t&&e.test(t)&&!s.test(t)}])}]);

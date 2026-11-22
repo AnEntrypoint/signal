@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,700221,e=>{"use strict";var t=e.i(136798),i=e.i(930588);async function l({userId:e,draft:o}){let n=await (0,t.openThreadWith)(e);return o&&(o.media||o.place||o.quote)&&(0,i.S)({key:n,picture:o.media??null,place:o.place?{name:o.place,position:o.position??null}:null,quote:o.quote??null}),n}e.s(["openChatWith",0,l])}]);

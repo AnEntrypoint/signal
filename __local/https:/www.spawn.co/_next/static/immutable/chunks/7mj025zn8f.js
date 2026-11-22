@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,863592,t=>{"use strict";var i=t.i(843476),o=t.i(557305);t.s(["f",0,function({label:t=o.F,onClick:e,inline:n=!1}){return(0,i.jsx)("button",{type:"button",onClick:e,"data-testid":"auth-not-now",className:`${n?"":"mx-auto "}font-pixel text-sm text-white/50 outline-none transition-colors hover:text-white focus-visible:ring-1 focus-visible:ring-sign/70 pointer-coarse:min-h-touch`,children:t})}])}]);

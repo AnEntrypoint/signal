@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,101889,u=>{"use strict";u.s(["bootFatalReportChunk",0,()=>u.A(109106),"debugDumpCaptureChunk",0,()=>u.A(575634),"debugDumpTravelChunk",0,()=>u.A(152873),"playerCapsuleRiderChunk",0,()=>u.A(132056)])}]);

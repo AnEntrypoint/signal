@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,54745,e=>{"use strict";e.s(["C",0,"Free. Your games and likes come with you.","h",0,"Keep your progress"])}]);

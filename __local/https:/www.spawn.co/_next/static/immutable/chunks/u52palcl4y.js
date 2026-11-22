@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,999682,e=>{"use strict";var r=e.i(271645);e.s(["f",0,function(e){let u=r.useRef({value:e,previous:e});return r.useMemo(()=>(u.current.value!==e&&(u.current.previous=u.current.value,u.current.value=e),u.current.previous),[e])}])}]);

@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,117675,l=>{"use strict";let e={all:["all-profile-queries"],detail:l=>[...e.all,l],single:l=>[...e.detail(l),"profile"],usernameAvailable:l=>[...e.all,"is-username-available",l]};l.s(["f",0,e])}]);

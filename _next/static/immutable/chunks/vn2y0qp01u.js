@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,98686,t=>{"use strict";var i=t.i(712621),c=t.i(394796);async function o(t){return(0,c.R)(await (0,i.v)(),t)}t.s(["f",0,o])}]);

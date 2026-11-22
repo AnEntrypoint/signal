@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,925132,t=>{"use strict";var e=t.i(996124),i=t.i(418926),o=t.i(479821),n=t.i(514093),c=t.i(897146);t.s(["f",0,function(t=document){(0,c.p)(()=>(function(t){let c=(0,n.B)(t);if(!c||(0,n.x)(c)){let e=t.querySelector('iframe[data-phoenix-frame="stands"]');e&&!(0,i.J)()&&(0,n.Z)(e,t);return}(0,i.J)()||((0,n.Z)(c,t),c.contentWindow?.postMessage({type:e.g},(0,o.f)(c)))})(t))}])}]);

@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,289588,l=>{"use strict";let e={all:["social"],relation:l=>[...e.all,"relation",l],relationByHandle:l=>[...e.all,"relation-handle",l.toLowerCase()],places:()=>[...e.all,"places"],me:()=>[...e.all,"me"],hidden:()=>[...e.all,"hidden"],friends:()=>[...e.all,"friends"]};l.s(["f",0,e])}]);

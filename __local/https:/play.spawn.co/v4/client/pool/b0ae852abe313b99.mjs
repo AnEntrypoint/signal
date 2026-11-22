@@ -1,6 +1,0 @@
-import{C as $c0K}from"./52e971dc2a986655.mjs";var $c0C,$c0T=[function(){return[()=>"(function(j,F,J,K=J.length){for(let Q=0;Q<K;Q+=1){let V=J[Q],U=F+Q*4;if(V===void 0){j[U]=0,j[U+1]=0,j[U+2]=0,j[U+3]=0;continue}j[U]=V.normal[0],j[U+1]=V.normal[1],j[U+2]=V.normal[2],j[U+3]=V.constant}})"]}],$c0XU=[0];var $c0S,$c0D=()=>eval($c0S);function $c0E(s){$c0S=s;return $c0D()}$c0C=$c0K($c0T,$c0XU,$c0E,1,3214255620882432);
-;const{wRZ:X}=$Lr;
-var Y={deltas:6,params:7,poses:9},q=[X(Y.deltas,1,"read-only-storage"),X(Y.params,1,"read-only-storage"),X(Y.poses,1,"read-only-storage")];function Z(j,F,J){let K=[];for(let Q=0;Q<j.count;Q+=1)K.push(`(dot(${F(Q)}.xyz, ${J}) + ${F(Q)}.w < 0.0)`);if(K.length===0)return"false";return K.join(j.intersection?" && ":" || ")}function W(j,F){return`(dot(${j}.xyz, ${F}) + ${j}.w)`}function A(j,F){let J=[];for(let K=0;K<j.count;K+=1)J.push(`(${F(K)} < 0.0)`);if(J.length===0)return"false";return J.join(j.intersection?" && ":" || ")}function C(j,F,J){return j.count===0?"":`  if (${Z(j,F,J)}) { discard; }`}function T(a,b,c){return (T=$c0C(0)).apply(this,arguments)}
-;
-
-;import{R as $Lr}from"./52e971dc2a986655.mjs";export{A as PXH,C as $$g,T as a2z,W as LlV,Y as $vw,Z as OGY,q as B$r};

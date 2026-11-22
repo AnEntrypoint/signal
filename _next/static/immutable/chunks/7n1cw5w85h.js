@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,441845,e=>{"use strict";var i=e.i(843476),t=e.i(892326),o=e.i(947479);e.s(["f",0,function({lockedIn:e,size:s,ring:c=!0,eager:r=!1,className:n}){let u=(0,t.useStudioStore)(e=>e.isLockedIn);return(0,i.jsx)(o.k,{lockedIn:e??u,size:s,ring:c,eager:r,className:n})}])}]);

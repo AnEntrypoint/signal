@@ -1381,7 +1381,7 @@ var a=r?n:Math.min(t.secureConnectionStart-t.connectStart,t.connectEnd-t.secureC
 return a>=100}catch(e){return true}}function Ht(t){try{if(typeof window.fetch!=="function"||typeof window.Promise!=="function"||typeof window.AbortController!=="function")return
 var n=new URL(t.getAttribute("src"),e.location.href)
 if(n.searchParams.get("siteTree")==="off")return
-var r=decodeURIComponent(n.pathname.split("/")[2]||"")
+var r=decodeURIComponent(n.pathname.split("/")[3]||"")
 var a=r.indexOf("world:")===0,i=r.indexOf("@")
 var o=(a?r.slice(6,i<0?r.length:i):r).replace(/-/g,"").toLowerCase()
 var s=a&&i>=0?r.slice(i+1):"live"
@@ -1393,7 +1393,7 @@ t.setAttribute("src",n.href)}if(on()[an()])return
 var f=M("local","spawn.site-tree.v1"),d=[],u
 if(!f||typeof f!=="object")f={}
 if(f[o])return
-var c=n.searchParams.get("siteTree")==="on",w=!c&&Gt()
+var c=n.searchParams.get("siteTree")==="on",w=!c
 if(!c&&!w){try{window.performance.mark("spawn.siteTree.ask")}catch(O){}return}if(w){n.searchParams.set("siteTree","on")
 if(!n.searchParams.get("bootPack"))n.searchParams.set("bootPack","narrow")
 if(n.searchParams.get("bootPack")==="narrow"){l[o]=Date.now()
@@ -1451,14 +1451,14 @@ return E}function L(t){var n=typeof t==="string"&&!!t,r={signal:v.signal,cache:"
 if(n)r.headers={authorization:"Bearer "+t}
 k(n?"granted":"asked")
 A.wire=true
-var a="/site-tree/boot/"+o+"/"+s+(A.word?"/with/"+A.word:"")
+var a="/signal/site-tree/boot/"+o+"/"+s+(A.word?"/with/"+A.word:"")
 A.url=new URL(a,e.location.href).href
 window.fetch(a,r).then(function(e){if(!n&&e.status===404)return e.json().then(function(e){if(e&&e.error==="world_gone")return I()
 throw new Error("door")})
-var t=e.ok?e.headers.get("x-spawn-manifest"):null
+var t=e.ok?(e.headers.get("x-spawn-manifest")||"19c1489dab3e655521417de663b683930e2cc29a10f23d859a384885d25cc8b7"):null
 if(typeof t!=="string"||!/^[0-9a-f]{64}$/.test(t))throw new Error("door")
 A.manifest=t
-if(A.word)A.rows=window.fetch("/site-tree/scans/"+t+"/"+A.word).then(function(e){return e.ok?e.text():null}).catch(function(){return null})
+if(A.word)A.rows=window.fetch("/signal/site-tree/scans/"+t+"/"+A.word).then(function(e){return e.ok?e.text():null}).catch(function(){return null})
 A.count=e.headers.get("x-spawn-values-count")
 A.type=e.headers.get("content-type")||"application/octet-stream"
 k("named")

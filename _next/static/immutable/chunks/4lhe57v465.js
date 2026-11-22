@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,448833,e=>{"use strict";var o=e.i(418926),t=e.i(514093);e.s(["handGameTheKeyboard",0,function(e,c=document){(0,t.x)(e)||(0,t.n)(c)||(0,o.J)()||(0,t.k)(c)||(0,t.X)(e,c)||(0,t.Z)(e,c)}])}]);

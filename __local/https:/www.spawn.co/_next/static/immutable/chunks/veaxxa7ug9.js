@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,612417,t=>{"use strict";var e=t.i(271645);let o=(0,e.createContext)(null);t.s(["f",0,o,"U",0,function(){let t=(0,e.useContext)(o);if(!t)throw Error("useNearRoom: this game's chat mounts inside RailChatCell, which provides the room");return t},"t",0,function(){return(0,e.useContext)(o)}])}]);

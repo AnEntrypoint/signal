@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,960415,t=>{"use strict";var e=t.i(892326),n=t.i(616352),i=t.i(507710),o=t.i(271645);t.s(["PlayStartReport",0,function(){let t=(0,e.useStudioStore)(t=>t.shownAppId),u=(0,i.useKernelLoadingAnswer)(i.bodyStandingOf);return(0,o.useEffect)(()=>{t&&u&&(0,n.S)(t,null)},[t,u]),null}])},705472,function(t){t.n(t.i(960415))}]);

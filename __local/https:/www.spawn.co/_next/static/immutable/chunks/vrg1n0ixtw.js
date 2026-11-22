@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,457855,e=>{"use strict";e.S([911762,"PersonFace,_,PersonName,j",0,166634,"personOfProfile,f"])}]);

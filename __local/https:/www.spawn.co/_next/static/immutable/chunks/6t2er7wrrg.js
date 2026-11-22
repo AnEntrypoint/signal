@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,413082,t=>{"use strict";t.S([449492,"animate,G",0,465939,"default,f"])}]);

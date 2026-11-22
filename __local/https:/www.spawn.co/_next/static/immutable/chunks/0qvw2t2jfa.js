@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,610115,e=>{"use strict";e.s(["f",0,function(e,o,r){return o?"You're the last member. Leaving ends the guild.":"leader"===e?"The member who joined first will lead.":"officer"===e?"You lose your officer rank.":r?null:"The link is off, so a member has to add you back."}])}]);

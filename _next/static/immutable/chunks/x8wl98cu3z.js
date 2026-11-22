@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,44489,e=>{"use strict";var t=e.i(843476),i=e.i(386470),s=e.i(898653);e.s(["f",0,function({className:e}){return(0,t.jsx)("div",{className:(0,s.c)("flex items-center justify-center",e),children:(0,t.jsx)(i.f,{className:"size-6 text-white/50",label:"loading"})})}])}]);

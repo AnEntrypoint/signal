@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,867902,t=>{"use strict";let e=(0,t.i(944296).f)(()=>({stands:!1}));t.s(["j",0,function(t){e.getState().stands!==t&&e.setState({stands:t})},"Q",0,e])}]);

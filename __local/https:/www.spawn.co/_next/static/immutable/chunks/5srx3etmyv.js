@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,66831,t=>{"use strict";let e=/^https?:\/\/[^/?#\s]+$/i;function n(t,n){let r;if("string"!=typeof t||!e.test(t))return null;let o=t.toLowerCase();try{r=new URL(n).origin}catch{r=null}return o===r?null:o}t.s(["P",0,e,"Y",0,function(){if("u"<typeof location)return null;let t=window.__spawnEarlyErrors;return n(t?.servedAt,location.href)},"c",0,n])}]);

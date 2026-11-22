@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,608283,t=>{"use strict";t.s(["N",0,"/desktop-links","Y",0,function(t){let s=t.search(/[?#]/),e=-1===s?t:t.slice(0,s),i=-1===s?"":t.slice(s),[,c="",...l]=(e.startsWith("/")?e:`/${e}`).split("/"),o=c.replace(/@/g,"%40");return`spawn://${o}${l.map(t=>`/${t}`).join("")}${i}`}])}]);

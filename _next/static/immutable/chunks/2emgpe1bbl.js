@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,287256,e=>{"use strict";e.s(["H",0,"__spawnHeldOpenLinks","g",0,"__spawnHeldSdkCourier"])}]);

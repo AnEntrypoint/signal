@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,913717,e=>{"use strict";e.s(["f",0,function(e,n){let t=null,i=()=>{null!==t||document.hidden||(t=setInterval(e,n))},l=()=>{null!==t&&(clearInterval(t),t=null)},u=()=>document.hidden?l():i();return document.addEventListener("visibilitychange",u),i(),()=>{l(),document.removeEventListener("visibilitychange",u)}}])}]);

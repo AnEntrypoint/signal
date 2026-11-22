@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,899757,t=>{"use strict";let e="data-kiln-build";function n(){let t=document.documentElement.getAttribute(e);return t?.trim()||null}t.s(["V",0,n,"f",0,function(){return{[e]:n()??""}}])}]);

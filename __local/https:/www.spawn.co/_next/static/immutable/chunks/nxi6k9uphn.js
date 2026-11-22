@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,759851,o=>{"use strict";o.s(["f",0,function(o){return`/mods/${encodeURIComponent(o)}`}],759851)}]);

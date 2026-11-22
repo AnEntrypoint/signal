@@ -1,9 +1,0 @@
-import{C as $c0K}from"./52e971dc2a986655.mjs";var $c0C,$c0T=[function(){return[()=>"(function(j,q,B,D,F,G,k,A){if(!(B<=G&&D<=k&&F<=A))return;for(let H=0;H<8;H++){let Q=H&1?G:B,T=H&2?k:D,W=H&4?A:F,J=q[0]*Q+q[4]*T+q[8]*W+q[12],L=q[1]*Q+q[5]*T+q[9]*W+q[13],N=q[2]*Q+q[6]*T+q[10]*W+q[14];if(J<j.minX)j.minX=J;if(J>j.maxX)j.maxX=J;if(L<j.minY)j.minY=L;if(L>j.maxY)j.maxY=L;if(N<j.minZ)j.minZ=N;if(N>j.maxZ)j.maxZ=N}})",()=>"(function(j,q,B){let D=j.scene.peekStore(P);if(D===null||!D.ears.has(j)||j.watching.has(q)===B)return;let F=(D.watched.get(q)??0)+(B?1:-1);if(F>0)D.watched.set(q,F);else D.watched.delete(q);if(B)j.watching.add(q);else j.watching.delete(q),j.heard.delete(q)})",()=>"(function(j){let q=j.scene.peekStore(P);if(q?.ears.delete(j)!==!0)return;for(let B of j.watching){let D=(q.watched.get(B)??0)-1;if(D>0)q.watched.set(B,D);else q.watched.delete(B)}j.watching.clear(),j.heard.clear()})"]}],$c0XU=[0];var $c0S,$c0D=()=>eval($c0S);function $c0E(s){$c0S=s;return $c0D()}$c0C=$c0K($c0T,$c0XU,$c0E,3,2670026196779008);
-;const{zfZ:$}=$Lr;
-function U(a,b,c,d,e,f,g,h){return (U=$c0C(0)).call(this,a,b,c,d,e,f,g,h)}var f=new $("grounds"),p=function(){let j=new Map;return{named:j,answer:function(B){let D=!1;for(let F of j.values()){let G=F(B);if(G==="pending")D=!0;else if(G!==null)return G}return D?"pending":null}}};function g(j,q,B){j.store(f,p).named.set(q,B)}function z(j){return j.peekStore(f)?.answer??null}var P=new $("ground-moves"),C=()=>({watched:new Map,ears:new Set});function V(j,q){let B=j.peekStore(P);if(B?.watched.has(q)!==!0)return;a(B,q);}function M(j){let q=j.store(P,C),B={scene:j,heard:new Set,watching:new Set};return q.ears.add(B),B}function v(a,b,c){return (v=$c0C(1)).call(this,a,b,c)}function O(a){return (O=$c0C(2)).call(this,a)}
-;
-
-function a(B,q){for(let D of B.ears)if(D.watching.has(q))D.heard.add(q)
-}
-
-;import{R as $Lr}from"./52e971dc2a986655.mjs";export{M as kXQ,O as Rou,U as k2n,V as Ew7,g as S$b,v as hqb,z as lDp};

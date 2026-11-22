@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,633474,t=>{"use strict";var e=t.i(771246),i=t.i(878247),n=t.i(33635);let l={kind:"party-ask"},o={kind:"invite"};t.s(["f",0,function(){let t=(0,n.usePartyAsks)(),r=(0,i.G2)(),s=(0,e.o)();for(let e of t.values())if(e.invite)return l;return s.length>0?o:null===r||r.shown||r.world?.shut===!0?null:{kind:"party-move",key:r.key}}])}]);

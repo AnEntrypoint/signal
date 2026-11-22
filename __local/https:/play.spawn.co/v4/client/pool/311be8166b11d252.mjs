@@ -1,5 +1,0 @@
-;
-var G=(j)=>Object.entries(j).map(([v,C])=>[v,Object.freeze({...C})]);var H={"builtin/primitives":"tome","builtin/voxels":"tome","builtin/block-shape":"tome","builtin/authoring":"tome","builtin/room-routing":"tome","builtin/noise":"terrain","builtin/path":"terrain","builtin/terrain":"terrain","builtin/physics":"motion","builtin/tween":"motion","builtin/anim":"motion","builtin/spline":"motion","builtin/nav":"motion","builtin/env":"motion","builtin/vibe":"vibe","builtin/fx":"fx","builtin/combat":"tome","builtin/claims":"tome","builtin/barks":"tome","builtin/tsl":"shade","builtin/three":"shade","builtin/lighting":"lighting","builtin/water":"water","builtin/postfx":"postfx","builtin/audio":"audio"},K=Object.keys(H),P=(j)=>H[j]??null;function Q(j){return[...G(j.records),...j.entries]}var V=/["'](builtin\/[\w-]+)["']/g;function W(j){let v=new Set;for(let C of j)for(let J of C.matchAll(V))v.add(J[1]);return[...v]};
-Object.assign($Ss,{$LA:K,D3T:Q,kod:W,sJ_:G,vCv:P});
-
-;import{S as $Ss}from"./8470e5fcd747a5a5.mjs";export{G as sJ_,K as $LA,P as vCv,Q as D3T,W as kod};

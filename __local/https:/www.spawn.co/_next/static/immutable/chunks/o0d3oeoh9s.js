@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,340640,e=>{"use strict";e.s(["f",0,"rounded-panel border border-surface-rule bg-surface text-white"])}]);

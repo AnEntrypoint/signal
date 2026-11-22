@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,994418,e=>{"use strict";let r={all:["all-notification-queries"],forUser:e=>[...r.all,e],unreadCount:e=>[...r.forUser(e),"unread-count"],unreadMessages:e=>[...r.forUser(e),"unread-messages"],forUserTab:(e,s)=>[...r.forUser(e),"tab",s],rowCaches:e=>[r.forUser(e),r.forUserTab(e,"yours"),r.forUserTab(e,"people"),r.forUserTab(e,"invites")]};e.s(["f",0,r])}]);

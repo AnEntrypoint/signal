@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,833,t=>{"use strict";t.s(["q",0,"fixed inset-0 z-50 overflow-y-auto bg-surface text-center [container-type:size]","T",0,"relative z-10 mx-auto flex w-fit max-w-sm flex-col items-center gap-6 [translate:0_max(0px,calc((100cqh_-_100%)_/_2))] supports-[translate:round(nearest,1px,1px)]:[translate:0_max(0px,round(nearest,calc((100cqh_-_100%)_/_2),1px))]","R",0,"data-platform-notice"])}]);

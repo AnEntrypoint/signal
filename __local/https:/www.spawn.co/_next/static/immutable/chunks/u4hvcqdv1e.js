@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,63547,e=>{"use strict";let t="#070708";e.s(["G",0,t,"q",0,"#f4ede1","O",0,t])}]);

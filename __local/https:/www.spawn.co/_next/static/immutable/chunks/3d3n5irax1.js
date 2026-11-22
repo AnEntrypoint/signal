@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,443277,t=>{"use strict";t.s(["f",0,function(t){if("string"!=typeof t||t.length<2)return null;let e=RegExp("^#([A-Za-z0-9][A-Za-z0-9_.~/-]*)$").exec(t);return e?.[1]??null}])}]);

@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,870012,i=>{"use strict";i.i(169806),i.i(107405),i.i(31907);var t=i.i(133579);i.s(["f",0,function(i){return i&&(0,t.H)(i.engine_version)&&i.description?.trim()||null}])}]);

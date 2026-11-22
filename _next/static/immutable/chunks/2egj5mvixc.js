@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,285884,e=>{"use strict";var t=e.i(271645),s=e.i(892326);e.s(["f",0,function(e,i=!0){let u=(0,t.useRef)(e);(0,t.useEffect)(()=>{u.current=e}),(0,t.useEffect)(()=>{if(!i)return;let e=s.useStudioStore.getState().specRevision;return s.useStudioStore.subscribe(t=>{t.specRevision!==e&&(e=t.specRevision,u.current(e))})},[i])}])}]);

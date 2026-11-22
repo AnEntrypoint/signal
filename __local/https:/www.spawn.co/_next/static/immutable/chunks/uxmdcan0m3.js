@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,124335,o=>{"use strict";o.s(["railGameMomentDoor",0,()=>o.A(75477)])}]);

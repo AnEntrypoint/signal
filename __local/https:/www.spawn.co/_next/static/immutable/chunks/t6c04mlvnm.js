@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,235449,t=>{"use strict";function e(t){return Math.max(5242880,Math.ceil(t/1e4))}t.s(["Z",0,1e4,"r",0,5242880,"s",0,e,"i",0,function(t){return Math.max(1,Math.ceil(t/e(t)))},"G",0,function(t,n){let i=e(n),a=(t-1)*i;return t<1||a>=Math.max(n,1)?0:Math.min(i,n-a)}])}]);

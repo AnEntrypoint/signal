@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,371827,o=>{"use strict";var t=o.i(325738),e=o.i(67635);let n={},r=!1;o.s(["f",0,function(o){if(r||void 0!==n[o]||"u"<typeof performance||(n[o]=Math.round(performance.now()),"state"!==o))return;r=!0;let i=(0,e.shownAtPageMs)(),u={...n};null!==i&&(u.shown=Math.round(i)),(0,t.X)("studio_chat_road",void 0,void 0,{fields:u})}])}]);

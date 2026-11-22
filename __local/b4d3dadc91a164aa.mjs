@@ -1,9 +1,0 @@
-import{C as $c0K}from"./52e971dc2a986655.mjs";var $c0C,$c0T=[function(){return[()=>'(function(j,w){let q=M(j,{label:"terrain decor bend field",size:Z,usage:128|8|4},K),k=W(j.limits.maxUniformBufferBindingSize),x=M(j,{label:"terrain decor bend press",size:Q(k),usage:64|8},K),V=q.resource,X=x.resource,z=new ArrayBuffer(Q(k));return{device:j,buffer:V,uniform:X,fieldHandle:q,uniformHandle:x,slots:k,bindGroup:G(j,w,V,X),staging:z,stagingF32:new Float32Array(z),stagingHeaderI32:new Int32Array(z,0,4),stagingCountU32:new Uint32Array(z,20,1),originX:NaN,originZ:NaN,activeUntilS:-1/0,dispatch:!1,pressers:0,overflow:0,settledOriginX:NaN,settledOriginZ:NaN,settledCount:-1,settledPress:new Float32Array(k*A),movedAtS:-1/0,pass:null,materialRead:!1}})']}],$c0XU=[0];var $c0S,$c0D=()=>eval($c0S);function $c0E(s){$c0S=s;return $c0D()}$c0C=$c0K($c0T,$c0XU,$c0E,1,4062917040275456);(globalThis.__spawnColdCross||(globalThis.__spawnColdCross=[])).push([$c0C.w,[0]]);
-;const{BJB:A,BuF:Q,Mip:Y,Tgn:$,U$a:J,Vfu:Z,ZZw:M,cBV:K,gFg:C,qOh:W}=$Lr;
-function P(a,b){return (P=$c0C(0)).call(this,a,b)}function G(j,w,q,k){return j.createBindGroup({label:"terrain decor bend",layout:w.getBindGroupLayout(Y,"terrain decor bend"),entries:[J(0,k),J(1,q)]})}function T(j,w){let q=j.fieldHandle.resource,k=j.uniformHandle.resource;if(j.buffer===q&&j.uniform===k)return;a(j,q,k,w);}function y(j,w,q){let k=j.bend;if(k?.device===w)return T(k,q),k;if(k)H(k);let x=P(w,q);return j.bend=x,x}function F(j,w,q){let k=C(j);if(k===null)return null;let x=y(k.decorations,w,q);return x.materialRead=!0,x.buffer}function g(j,w,q){return(k)=>k===$&&j!==null?F(j,w,q):null}function H(j){j.fieldHandle.release(),j.uniformHandle.release()}
-;
-
-function a(j,q,k,w){j.buffer=q,j.uniform=k,j.bindGroup=G(j.device,w,q,k),j.pass=null,j.settledCount=-1
-}
-
-;import{R as $Lr}from"./52e971dc2a986655.mjs";export{F as h0s,H as ECM,T as Wla,g as eOt0,y as _$j};

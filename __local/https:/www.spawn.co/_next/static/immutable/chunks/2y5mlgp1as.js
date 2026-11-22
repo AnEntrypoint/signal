@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,843185,t=>{"use strict";t.s(["r",0,"You can't chat with them or play their games.","G",0,"This account was suspended"])}]);

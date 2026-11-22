@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,385042,t=>{"use strict";var e=t.i(53835),i=t.i(271645),s=t.i(364811);t.s(["CreateRailFacts",0,function({ghost:t,appId:u,onFacts:l}){let c=(0,s.useFirstVisitCompany)(t,u),n=null!==(0,e.JI)();return(0,i.useEffect)(()=>{l({company:c,onVoice:n})},[c,n,l]),null}])}]);

@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,883883,t=>{"use strict";t.i(247167);var e=t.i(967122);function r(t){let e=t.trim().replace(/\/+$/,"");return/^wss?:\/\//.test(e)?e:/^https?:\/\//.test(e)?e.replace(/^http/,"ws"):`wss://${e}`}t.s(["f",0,function(t){if(t&&t.trim().length>0)return(0,e.q)(r(t),(0,e.m)());let s="studio-chat-prod.bigspawn.net".trim();return s?(0,e.q)(r(s),(0,e.m)()):null}])}]);

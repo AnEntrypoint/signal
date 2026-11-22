@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,664635,e=>{"use strict";let s={all:["home-queries"],userWorlds:e=>[...s.all,"user-worlds",e],userProjects:e=>[...s.all,"user-projects",e],userProjectsInfiniteAll:e=>[...s.userProjects(e),"infinite"],userProjectsInfinite:(e,r="",t=!1)=>[...s.userProjectsInfiniteAll(e),r,t]};e.s(["f",0,s])}]);

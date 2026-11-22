@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,367786,t=>{"use strict";var e=t.i(361712),o=t.i(892326);t.s(["openNearPlate",0,function(t,c,u={}){let i=u.documentObject??document,n=u.windowObject??window;(0,e.f)("chat",()=>o.useStudioStore.getState().askRoomPopover(c),u),null!==t&&n.setTimeout(()=>{i.querySelector(`[data-testid="${t}"]`)?.focus()},350)}])}]);

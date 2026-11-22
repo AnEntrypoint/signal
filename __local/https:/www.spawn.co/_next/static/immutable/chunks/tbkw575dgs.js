@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,943666,e=>{"use strict";var i=e.i(843476),n=e.i(661405);e.s(["RailCellTip",0,function({tip:e,open:t}){return(0,i.jsx)(n.U,{tip:e,side:"left",align:"center",open:t,children:(0,i.jsx)("span",{"aria-hidden":!0,className:"pointer-events-none absolute inset-0"})})}])}]);

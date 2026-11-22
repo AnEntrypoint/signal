@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,907843,l=>{"use strict";l.s(["f",0,function(l){if("object"!=typeof l||null===l||!0!==l.ok||"number"!=typeof l.luma||!Number.isFinite(l.luma))return null;let t="number"==typeof l.lit&&Number.isFinite(l.lit)&&l.lit>=0&&l.lit<=1?l.lit:null;return(null===t?l.luma<4:t<.005)?{luma:l.luma,lit:t}:null}])}]);

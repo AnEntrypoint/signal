@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,438248,e=>{"use strict";var t=e.i(843476),i=e.i(271645),l=e.i(466006),o=e.i(556360);let n=new Map;function r(e,t="filled"){let i=`${e}\0${t}`,c=n.get(i);return void 0===c&&(c=(0,l.c)((0,o.a)(e,t)),n.set(i,c)),c}let c=(0,i.memo)(function({glyph:e,variant:i="filled",...o}){return(0,t.jsx)(l.Y,{d:r(e,i),grid:18,...o})});e.s(["Y",0,c,"h",0,r])}]);

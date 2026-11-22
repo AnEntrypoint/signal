@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,405318,l=>{"use strict";var t=l.i(843476),e=l.i(752215),i=l.i(300226);l.s(["f",0,function({iso:l,className:n}){let s=(0,i.X)(),c=l?(0,e.f)(l,s):null;return c?(0,t.jsx)("span",{className:n,children:c}):null}])}]);

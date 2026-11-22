@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,654782,t=>{t.q("/signal/_next/static/immutable/media/rail-trophy-moment.worker.3qdnoq8lz4lc6.ts")}]);

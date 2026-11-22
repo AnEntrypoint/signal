@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,432890,e=>{"use strict";var c=e.i(95187);let r=(0,c.createServerReference)("70a033053513e778dcdae589c0b77845e1af57ff13",c.callServer,void 0,c.findSourceMapURL,"getSavedGames");e.s(["f",0,r])}]);

@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,614384,t=>{"use strict";let n=null;t.s(["x",0,function(t){return n=t,()=>{n===t&&(n=null)}},"c",0,function(t){return null!==n&&(n(t),!0)}])}]);

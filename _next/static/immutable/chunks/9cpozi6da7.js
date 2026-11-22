@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,562826,t=>{"use strict";t.S([492078,"MobileTabBar,S,YOU_TAB_HOLD,i",0,322306,"MOBILE_TAB_BAR_MAIN_OFFSET_CLASS,t"])}]);

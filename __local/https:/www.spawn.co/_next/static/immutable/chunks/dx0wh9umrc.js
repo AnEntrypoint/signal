@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,298089,842794,t=>{"use strict";t.s(["H",0,{"data-bar-room":""},"Q",0,"[data-bar-room]","I",0,{"data-bar-title":""},"b",0,"[data-bar-title]"],298089);var e=t.i(271645);let a=(0,e.createContext)(!0);function r(){return(0,e.useContext)(a)}t.s(["j",0,a,"t",0,function({onLeave:t}){let a=r();return(0,e.useEffect)(()=>{a||t()},[a,t]),null},"h",0,r],842794)}]);

@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,215240,t=>{"use strict";var e=t.i(892326);let n=null;t.s(["y",0,function(t){n=t},"Z",0,function(t){n=t,e.useStudioStore.getState().setOverlayOpen(!0)},"r",0,function(){let t=n;return n=null,t}])}]);

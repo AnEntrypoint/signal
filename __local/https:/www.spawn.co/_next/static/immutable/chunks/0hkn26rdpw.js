@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,755898,e=>{"use strict";e.s(["f",0,function(){var e,t;let o,i=window.performance.memory;return e="object"==typeof i&&null!==i?Reflect.get(i,"jsHeapSizeLimit"):void 0,t=window.navigator.deviceMemory,!(o=e=>"number"==typeof e&&Number.isFinite(e)&&e>0)(e)&&!o(t)}])}]);

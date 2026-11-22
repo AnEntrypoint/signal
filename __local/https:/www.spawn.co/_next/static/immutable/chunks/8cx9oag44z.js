@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(()=>{"use strict";(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,201872,t=>{t.s(["f",0,"kind.is.null,kind.neq.geometry","y",0,"x-spawn-world"])},945022,t=>{t.s(["f",0,function(t){try{return new URL(t).pathname.split("/").includes("private-values")}catch{return!1}}])}])})();

@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,974568,t=>{"use strict";var i=t.i(290571);t.s(["loadLegacyVideoPlugins",0,function(e){return(0,i.W)(this,void 0,void 0,function(){return(0,i.t)(this,function(i){switch(i.label){case 0:return[4,t.A(594927)];case 1:return e._plugins=i.sent(),[2]}})})}])},594927,[["static/immutable/chunks/6eyux279ob.js"],280954]]);

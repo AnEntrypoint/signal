@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,472606,t=>{"use strict";let e=new Set;t.s(["f",0,function(t){e.has(t)||(e.add(t),console.info(`[instruments] ?${t} is dropped on this site: the page passes instruments to the game on dev and staging only`))}])}]);

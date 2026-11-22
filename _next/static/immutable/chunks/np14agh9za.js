@@ -1,1 +1,0 @@
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,818467,(e=>{"use strict";let t=null;e.s(["E",0,(function(){let e=(()=>void 0),o=new Promise((t=>{e=t}));return t=o,(()=>{t===o&&(t=null),e()})}),"g",0,function(){return t??Promise.resolve()}])})]);

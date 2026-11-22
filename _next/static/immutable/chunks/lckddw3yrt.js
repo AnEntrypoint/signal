@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,833911,o=>{"use strict";o.s(["T",0,["www.spawn.co","next.spawn.co"],"S",0,"__spawnSiteRoad","c",0,"siteRoad"])}]);

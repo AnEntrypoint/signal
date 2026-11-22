@@ -1,1 +1,0 @@
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,323085,(l=>{"use strict";let o=(0,l.i(944296).f)((l=>({game:null,isLiked:!1,play:null,fromDoor:!1,open:(o,e,u,n=!1)=>l({game:o,isLiked:e,play:u??null,fromDoor:n}),close:()=>l({game:null,play:null,fromDoor:!1})})));l.s(["f",0,o])})]);

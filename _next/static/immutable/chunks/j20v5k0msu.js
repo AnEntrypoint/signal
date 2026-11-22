@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,957272,e=>{"use strict";var c=e.i(95187);let r=(0,c.createServerReference)("4037c5ca0c2f68bb2e74c089baa621ba624bfd570e",c.callServer,void 0,c.findSourceMapURL,"getPostedGameByAppId");e.s(["f",0,r])}]);

@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,524504,t=>{"use strict";var e=t.i(212001),o=t.i(417695);let r=new Set(["t.co","x.com","www.x.com","mobile.x.com","twitter.com","mobile.twitter.com"]),i="spawn:arrived-from-x";t.s(["f",0,function(t=(0,e.f)()){if("1"===(0,o.r)("session",i))return!0;let s="";try{s=t?new URL(t).hostname.toLowerCase():""}catch{s=""}return!!r.has(s)&&((0,o.B)("session",i,"1"),!0)}])}]);

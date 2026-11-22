@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,266560,t=>{"use strict";t.s(["f",0,function(t,o,i){return t?`top up ${i} and buy it`:`${o.toLocaleString()} spoins \xb7 ${i}`}])}]);

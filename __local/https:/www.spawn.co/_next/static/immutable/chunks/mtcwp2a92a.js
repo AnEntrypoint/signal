@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,165577,t=>{"use strict";t.i(283573);var i=t.i(358114),o=t.i(135679);t.s(["f",0,function(){let{profile:t}=(0,o.U)();return t?(0,i.o)(t):void 0}])}]);

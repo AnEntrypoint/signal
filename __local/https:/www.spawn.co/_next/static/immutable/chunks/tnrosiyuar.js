@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,784704,e=>{"use strict";e.i(761096);let t="-loop";t.slice(1);let l="magic-assets";RegExp(`/${l}/(?:[^/]+/)?v5/values/[0-9a-f]{32,}(?:\\.[a-z0-9]+)*$`);let s=["glb","gltf","vrm"];Object.fromEntries(s.map(e=>[e,"model"])),e.s(["a",0,1e4,"X",0,"clip-","R",0,t,"S",0,l,"i",0,"v5","$",0,s])}]);

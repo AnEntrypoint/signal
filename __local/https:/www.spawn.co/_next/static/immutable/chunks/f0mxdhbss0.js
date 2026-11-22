@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,770865,e=>{"use strict";var n=e.i(417695);let s="spawn:make-press";e.s(["b",0,"/create","a",0,function(e){Number.isFinite(e)&&(0,n.B)("session",s,String(Math.round(e)))},"W",0,function(){let e=(0,n.r)("session",s);if(null===e)return null;(0,n.p)("session",s);let t=Number(e);return Number.isFinite(t)?t:null}])}]);

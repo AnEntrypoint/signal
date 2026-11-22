@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,595980,e=>{"use strict";var t=e.i(843476),i=e.i(271645);let n=(0,e.i(944296).f)(()=>({viewer:null,open:!1})),r=0;e.s(["s",0,function(){let e=n(e=>e.viewer),r=n(e=>e.open);return((0,i.useEffect)(()=>()=>n.setState({viewer:null,open:!1}),[]),e)?(0,t.jsx)(i.Fragment,{children:e.draw(r,t=>n.setState(i=>i.viewer?.id===e.id?{open:t}:i))},e.id):null},"t",0,function(e){r+=1,n.setState({viewer:{id:r,draw:e},open:!0})}])}]);

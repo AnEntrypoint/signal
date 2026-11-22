@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,846685,t=>{"use strict";let e=t=>18===t;t.s(["B",0,e,"Z",0,(t,o)=>e(o)?t?`${t} \xb7 18+`:"18+":t])}]);

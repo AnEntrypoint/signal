@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,791116,o=>{"use strict";o.s(["friendsDoor",0,()=>o.A(154721),"nearDoor",0,()=>o.A(643031),"openProfileDoor",0,()=>o.A(34345)])}]);

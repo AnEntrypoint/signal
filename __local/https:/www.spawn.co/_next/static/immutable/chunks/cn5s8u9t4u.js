@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,632500,e=>{"use strict";var n=e.i(843476),t=e.i(426520);e.s(["DenTurnScreen",0,function(){let e=(0,t.j)();return null===e?null:(0,n.jsx)("div",{className:"contents","data-den-turn":e.road,dangerouslySetInnerHTML:{__html:e.screen}})}])}]);

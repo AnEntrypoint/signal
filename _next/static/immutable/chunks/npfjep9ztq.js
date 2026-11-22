@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,694704,e=>{"use strict";let t=["#e0b070","#6fd0d8","#e08ab8","#7fd39a","#e08a8a","#b8a8e0"];e.s(["f",0,function(e){let o=0;for(let t of e)o=31*o+t.charCodeAt(0)>>>0;return t[o%t.length]}])}]);

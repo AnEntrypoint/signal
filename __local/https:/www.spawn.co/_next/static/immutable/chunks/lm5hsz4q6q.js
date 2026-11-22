@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,934290,e=>{"use strict";var t=e.i(271645),u=e.i(692706),n=e.i(976604);function i(e,u){let n=(0,t.useRef)(e.toggle);n.current=e.toggle;let i=(0,t.useCallback)(()=>n.current(),[]),{liked:l,count:c,ready:r}=e;(0,t.useEffect)(()=>{u({liked:l,count:c,ready:r,toggle:i})},[l,c,r,i,u])}e.s(["DenLikeLive",0,function({appId:e,onLike:t}){return i((0,u.f)(e),t),null},"GameLikeLive",0,function({appId:e,onLike:t}){return i((0,n.f)(e),t),null}])}]);

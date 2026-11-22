@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,672125,e=>{"use strict";e.s(["X",0,["read","none"],"q",0,e=>{let r;return null!=e&&(!0===e.can_write||("string"!=typeof(r=e.role)||"viewer"!==r.trim())&&(!0===e.can_read||null!==("string"==typeof e.role&&e.role.trim()?e.role.trim():null)))},"A",0,e=>e.isCreator||e.crew||(e.visitorSeat??"read")==="read"])}]);

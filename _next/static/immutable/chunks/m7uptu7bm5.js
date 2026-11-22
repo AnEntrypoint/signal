@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,851750,t=>{"use strict";t.i(744639);var e=t.i(321201);let s="/auth/google";t.s(["f",0,function({after:t,intent:r,ask:o,platform:n,merge:i,world:l}){let a=new URLSearchParams;t&&a.set("after",t),r&&a.set("intent",r),o&&a.set("ask",o),n&&a.set(e.f,n),i&&a.set("merge","1"),l&&a.set("world",l);let c=a.toString();return c.length>0?`${s}?${c}`:s}])}]);

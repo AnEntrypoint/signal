@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,820222,e=>{"use strict";e.i(15038);var n=e.i(417695);let t="spawn.device-record.",r=`${t}spawn.gpuMeasure.v3`,l="spawn.drew-under";function o(){return"u"<typeof navigator?"":navigator.userAgent}e.s(["Q",0,"__spawnTellFramesDeviceRecords","N",0,t,"f",0,function(e=o()){let t=(0,n.r)("local",r);return null!==t&&0!==t.length&&0!==e.length&&(0,n.r)("local",l)===e},"R",0,function(e=o()){e.length>0&&(0,n.B)("local",l,e)}],820222)}]);

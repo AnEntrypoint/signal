@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,169806,n=>{"use strict";var e=n.i(711621),s=n.i(80697);n.i(888510),n.s(["V",0,function(n){return(0,s.m)({handle:n?.username??null,agent:n?.actor_class==="agent",guest:n?.is_anonymous===!0}).words},"N",0,function(n){return n?.is_anonymous||!n?.username||(0,e.f)(n.username)?null:n.username}])}]);

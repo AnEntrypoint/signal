@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,598148,t=>{"use strict";let e=/^actor:pa_[0-9a-f]{32}$/;t.s(["f",0,t=>"string"==typeof t&&e.test(t)])}]);

@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,295304,n=>{"use strict";let t=null,e=null,u=[],c=/\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}/g;n.s(["V",0,function(){return e?.appId??null},"M",0,function(){return e},"B",0,function(n){e=n,t?.(n)},"$",0,function(n){u.push({ts:Date.now(),data:n.replace(c,"[bearer scrubbed]").slice(0,2e3)}),u.length>10&&u.shift()},"H",0,function(){return u},"c",0,function(n){t=n}])}]);

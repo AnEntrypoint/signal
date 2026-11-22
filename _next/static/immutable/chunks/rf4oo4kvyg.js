@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,833548,e=>{"use strict";e.s(["purchaseSheetChunk",0,()=>e.A(98931),"spoinsCheckoutReturnChunk",0,()=>e.A(396691),"upgradeGuestDialogChunk",0,()=>e.A(364529)])}]);

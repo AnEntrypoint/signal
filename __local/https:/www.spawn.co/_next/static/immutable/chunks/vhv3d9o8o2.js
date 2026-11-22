@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,910325,t=>{"use strict";t.s(["f",0,function(){let t=window.__spawnInviteArrival;return t&&"object"==typeof t?t:null}])}]);

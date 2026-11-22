@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,544027,o=>{"use strict";o.s(["debugDumpGestureDoor",0,()=>o.A(283327),"fullscreenKeyboardLockDoor",0,()=>o.A(80894),"openLinkConfirmDoor",0,()=>o.A(626143),"otherPlayNamesDoor",0,()=>o.A(963080),"perfRollupRelayDoor",0,()=>o.A(523741),"rejoinWatchDoor",0,()=>o.A(703963),"specSaveRelayDoor",0,()=>o.A(226085),"terrainPersistRelayDoor",0,()=>o.A(986737)])}]);

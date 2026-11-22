@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,66705,e=>{"use strict";var c=e.i(95187);let r=(0,c.createServerReference)("409d1061992f21aa4ef77e9c47f880fbe63db7c47a",c.callServer,void 0,c.findSourceMapURL,"declineInvite");e.s(["f",0,r])}]);

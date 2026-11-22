@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,768595,e=>{"use strict";var t=e.i(843476),i=e.i(898653);e.s(["f",0,function({className:e,...s}){return(0,t.jsx)("div",{"data-skeleton":"",className:(0,i.c)("animate-skeleton-hold rounded-hairline bg-surface-raised",e),...s})}])}]);

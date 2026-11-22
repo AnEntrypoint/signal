@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,714629,e=>{"use strict";e.i(247167);e.s(["f",0,function(e){var t,n;return n=({page:t=e||"New Adventure",share:`${t} on Spawn`}).page,"%s | Spawn".replace("%s",n)}])}]);

@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,930773,t=>{"use strict";var n=t.i(81739),e=t.i(35052),c=t.i(221813),u=t.i(800617);let i="/create?new=true",r=null;function o(){return(r??=(0,n._)(()=>t.A(770716))).catch(()=>{r=null}),r}t.s(["z",0,i,"l",0,o,"f",0,function(t){(0,e.Y)(),o().then(n=>n.newGameByDocument(t),()=>(0,c.O)(i,"boundary-click"))},"r",0,function(){return(0,u.f)(o)}])}]);

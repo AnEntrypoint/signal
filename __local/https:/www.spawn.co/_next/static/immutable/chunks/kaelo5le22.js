@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,891449,s=>{"use strict";let t="/_vercel/speed-insights/script.js",e="/_vercel/insights/script.js",i=[t,e];s.s(["E",0,e,"m",0,i,"t",0,t])}]);

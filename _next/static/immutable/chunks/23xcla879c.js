@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,828294,e=>{"use strict";function t(e){let t=e.trim().match(/^(\d+)\.(\d+)\.(\d+)$/);if(!t)return null;let i=Number(t[1]),r=Number(t[2]),u=Number(t[3]);return Number.isFinite(i)&&Number.isFinite(r)&&Number.isFinite(u)?[i,r,u]:null}e.s(["n",0,function(e,i){let r=t(e),u=t(i);return r||u?r?u?r[0]!==u[0]?r[0]-u[0]:r[1]!==u[1]?r[1]-u[1]:r[2]-u[2]:1:-1:e.localeCompare(i)},"R",0,t])}]);

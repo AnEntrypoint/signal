@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,63027,e=>{"use strict";e.s(["f",0,"Come on in","x",0,"One click to sign up.\nMaking a game is free"])}]);

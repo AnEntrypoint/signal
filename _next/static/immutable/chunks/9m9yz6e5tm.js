@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,935730,e=>{e.q("/signal/_next/static/immutable/media/generate-thumbnail.worker.3_irjp-hw7eje.ts")}]);

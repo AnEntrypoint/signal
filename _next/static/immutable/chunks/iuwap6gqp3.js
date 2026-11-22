@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,18774,e=>{"use strict";e.s(["f",0,function(e){let t=new Set;for(let d of e.display)t.add(d.id);for(let d of e.queue)t.add(d.id),d.clientMessageId&&t.add(d.clientMessageId);for(let d of e.recentHistory??[])d.messageId&&t.add(d.messageId);return t}])}]);

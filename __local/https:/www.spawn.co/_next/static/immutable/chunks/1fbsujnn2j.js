@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,361370,e=>{"use strict";e.S([338322,"FloatView,S,PixelCarve3D,T,ShelfTrophy,A,TrophyViewer,q,denTrophyById,V",0,78615,"DEN_TROPHY_CATALOG,s"])},835320,function(e){e.n(e.i(361370))}]);

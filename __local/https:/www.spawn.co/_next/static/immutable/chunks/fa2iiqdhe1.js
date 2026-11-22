@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,823427,e=>{"use strict";var t=e.i(107405);e.s(["U",0,"chat with other players","X",0,function(e,r=!1,o=!1){return e<1?r?"just you here for now":"just you in the chat for now":r?o?t.$:"players and builders read this":"everyone here hears this"}])}]);

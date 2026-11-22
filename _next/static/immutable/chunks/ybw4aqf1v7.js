@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,181073,t=>{"use strict";async function n(t){try{let n=await fetch(`/api/resolve-variant?variantId=${encodeURIComponent(t)}`),e=await n.json();return e.ok&&e.result?.type==="found"?e.result:null}catch{return null}}async function e(t){return(await n(t))?.appId??null}t.s(["U",0,n,"I",0,e])}]);

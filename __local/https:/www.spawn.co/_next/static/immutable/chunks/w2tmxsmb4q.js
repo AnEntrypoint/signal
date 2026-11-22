@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,177795,t=>{"use strict";var e=t.i(183907),r=t.i(554826),i=t.i(438297),n=t.i(975652),u=t.i(271645);async function c(t){try{if(await (0,i.s)(null)===null)return!1}catch{return!1}return await t.invalidateQueries({queryKey:e.f.currentUser()}),!0}t.s(["J",0,c,"V",0,function(t){(0,u.useEffect)(()=>{if(!t)return;let e=(0,r.z)();return e.needed.then(()=>c((0,n.F)())).finally(e.stood),e.stood},[t])}])}]);

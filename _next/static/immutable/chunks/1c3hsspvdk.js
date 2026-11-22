@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,13103,e=>{"use strict";var o=e.i(244497),t=e.i(417695),n=e.i(785245);let s="spawn.wire-floor.reload",r={get:e=>(0,t.r)("session",e),set:(e,o)=>(0,t.B)("session",e,o)};e.s(["WIRE_FLOOR_RELOAD_MARK",0,s,"reloadIntoHead",0,function(){(0,n.f)(()=>(0,o.Q)("era"))},"takeWireFloorReload",0,function(e,o=(0,t.$)("session")?r:null){if(null===o)return!1;let n=e??"unknown";return o.get(s)!==n&&(o.set(s,n),o.get(s)===n)}])}]);

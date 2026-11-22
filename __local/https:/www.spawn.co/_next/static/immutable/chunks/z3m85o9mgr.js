@@ -1,2 +1,0 @@
-//# allFunctionsCalledOnLoad
-(globalThis.TURBOPACK||(globalThis.TURBOPACK=[])).push(["object"==typeof document?document.currentScript:void 0,788914,t=>{"use strict";var e=t.i(271645);t.s(["p",0,225,"f",0,function(t,o){let[u,i]=(0,e.useState)(t);return(0,e.useEffect)(()=>{let e=window.setTimeout(()=>i(t),o);return()=>window.clearTimeout(e)},[t,o]),""===t?"":u}])}]);
