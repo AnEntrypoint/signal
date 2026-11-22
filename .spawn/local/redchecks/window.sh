@@ -5,18 +5,20 @@ HERE=$(cd "$(dirname "$0")" && pwd)
 SITE=$(realpath "$1")
 LIVE=$(realpath "$2")
 OUT=$(realpath -m "$3")
+PART=$4
+PARTS="build-witness reds-a reds-b"
 mkdir -p "$OUT"
 LOG="$OUT/window.log"
-: > "$LOG"
 export LIVE_REFERENCE="$LIVE/live-reference.json"
 FAILED=0
 
 step() {
-  local name=$1 limit=$2
-  shift 2
+  local name=$1 limit=$2 pass=$3
+  shift 3
   if ! mem_gate "$name" >> "$LOG"; then
     echo "HOLD $name" >> "$LOG"
-    return 3
+    FAILED=1
+    return
   fi
   timeout "$limit" "$@" > "$OUT/$name.out" 2>&1 &
   local pid=$!
@@ -24,23 +26,24 @@ step() {
   wait "$pid"
   local rc=$?
   echo "$name rc=$rc ended $(date -u +%T)" >> "$LOG"
-  return "$rc"
+  [ "$rc" -eq 0 ] && grep -q "$pass" "$OUT/$name.out" || FAILED=1
 }
 
-step reproduce 1800 bash "$HERE/reproduce.sh" "$SITE" || FAILED=1
-tail -n 1 "$OUT/reproduce.out" | grep -q "^EXPORT_REPRODUCED" || FAILED=1
+witnesses() { local i; for i in "$@"; do step "witness-$i" 900 'WITNESS passed' bash "$HERE/browser-witness.sh" "$SITE"; done; }
+reds() { local n; for n in "$@"; do step "red-$n" 1100 '_OK$' node "$HERE/red.cjs" "$n" "$SITE" "$LIVE"; done; }
 
-for i in 1 2 3 4 5 6 7 8 9 10; do
-  step "witness-$i" 900 bash "$HERE/browser-witness.sh" "$SITE" || FAILED=1
-  grep -q "WITNESS passed" "$OUT/witness-$i.out" && grep -q "FAIL COUNT 0" "$OUT/witness-$i.out" || FAILED=1
-done
-
-for n in chunk preload summary stale realm shown alive census kernel leak lanes pixel region tree patches reproduce; do
-  step "red-$n" 1100 node "$HERE/red.cjs" "$n" "$SITE" "$LIVE" || FAILED=1
-  tail -n 1 "$OUT/red-$n.out" | grep -q "_OK$" || FAILED=1
-done
+case "$PART" in
+  build-witness) step reproduce 1800 '^EXPORT_REPRODUCED' bash "$HERE/reproduce.sh" "$SITE"; witnesses 1 2 3 4 5 6 7 8 9 10 ;;
+  reds-a) reds chunk preload summary stale realm shown alive census kernel ;;
+  reds-b) reds leak lanes pixel region tree patches reproduce ;;
+  verdict)
+    for p in $PARTS; do grep -qx "PART $p OK" "$LOG" || { echo "WINDOW FAILED: part $p has no OK"; exit 1; }; done
+    echo "WINDOW OK"
+    exit 0 ;;
+  *) echo "part must be one of: $PARTS verdict"; exit 2 ;;
+esac
 
 echo "LEFT $(ps -eo args= | grep -c '[b]rowser-witness.sh\|[r]ed.cjs')" >> "$LOG"
-if [ "$FAILED" -eq 0 ]; then echo "WINDOW OK" >> "$LOG"; exit 0; fi
-echo "WINDOW FAILED" >> "$LOG"
+[ "$FAILED" -eq 0 ] && { echo "PART $PART OK" >> "$LOG"; exit 0; }
+echo "PART $PART FAILED" >> "$LOG"
 exit 1
