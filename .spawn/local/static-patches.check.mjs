@@ -8,6 +8,7 @@ const FIXTURE = [
   'var t=e.ok?e.headers.get("x-spawn-manifest"):null',
   '&&!aUQ(e,t)&&$Xi(e,t,' + TICK + 'boundless|$' + '{cQ2(n)}' + TICK + '))RI$(e,{level:"warn"',
   'if(S.bare==="3d")RI$(e,{level:"warn"',
+  ...staticPatches('/signal/', 'a'.repeat(64)).slice(5).map(([from]) => from),
 ].join('\n');
 const manifest = 'a'.repeat(64);
 const fail = (message) => { console.log('PATCHES_FAILED ' + message); process.exit(1); };

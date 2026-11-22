@@ -88,27 +88,8 @@ function moduleRefs(path, text) {
 const SEAM = /([\w$]+)=\(\$,Z\)=>([\w$]+)!==null\?\2\(\$,Z\):fetch\(\$,Z\)/g;
 const POST_PLACEHOLDER = '__POST_REPLIES__';
 
-const SUMMARY_CALLER = 'function Bk(e,t,r,i,n,l,s=0,o){let a=v7();if(a===null)return null;';
-const SUMMARY_CALLER_UNPATCHED = 'let a=v7();if(a===null)return null;';
 const PRELOAD_STALE = '<link rel="preload" as="fetch" crossorigin href="/signal/__local/https%3A%2F%2Fplay.spawn.co%2Fworld-store%2F';
 const PRELOAD_STALE_RE = /(<link rel="preload" as="fetch" crossorigin href=")\/signal\/__local\/https%3A%2F%2Fplay\.spawn\.co%2Fworld-store%2F([^"]+)"/g;
-
-function patchSummaryBase(text) {
-  const count = text.split(SUMMARY_CALLER).length - 1;
-  if (count === 0) return text;
-  if (count > 1) throw new Error('summary base caller matched ' + count + ' times in one module');
-  return text.replace(SUMMARY_CALLER, () => SUMMARY_CALLER.replace('let a=v7();', 'let a=null;'));
-}
-
-const REALM_HOST = 'let r=RiI(e)?.sharedHost??e;if(!TW2(r))return null;let i=tdy.get(r);if(i!==void 0)return\x60\x24{t}-\x24{i}.\x24{whv}\x60;return r.includes(".")?\x60\x24{t}-\x24{r}\x60:\x60\x24{t}.\x24{r}\x60});';
-const REALM_HOST_PREFIX = 'let r=RiI(e)?.sharedHost??e;if(!TW2(r))return null;let i=tdy.get(r);';
-
-function patchRealmHost(text) {
-  const count = text.split(REALM_HOST).length - 1;
-  if (count === 0) return text;
-  if (count > 1) throw new Error('realm host builder matched ' + count + ' times in one module');
-  return text.replace(REALM_HOST, () => 'return null});');
-}
 
 const DEAD_PRELOAD = /<link rel="preload" as="fetch" crossorigin href="\/signal\/world-store\/git\/[0-9a-f]+\/ui\/b045b55fce1634c701a585b3012693fbc125cc3f0b2039e844b16cfcafecbff6\.css" \/>\n?/g;
 
@@ -187,7 +168,7 @@ async function crawl(source, seeds) {
       const text = rewriteImages(raw);
       for (const name of moduleRefs(path, raw)) frontier.push(name);
       for (const match of text.matchAll(REF)) frontier.push(match[0].split('?')[0]);
-      files.set(path, { body: Buffer.from(rewriteSeams(staticPatcher.patch(patchPreloads(patchSummaryBase(patchRealmHost(rebase(text)))))), 'utf8'), type });
+      files.set(path, { body: Buffer.from(rewriteSeams(staticPatcher.patch(patchPreloads(rebase(text)))), 'utf8'), type });
     });
   }
   return { files, misses };
@@ -304,15 +285,11 @@ async function exportSite() {
   addBootTree(crawled.files);
   for (const file of crawled.files.values()) {
     const text = file.body.toString('utf8');
-    if (text.includes(REALM_HOST_PREFIX)) throw new Error('realm host builder still reads the page host');
-    if (text.includes(SUMMARY_CALLER_UNPATCHED)) throw new Error('summary base is still wired to the snapshot origin in a module');
     if (text.includes(PRELOAD_STALE)) throw new Error('a preload points at a URL the page does not fetch');
     if (new RegExp(DEAD_PRELOAD.source).test(text)) throw new Error('a preload for a stylesheet the export does not hold is still in a page');
   }
   const pages = writeSite(crawled.files);
   const bytes = pages.reduce((sum, page) => sum + page.bytes, 0);
-  const largest = pages.reduce((best, page) => (page.bytes > best.bytes ? page : best), { rel: '', bytes: 0 });
-  writeFileSync(join(dirname(OUT), 'pages-export.sha256'), pages.map((page) => page.sha256 + '  ' + page.rel).join('\n') + '\n');
   const exportedValues = pages.filter((page) => /^world-store\/values\/[0-9a-f]{64}$/.test(page.rel)).length;
   const seamFiles = [...crawled.files.values()].filter((file) => file.body.includes('__replayFetch(')).length;
   if (seamFiles === 0) throw new Error('no transport seam found in the export');
@@ -323,17 +300,12 @@ async function exportSite() {
     out: OUT,
     files: pages.length + 1,
     bytes,
-    largest: { rel: largest.rel, bytes: largest.bytes },
     base: BASE_PATH,
     misses: crawled.misses.length,
-    missPaths: crawled.misses.map((miss) => miss.slice(miss.indexOf(' ') + 1)),
-    missSample: crawled.misses.slice(0, 10),
     values: { snapshot: hashes.length, exported: exportedValues },
     posts: { snapshot: postEntries.length, exported: exportedPosts },
     seams: seamFiles,
-    pages,
   };
-  writeFileSync(join(dirname(OUT), 'pages-export.summary.json'), JSON.stringify(summary, null, 2) + '\n');
   return summary;
 }
 
