@@ -2,15 +2,10 @@
 set -u
 HERE=$(cd "$(dirname "$0")" && pwd)
 . "$HERE/lib.sh"
-MODE=$1
-OUT=$2
-CPORT=$3
-LIVE=${4:-${LIVE_URL:-https://www.spawn.co/@lanmower/signal-stage}}
-case "$MODE" in
-  reference) TPL=live-probe.tpl.js ;;
-  trace) TPL=live-trace.tpl.js ;;
-  *) echo "ABORT: mode must be reference or trace"; exit 2 ;;
-esac
+OUT=$1
+CPORT=$2
+LIVE=${3:-${LIVE_URL:-https://www.spawn.co/@lanmower/signal-stage}}
+TPL=live-probe.tpl.js
 mkdir -p "$OUT"
 STAGE=$(mktemp -d "$HERE/.live-stage.XXXXXX")
 rm -rf "$OUT/profile"
@@ -35,7 +30,6 @@ stop_pids $TREE
 echo "browser tree pids: $TREE"
 echo "probe rc=$PRC"
 python3 -I "$HERE/pixel.py" "$OUT/canvas-a.png" "$OUT/canvas-b.png" > "$OUT/pixel.json"
-if [ "$MODE" = reference ]; then
 python3 -I - "$OUT" "$LIVE" > "$OUT/live-reference.json" <<'PY'
 import json, sys
 d, live = sys.argv[1], sys.argv[2]
@@ -45,6 +39,3 @@ info = p.get('info') or {}
 print(json.dumps({'source': 'live', 'url': live, 'session': p.get('session'), 'shown': info.get('shown'), 'canvases': info.get('canvases'), 'frames3s': info.get('frames3s'), 'laneBits': p.get('laneBits'), 'siteTree': p.get('siteTree'), 'engineLines': p.get('engineLines'), 'pixel': px}, indent=1))
 PY
 cat "$OUT/live-reference.json"
-else
-cat "$OUT/pixel.json"; echo
-fi
