@@ -117,9 +117,11 @@ function snapshotValueHashes(root) {
   return [...hashes];
 }
 
-function foreignSession(path) {
-  const ref = /\/session\/world:[0-9a-f-]+@([^/?]+)/.exec(safeDecode(path));
-  return ref !== null && ref[1] !== BOOT_TREE.ref;
+function offBootPath(path) {
+  const decoded = safeDecode(path);
+  const world = /\/session\/world:[0-9a-f-]+@([^/?]+)/.exec(decoded);
+  if (world) return world[1] !== BOOT_TREE.ref;
+  return /^\/session(\/|$)/.test(decoded);
 }
 
 async function crawl(source, seeds) {
@@ -128,7 +130,7 @@ async function crawl(source, seeds) {
   const seen = new Set();
   let frontier = Array.from(new Set(seeds));
   while (frontier.length > 0) {
-    const batch = frontier.filter((path) => !seen.has(path) && !foreignSession(path));
+    const batch = frontier.filter((path) => !seen.has(path) && !offBootPath(path));
     batch.forEach((path) => seen.add(path));
     frontier = [];
     await mapLimit(batch, async (path) => {
