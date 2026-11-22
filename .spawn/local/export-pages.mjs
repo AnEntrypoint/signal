@@ -3,7 +3,7 @@ import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, extname, join, relative, resolve } from 'node:path';
+import { dirname, join, relative, resolve } from 'node:path';
 import { openSource } from './static-source.mjs';
 import { createPatcher, staticPatches } from './static-patches.mjs';
 
@@ -13,13 +13,10 @@ const BASE_PATH = process.env.PAGES_BASE || '/signal/';
 const FILE_LIMIT = 100 * 1024 * 1024;
 const CONCURRENCY = 16;
 const VALUE_HELPER = 'world-store-values.mjs';
-const STATIC_PREFIXES = ['/_next/', '/_ready/', '/ground/', '/fonts/', '/datadog/'];
-const SESSION_MODULE_EXTENSIONS = ['.mjs', '.json', '.html'];
 const TEXT_TYPES = ['text/html', 'text/javascript', 'text/css', 'application/json'];
 const REF = /\/(?:__local|_next|_ready|ground|fonts|datadog|session|world-store)\/[^\s"'<>(){}\\,;]*/g;
 const MODULE_NAME = /\b((?:[a-z][a-z-]*-)?[0-9a-f]{16}|[0-9a-f]{8}-[0-9a-f]{16}|[a-z][a-z-]*)\.(?:mjs|json)\b/g;
 const OUTER_ASSET = /\/(?:savi|mark)\/[^\s"'<>()\\]+|\/(?:favicon\.ico|icon\.png|apple-icon\.png)\?[^\s"'<>()\\]*/g;
-const POOL = '/v4/client/pool/';
 
 const sha256 = (buffer) => createHash('sha256').update(buffer).digest('hex');
 
@@ -30,24 +27,6 @@ function rebase(text) {
 }
 
 
-function seedsFor(url) {
-  if (!url) return [];
-  let target;
-  try {
-    target = new URL(url);
-  } catch {
-    return [];
-  }
-  const seeds = ['/__local/' + encodeURIComponent(url)];
-  if (target.search) return seeds;
-  const path = target.pathname;
-  if (target.origin === 'https://www.spawn.co' && STATIC_PREFIXES.some((prefix) => path.startsWith(prefix))) seeds.push(path);
-  if (target.origin === 'https://play.spawn.co') {
-    if (path.startsWith(POOL) && SESSION_MODULE_EXTENSIONS.includes(extname(path).toLowerCase())) seeds.push('/session/' + path.slice(POOL.length));
-    if (path === '/session' || path.startsWith('/session/') || path.startsWith('/world-store/')) seeds.push(path);
-  }
-  return seeds;
-}
 
 async function mapLimit(items, worker) {
   let next = 0;
@@ -138,13 +117,18 @@ function snapshotValueHashes(root) {
   return [...hashes];
 }
 
+function foreignSession(path) {
+  const ref = /\/session\/world:[0-9a-f-]+@([^/?]+)/.exec(safeDecode(path));
+  return ref !== null && ref[1] !== BOOT_TREE.ref;
+}
+
 async function crawl(source, seeds) {
   const files = new Map();
   const misses = [];
   const seen = new Set();
   let frontier = Array.from(new Set(seeds));
   while (frontier.length > 0) {
-    const batch = frontier.filter((path) => !seen.has(path));
+    const batch = frontier.filter((path) => !seen.has(path) && !foreignSession(path));
     batch.forEach((path) => seen.add(path));
     frontier = [];
     await mapLimit(batch, async (path) => {
