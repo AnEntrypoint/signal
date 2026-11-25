@@ -4,7 +4,8 @@ WORLD=/workspace/signal/world/signal-stage
 TARGET="$1"
 MODE="${2:-live}"
 OUT=/workspace/tmp/signal/verify/probe-$(date +%s)
-mkdir -p "$OUT"
+STAGE=$WORLD/.spawn/local/.probe-stage-$(basename "$OUT")
+mkdir -p "$OUT" "$STAGE"
 cd "$WORLD"
 if [ "$MODE" = serve ]; then
   SNAPSHOT_ROOT=/workspace/signal PORT=4173 HOST=127.0.0.1 setsid nohup node .spawn/local/serve-local.mjs > "$OUT/server.out" 2>&1 < /dev/null &
@@ -22,9 +23,12 @@ for p in $(pgrep -f playwriter-ws-server); do case " $PWS " in *" $p "*) ;; *) e
 setsid bash .spawn/local/bound-watch.sh "$OUT" > /dev/null 2>&1 & echo $! > "$OUT/watch.pid"
 setsid bash .spawn/local/tree-sample.sh "$OUT" > /dev/null 2>&1 & echo $! > "$OUT/sample.pid"
 PROBE="${PROBE:-.spawn/local/probe-page.js}"
-bash .spawn/local/render-probe.sh "$PROBE" "$OUT" "$TARGET" > "$OUT/probe.js"
+bash .spawn/local/render-probe.sh "$PROBE" "$STAGE" "$TARGET" > "$OUT/probe.js"
 PLAYWRITER_EXEC_TIMEOUT=600000 timeout 600 playwriter -s "$ID" -e "$(cat "$OUT/probe.js")" > "$OUT/probe.out" 2>&1
-echo "probe rc=$? session=$ID out=$OUT"
+PRC=$?
+cp -r "$STAGE"/. "$OUT"/
+rm -rf "$STAGE"
+echo "probe rc=$PRC session=$ID out=$OUT"
 cut -c1-4000 "$OUT/probe.out"
 kill -- -"$(cat $OUT/browser.pid)" 2>/dev/null
 kill "$(cat $OUT/watch.pid)" 2>/dev/null
