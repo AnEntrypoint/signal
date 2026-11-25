@@ -22,7 +22,8 @@ echo "$ID" > "$OUT/session.id"
 for p in $(pgrep -f playwriter-ws-server); do case " $PWS " in *" $p "*) ;; *) echo "$p" > "$OUT/ws.pid";; esac; done
 setsid bash .spawn/local/bound-watch.sh "$OUT" > /dev/null 2>&1 & echo $! > "$OUT/watch.pid"
 setsid bash .spawn/local/tree-sample.sh "$OUT" > /dev/null 2>&1 & echo $! > "$OUT/sample.pid"
-PROBE="${PROBE:-.spawn/local/probe-page.js}"
+PROBE="${PROBE:-.spawn/local/probe-scene.js}"
+export SAMPLE="${SAMPLE:-1}" READ="${READ:-1}"
 bash .spawn/local/render-probe.sh "$PROBE" "$STAGE" "$TARGET" > "$OUT/probe.js"
 PLAYWRITER_EXEC_TIMEOUT=600000 timeout 600 playwriter -s "$ID" -e "$(cat "$OUT/probe.js")" > "$OUT/probe.out" 2>&1
 PRC=$?
