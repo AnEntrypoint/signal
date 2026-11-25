@@ -608,7 +608,7 @@ const snap = async (label) => {
     const probe = await capped(f.evaluate(() => (window.__probe ? JSON.parse(JSON.stringify(window.__probe)) : null)).catch((e) => 'eval-fail ' + String(e.message).slice(0, 80)), 8000, 'eval-timeout');
     frames.push({ url: f.url().slice(0, 140), probe });
   }
-  const html = await capped(page.evaluate(() => ({ shown: document.documentElement.classList.contains('spawn-world-shown'), stood: document.documentElement.hasAttribute('data-spawn-stood'), coi: window.crossOriginIsolated, reason: (window.__spawnHeldDocumentReleased || {}).reason || null, active: document.activeElement ? document.activeElement.tagName : null })).catch((e) => 'eval-fail'), 8000, 'eval-timeout');
+  const html = await capped(page.evaluate(() => ({ shown: document.documentElement.classList.contains('spawn-world-shown'), stood: document.documentElement.hasAttribute('data-spawn-stood'), coi: window.crossOriginIsolated, reason: (window.__spawnHeldDocumentReleased || {}).reason || null, active: document.activeElement ? document.activeElement.tagName : null })).catch((e) => 'eval-fail ' + String(e.message).slice(0, 120)), 8000, 'eval-timeout');
   return { label, html, frames, workers: await workerSnap() };
 };
 mark('before-snap-start');
