@@ -629,6 +629,7 @@ for (let g = 0; g < 20 && !gestureShown; g += 1) {
   gestureLog.push(gs);
   gestureShown = !!(gs && gs.shown);
 }
+const sceneMid = await sceneSnap();
 const startFrame = () => page.frames().find((f) => f.url().includes('/session/world')) || page;
 await capped(startFrame().evaluate(() => {
   const fnv = (d) => { let h = 2166136261; for (let i = 0; i < d.length; i += 1) { h ^= d[i]; h = Math.imul(h, 16777619); } return (h >>> 0).toString(16); };
@@ -723,7 +724,7 @@ after.env = await capped((sessionFrame || page).evaluate(async () => {
   const adapter = navigator.gpu ? await navigator.gpu.requestAdapter().catch(() => null) : null;
   return { ua: navigator.userAgent, href: location.href.slice(0, 200), presentRoadParam: new URL(location.href).searchParams.get('presentRoad'), cssMoz: typeof CSS !== 'undefined' ? CSS.supports('-moz-appearance', 'none') : 'no-CSS', mozInnerScreenX: typeof window.mozInnerScreenX, hasGpu: !!navigator.gpu, adapterInfo: adapter && adapter.info ? { vendor: adapter.info.vendor, architecture: adapter.info.architecture, isFallbackAdapter: adapter.info.isFallbackAdapter } : null, localStorageKeys: Object.keys(localStorage), sessionStorageKeys: Object.keys(sessionStorage), cookieNames: document.cookie.split('; ').map((c) => c.split('=')[0]), lsAll: Object.fromEntries(Object.keys(localStorage).map((k) => [k, String(localStorage.getItem(k)).slice(0, 200)])), canvasRoadCookie: (document.cookie.split('; ').find((c) => c.startsWith('__Secure-spawn-canvas-road-run=')) || null), sessionRoad: Object.fromEntries(Object.keys(sessionStorage).filter((k) => /spawn|road|canvas|Las/i.test(k)).map((k) => [k, String(sessionStorage.getItem(k)).slice(0, 200)])), roadStorage: Object.fromEntries(Object.keys(localStorage).filter((k) => /device-record|death|road|gpu/i.test(k)).map((k) => [k, String(localStorage.getItem(k)).slice(0, 360)])) };
 }).catch((e) => 'eval-fail ' + String(e.message).slice(0, 120)), 60000, 'env-timeout');
-after.scene = await sceneSnap();
+after.scene = sceneMid;
 await page.screenshot({ path: OUT + '/after.png' }).catch(() => {});
 fs.writeFileSync(OUT + '/routes.json', JSON.stringify(routeHits, null, 1));
 fs.writeFileSync(OUT + '/scene.json', JSON.stringify({ before, after, memTrace, crashLog, closes: handles.map((h) => ({ url: h.url, openedMs: h.openedMs, closedMs: h.closedMs, closedAt: h.closedAt || null })), failures, responses, events }, null, 1));
