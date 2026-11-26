@@ -597,7 +597,7 @@ const sceneSnap = async () => {
   const out = [];
   for (const h of handles) {
     if (!h.url.includes('#eye=follows') || h.closedMs !== null) continue;
-    const s = await capped(h.w.evaluate(() => (self.__probeScene ? self.__probeScene() : 'no scene fn')).catch((e) => 'eval-fail ' + String(e.message).slice(0, 120)), 150000, 'scene-timeout');
+    const s = await capped(h.w.evaluate(() => (self.__probeScene ? self.__probeScene() : 'no scene fn')).catch((e) => 'eval-fail ' + String(e.message).slice(0, 120)), 5000, 'scene-timeout');
     out.push({ url: h.url, scene: s });
   }
   return out;
